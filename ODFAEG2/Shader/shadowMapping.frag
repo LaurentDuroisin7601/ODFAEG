@@ -16,8 +16,7 @@ layout(location = 0) out vec4 frag_color;
 struct LightSpaceMatrix {
     mat4 lightSpaceMatrices[NB_CASCADES+1];
 };
-struct DirLight {
-    mat4 view;
+struct DirLight {    
     vec3 lightDir;
     float far_plane;
 };
@@ -74,7 +73,7 @@ float shadowCalculationDir(vec3 fragPosWorldSpace)
     // select cascade layer 
     float shadow = 0.0;  
     for(int l = 0; l < pc.nbDirLights; l++) {
-        vec4 fragPosViewSpace = dirLightData[currentFrame].dirLights[l].view * vec4(fragPosWorldSpace, 1.0);    
+        vec4 fragPosViewSpace = pc.view * vec4(fragPosWorldSpace, 1.0);    
         float depthValue = abs(fragPosViewSpace.z);
         int layer = -1; 
         for (int i = 0; i < NB_CASCADES; ++i)
@@ -93,6 +92,7 @@ float shadowCalculationDir(vec3 fragPosWorldSpace)
         vec4 fragPosLightSpace =  lightSpaceMatricesData[currentFrame].lightSpaceMatrices[l].lightSpaceMatrices[layer] * vec4(fragPosWorldSpace, 1.0);
         vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
         projCoords.xy = projCoords.xy * 0.5 + 0.5;
+        //debugPrintfEXT("Proj coords : %v4f", projCoords);
         // get depth of current fragment from light's perspective
         float currentDepth = projCoords.z;
         // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
@@ -102,6 +102,7 @@ float shadowCalculationDir(vec3 fragPosWorldSpace)
         }
         // calculate bias (based on depth map resolution and slope)
         vec3 normal = normalize(normal);
+        //debugPrintfEXT("light dir : %f", dirLightData[currentFrame].dirLights[l].far_plane);
         float bias = max(0.05 * (1.0 - dot(normal,dirLightData[currentFrame].dirLights[l].lightDir)), 0.005);
         const float biasModifier = 0.5f;
         if (layer == NB_CASCADES)

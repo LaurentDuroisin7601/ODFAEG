@@ -74,23 +74,23 @@ namespace odfaeg {
             }  
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 lightSpaceMatricesBuffer.emplace_back(GPUContext::instance().getDevice());
-                lightSpaceMatricesBuffer.back().create(sizeof(math::Matrix4f), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+                lightSpaceMatricesBuffer.back().create(sizeof(math::Matrix4f), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
             }    
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 lightSpaceMatricesBufferFinal.emplace_back(GPUContext::instance().getDevice());
-                lightSpaceMatricesBufferFinal.back().create(sizeof(math::Matrix4f), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+                lightSpaceMatricesBufferFinal.back().create(sizeof(math::Matrix4f), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
             }   
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 lightViewsPLMatricesBuffer.emplace_back(GPUContext::instance().getDevice());
-                lightViewsPLMatricesBuffer.back().create(sizeof(math::Matrix4f), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+                lightViewsPLMatricesBuffer.back().create(sizeof(math::Matrix4f), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
             }   
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 dirLightsBufferFinal.emplace_back(GPUContext::instance().getDevice());
-                dirLightsBufferFinal.back().create(sizeof(DirLight), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+                dirLightsBufferFinal.back().create(sizeof(DirLight), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
             }  
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 pointLightsBufferFinal.emplace_back(GPUContext::instance().getDevice());
-                pointLightsBufferFinal.back().create(sizeof(PointLight), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+                pointLightsBufferFinal.back().create(sizeof(PointLight), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
             }          
             shadowMap.setCamera(parentRenderer.getCamera());
             shadowMapPL.setCamera(parentRenderer.getCamera());
@@ -108,34 +108,20 @@ namespace odfaeg {
                 GPUContext::instance().getSharedSemaphore(0)[0].create(true, 0);
             }
             needToUpdateDescriptorSets = true;
-            needToUpdateLightsMatrices = false;
+            needToUpdateDirLightsMatrices = needToUpdatePointLightsMatrices = false;
             stop.store(false);
             rendererReady.store(true);
             
         }          
         void ShadowRenderer::addDirectionnalLight(DirLight dirLight) {
             dirLights.push_back(dirLight);
-            needToUpdateLightsMatrices = true;
+            needToUpdateDirLightsMatrices = true;
         }
         void ShadowRenderer::addPonctualLight(PointLight pointLight) {
             pointLights.push_back(pointLight);
-            needToUpdateLightsMatrices = true;
+            needToUpdatePointLightsMatrices = true;
         }
-        void ShadowRenderer::computeLightMatrices() {            
-            for (unsigned int l = 0; l < dirLights.size(); l++) {
-                LightSpaceMatrix lightSpaceMatrices;
-                for (size_t i = 1; i < shadowCascadeLevels.size(); i++)
-                {
-
-                    lightSpaceMatrices.lightSpaceMatrices[i-1] = getLightSpaceMatrix(dirLights[l].dir, shadowCascadeLevels[i-1], shadowCascadeLevels[i]);
-                    //std::cout<<fLightSpaceMatrices.back()<<std::endl;
-                }            
-                lightSpaceMatrices.lightSpaceMatrices[NB_CASCADES] = lightSpaceMatrices.lightSpaceMatrices[NB_CASCADES-1];  
-                fLightSpaceMatrices.push_back(lightSpaceMatrices);
-                dirLights[l].far_plane = shadowCascadeLevels[NB_CASCADES];                
-                /*int pause;
-                std::cin>>pause;*/                
-            }    
+        void ShadowRenderer::computePointLightMatrices() {
             Camera pointLightCamera;
             pointLightCamera.setPerspective(90, 1, 1, 25);            
             shadowPassPLVertPC.lightProjMatrix = pointLightCamera.getProjMatrix().getMatrix().transpose();
@@ -161,6 +147,54 @@ namespace odfaeg {
             VkPhysicalDeviceProperties props;
             vkGetPhysicalDeviceProperties(GPUContext::instance().getDevice().getPhysicalDevice(), &props); 
             uint32_t minAlign = props.limits.minStorageBufferOffsetAlignment;  
+            uint32_t lightViewPLMatrixAlignSize = (sizeof(ViewPLMatrix) + minAlign - 1) & ~(minAlign - 1);
+            lightViewsPLMatricesStaggingBuffer.create(sizeof(ViewPLMatrix) * lightViewsPLMatrices.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+            for (unsigned int l = 0; l < pointLights.size(); l++) {
+                lightViewsPLMatricesStaggingBuffer.update(fLightSpaceMatrices.data(), sizeof(ViewPLMatrix), l * lightViewPLMatrixAlignSize);
+            }
+            for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {                
+                lightViewsPLMatricesBuffer[i].create(sizeof(ViewPLMatrix) * lightViewsPLMatrices.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);                              
+            } 
+            pointLightsStaggingBufferFinal.create(sizeof(PointLight) * pointLights.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+            pointLightsStaggingBufferFinal.update(pointLights.data(), sizeof(PointLight) * pointLights.size());                                         
+            for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {                
+                pointLightsBufferFinal[i].create(sizeof(PointLight) * pointLights.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);                              
+            }
+            for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                commandPool.beginRecordCommandBuffer(i);                
+                Buffer::copyBuffer(lightViewsPLMatricesStaggingBuffer, lightViewsPLMatricesBuffer[i], sizeof(math::Matrix4f)*lightViewsPLMatrices.size(), commandPool.getHandle(i)); 
+                Buffer::copyBuffer(pointLightsStaggingBufferFinal, pointLightsBufferFinal[i], sizeof(PointLight)*pointLights.size(), commandPool.getHandle(i));
+                commandPool.endRecordCommandBuffer(i);
+            }
+            VkSubmitInfo submitInfo{};
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = commandPool.getHandles().size();
+            submitInfo.pCommandBuffers = commandPool.getHandles().data();
+            Device::QueueFamilyIndices indices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice(), VK_NULL_HANDLE);
+            if (vkQueueSubmit(GPUContext::instance().getDevice().getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+                throw std::runtime_error("Echec de l'envoi d'un command buffer!");
+            }
+            vkDeviceWaitIdle(GPUContext::instance().getDevice().getDevice());
+        }
+        void ShadowRenderer::computeDirLightMatrices() {            
+            for (unsigned int l = 0; l < dirLights.size(); l++) {
+                /*std::cout<<"update light"<<std::endl;
+                int i;
+                std::cin>>i;*/
+                LightSpaceMatrix lightSpaceMatrices;
+                for (size_t i = 1; i < shadowCascadeLevels.size(); i++)
+                {
+
+                    lightSpaceMatrices.lightSpaceMatrices[i-1] = getLightSpaceMatrix(dirLights[l].dir, shadowCascadeLevels[i-1], shadowCascadeLevels[i]);
+                    //std::cout<<fLightSpaceMatrices.back()<<std::endl;
+                }            
+                lightSpaceMatrices.lightSpaceMatrices[NB_CASCADES] = lightSpaceMatrices.lightSpaceMatrices[NB_CASCADES-1];  
+                fLightSpaceMatrices.push_back(lightSpaceMatrices);
+                dirLights[l].far_plane = shadowCascadeLevels[NB_CASCADES];                           
+            }   
+            VkPhysicalDeviceProperties props;
+            vkGetPhysicalDeviceProperties(GPUContext::instance().getDevice().getPhysicalDevice(), &props); 
+            uint32_t minAlign = props.limits.minStorageBufferOffsetAlignment;  
             uint32_t lightSpaceMatrixAlignSize = (sizeof(LightSpaceMatrix) + minAlign - 1) & ~(minAlign - 1);   
             lightSpaceMatricesStaggingBuffer.create(sizeof(LightSpaceMatrix) * fLightSpaceMatrices.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
             for (unsigned int l = 0; l < dirLights.size(); l++) {
@@ -174,32 +208,17 @@ namespace odfaeg {
             lightSpaceMatricesStaggingBufferFinal.update(fLightSpaceMatrices.data(), sizeof(LightSpaceMatrix)*fLightSpaceMatrices.size());
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {                
                 lightSpaceMatricesBufferFinal[i].create(sizeof(LightSpaceMatrix) * fLightSpaceMatrices.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);                              
-            }
-            uint32_t lightViewPLMatrixAlignSize = (sizeof(ViewPLMatrix) + minAlign - 1) & ~(minAlign - 1);
-            lightViewsPLMatricesStaggingBuffer.create(sizeof(ViewPLMatrix) * lightViewsPLMatrices.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
-            for (unsigned int l = 0; l < pointLights.size(); l++) {
-                lightViewsPLMatricesStaggingBuffer.update(fLightSpaceMatrices.data(), sizeof(ViewPLMatrix), l * lightViewPLMatrixAlignSize);
-            }
-            for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {                
-                lightViewsPLMatricesBuffer[i].create(sizeof(ViewPLMatrix) * lightViewsPLMatrices.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);                              
-            } 
-            dirLightsStaggingBufferFinal.create(sizeof(DirLight) * lightViewsPLMatrices.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+            }            
+            dirLightsStaggingBufferFinal.create(sizeof(DirLight) * dirLights.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
             dirLightsStaggingBufferFinal.update(dirLights.data(), sizeof(DirLight) * dirLights.size());                        
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {                
                 dirLightsBufferFinal[i].create(sizeof(DirLight) * dirLights.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);                              
-            }              
-            pointLightsStaggingBufferFinal.create(sizeof(PointLight) * pointLights.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
-            pointLightsStaggingBufferFinal.update(pointLights.data(), sizeof(PointLight) * pointLights.size());                                         
-            for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {                
-                pointLightsBufferFinal[i].create(sizeof(PointLight) * pointLights.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);                              
-            }
+            }  
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 commandPool.beginRecordCommandBuffer(i);
-                Buffer::copyBuffer(lightSpaceMatricesStaggingBuffer, lightSpaceMatricesBuffer[i], sizeof(math::Matrix4f)*fLightSpaceMatrices.size(), commandPool.getHandle(i));
-                Buffer::copyBuffer(lightSpaceMatricesStaggingBufferFinal, lightSpaceMatricesBufferFinal[i], sizeof(math::Matrix4f)*fLightSpaceMatrices.size(), commandPool.getHandle(i));
-                Buffer::copyBuffer(lightViewsPLMatricesStaggingBuffer, lightViewsPLMatricesBuffer[i], sizeof(math::Matrix4f)*lightViewsPLMatrices.size(), commandPool.getHandle(i));                
+                Buffer::copyBuffer(lightSpaceMatricesStaggingBuffer, lightSpaceMatricesBuffer[i], sizeof(LightSpaceMatrix)*fLightSpaceMatrices.size(), commandPool.getHandle(i));
+                Buffer::copyBuffer(lightSpaceMatricesStaggingBufferFinal, lightSpaceMatricesBufferFinal[i], sizeof(LightSpaceMatrix)*fLightSpaceMatrices.size(), commandPool.getHandle(i));                
                 Buffer::copyBuffer(dirLightsStaggingBufferFinal, dirLightsBufferFinal[i], sizeof(DirLight)*dirLights.size(), commandPool.getHandle(i));
-                Buffer::copyBuffer(pointLightsStaggingBufferFinal, pointLightsBufferFinal[i], sizeof(PointLight)*pointLights.size(), commandPool.getHandle(i));
                 commandPool.endRecordCommandBuffer(i);
             }
             VkSubmitInfo submitInfo{};
@@ -247,7 +266,7 @@ namespace odfaeg {
                 std::cout<<"pipeline layout at creation : "<<shadowPassCSMPipeline[i][RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id]->getLayout()<<std::endl;*/
                 //std::cout<<"pipeline created"<<std::endl;
             }            
-            DescriptorSetLayout& shadowPassPLLayout = GPUContext::instance().getDescriptorSetLayout(shadowPassPLShader, 3);
+            DescriptorSetLayout& shadowPassPLLayout = GPUContext::instance().getDescriptorSetLayout(shadowPassPLShader, 2);
             shadowPassPLLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_VERTEX_BIT);
             shadowPassPLLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_VERTEX_BIT);            
             shadowPassPLLayout.update();
@@ -298,7 +317,7 @@ namespace odfaeg {
             shadowMappingLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_FRAGMENT_BIT);
             shadowMappingLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
             shadowMappingLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
-            shadowMappingLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+            shadowMappingLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
             shadowMappingLayout.updateLayout(5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
             shadowMappingLayout.updateLayout(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
             shadowMappingLayout.updateLayout(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -335,7 +354,7 @@ namespace odfaeg {
             shadowMappingPool.updatePoolSize(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT);            
             shadowMappingPool.updatePoolSize(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT);
             shadowMappingPool.updatePoolSize(5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT);
-            shadowMappingPool.updatePoolSize(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT);
+            shadowMappingPool.updatePoolSize(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             shadowMappingPool.updatePoolSize(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             shadowMappingPool.updatePoolSize(8, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
             shadowMappingPool.update();
@@ -532,9 +551,14 @@ namespace odfaeg {
                 semaphoreWaitInfo.pValues = waitValues.data();
                 vkWaitSemaphores(GPUContext::instance().getDevice().getDevice(), &semaphoreWaitInfo, UINT64_MAX);
                 //std::cout<<"frame : "<<renderFrame<<" ready!"<<std::endl;
-                if (needToUpdateLightsMatrices) {
-                    computeLightMatrices();
-                    needToUpdateLightsMatrices = false;
+                if (needToUpdateDirLightsMatrices) {
+                    computeDirLightMatrices();
+                    needToUpdateDirLightsMatrices = false;
+                    needToUpdateDescriptorSets = true;
+                }
+                if (needToUpdatePointLightsMatrices) {
+                    computePointLightMatrices();
+                    needToUpdatePointLightsMatrices = false;
                     needToUpdateDescriptorSets = true;
                 }
                 if (needToUpdateDescriptorSets) {
@@ -579,13 +603,16 @@ namespace odfaeg {
                         for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
                             shadowPassCSMVertPC.primitiveType = i;
                             //std::cout<<"ids : "<<i<<","<<shadowPassCSMShader.getId()<<","<<RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id<<std::endl;
-                            uint32_t offsetLightSpaceMat = l * lightSpaceMatrixAlignSize;
+                            std::vector<uint32_t> offsetLightSpaceMats;
+                            for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                              offsetLightSpaceMats.push_back(l * lightSpaceMatrixAlignSize);
+                            }                            
                             //std::cout<<"register binds"<<std::endl;
                             vkCmdBindPipeline(shadowPassCommandPool.getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
                             //std::cout<<"registered bind pipeline"<<std::endl;
                             vkCmdPushConstants(shadowPassCommandPool.getHandle(renderFrame), GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ShadowPassCSMVertPC), &shadowPassCSMVertPC);
                             //std::cout<<"registed bind push constants"<<std::endl;
-                            vkCmdBindDescriptorSets(shadowPassCommandPool.getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 1, &offsetLightSpaceMat);
+                            vkCmdBindDescriptorSets(shadowPassCommandPool.getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), offsetLightSpaceMats.size(), offsetLightSpaceMats.data());
                             //std::cout<<"registered bind decriptor sets"<<std::endl;
                             shadowMap.draw(shadowPassCommandPool, static_cast<PrimitiveType>(i), states);
                             //std::cout<<"registered"<<std::endl;
@@ -633,13 +660,16 @@ namespace odfaeg {
                         for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
                             shadowPassPLVertPC.primitiveType = i;                            
                             //std::cout<<"ids : "<<i<<","<<shadowPassPLShader.getId()<<","<<RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id<<std::endl;
-                            uint32_t offsetLightViewMatPL = l * lightViewPLMatrixAlignSize;
+                            std::vector<uint32_t> offsetLightViewMatPLs;
+                            for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                                offsetLightViewMatPLs.push_back(l * lightViewPLMatrixAlignSize);
+                            }
                             vkCmdBindPipeline(shadowPassPLCommandPool.getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), shadowPassPLShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
                             //std::cout<<"registered bind pipeline"<<std::endl;
                             vkCmdPushConstants(shadowPassPLCommandPool.getHandle(renderFrame), GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), shadowPassPLShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ShadowPassPLVertPC), &shadowPassPLVertPC);
                             vkCmdPushConstants(shadowPassPLCommandPool.getHandle(renderFrame), GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), shadowPassPLShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(ShadowPassPLVertPC), sizeof(ShadowPassPLFragPC), &shadowPassPLFragPC);
                             //std::cout<<"registed bind push constants"<<std::endl;
-                            vkCmdBindDescriptorSets(shadowPassPLCommandPool.getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), shadowPassPLShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 1, &offsetLightViewMatPL);
+                            vkCmdBindDescriptorSets(shadowPassPLCommandPool.getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), shadowPassPLShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), offsetLightViewMatPLs.size(), offsetLightViewMatPLs.data());
                             //std::cout<<"registered bind decriptor sets"<<std::endl;
                             shadowMapPL.draw(shadowPassPLCommandPool, static_cast<PrimitiveType>(i), states);
                             //std::cout<<"registered"<<std::endl;

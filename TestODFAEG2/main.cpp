@@ -102,8 +102,11 @@ int main() {
 	//std::cout<<"ok"<<std::endl;
 	Clock clock;
 	unsigned int fps = 0;
-	//std::cout<<"widnow adr = "<<&window<<std::endl;
+	//std::cout<<"widnow adr = "<<&window<<std::endl;	
 	ShadowRenderer shadowRenderer(window, 0, "*");
+	ShadowRenderer::DirLight dirLight;
+	dirLight.dir = Vec3f(20, 50, 20);
+	shadowRenderer.addDirectionnalLight(dirLight);
 	while (window.isOpen()) {
 		odfaeg::window::IEvent event;
 		while (window.pollEvent(event)) {

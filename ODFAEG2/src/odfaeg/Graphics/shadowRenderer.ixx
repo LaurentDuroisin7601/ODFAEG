@@ -56,13 +56,11 @@ namespace odfaeg {
                 float far_plane;
             };
             struct DirLight {               
-                math::Vec3f dir;  
-                float pad;
+                alignas(16) math::Vec3f dir; 
                 float far_plane;              
             };
             struct PointLight {
-                math::Vec3f pos;
-                float pad;
+                alignas(16) math::Vec3f pos;                
                 float far_plane;
             };
             struct LightSpaceMatrix {
@@ -83,7 +81,8 @@ namespace odfaeg {
             void addDirectionnalLight(DirLight dirLight);
             void addPonctualLight(PointLight pointLight);
         private :                    
-            void computeLightMatrices();
+            void computeDirLightMatrices();
+            void computePointLightMatrices();
             std::vector<float> computeSplits(int cascadeCount, float nearPlane, float farPlane, float lambda);
             math::Matrix4f getLightSpaceMatrix(math::Vec3f lightDir, const float nearPlane, const float farPlane);
             std::array<math::Vec3f, 8> getFrustrumCornersWordlSpace(math::Matrix4f projView);
@@ -108,7 +107,7 @@ namespace odfaeg {
             std::condition_variable cv;
             core::ThreadPool threadPool;
             std::array<core::JobFence, MAX_FRAMES_IN_FLIGHT> jobFences={};
-            bool useThread, needToUpdateDescriptorSets, needToUpdateLightsMatrices;
+            bool useThread, needToUpdateDescriptorSets, needToUpdateDirLightsMatrices, needToUpdatePointLightsMatrices;
             std::string typesToRenderExpression;
             std::mutex mtx;                       
             ShadowMappingVertPC shadowMappingVertPC;
