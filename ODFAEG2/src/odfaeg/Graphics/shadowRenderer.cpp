@@ -93,7 +93,7 @@ namespace odfaeg {
                 pointLightsBufferFinal.back().create(sizeof(PointLight), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
             }          
             shadowMap.setCamera(parentRenderer.getCamera());
-            shadowMapPL.setCamera(parentRenderer.getCamera());
+            //shadowMapPL.setCamera(parentRenderer.getCamera());
             createDescriptorsAndPipelines();
             createCommandPools();
             
