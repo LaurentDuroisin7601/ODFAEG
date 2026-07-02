@@ -106,7 +106,7 @@ int main() {
 	ShadowRenderer shadowRenderer(window, 0, "*");
 	ShadowRenderer::DirLight dirLight;
 	dirLight.dir = Vec3f(20, 50, 20);
-	//shadowRenderer.addDirectionnalLight(dirLight);
+	shadowRenderer.addDirectionnalLight(dirLight);
 	ShadowRenderer::PointLight pointLight;
 	pointLight.pos = Vec3f(0, 0, 0);
 	shadowRenderer.addPonctualLight(pointLight);

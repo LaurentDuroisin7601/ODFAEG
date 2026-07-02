@@ -12,6 +12,6 @@ void main()
     // map to [0;1] range by dividing by far_plane
     lightDistance = lightDistance / pc.far_plane;    
     // write this as modified depth
-    //debugPrintfEXT("far plane : %f", lightDistance);
+    //debugPrintfEXT("far plane : %v3f", pc.lightPos);
     gl_FragDepth = lightDistance;
 }  

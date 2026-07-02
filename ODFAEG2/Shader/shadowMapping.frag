@@ -135,9 +135,12 @@ float shadowCalculationPoint(vec3 fragPos)
     // get vector between fragment position and light position
     float shadow = 0.0;
     for(int l = 0; l < pc.nbPointLights; l++) {
+        //debugPrintfEXT("nb lights : %i", pc.nbPointLights);
         vec3 fragToLight = fragPos - pointLightData[currentFrame].pointLights[l].lightPos;
+        //debugPrintfEXT("Frag to light %v3f", fragToLight);
         // use the light to fragment vector to sample from the depth map    
         float closestDepth = texture(depthMap, fragToLight).r;
+        //debugPrintfEXT("cosest depth : %f",closestDepth);
         // it is currently in linear range between [0,1]. Re-transform back to original value
         closestDepth *= pointLightData[currentFrame].pointLights[l].far_plane;
         // now get current linear depth as the length between the fragment and light position
@@ -147,7 +150,9 @@ float shadowCalculationPoint(vec3 fragPos)
         vec3 lightDir = normalize(pointLightData[currentFrame].pointLights[l].lightPos - fragPos);
         //debugPrintfEXT("lightpos: %f", pointLightData[currentFrame].pointLights[l].far_plane);
         float diff = max(dot(lightDir, normalize(normal)), 0.0); 
-        //debugPrintfEXT("diff : %f", diff);   
+        
+        /*if (currentDepth -  bias <= closestDepth)
+            debugPrintfEXT("not in shadow"); */  
         float currentLightShadow = currentDepth -  bias > closestDepth ? min(1.0, 1.0 * diff) : 0.0; 
         shadow = max(currentLightShadow, shadow);  
     } 
@@ -165,7 +170,7 @@ void main()
     float shadowDir = shadowCalculationDir(fragPos);
     float shadowPoint = shadowCalculationPoint(fragPos);
     float shadow = max(shadowDir, shadowPoint);
-    if (shadowDir > 0 || shadowPoint > 0)
-        debugPrintfEXT("shadow dir %f", shadow);   
+    /*if (shadowDir > 0 || shadowPoint > 0)
+        debugPrintfEXT("shadow dir %f", shadow);*/   
     frag_color = vec4(vec3(diffuse) * (1 - shadow), diffuse.a);
 }

@@ -604,7 +604,7 @@ namespace odfaeg {
                             shadowPassCSMVertPC.primitiveType = i;
                             //std::cout<<"ids : "<<i<<","<<shadowPassCSMShader.getId()<<","<<RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id<<std::endl;
                             std::vector<uint32_t> offsetLightSpaceMats;
-                            for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                            for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
                               offsetLightSpaceMats.push_back(l * lightSpaceMatrixAlignSize);
                             }                            
                             //std::cout<<"register binds"<<std::endl;
@@ -662,7 +662,7 @@ namespace odfaeg {
                             shadowPassPLVertPC.primitiveType = i;                            
                             //std::cout<<"ids : "<<i<<","<<shadowPassPLShader.getId()<<","<<RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id<<std::endl;
                             std::vector<uint32_t> offsetLightViewMatPLs;
-                            for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                            for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
                                 offsetLightViewMatPLs.push_back(l * lightViewPLMatrixAlignSize);
                             }
                             vkCmdBindPipeline(shadowPassPLCommandPool.getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), shadowPassPLShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
