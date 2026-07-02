@@ -108,6 +108,7 @@ namespace odfaeg {
                 GPUContext::instance().getSharedSemaphore(0)[0].create(true, 0);
             }
             needToUpdateDescriptorSets = true;
+            needToUpdateLightsMatrices = false;
             stop.store(false);
             rendererReady.store(true);
             
@@ -534,6 +535,7 @@ namespace odfaeg {
                 if (needToUpdateLightsMatrices) {
                     computeLightMatrices();
                     needToUpdateLightsMatrices = false;
+                    needToUpdateDescriptorSets = true;
                 }
                 if (needToUpdateDescriptorSets) {
                     //std::cout<<"update ds"<<std::endl;
