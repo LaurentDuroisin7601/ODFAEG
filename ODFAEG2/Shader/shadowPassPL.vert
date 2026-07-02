@@ -8,6 +8,9 @@ struct ModelData {
     mat4 shadowProjMatrix;
     mat4 borderMatrices;
 };
+struct ViewPLMatrix {
+    mat4 viewPLMatrices[6];
+};
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec4 inColor;
 layout(location = 2) in vec2 inTexCoord;
@@ -22,13 +25,13 @@ layout (push_constant) uniform PushConstant {
 layout (std430, set = 0, binding = 0) buffer ModelDataSSBO {
     ModelData modelData[];
 } modelDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0; binding = 1) uniform LightViewMatrices {
-    mat4 lightViewMatrices[6];
+layout (std140, set = 0, binding = 1) buffer LightViewMatrices {
+    ViewPLMatrix viewPLMatrix;
 } lightViewMatricesData[MAX_FRAMES_IN_FLIGHT];
 void main() {
     //debugPrintfEXT("shader");
     gl_PointSize = 2.0f;
-     mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[gl_InstanceIndex].modelMatrix;
+    mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[gl_InstanceIndex].modelMatrix;
     fragPos = modelMatrix * vec4(inPosition, 1);   
-    gl_Position = lightProjMatrix * lightViewMatricesData[pc.currentFrame].lightViewMatrices[gl_ViewIndex] * fragPos;    
+    gl_Position = pc.lightProjMatrix * lightViewMatricesData[pc.currentFrame].viewPLMatrix.viewPLMatrices[gl_ViewIndex] * fragPos;    
 }

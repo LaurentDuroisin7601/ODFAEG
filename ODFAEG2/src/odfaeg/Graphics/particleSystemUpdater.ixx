@@ -44,17 +44,20 @@ namespace odfaeg {
             float dt;
         };
         public :
-            std::mutex mtx, mtx2;
-            std::condition_variable cv2;
-            static ParticleSystemUpdater& instance();
+            std::mutex mtx, &mtx2, mtx3;
+            std::condition_variable &cv2, cv3;
+            static ParticleSystemUpdater& instance(std::condition_variable& cv, std::mutex& mtx);
             void onUpdate();
             void setCamera(Camera camera);
             void setReady(bool r);
             void addParticleSystem(ParticleSystem* particleSystem);
-            void areBuffersReady(bool r);
+            void setBuffersReady(bool r);
+            bool areBuffersReady();
+            void setSubmitReady(bool r);
+            bool isSubmitReady();
             bool isReady();
         private :
-            ParticleSystemUpdater();
+            ParticleSystemUpdater(std::condition_variable& cv, std::mutex& mtx);
             void updateDescriptorSets();
             void updateBuffers();
             std::vector<ParticleSystem*> particlesSystems;
@@ -73,7 +76,7 @@ namespace odfaeg {
             Shader particlesEmittorShader, particlesUpdaterShader, particlesVerticesShader;
             bool needToUpdateBuffers, needToUpdateDescriptorSets;
             DeltaTimePC deltaTimePC;
-            inline static std::atomic<bool> ready, buffersReady;
+            inline static std::atomic<bool> ready, buffersReady, submitReady;
             unsigned int maxParticles;
             Camera camera;
             AABB cullingInfo;

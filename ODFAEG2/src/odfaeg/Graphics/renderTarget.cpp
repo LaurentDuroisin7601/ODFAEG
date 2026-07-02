@@ -324,10 +324,7 @@ namespace odfaeg {
 			needToUpdateDescriptorSets = false;
 			needToUpdateBuffers = true;
 			depthTestEnabled = stencilTestEnabled = false;
-
-			/*GPUContext::instance().getSharedFence(2).emplace_back(device);
-			GPUContext::instance().getSharedFence(2)[0].create();*/
-			//std::cout<<"initialized"<<std::endl;
+			
 		}
 		void RenderTarget::createSynchPrimitives() {			
 			/*computeFinishedSemaphores.reserve(MAX_FRAMES_IN_FLIGHT);
@@ -532,20 +529,24 @@ namespace odfaeg {
 					throw std::runtime_error("Echec de l'envoi d'un command buffer!");
 				}
 				vkDeviceWaitIdle(device.getDevice());
-				commandPool.beginRecordCommandBuffer(getCurrentFrame());
-				//cullingBatchingPc.totalSubmeshCount = currentSubmeshesOffset;
-				//ParticleSystemUpdater::instance().setAreParticlesVerticesSet(true);
-				MorphAnimUpdater::instance().areBuffersReady(true);
-				MorphAnimUpdater::instance().cv2.notify_all();
-				ParticleSystemUpdater::instance().areBuffersReady(true);
-				ParticleSystemUpdater::instance().cv2.notify_all();
-				BoneAnimUpdater::instance().areBuffersReady(true);
-				BoneAnimUpdater::instance().cv2.notify_all();
+				commandPool.beginRecordCommandBuffer(getCurrentFrame());				//cullingBatchingPc.totalSubmeshCount = currentSubmeshesOffset;
+				
 				//vertices.clear();
 				//needToUpdateDescriptorSets = true;
 
 				//std::cout<<"data updated!"<<std::endl;
+				ParticleSystemUpdater::instance(cv, mtx).setBuffersReady(true);
+				ParticleSystemUpdater::instance(cv, mtx).cv3.notify_all();
+
+				MorphAnimUpdater::instance(cv, mtx).setBuffersReady(true);
+				MorphAnimUpdater::instance(cv, mtx).cv3.notify_all();
+				
+				BoneAnimUpdater::instance(cv, mtx).setBuffersReady(true);
+				BoneAnimUpdater::instance(cv, mtx).cv3.notify_all();
+				
 			}
+			
+			
 
 
 		}
@@ -903,6 +904,7 @@ namespace odfaeg {
 		}		
 		void RenderTarget::applyCullingAndBatching() {
 			//computeCommandPool.beginRecordCommandBuffer(getCurrentFrame());
+			
 			if (gameObjects.size()) {
 
 				updateBuffers();
@@ -911,38 +913,43 @@ namespace odfaeg {
 					needToUpdateDescriptorSets = false;
 				}
 
-
-				if (ParticleSystemUpdater::instance().isRunning()
-					&& MorphAnimUpdater::instance().isRunning()
-					&& BoneAnimUpdater::instance().isRunning()) {
-
-					/*std::unique_lock<std::mutex> lock1(ParticleSystemUpdater::instance().mtx);
-					std::unique_lock<std::mutex> lock2(MorphAnimUpdater::instance().mtx);
-					std::unique_lock<std::mutex> lock3(BoneAnimUpdater::instance().mtx);*/
-					//std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-					//ParticleSystemUpdater::instance().cv.wait(lock, [this]{return !ParticleSystemUpdater::instance().isReady();});
-					std::vector<VkFence> fences;
-					{
-						std::unique_lock<std::mutex> lock1(ParticleSystemUpdater::instance().mtx);
-						std::unique_lock<std::mutex> lock2(MorphAnimUpdater::instance().mtx);
-						std::unique_lock<std::mutex> lock3(BoneAnimUpdater::instance().mtx);
-						for (unsigned int i = 0; i < 3; i++) {
-							fences.push_back(GPUContext::instance().getSharedFence(i)[0].getHandle());
-						}
-						vkWaitForFences(device.getDevice(), fences.size(),fences.data(), VK_TRUE, UINT64_MAX);
-						vkResetFences(device.getDevice(), fences.size(), fences.data());
-					}
+				
+				if (ParticleSystemUpdater::instance(cv, mtx).isRunning()
+					&& MorphAnimUpdater::instance(cv, mtx).isRunning()
+					&& BoneAnimUpdater::instance(cv, mtx).isRunning()) {										
 					
-
-					//std::cout<<"fence unlocked!"<<std::endl;
+					std::unique_lock lock(mtx);	
+					//std::cout<<"wait!"<<std::endl;				
+					cv.wait(lock, [this]{return ParticleSystemUpdater::instance(cv, mtx).isSubmitReady() && MorphAnimUpdater::instance(cv, mtx).isSubmitReady() && BoneAnimUpdater::instance(cv, mtx).isSubmitReady();});
+					/*std::unique_lock lock1(ParticleSystemUpdater::instance(cv, mtx).mtx);
+					std::unique_lock lock2(MorphAnimUpdater::instance(cv, mtx).mtx);
+					std::unique_lock lock3(BoneAnimUpdater::instance(cv, mtx).mtx);*/
 					//std::cout<<"ready!"<<std::endl;
-					ParticleSystemUpdater::instance().setReady(true);
-					ParticleSystemUpdater::instance().cv.notify_all();
-					MorphAnimUpdater::instance().setReady(true);
-					MorphAnimUpdater::instance().cv.notify_all();
-					BoneAnimUpdater::instance().setReady(true);
-					BoneAnimUpdater::instance().cv.notify_all();
+					ParticleSystemUpdater::instance(cv, mtx).setSubmitReady(false);
+					BoneAnimUpdater::instance(cv, mtx).setSubmitReady(false);
+					MorphAnimUpdater::instance(cv, mtx).setSubmitReady(false);
+					//std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+					std::vector<VkFence> fences;
+					for (unsigned int i = 0; i < 3; i++) {
+						//std::cout<<"fence : "<<GPUContext::instance().getSharedFence(i)[0].getHandle()<<std::endl;
+						fences.push_back(GPUContext::instance().getSharedFence(i)[0].getHandle());
+					}
+					//std::cout<<"wait for fences!"<<std::endl;
+					vkWaitForFences(device.getDevice(), fences.size(),fences.data(), VK_TRUE, UINT64_MAX);
+					vkResetFences(device.getDevice(), fences.size(), fences.data());
+					//std::cout<<"fence unlocked!"<<std::endl;
+					ParticleSystemUpdater::instance(cv, mtx).setReady(true);
+					ParticleSystemUpdater::instance(cv, mtx).cv.notify_all();
+					MorphAnimUpdater::instance(cv, mtx).setReady(true);
+					MorphAnimUpdater::instance(cv, mtx).cv.notify_all();
+					BoneAnimUpdater::instance(cv, mtx).setReady(true);
+					BoneAnimUpdater::instance(cv, mtx).cv.notify_all();
+					
+					
+					
 				}
+				
+				
 				//std::cout<<"bind pipeline : "<<commandPool.getHandle(getCurrentFrame())<<std::endl;
 				vkCmdBindPipeline(commandPool.getHandle(getCurrentFrame()), VK_PIPELINE_BIND_POINT_COMPUTE, GPUContext::instance().getComputePipeline(resetBuffersShader).getHandle());
 
@@ -1307,10 +1314,11 @@ namespace odfaeg {
 			}
 		}
 		void RenderTarget::draw(PrimitiveType primitiveType, RenderStates states) {
-			if (needToUpdateCullBatchIndCmds) {
+			/*if (needToUpdateCullBatchIndCmds) {*/
 				applyCullingAndBatching();
+				//std::cout<<"draw"<<std::endl;
 				needToUpdateCullBatchIndCmds = false;
-			}
+			/*}*/
 			Shader* shader = (states.shader == nullptr) ? &defaultRenderingShader : states.shader;
 			viewProjInfos.primitiveType = primitiveType;
 			viewProjInfos.currentFrame = getCurrentFrame();
@@ -1429,7 +1437,7 @@ namespace odfaeg {
 			cullingBatchingPc.viewMatrix = viewProjInfos.viewMatrix;*/
 			//std::cout<<"view matrix"<<viewProjInfos.viewMatrix<<std::endl<<"projMatrix : "<<viewProjInfos.projMatrix<<std::endl;
 			m_camera = camera;
-			ParticleSystemUpdater::instance().setCamera(camera);
+			ParticleSystemUpdater::instance(cv, mtx).setCamera(camera);
 			needToUpdateDescriptorSets = true;
 		}
 		Camera& RenderTarget::getCamera() {

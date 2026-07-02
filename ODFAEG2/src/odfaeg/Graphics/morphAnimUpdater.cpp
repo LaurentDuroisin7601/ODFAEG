@@ -4,6 +4,7 @@ module;
 #include <odfaeg/config.hpp>
 #include <vulkan/vulkan_core.h>
 #include <iostream>
+#include <condition_variable>
 import odfaeg.graphic.morphAnimUpdater;
 module odfaeg.graphic.morphAnimUpdater;
 import odfaeg.graphic.descriptor;
@@ -13,11 +14,13 @@ import odfaeg.graphic.gameObject;
 import odfaeg.graphic.primitiveType;
 namespace odfaeg {
     namespace graphic {
-        MorphAnimUpdater& MorphAnimUpdater::instance() {
-            static MorphAnimUpdater morphAnimUpdater;
+        MorphAnimUpdater& MorphAnimUpdater::instance(std::condition_variable& cv, std::mutex& mtx) {
+            static MorphAnimUpdater morphAnimUpdater(cv, mtx);
             return morphAnimUpdater;
         }
-        MorphAnimUpdater::MorphAnimUpdater() :
+        MorphAnimUpdater::MorphAnimUpdater(std::condition_variable& cv, std::mutex& mtx) :
+        cv2(cv),
+        mtx2(mtx),
         staggingMorphAnims(GPUContext::instance().getDevice()),
         staggingFramesAnims(GPUContext::instance().getDevice()),
         staggingSubmeshesFramesAnims(GPUContext::instance().getDevice()),
@@ -85,6 +88,7 @@ namespace odfaeg {
             needToUpdateDescriptorSets = needToUpdateBuffers = false;
             ready.store(true);
             start();
+            //cv.notify_one();
         }
         void MorphAnimUpdater::addMorphAnim(MorphAnim* morphAnim) {
             anims.push_back(morphAnim);
@@ -106,8 +110,11 @@ namespace odfaeg {
         }
         void MorphAnimUpdater::updateBuffers() {
             if (needToUpdateBuffers) {
-                std::unique_lock<std::mutex> lock(mtx2);
-                cv2.wait(lock, [this]{return buffersReady.load();});
+                {
+                    std::unique_lock<std::mutex> lock(mtx3);
+                    cv3.wait(lock, [this]{return buffersReady.load();});
+                }
+                std::unique_lock<std::mutex> lock2(mtx2);
                 buffersReady.store(false);
                 std::vector<MorphAnimData> morphAnimsData;
                 std::vector<FramesAnimData> framesAnimsData;
@@ -176,18 +183,30 @@ namespace odfaeg {
                 needToUpdateBuffers = false;
             }
         }
-        void MorphAnimUpdater::areBuffersReady(bool r) {
+        void MorphAnimUpdater::setBuffersReady(bool r) {
             buffersReady.store(r);
+        }
+        bool MorphAnimUpdater::areBuffersReady() {
+            return buffersReady.load();
+        }
+        void MorphAnimUpdater::setSubmitReady(bool r) {
+            submitReady.store(r);
+        }
+        bool MorphAnimUpdater::isSubmitReady() {
+            return submitReady.load();
         }
         void MorphAnimUpdater::setReady(bool r) {
             ready.store(r);
         }
         void MorphAnimUpdater::onUpdate() {
-            std::unique_lock<std::mutex> lock(mtx);
-            //std::lock_guard<std::recursive_mutex> lock2(rec_mutex);
-            cv.wait(lock, [this]() {
-                return (ready.load() || !isRunning());
-            });
+            {
+                std::unique_lock<std::mutex> lock(mtx);           
+                //std::lock_guard<std::recursive_mutex> lock2(rec_mutex);
+                cv.wait(lock, [this]() {
+                    return (ready.load() || !isRunning());
+                });
+            }
+            std::unique_lock<std::mutex> lock2(mtx2);
 
             //std::cout<<"update : "<<isRunning()<<std::endl;
             ready.store(false);
@@ -310,6 +329,9 @@ namespace odfaeg {
                 if (vkQueueSubmit(GPUContext::instance().getDevice().getQueue(indices.graphicsFamily.value(), 1), 1, &submitInfo, GPUContext::instance().getSharedFence(1)[0].getHandle()) != VK_SUCCESS) {
                     throw std::runtime_error("Echec de l'envoi d'un command buffer!");
                 }
+                 //std::cout<<"buffers ready ma!"<<std::endl;
+                submitReady.store(true);
+                cv2.notify_all();
                 //GPUContext::instance().getSharedFence(0)[0].waitForFences(VK_TRUE, UINT64_MAX);
             }
 

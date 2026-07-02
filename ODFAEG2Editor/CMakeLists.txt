@@ -15,17 +15,15 @@ set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 find_package(odfaeg REQUIRED)
 find_package(assimp REQUIRED)
 find_package(shaderc REQUIRED)
-find_package(imgui REQUIRED)
 find_package(Vulkan REQUIRED)
-add_library(imgui STATIC
+add_library(imgui_custom STATIC
     external/imgui/imgui.cpp
     external/imgui/imgui_draw.cpp
     external/imgui/imgui_tables.cpp
     external/imgui/imgui_widgets.cpp
     external/imgui/backends/imgui_impl_vulkan.cpp    
 )
-target_include_directories(imgui PUBLIC external/imgui
-${glfw3_INCLUDE_DIRS})
+target_include_directories(imgui_custom PUBLIC external/imgui)
 add_executable(odfaeg-editor main.cpp)
 target_link_libraries(odfaeg-editor
     PRIVATE
@@ -39,7 +37,7 @@ target_link_libraries(odfaeg-editor
 
 target_link_libraries(odfaeg-editor
     PRIVATE 
-        imgui
+        imgui_custom
     	Vulkan::Vulkan)
 target_include_directories(odfaeg-editor PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}

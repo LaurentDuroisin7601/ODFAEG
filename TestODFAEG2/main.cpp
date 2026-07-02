@@ -40,6 +40,7 @@ import odfaeg.graphic.linkedListRenderer;
 import odfaeg.graphic.plane;
 import odfaeg.graphic.cube;
 import odfaeg.graphic.shadowRenderer;
+import odfaeg.core.string;
 using namespace odfaeg::window;
 using namespace odfaeg::graphic;
 using namespace odfaeg::math;
@@ -50,7 +51,8 @@ enum TextureNames {
 std::random_device device;
 std::mt19937 generator = std::mt19937(device());
 int main() {
-	GPUContext& ctx = GPUContext::instance();	
+	GPUContext& ctx = GPUContext::instance();
+	//String string("Test my game");	
 	RenderWindow window(VideoMode(800, 600), "Test my game", ctx.getDevice(), odfaeg::window::Style::Default, true);
 	//window.createDescriptorAndPipelines();
 	Camera camera(800, 600, 80, 1, 1000);
@@ -67,24 +69,36 @@ int main() {
 	plane.setTexture(texWood);
 	
 	window.addGameObject(&plane);
-	std::vector<Cube*> cubes;
-	for (unsigned int i = 0; i < 10; i++) {
 		
-		Cube* cube = new Cube(Vec3f(-1, -1, -1), 2, 2, 2, Color::White);		
-		cube->setTexture(textureManager.getResourceByAlias(WOOD));		
-		static std::uniform_real_distribution<float> offsetDistribution = std::uniform_real_distribution<float>(-10, 10);
-        static std::uniform_real_distribution<float> scaleDistribution = std::uniform_real_distribution<float>(1.0, 2.0);
-        static std::uniform_real_distribution<float> rotationDistribution = std::uniform_real_distribution<float>(0, 180);
-		cube->move(Vec3f(offsetDistribution(generator), offsetDistribution(generator)+10, offsetDistribution(generator)));
-		//cube->move(Vec3f(0, 5, 0));
-		//cube->setRotation(45, Vec3f(0, 1, 0));
-		cube->setRotation(rotationDistribution(generator), Vec3f(1, 0, 1));
-		float scale = scaleDistribution(generator);
-		cube->setScale(Vec3f(scale, scale, scale));
-		cubes.push_back(cube);
-		window.addGameObject(cube);
+	Cube cube(Vec3f(-1, -1, -1), 2, 2, 2, Color::White);		
+	cube.setTexture(textureManager.getResourceByAlias(WOOD));
+	cube.move(Vec3f(4.0f, -3.5f, 0.0));
+    cube.scale(Vec3f(0.5f, 0.5f, 0.5f));   
+	window.addGameObject(&cube);
+    Cube cube2(Vec3f(-1, -1, -1), 2, 2, 2, Color::White);
+	cube2.setTexture(textureManager.getResourceByAlias(WOOD));
+    cube2.move(Vec3f(2.0f, 3.0f, 1.0));
+    cube2.scale(Vec3f(0.75f, 0.75f, 0.75f));
+    window.addGameObject(&cube2);
+    Cube cube3(Vec3f(-1, -1, -1), 2, 2, 2, Color::White);
+	cube3.setTexture(textureManager.getResourceByAlias(WOOD));
+    cube3.move(Vec3f(-3.0f, -1.0f, 0.0));
+    cube3.scale(Vec3f(0.5f, 0.5f, 0.5f));
+    window.addGameObject(&cube3);
+	Cube cube4(Vec3f(-1, -1, -1), 2, 2, 2, Color::White);
+	cube4.setTexture(textureManager.getResourceByAlias(WOOD));
+    cube4.move(Vec3f(-1.5f, 1.0f, 1.5));
+    cube4.scale(Vec3f(0.5f, 0.5f, 0.5f));
+    window.addGameObject(&cube4);
+    Cube cube5(Vec3f(-1, -1, -1), 2, 2, 2, Color::White);
+	cube5.setTexture(textureManager.getResourceByAlias(WOOD));
+	cube5.move(Vec3f(-1.5f, 2.0f, -3.0));
+    cube5.setRotation(60.0f, Vec3f(1.0, 0.0, 1.0));
+    cube5.scale(Vec3f(0.75f, 0.75f, 0.75f));
+   	window.addGameObject(&cube5);
+	
 		//std::cout<<"i : "<<i<<std::endl;
-	}
+	
 	//std::cout<<"ok"<<std::endl;
 	Clock clock;
 	unsigned int fps = 0;
@@ -101,8 +115,9 @@ int main() {
 		/*window.setTypesToRender("*", window.getCurrentFrame());
 		window.draw(Triangles);*/
 		shadowRenderer.clear();
-		shadowRenderer.draw();	
-		window.submit(true);		
+		//shadowRenderer.drawNextFrame();
+		shadowRenderer.draw();
+		window.submit(true);
 		window.display();
 		fps++;
 		if (clock.getElapsedTime() >= seconds(1.f)) {

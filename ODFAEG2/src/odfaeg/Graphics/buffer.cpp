@@ -71,6 +71,9 @@ namespace odfaeg {
 				vkCmdCopyBuffer(cmd, srcBuffer.getHandle(), dstBuffer.getHandle(), 1, &copyRegion);
 			}
 		}
+		void Buffer::setRange(size_t range) {
+			this->range = range;
+		}
 		void Buffer::cleanup() {
 
 			if (buffer != VK_NULL_HANDLE) {

@@ -95,7 +95,7 @@ namespace odfaeg {
             std::vector<const char*> extensions;
             if (enableValidationLayers) {
                 extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-                extensions.push_back(VK_EXT_LAYER_SETTINGS_EXTENSION_NAME);
+                //extensions.push_back(VK_EXT_LAYER_SETTINGS_EXTENSION_NAME);
             }
             extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
             #if defined(ODFAEG_SYSTEM_WINDOWS)

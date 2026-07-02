@@ -234,9 +234,9 @@ namespace odfaeg {
                 maintenance4Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES;
                 maintenance4Features.pNext = &sync2Features;
 
-                /*VkPhysicalDeviceMaintenance7FeaturesKHR maintenance7Features;
+                VkPhysicalDeviceMaintenance7FeaturesKHR maintenance7Features;
                 maintenance7Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_7_FEATURES_KHR;
-                maintenance7Features.pNext = &maintenance4Features;*/
+                maintenance7Features.pNext = &maintenance4Features;
 
                 // ⚠️ PAS de nestedCommandBuffer ici : l’extension n’est PAS dans ta liste → on la vire
 
@@ -286,8 +286,8 @@ namespace odfaeg {
                 // Maintenance4
                 if (maintenance4Features.maintenance4)
                     maintenance4Features.maintenance4 = VK_TRUE;
-                /*if (maintenance7Features.maintenance7)
-                    maintenance7Features.maintenance7 = VK_TRUE;*/
+                if (maintenance7Features.maintenance7)
+                    maintenance7Features.maintenance7 = VK_TRUE;
                 VkPhysicalDeviceFeatures2 enabledFeatures2 = features2; // copie
                 enabledFeatures2.features = deviceFeatures; // on met nos flags 1.0
 

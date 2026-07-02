@@ -35,6 +35,7 @@ namespace odfaeg {
             std::deque<Fence>& getSharedFence(unsigned int fenceID);
             std::deque<Semaphore>& getSharedSemaphore(unsigned int semaphoreID);
             Device& getDevice();
+            Instance& getInstance();
         private:
             GPUContext();
             Instance inst;

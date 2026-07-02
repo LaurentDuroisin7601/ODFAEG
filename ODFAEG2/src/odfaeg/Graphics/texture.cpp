@@ -58,6 +58,7 @@ namespace odfaeg {
             texType = texture.texType;
             mipLevels = texture.mipLevels;
             mipsInfos = texture.mipsInfos;
+            layerCount = texture.layerCount;
             create(texture.m_size.x(), texture.m_size.y(), 1, texture.mipLevels);
             update(texture, 0, 0);
         }
@@ -281,7 +282,8 @@ namespace odfaeg {
                 std::cout<<"layered ? "<<layered<<","<<texDepth<<std::endl;
                 int i;
                 std::cin>>i;    
-            }  */           
+            }  */  
+            std::cout<<"nb buffers : "<<nbBuffers<<std::endl;         
             for (unsigned int i = 0; i < nbBuffers; i++) {  
                 images[i].create(texWidth, texHeight, 1, imageType, m_format, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                     VMA_MEMORY_USAGE_GPU_ONLY, 1, (layered) ? texDepth : 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
@@ -296,6 +298,18 @@ namespace odfaeg {
             submitInfo.commandBufferCount = commandPool.getHandles().size();
             submitInfo.pCommandBuffers = commandPool.getHandles().data();
             Device::QueueFamilyIndices indices = device.findQueueFamilies(device.getPhysicalDevice(), VK_NULL_HANDLE);
+            /*std::cout << "submitInfo.sType = " << submitInfo.sType << std::endl;
+            std::cout << "submitInfo.pNext = " << submitInfo.pNext << std::endl;
+            std::cout << "submitInfo.waitSemaphoreCount = " << submitInfo.waitSemaphoreCount << std::endl;
+            std::cout << "submitInfo.pWaitSemaphores = " << submitInfo.pWaitSemaphores << std::endl;
+            std::cout << "submitInfo.pWaitDstStageMask = " << submitInfo.pWaitDstStageMask << std::endl;
+            std::cout << "submitInfo.commandBufferCount = " << submitInfo.commandBufferCount << std::endl;
+            std::cout << "submitInfo.pCommandBuffers = " << submitInfo.pCommandBuffers << std::endl;
+            std::cout << "submitInfo.signalSemaphoreCount = " << submitInfo.signalSemaphoreCount << std::endl;
+            std::cout << "submitInfo.pSignalSemaphores = " << submitInfo.pSignalSemaphores << std::endl;
+            std::cout<<"device : "<<device.getDevice()<<std::endl;
+            std::cout<<"command : "<< commandPool.getHandle(0)<<std::endl;
+            std::cout<<"queue family = "<<indices.graphicsFamily.value()<<std::endl;*/
             if (vkQueueSubmit(device.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
                 throw std::runtime_error("�chec de l'envoi d'un command buffer!");
             }
@@ -307,6 +321,7 @@ namespace odfaeg {
         bool Texture::createCubeMap(uint32_t size, bool layered, bool FBOAttachment) {
             id = getUniqueId();
             m_size = math::Vector2u(size, size);
+            layerCount = 6;
             VkImageType imageType = VK_IMAGE_TYPE_2D; 
             VkImageViewType viewType;            
             if (!layered) {
@@ -319,7 +334,7 @@ namespace odfaeg {
             createCommandBuffers();
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 images[i].create(size, size, 1, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-                    VMA_MEMORY_USAGE_GPU_ONLY, 1, 6, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
+                    VMA_MEMORY_USAGE_GPU_ONLY, 1, 6, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 6);
                 
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
@@ -352,7 +367,8 @@ namespace odfaeg {
             VkImageType imageType = VK_IMAGE_TYPE_2D; 
             m_format = depthFormat;
             imageAspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-            VkImageViewType viewType;            
+            VkImageViewType viewType; 
+            layerCount = 6;           
             if (!layered) {
                 viewType = VK_IMAGE_VIEW_TYPE_CUBE;
             }
@@ -363,7 +379,7 @@ namespace odfaeg {
             createCommandBuffers();
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 images[i].create(size, size, 1, imageType, m_format, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT| VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                    VMA_MEMORY_USAGE_GPU_ONLY, 1, 6, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
+                    VMA_MEMORY_USAGE_GPU_ONLY, 1, 6, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_DEPTH_BIT, 0, 0, 1, 6);
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
                 commandPool.beginRecordCommandBuffer(i);

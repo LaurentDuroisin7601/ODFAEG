@@ -28,32 +28,48 @@ namespace odfaeg {
                 int cascadeCount;   // number of
                 int _pads[3];
             };
-            struct ViewProjMatPC {
+            struct ShadowMappingVertPC {
 				math::Matrix4f projMatrix;
 				math::Matrix4f viewMatrix;
 				int primitiveType;
 				int currentFrame;   
                 int _pad[2];             
-			};  
-            struct PushConstantData {
+			}; 
+            struct ShadowMappingFragPC  {
+               unsigned int nbDirLights;
+               unsigned int nbPointLights;
+            }; 
+            struct ShadowPassCSMVertPC {
                 int primitiveType;
                 int currentFrame;
-            };         
-            struct PushConstantData2 {
-                math::Matrix4f view; 
-                math::Vec2f _pad;
-                alignas(16) math::Vec3f lightDir;                
-                float farPlane;
-            };
+            };  
             struct ShadowPassPLVertPC {
                 math::Matrix4f lightProjMatrix;
                 int primitiveType;
                 int currentFrame;
                 int _pad[2];
             };
-            struct ShadowPassPLFragPC {
-                alignas(16) math::Vec3f lightPos;
+            struct ShadowPassPLFragPC {  
+                math::Matrix4f view;              
+                math::Vec3f lightPos;
+                float pad;                
                 float far_plane;
+            };
+            struct DirLight {               
+                math::Vec3f dir;  
+                float pad;
+                float far_plane;              
+            };
+            struct PointLight {
+                math::Vec3f pos;
+                float pad;
+                float far_plane;
+            };
+            struct LightSpaceMatrix {
+                math::Matrix4f lightSpaceMatrices[NB_CASCADES+1];
+            };
+            struct ViewPLMatrix {
+                math::Matrix4f viewsPLMatrices[6];
             };
             ShadowRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, bool usethread=true);
             void createCommandPools();
@@ -64,22 +80,25 @@ namespace odfaeg {
             void draw();
             unsigned int getLayer();
             bool isRendererReady();
-        private :
+            void addDirectionnalLight(DirLight dirLight);
+            void addPonctualLight(PointLight pointLight);
+        private :                    
+            void computeLightMatrices();
             std::vector<float> computeSplits(int cascadeCount, float nearPlane, float farPlane, float lambda);
-            math::Matrix4f getLightSpaceMatrix(const float nearPlane, const float farPlane);
+            math::Matrix4f getLightSpaceMatrix(math::Vec3f lightDir, const float nearPlane, const float farPlane);
             std::array<math::Vec3f, 8> getFrustrumCornersWordlSpace(math::Matrix4f projView);
-            std::vector<math::Matrix4f>  fLightSpaceMatrices;
+            std::vector<LightSpaceMatrix>  fLightSpaceMatrices;
             RenderTarget& parentRenderer;
             RenderTexture shadowMapPL;
             RenderTexture shadowMap;
             
-            Shader shadowPassCSMShader, shadowMappingCSMShader, shadowPassPLShader, shadowMappingPLShader;
-            std::deque<std::deque<Pipeline>> &shadowPassCSMPipeline, &shadowMappingCSMPipeline, &shadowPassPLPipeline, &shadowMappingPLPipeline;
-            std::deque<std::deque<DescriptorSet>> &shadowPassCSMSets, &shadowMappingCSMSets, &shadowPassPLSets, &shadowMappingPLSets;
+            Shader shadowPassCSMShader, shadowPassPLShader, shadowMappingShader;            
             
-            CommandPool shadowPassCommandPool, shadowMappingCommandPool;            
-            std::deque<Buffer> lightSpaceMatricesBuffer, cascadePlaneDistancesBuffer,
-            lightViewsPLMatricesBuffer;
+            CommandPool shadowPassCommandPool, shadowPassPLCommandPool, shadowMappingCommandPool;            
+            std::deque<Buffer> lightSpaceMatricesBuffer, lightSpaceMatricesBufferFinal, cascadePlaneDistancesBuffer,
+            lightViewsPLMatricesBuffer, dirLightsBufferFinal, pointLightsBufferFinal;
+            Buffer lightSpaceMatricesStaggingBuffer, lightViewsPLMatricesStaggingBuffer,
+            dirLightsStaggingBufferFinal, pointLightStaggingBufferFinal, lightSpaceMatricesStaggingBufferFinal;
             window::Listener eventListener;
             CascadeData cascadeData;
             std::atomic<bool> rendererReady;
@@ -89,15 +108,18 @@ namespace odfaeg {
             std::condition_variable cv;
             core::ThreadPool threadPool;
             std::array<core::JobFence, MAX_FRAMES_IN_FLIGHT> jobFences={};
-            bool useThread, needToUpdateDescriptorSets;
+            bool useThread, needToUpdateDescriptorSets, needToUpdateLightsMatrices;
             std::string typesToRenderExpression;
-            std::mutex mtx;
-            PushConstantData pc;
-            PushConstantData2 pc2;            
-            ViewProjMatPC viewProjMatPC;
+            std::mutex mtx;                       
+            ShadowMappingVertPC shadowMappingVertPC;
+            ShadowMappingFragPC shadowMappingFragPC;
+            ShadowPassCSMVertPC shadowPassCSMVertPC;
             ShadowPassPLVertPC shadowPassPLVertPC;
             ShadowPassPLFragPC shadowPassPLFragPC;
-            std::array<math::Matrix4f, 6> lightViewsPLMatrices;
+            std::vector<ViewPLMatrix> lightViewsPLMatrices;
+            CommandPool commandPool;
+            std::vector<DirLight> dirLights;
+            std::vector<PointLight> pointLights;                            
         };
     }
 }

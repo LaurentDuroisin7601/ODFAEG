@@ -9,6 +9,12 @@ namespace odfaeg {
         unsigned int BlendMode::nbBlendModes = 0;
         std::vector<BlendMode*> BlendMode::blendModes = std::vector<BlendMode*>();
         std::vector<BlendMode*> BlendMode::sameBlendModes = std::vector<BlendMode*>();
+        const BlendMode BlendAlpha(BlendMode::SrcAlpha, BlendMode::OneMinusSrcAlpha, BlendMode::Add,
+            BlendMode::One, BlendMode::OneMinusSrcAlpha, BlendMode::Add);   ///< Blend source and dest according to dest alpha
+        const BlendMode BlendAdd(BlendMode::SrcAlpha, BlendMode::One, BlendMode::Add,
+            BlendMode::One, BlendMode::One, BlendMode::Add);
+        const BlendMode BlendMultiply(BlendMode::DstColor, BlendMode::Zero); ///< Multiply source and dest
+        const BlendMode BlendNone(BlendMode::One, BlendMode::Zero);     ///< Overwrite dest with source
         ////////////////////////////////////////////////////////////
         // Commonly used blending modes
         ////////////////////////////////////////////////////////////

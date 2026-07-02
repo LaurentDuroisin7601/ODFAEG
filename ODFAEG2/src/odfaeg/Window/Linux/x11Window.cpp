@@ -670,6 +670,7 @@ namespace odfaeg {
             // The class name identifies a class of windows that
             // "are of the same type". We simply use the initial window name as
             // the class name.
+            //std::cout<<"tiple : "<<std::endl;
             std::string ansiTitle = title;
             std::vector<char> windowClass(ansiTitle.size() + 1, 0);
             std::copy(ansiTitle.begin(), ansiTitle.end(), windowClass.begin());

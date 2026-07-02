@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/home/laurent/ODFAEG-master/TestODFAEG2/build",
+  "command": "clang++ -DODFAEG_INSTALL_DIR=\\\"/usr/local\\\" -D_GLIBCXX_USE_CXX11_ABI=0 -isystem /usr/lib/llvm-18/include -isystem /usr/local/share/odfaeg/modules/Core -isystem /usr/local/share/odfaeg/modules/Math -isystem /usr/local/share/odfaeg/modules/Window -isystem /usr/local/share/odfaeg/modules/Physics -isystem /usr/local/share/odfaeg/modules/Entity -isystem /usr/local/share/odfaeg/modules/Graphics -m64 -O3 -DNDEBUG -std=c++20 -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Core -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Math -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Window -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Physics -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Entity -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Graphics -o CMakeFiles/MyGame.dir/main.cpp.o -c /home/laurent/ODFAEG-master/TestODFAEG2/main.cpp",
+  "file": "/home/laurent/ODFAEG-master/TestODFAEG2/main.cpp",
+  "output": "CMakeFiles/MyGame.dir/main.cpp.o"
+}
+]

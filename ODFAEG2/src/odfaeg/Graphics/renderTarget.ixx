@@ -5,6 +5,7 @@ module;
 #include <array>
 #include <deque>
 #include <odfaeg/config.hpp>
+#include <condition_variable>
 export module odfaeg.graphic.renderTarget;
 import odfaeg.math.vec;
 import odfaeg.math.matrix;
@@ -145,6 +146,8 @@ namespace odfaeg {
 				int currentFrame;
 				//int totalSubmeshCount;
 			};
+			inline static std::mutex mtx = std::mutex();
+			inline static std::condition_variable cv = std::condition_variable();	
 			void addGameObject(GameObject* objet);
 			void removeGameObject(GameObject* object);
 			void resetVertexBufferDatas();
@@ -171,6 +174,8 @@ namespace odfaeg {
 			Semaphore& getComputeFinishedSemaphore(int currentFrame);
 
 			math::Vec4f mapCoordsToPixel(math::Vec4f point, Camera& view);
+			virtual void beginRenderPass(bool secondaryCommandBuffers=false) = 0;
+			virtual void endRenderPass() = 0;
 			virtual void beginRendering(bool secondaryCommandBuffers=false) = 0;
 			virtual void endRendering() = 0;
 			void beginRecordCommandBuffer();
@@ -269,7 +274,7 @@ namespace odfaeg {
 			bool enableDepthTest, enableStencilTest;
 			unsigned int id;
 			bool needToUpdateCullBatchIndCmds;
-			IndexesPC indexesPC;
+			IndexesPC indexesPC;					
 		};
 		export class Drawable {
             public :

@@ -137,6 +137,9 @@ namespace odfaeg {
     	Device& GPUContext::getDevice() {
 	        return device;
         }
+		Instance& GPUContext::getInstance() {
+			return inst;
+		}
     	std::deque<Fence>& GPUContext::getSharedFence(unsigned int fenceID) {
 	        if (sharedFences.size() <= fenceID) {
 		        sharedFences.resize(fenceID + 1);

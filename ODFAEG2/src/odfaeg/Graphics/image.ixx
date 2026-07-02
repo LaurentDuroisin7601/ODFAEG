@@ -40,7 +40,7 @@ namespace odfaeg {
             Image& operator= (Image&& image) noexcept;
             void setHandle(VkImage image);
             void create(uint32_t width, uint32_t height, uint32_t depth, VkImageType type, VkFormat format, VkImageUsageFlags usage, VmaMemoryUsage memoryUsage,
-                unsigned int mipLevels, unsigned int arrayLayers, VkSampleCountFlagBits samples, VkImageTiling tiling);                
+                unsigned int mipLevels, unsigned int arrayLayers, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageCreateFlags flags=0);                
             void createSampler(VkSamplerAddressMode wrapU, VkSamplerAddressMode wrapV, unsigned int mipLevels, bool smooth, bool unormalized);
             ImageView& getImageView();
             Sampler& getSampler();

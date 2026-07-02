@@ -27,10 +27,10 @@ namespace odfaeg {
             create(handle);
         }
 	    void RenderWindow::onClose() {
-            ParticleSystemUpdater::instance().stop();
+            /*ParticleSystemUpdater::instance().stop();
             MorphAnimUpdater::instance().stop();
             BoneAnimUpdater::instance().stop();
-            waitDeviceIdle();
+            waitDeviceIdle();*/
         }
         void RenderWindow::cleanup() {
             vkDeviceWaitIdle(device.getDevice());
@@ -64,9 +64,9 @@ namespace odfaeg {
             if (useDepthTest() || useStencilTest()) {
                 //std::cout<<"create depth texture!"<<std::endl;
                 renderPasses.emplace_back(device);
-                renderPasses[1].create(swapchain.getSwapchainImageFormat(), getDepthStencilTexture().getFormat(), VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
                 renderPasses.emplace_back(device);
-                renderPasses[2].create(getDepthStencilTexture().getFormat());
+                renderPasses[1].create(getDepthStencilTexture().getFormat());
+                renderPasses[2].create(swapchain.getSwapchainImageFormat(), getDepthStencilTexture().getFormat(), VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);                
             } else {
                 renderPasses.emplace_back(device);
                 renderPasses[1].create(getDepthStencilTexture().getFormat());
@@ -112,6 +112,8 @@ namespace odfaeg {
                 vkWaitForFences(device.getDevice(), 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
                 vkResetFences(device.getDevice(), 1, &imagesInFlight[imageIndex]);
             }*/
+            //std::cout<<"clear : "<<getCurrentFrame()<<std::endl;
+            this->clearColor = clearColor;
             VkResult result = vkAcquireNextImageKHR(device.getDevice(), swapchain.getHandle(), UINT64_MAX, imageAvailableSemaphores[currentFrame].getHandle(), inFlightFences[currentFrame].getHandle(), &imageIndex);
             if (result == VK_ERROR_OUT_OF_DATE_KHR) {
                 framebufferResized = false;
@@ -169,7 +171,7 @@ namespace odfaeg {
             vkCmdPipelineBarrier(getCommandPool().getHandle(currentFrame), VK_PIPELINE_STAGE_NONE, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentToClearBarrier);
             vkCmdClearColorImage(getCommandPool().getHandle(currentFrame), swapchain.getSwapchainImages()[imageIndex].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearValue, 1, &imageRange);
             vkCmdPipelineBarrier(getCommandPool().getHandle(currentFrame), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToPresentBarrier);
-            //if (useDepthTest() || useStencilTest()) {
+            if (useDepthTest() || useStencilTest()) {
                 VkClearDepthStencilValue clearDepthStencilValue = {
                     .depth = 1.f,
                     .stencil = 0
@@ -214,7 +216,7 @@ namespace odfaeg {
                 vkCmdClearDepthStencilImage(getCommandPool().getHandle(currentFrame), getDepthStencilTexture().getImage().getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearDepthStencilValue, 1, &imageRange2);
                 vkCmdPipelineBarrier(getCommandPool().getHandle(currentFrame), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
                     VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToDepthStencilBarrier);
-            //}
+            }
         }       
         uint32_t RenderWindow::getImageIndex() {
             return imageIndex;
@@ -225,7 +227,7 @@ namespace odfaeg {
             std::vector<uint64_t> waitValues,
             std::vector<VkFence> fences, unsigned int queueIndex, bool resetFence, bool resetFences, VkFence fenceToSubmit) {
             if (getCommandPool().getHandles().size() > 0) { 
-                endRecordCommandBuffer();
+                
                 //std::cout<<"end record command buffer : "<<currentFrame<<std::endl;
                 VkSubmitInfo submitInfo{};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -249,8 +251,36 @@ namespace odfaeg {
                     if (signalValues.size() > 0) {
                         signalValues.push_back(0);
                     }
+                    VkImageSubresourceRange imageRange = {
+                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                        .baseMipLevel = 0,
+                        .levelCount = 1,
+                        .baseArrayLayer = 0,
+                        .layerCount = 1
+                    };
+                    VkImageMemoryBarrier toPresent = {
+                        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                        .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                        .dstAccessMask = 0,
+                        .oldLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR,
+                        .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                        .image = swapchain.getSwapchainImages()[imageIndex].getHandle(),
+                        .subresourceRange = imageRange
+                    };
+                    vkCmdPipelineBarrier(
+                        getCommandPool().getHandle(getCurrentFrame()),
+                        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                        VK_PIPELINE_STAGE_NONE,
+                        0,
+                        0, nullptr,
+                        0, nullptr,
+                        1, &toPresent
+                    );
                     //std::cout<<"last submit"<<std::endl;
                 }
+                endRecordCommandBuffer();
                 VkTimelineSemaphoreSubmitInfo timelineInfo{};
                 if (signalValues.size() > 0 || waitValues.size() > 0) {
                     timelineInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
@@ -281,6 +311,7 @@ namespace odfaeg {
                 }
                 inFlightFences[currentFrame].waitForFences(VK_TRUE, UINT64_MAX);
                 inFlightFences[currentFrame].resetFences();
+                //std::cout<<"submitted"<<std::endl;
                 //Cette image est utilisée par cette frame.
                 //imagesInFlight[imageIndex] = inFlightFences[currentFrame].getHandle();
                 firstSubmit = false;
@@ -405,11 +436,9 @@ namespace odfaeg {
             }
             if (useDepthTest() || useStencilTest()) {
                 frameBuffers[2].reserve(swapchain.getSwapchainImages().size());
-                for (size_t i = 0; i < swapchain.getSwapchainImages().size(); i++) {
-                    frameBuffers[1].emplace_back(device);
-                    frameBuffers[1][i].create(renderPasses[1], swapchain.getSwapchainImages()[i].getImageView(), getDepthStencilTexture().getImage().getImageView(), getExtents().width, getExtents().height);
+                for (size_t i = 0; i < swapchain.getSwapchainImages().size(); i++) {                    
                     frameBuffers[2].emplace_back(device);
-                    frameBuffers[2][i].create(renderPasses[2], getDepthStencilTexture().getImage().getImageView(), getExtents().width, getExtents().height);
+                    frameBuffers[2][i].create(renderPasses[2], swapchain.getSwapchainImages()[i].getImageView(), getDepthStencilTexture().getImage().getImageView(), getExtents().width, getExtents().height);
                 }
             }
         }
@@ -424,6 +453,32 @@ namespace odfaeg {
         }
 	    std::uint32_t& RenderWindow::getViewMask() {
             return viewMask;
+        }
+        std::uint32_t RenderWindow::getSwapchainMinImagesCount() {
+            return swapchain.getMinImagesCount();
+        }
+        std::uint32_t RenderWindow::getSwapchainImagesCount() {
+            return swapchain.getSwapchainImages().size();
+        }
+        void RenderWindow::beginRenderPass(bool useSecondaryCommandBuffer) {
+            //std::cout<<"render pass depth ? "<<(depthTestEnabled)<<","<<(stencilTestEnabled)<<std::endl;
+            VkRenderPassBeginInfo renderPassInfo{};
+            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            renderPassInfo.renderPass = (useDepthTest() || useStencilTest()) ? renderPasses[1].getHandle() : renderPasses[0].getHandle();
+            renderPassInfo.framebuffer = (useDepthTest() || useStencilTest()) ? frameBuffers[1][getImageIndex()].getHandle() : frameBuffers[0][getImageIndex()].getHandle();
+            renderPassInfo.renderArea.offset = {0, 0};
+            renderPassInfo.renderArea.extent = getExtents();
+            ////////std::cout<<"render pass : "<<(m_view.getViewport().getSize().x == 800 && m_view.getViewport().getSize().y == 800)<<std::endl;
+            
+            //VkClearValue clrColor = {clearColor.r / 255.f,clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
+            renderPassInfo.clearValueCount = 0;
+            renderPassInfo.pClearValues = nullptr;
+
+
+            vkCmdBeginRenderPass(getCommandPool().getHandle(getCurrentFrame()), &renderPassInfo, (!useSecondaryCommandBuffer) ? VK_SUBPASS_CONTENTS_INLINE : VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+        }
+        void RenderWindow::endRenderPass() {
+            vkCmdEndRenderPass(getCommandPool().getHandle(getCurrentFrame()));
         }
 	    void RenderWindow::beginRendering(bool secondaryCommandBuffers) {
             VkRenderingAttachmentInfo colorAttachmentInfo = {
@@ -455,36 +510,9 @@ namespace odfaeg {
             };
             renderingInfo.flags = (secondaryCommandBuffers) ? VK_RENDERING_CONTENTS_SECONDARY_COMMAND_BUFFERS_BIT : 0;
             vkCmdBeginRendering(getCommandPool().getHandle(getCurrentFrame()),&renderingInfo);
-        }
+        }        
 	    void RenderWindow::endRendering() {
-            vkCmdEndRendering(getCommandPool().getHandle(getCurrentFrame()));
-            VkImageSubresourceRange imageRange = {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .baseArrayLayer = 0,
-                .layerCount = 1
-            };
-            VkImageMemoryBarrier toPresent = {
-                .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                .dstAccessMask = 0,
-                .oldLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR,
-                .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .image = swapchain.getSwapchainImages()[imageIndex].getHandle(),
-                .subresourceRange = imageRange
-            };
-            vkCmdPipelineBarrier(
-                getCommandPool().getHandle(getCurrentFrame()),
-                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                VK_PIPELINE_STAGE_NONE,
-                0,
-                0, nullptr,
-                0, nullptr,
-                1, &toPresent
-            );
+            vkCmdEndRendering(getCommandPool().getHandle(getCurrentFrame()));            
         }
 	}
 }

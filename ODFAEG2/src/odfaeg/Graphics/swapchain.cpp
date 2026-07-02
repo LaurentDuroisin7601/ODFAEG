@@ -28,6 +28,7 @@ namespace odfaeg {
             VkPresentModeKHR presentMode = chooseSwapPresentMode(swapchainSupport.presentModes, verticalSynch);
             VkExtent2D extent = chooseSwapExtent(swapchainSupport.capabilities, width, height);
             uint32_t imageCount = swapchainSupport.capabilities.minImageCount + 1;
+            minImagesCount = imageCount;
             if (swapchainSupport.capabilities.maxImageCount > 0 && imageCount > swapchainSupport.capabilities.maxImageCount) {
                 imageCount = swapchainSupport.capabilities.maxImageCount;
             }
@@ -138,6 +139,9 @@ namespace odfaeg {
                 vkDestroySwapchainKHR(device.getDevice(), swapchain, nullptr);
                 swapchain = VK_NULL_HANDLE;
             }
+        }
+        uint32_t Swapchain::getMinImagesCount() {
+            return minImagesCount;
         }
         Swapchain::~Swapchain() {
             cleanup();

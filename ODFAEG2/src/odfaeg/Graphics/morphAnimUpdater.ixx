@@ -50,15 +50,18 @@ namespace odfaeg {
                 int lodOffset;
                 int id;
             };
-            static MorphAnimUpdater& instance();
+            static MorphAnimUpdater& instance(std::condition_variable& cv, std::mutex& mtx);
             void setReady(bool r);
             void addMorphAnim(MorphAnim* moprhAnim);
-            void areBuffersReady(bool r);
+            void setBuffersReady(bool r);
+            bool areBuffersReady();
+            void setSubmitReady(bool r);
+            bool isSubmitReady();
             void onUpdate();
-            std::mutex mtx, mtx2;
-            std::condition_variable cv2;
+            std::mutex mtx, &mtx2, mtx3;
+            std::condition_variable &cv2, cv3;
         private:
-            MorphAnimUpdater();
+            MorphAnimUpdater(std::condition_variable& cv, std::mutex& mtx);
             void updateBuffers();
             void updateDescriptorSets();
             std::vector<MorphAnim*> anims;
@@ -73,7 +76,7 @@ namespace odfaeg {
             Shader morphAnimShader, updateAnimIndexShader;
             CommandPool commandPool;
             DeltaTimePC deltaTimePC;
-            std::atomic<bool> needToUpdateBuffers, needToUpdateDescriptorSets, ready, buffersReady;
+            std::atomic<bool> needToUpdateBuffers, needToUpdateDescriptorSets, ready, buffersReady, submitReady;
         };
     }
 }

@@ -59,7 +59,7 @@ namespace odfaeg {
             vb2.addIndex(3);
             SubMesh face2 (GPUContext::instance().getDevice());
             face2.setVertexBuffer(vb2);
-            //Dessous
+            //Dessus
             VertexBuffer vb3(GPUContext::instance().getDevice(), Triangles);
             vb3.resize(4, 0);
             Vertex v9(math::Vec3f(0, h, d), color, math::Vec2f(0.f, 0.f));
@@ -82,13 +82,13 @@ namespace odfaeg {
             vb3.addIndex(3);
             SubMesh face3 (GPUContext::instance().getDevice());
             face3.setVertexBuffer(vb3);
-            //Dessus.
+            //Dessous.
             VertexBuffer vb4(GPUContext::instance().getDevice(), Triangles);
             vb4.resize(4, 0);
-            Vertex v13(math::Vec3f(0, 0, d), color, math::Vec2f(0.f, 0.f));
-            Vertex v14(math::Vec3f(0, 0, 0), color, math::Vec2f(1.f, 0.f));
-            Vertex v15(math::Vec3f(w, 0, 0), color, math::Vec2f(1.f, 1.f));
-            Vertex v16(math::Vec3f(w, 0, d), color, math::Vec2f(0.f, 1.f));
+            Vertex v13(math::Vec3f(w, 0, d), color, math::Vec2f(0.f, 0.f));
+            Vertex v14(math::Vec3f(w, 0, 0), color, math::Vec2f(1.f, 0.f));
+            Vertex v15(math::Vec3f(0, 0, 0), color, math::Vec2f(1.f, 1.f));
+            Vertex v16(math::Vec3f(0, 0, d), color, math::Vec2f(0.f, 1.f));
             v13.normal = math::Vec3f(0, 1, 0);
             v14.normal = math::Vec3f(0, 1, 0);
             v15.normal = math::Vec3f(0, 1, 0);

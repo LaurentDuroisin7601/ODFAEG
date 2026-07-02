@@ -5,6 +5,7 @@ module;
 #include <cstdlib>
 #include <cstring>
 #include <cstdint>
+#include <iostream>
 export module odfaeg.core.string;
 import odfaeg.core.utf;
 
@@ -139,6 +140,7 @@ export namespace odfaeg {
             std::string toAnsiString(const std::locale& locale = std::locale()) const
             {
                 // Prepare the output string
+                //std::cout<<"length : "<<m_string.length()<<std::endl;
                 std::string output;
                 output.reserve(m_string.length() + 1);
 

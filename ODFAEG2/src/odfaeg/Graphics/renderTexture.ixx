@@ -33,6 +33,8 @@ namespace odfaeg {
             void clear(const Color& color = Color(0, 0, 0, 255));
             void beginRendering(bool secondaryCommandBuffers=false);
             void endRendering();
+            void beginRenderPass(bool secondaryCommandBuffers=false);
+			void endRenderPass();
             void submit(bool lastSubmit = false, std::vector<VkSemaphore> signalSemaphores = std::vector<VkSemaphore>(),
                                                                                                        std::vector<VkSemaphore> waitSemaphores = std::vector<VkSemaphore>(), std::vector<VkPipelineStageFlags> waitStages = std::vector<VkPipelineStageFlags>(),
                                                                                                        std::vector<uint64_t> signalValues = std::vector<uint64_t>(),

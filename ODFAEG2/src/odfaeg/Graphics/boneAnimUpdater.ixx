@@ -43,15 +43,18 @@ namespace odfaeg {
                int lodOffset;
                int id;
             };
-            static BoneAnimUpdater& instance();
+            static BoneAnimUpdater& instance(std::condition_variable& cv, std::mutex& mtx);
             void setReady(bool r);
             void addBoneAnim(Animator* boneAnim);
-            void areBuffersReady(bool r);
+            void setBuffersReady(bool r);
+            bool areBuffersReady();
+            void setSubmitReady(bool r);
+            bool isSubmitReady();
             void onUpdate() override;
-            std::mutex mtx, mtx2;
-            std::condition_variable cv2;
+            std::mutex mtx, &mtx2, mtx3;
+            std::condition_variable &cv2, cv3;
         private:
-            BoneAnimUpdater();
+            BoneAnimUpdater(std::condition_variable& cv, std::mutex& mtx);
             void updateBuffers();
             void updateDescriptorSets();
             std::vector<Animator*> anims;
@@ -64,7 +67,7 @@ namespace odfaeg {
             std::deque<VertexBuffer> verticesIn;
             Shader boneAnimShader;
             CommandPool commandPool;
-            std::atomic<bool> needToUpdateBuffers, needToUpdateDescriptorSets, ready, buffersReady;
+            std::atomic<bool> needToUpdateBuffers, needToUpdateDescriptorSets, ready, buffersReady, submitReady;
         };
     } // graphic
 } // odfaeg

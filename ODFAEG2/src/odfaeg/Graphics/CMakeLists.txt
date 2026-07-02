@@ -127,8 +127,8 @@ add_library(meshoptimizer STATIC
     ${MESH_OPTIMIZER_SRC}
 )
 target_link_libraries(odfaeg-graphics-mod PRIVATE meshoptimizer)
-#add_library(vma ${PROJECT_SOURCE_DIR}/external/vma/vk_mem_alloc.cpp)
-#target_link_libraries(odfaeg-graphics-mod PRIVATE vma)
+add_library(vma ${PROJECT_SOURCE_DIR}/external/vma/vk_mem_alloc.cpp)
+target_link_libraries(odfaeg-graphics-mod PRIVATE vma)
 set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH FALSE)
 find_package(PkgConfig REQUIRED MODULE)
 pkg_check_modules(VULKAN REQUIRED vulkan)
@@ -167,7 +167,8 @@ install(
 		FILE_SET HEADERS DESTINATION include
 )
 install(
-		TARGETS odfaeg-graphics-mod		
+		TARGETS odfaeg-graphics-mod	
+		vma
 		meshoptimizer
 		EXPORT odfaeg-targets
 		FILE_SET cxx_modules DESTINATION share/odfaeg/modules/Graphics

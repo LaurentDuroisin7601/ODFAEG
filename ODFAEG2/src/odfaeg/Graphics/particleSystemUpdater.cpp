@@ -20,11 +20,13 @@ import odfaeg.graphic.device;
 import odfaeg.core.clock;
 namespace odfaeg {
     namespace graphic {
-        ParticleSystemUpdater& ParticleSystemUpdater::instance() {
-            static ParticleSystemUpdater instance;
+        ParticleSystemUpdater& ParticleSystemUpdater::instance(std::condition_variable& cv, std::mutex& mtx) {
+            static ParticleSystemUpdater instance(cv, mtx);
             return instance;
         }
-        ParticleSystemUpdater::ParticleSystemUpdater() :
+        ParticleSystemUpdater::ParticleSystemUpdater(std::condition_variable& cv, std::mutex& mtx) :
+        cv2(cv),
+        mtx2(mtx),
         particlesEmittorShader(GPUContext::instance().getDevice()),
         particlesUpdaterShader(GPUContext::instance().getDevice()),
         particlesVerticesShader(GPUContext::instance().getDevice()),
@@ -114,8 +116,10 @@ namespace odfaeg {
             ubo.emplace_back(GPUContext::instance().getDevice());
             ubo[0].create(sizeof(AABB), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
             needToUpdateDescriptorSets = needToUpdateBuffers = false;
-            ready.store(true);
+            ready.store(true);  
+            //buffersReady.store(false);
             start();
+            //cv.notify_one();            
         }
         void ParticleSystemUpdater::addParticleSystem(ParticleSystem* particleSystem) {
             particleSystem->computeQuads();
@@ -154,9 +158,12 @@ namespace odfaeg {
         }
         void ParticleSystemUpdater::updateBuffers() {
             if (needToUpdateBuffers) {
-
-                std::unique_lock<std::mutex> lock(mtx2);
-                cv2.wait(lock, [this]{return buffersReady.load();});
+                {
+                    std::unique_lock<std::mutex> lock(mtx3);
+                    cv3.wait(lock, [this]{return buffersReady.load();});
+                }
+                std::unique_lock<std::mutex> lock2(mtx2);
+                buffersReady.store(false);
                 maxParticles = 0;
                 unsigned int currentQuadOffset = 0;
                 std::vector<ParticlesSystemData> particlesSystemsData;
@@ -230,21 +237,35 @@ namespace odfaeg {
         void ParticleSystemUpdater::setReady(bool r) {
             ready.store(r);
         }
-        void ParticleSystemUpdater::areBuffersReady(bool r) {
+        void ParticleSystemUpdater::setBuffersReady(bool r) {
             buffersReady.store(r);
+        }
+        bool ParticleSystemUpdater::areBuffersReady() {
+            return buffersReady.load();
+        }
+        void ParticleSystemUpdater::setSubmitReady(bool r) {
+            submitReady.store(r);
+        }
+        bool ParticleSystemUpdater::isSubmitReady() {
+            return submitReady.load();
         }
         bool ParticleSystemUpdater::isReady() {
             return ready.load();
         }
         void ParticleSystemUpdater::onUpdate() {
-            std::unique_lock<std::mutex> lock(mtx);
-            //std::lock_guard<std::recursive_mutex> lock2(rec_mutex);
-            //cv.wait_for(lock, std::chrono::milliseconds(100));
-            //std::cout<<"lock"<<std::endl;
-            cv.wait(lock, [this]() {
-                return (ready.load() || !isRunning());
-            });
-            //std::cout<<"update : "<<isRunning()<<std::endl;
+            //std::cout<<"update ! "<<std::endl; 
+            {
+                std::unique_lock<std::mutex> lock(mtx);
+                
+                //std::lock_guard<std::recursive_mutex> lock2(rec_mutex);
+                //cv.wait_for(lock, std::chrono::milliseconds(100));
+                //std::cout<<"lock"<<std::endl;
+                cv.wait(lock, [this]() {
+                    return (ready.load() || !isRunning());
+                });
+            }
+            std::unique_lock<std::mutex> lock2(mtx2);
+            
             ready.store(false);
             if (isRunning()) {
 
@@ -389,7 +410,11 @@ namespace odfaeg {
                 if (vkQueueSubmit(GPUContext::instance().getDevice().getQueue(indices.graphicsFamily.value(), 2), 1, &submitInfo, GPUContext::instance().getSharedFence(0)[0].getHandle()) != VK_SUCCESS) {
                     throw std::runtime_error("Echec de l'envoi d'un command buffer!");
                 }
-
+                //
+                //std::cout<<"buffers ready!"<<std::endl;
+                //std::this_thread::sleep_for(std::chrono::duration<float>(1000.f));
+                submitReady.store(true);
+                cv2.notify_all();
                 //GPUContext::instance().getSharedFence(0)[0].waitForFences(VK_TRUE, UINT64_MAX);
             }
             //std::cout<<"update : "<<isRunning()<<std::endl;

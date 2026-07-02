@@ -35,8 +35,8 @@ namespace odfaeg {
                       
                 getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, depth, layered);
             //}
-            /*createRenderPass();
-            createFramebuffers();*/
+            createRenderPass();
+            createFramebuffers();
             createSyncObjects();
 
 
@@ -149,9 +149,9 @@ namespace odfaeg {
                 renderPasses.emplace_back(device);
                 renderPasses.emplace_back(device);
                 if (viewMask == 0) {
-                    renderPasses[0].create(m_textures[0].getFormat(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                    renderPasses[0].create(imageFormat, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
                 } else {
-                    renderPasses[0].create(m_textures[0].getFormat(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, viewMask);
+                    renderPasses[0].create(imageFormat, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, viewMask);
                 }
                 if (viewMask == 0) {
                     renderPasses[1].create(getDepthStencilTexture().getFormat());
@@ -164,12 +164,12 @@ namespace odfaeg {
                 renderPasses.emplace_back(device);
                 renderPasses.emplace_back(device);
                 if (viewMask == 0) {
-                    renderPasses[0].create(m_textures[0].getFormat(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-                    renderPasses[1].create(m_textures[0].getFormat(), getDepthStencilTexture().getFormat());
+                    renderPasses[0].create(imageFormat, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                    renderPasses[1].create(imageFormat, getDepthStencilTexture().getFormat());
                     renderPasses[2].create(getDepthStencilTexture().getFormat());
                 } else {
-                    renderPasses[0].create(m_textures[0].getFormat(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, viewMask);
-                    renderPasses[1].create(m_textures[0].getFormat(), getDepthStencilTexture().getFormat(), viewMask);
+                    renderPasses[0].create(imageFormat, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, viewMask);
+                    renderPasses[1].create(imageFormat, getDepthStencilTexture().getFormat(), viewMask);
                     renderPasses[2].create(getDepthStencilTexture().getFormat(), viewMask);
                 }
             }
@@ -280,9 +280,9 @@ namespace odfaeg {
                             waitValues.push_back(0);
                         }
                     }
-                    waitSemaphores.push_back(imageAvailableSemaphores[0].getHandle());
+                    /*waitSemaphores.push_back(imageAvailableSemaphores[0].getHandle());
                     waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-                    waitValues.push_back(imageAvailableSemaphores[0].getValue());
+                    waitValues.push_back(imageAvailableSemaphores[0].getValue());*/
                     //std::cout<<"wait on value : "<<value<<std::endl;
                     firstSubmit = false;
                 }
@@ -292,9 +292,9 @@ namespace odfaeg {
                             signalValues.push_back(0);
                         }
                     }
-                    signalSemaphores.push_back(imageAvailableSemaphores[0].getHandle());                    
+                    /*signalSemaphores.push_back(imageAvailableSemaphores[0].getHandle());                    
                     signalValues.push_back(imageAvailableSemaphores[0].getValue()+1);                
-                    imageAvailableSemaphores[0].incrementValue();
+                    imageAvailableSemaphores[0].incrementValue();*/
                 }
                 VkSubmitInfo submitInfo{};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -349,6 +349,26 @@ namespace odfaeg {
         }
 	    std::uint32_t& RenderTexture::getViewMask() {
             return viewMask;
+        }
+        void RenderTexture::beginRenderPass(bool useSecondaryCommandBuffer) {
+            //std::cout<<"render pass depth ? "<<(depthTestEnabled)<<","<<(stencilTestEnabled)<<std::endl;
+            VkRenderPassBeginInfo renderPassInfo{};
+            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            renderPassInfo.renderPass = (useDepthTest() || useStencilTest()) ? renderPasses[1].getHandle() : renderPasses[0].getHandle();
+            renderPassInfo.framebuffer = (useDepthTest() || useStencilTest()) ? frameBuffers[1][getImageIndex()].getHandle() : frameBuffers[0][getImageIndex()].getHandle();
+            renderPassInfo.renderArea.offset = {0, 0};
+            renderPassInfo.renderArea.extent = getExtents();
+            ////////std::cout<<"render pass : "<<(m_view.getViewport().getSize().x == 800 && m_view.getViewport().getSize().y == 800)<<std::endl;
+
+            //VkClearValue clrColor = {clearColor.r / 255.f,clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
+            renderPassInfo.clearValueCount = 0;
+            renderPassInfo.pClearValues = nullptr;
+
+
+            vkCmdBeginRenderPass(getCommandPool().getHandle(getCurrentFrame()), &renderPassInfo, (!useSecondaryCommandBuffer) ? VK_SUBPASS_CONTENTS_INLINE : VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+        }
+        void RenderTexture::endRenderPass() {
+            vkCmdEndRenderPass(getCommandPool().getHandle(getCurrentFrame()));
         }
 	    void RenderTexture::beginRendering(bool secondaryCommandBuffers) {
             VkRenderingInfo renderingInfo = {};

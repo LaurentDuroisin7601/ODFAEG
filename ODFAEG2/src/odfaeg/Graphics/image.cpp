@@ -42,7 +42,7 @@ namespace odfaeg {
             }
             return *this;
         }
-        void Image::create(uint32_t width, uint32_t height, uint32_t depth, VkImageType type, VkFormat format, VkImageUsageFlags usage, VmaMemoryUsage memoryUsage, unsigned int mipLevels, unsigned int arrayLayers, VkSampleCountFlagBits samples, VkImageTiling tiling) {
+        void Image::create(uint32_t width, uint32_t height, uint32_t depth, VkImageType type, VkFormat format, VkImageUsageFlags usage, VmaMemoryUsage memoryUsage, unsigned int mipLevels, unsigned int arrayLayers, VkSampleCountFlagBits samples, VkImageTiling tiling,VkImageCreateFlags flags) {
             if (image != VK_NULL_HANDLE) {
                 cleanup();
             }
@@ -56,6 +56,7 @@ namespace odfaeg {
             info.samples = samples;
             info.tiling = tiling;
             info.usage = usage;
+            info.flags = flags;
             VmaAllocationCreateInfo alloc{};
             alloc.usage = memoryUsage;
             vmaCreateImage(device.getAllocator(), &info, &alloc, &image, &memory, nullptr);

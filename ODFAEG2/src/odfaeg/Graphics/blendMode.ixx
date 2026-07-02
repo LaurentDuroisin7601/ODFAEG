@@ -124,11 +124,9 @@ namespace odfaeg {
         ////////////////////////////////////////////////////////////
         // Commonly used blending modes
         ////////////////////////////////////////////////////////////
-        export extern const BlendMode BlendAlpha(BlendMode::SrcAlpha, BlendMode::OneMinusSrcAlpha, BlendMode::Add,
-            BlendMode::One, BlendMode::OneMinusSrcAlpha, BlendMode::Add);   ///< Blend source and dest according to dest alpha
-        export extern const BlendMode BlendAdd(BlendMode::SrcAlpha, BlendMode::One, BlendMode::Add,
-            BlendMode::One, BlendMode::One, BlendMode::Add);
-        export extern const BlendMode BlendMultiply(BlendMode::DstColor, BlendMode::Zero); ///< Multiply source and dest
-        export extern const BlendMode BlendNone(BlendMode::One, BlendMode::Zero);     ///< Overwrite dest with source
+        export extern const BlendMode BlendAlpha;
+        export extern const BlendMode BlendAdd;
+        export extern const BlendMode BlendMultiply; ///< Multiply source and dest
+        export extern const BlendMode BlendNone;     ///< Overwrite dest with source        
     }
 }

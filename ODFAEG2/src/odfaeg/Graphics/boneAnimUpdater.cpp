@@ -9,6 +9,7 @@ module;
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <condition_variable>
 import odfaeg.graphic.boneAnimUpdater;
 module odfaeg.graphic.boneAnimUpdater;
 import odfaeg.graphic.gpuContext;
@@ -19,11 +20,13 @@ import odfaeg.graphic.vertex;
 import odfaeg.graphic.primitiveType;
 namespace odfaeg {
     namespace graphic {
-        BoneAnimUpdater& BoneAnimUpdater::instance() {
-            static BoneAnimUpdater instance;
+        BoneAnimUpdater& BoneAnimUpdater::instance(std::condition_variable& cv, std::mutex& mtx) {
+            static BoneAnimUpdater instance(cv, mtx);
             return instance;
         }
-        BoneAnimUpdater::BoneAnimUpdater() :
+        BoneAnimUpdater::BoneAnimUpdater(std::condition_variable& cv, std::mutex& mtx) :
+        cv2(cv),
+        mtx2(mtx),
         staggingBoneAnims(GPUContext::instance().getDevice()),
         staggingFinalBonesMatrices(GPUContext::instance().getDevice()),
         staggingAnimsSubmeshes(GPUContext::instance().getDevice()),
@@ -67,6 +70,7 @@ namespace odfaeg {
             needToUpdateBuffers = needToUpdateDescriptorSets = false;
             ready.store(true);
             start();
+            //cv.notify_one();
         }
         void BoneAnimUpdater::setReady(bool r) {
             ready.store(r);
@@ -75,14 +79,29 @@ namespace odfaeg {
             anims.push_back(boneAnim);
             needToUpdateBuffers = true;
         }
-        void BoneAnimUpdater::areBuffersReady(bool r) {
+        void BoneAnimUpdater::setBuffersReady(bool r) {
             buffersReady.store(r);
+        }
+        bool BoneAnimUpdater::areBuffersReady() {
+            return buffersReady.load();
+        }
+        void BoneAnimUpdater::setSubmitReady(bool r) {
+            submitReady.store(r);
+        }
+        bool BoneAnimUpdater::isSubmitReady() {
+            return submitReady.load();
         }
         void BoneAnimUpdater::updateBuffers() {
             if (needToUpdateBuffers) {
-                std::unique_lock<std::mutex> lock(mtx2);
-                cv2.wait(lock, [this]{return buffersReady.load();});
+                //std::cout<<"wait update buffers!"<<std::endl;
+                {
+                    std::unique_lock<std::mutex> lock(mtx3);
+                    
+                    cv3.wait(lock, [this]{return buffersReady.load();});
+                }
+                std::unique_lock<std::mutex> lock2(mtx2);
                 buffersReady.store(false);
+                std::cout<<"update buffers!"<<std::endl;
                 std::vector<BoneAnimData> boneAnimsData;
                 std::vector<SubMesh> animsSubmeshDatas;
                 unsigned int finalBoneMatricesSize = 0, currentBoneAnimId = 0, currentVertexOffset = 0, currentAnimSubmeshOffset = 0;
@@ -181,11 +200,17 @@ namespace odfaeg {
             boneAnimSet.updateDescriptorSet();
         }
         void BoneAnimUpdater::onUpdate() {
-            std::unique_lock<std::mutex> lock(mtx);
-            //std::lock_guard<std::recursive_mutex> lock2(rec_mutex);
-            cv.wait(lock, [this]() {
-                return (ready.load() || !isRunning());
-            });
+            //std::cout<<"wait ba : "<<ready.load()<<std::endl;
+            {
+                std::unique_lock<std::mutex> lock(mtx);
+                //
+                //std::lock_guard<std::recursive_mutex> lock2(rec_mutex);
+                
+                cv.wait(lock, [this]() {
+                    return (ready.load() || !isRunning());
+                });
+            }
+            std::unique_lock<std::mutex> lock2(mtx2);
 
             //std::cout<<"update : "<<isRunning()<<std::endl;
             ready.store(false);
@@ -293,6 +318,9 @@ namespace odfaeg {
                 if (vkQueueSubmit(GPUContext::instance().getDevice().getQueue(indices.graphicsFamily.value(), 3), 1, &submitInfo, GPUContext::instance().getSharedFence(2)[0].getHandle()) != VK_SUCCESS) {
                     throw std::runtime_error("Echec de l'envoi d'un command buffer!");
                 }
+                //std::cout<<"buffers ready ba !"<<std::endl;
+                submitReady.store(true);
+                cv2.notify_all();
             }
         }
     } // graphic

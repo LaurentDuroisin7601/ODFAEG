@@ -46,6 +46,12 @@ namespace odfaeg {
 			std::uint32_t& getViewMask();
 			void beginRendering(bool secondaryCommandBuffers=false);
 			void endRendering();
+            void beginRenderPass(bool secondaryCommandBuffers=false);
+			void endRenderPass();
+            std::uint32_t getSwapchainMinImagesCount();
+            std::uint32_t getSwapchainImagesCount();
+            RenderPass& getRenderPass(unsigned int renderPassId);
+            VkSurfaceKHR getSurface();
         protected:
 
             ////////////////////////////////////////////////////////////
@@ -69,10 +75,9 @@ namespace odfaeg {
             virtual void onClose();
 
             std::vector<FrameBuffer>& getFrameBuffers(unsigned int frameBufferId);
-            RenderPass& getRenderPass(unsigned int renderPassId);
-            VkSurfaceKHR getSurface();
+            
+           
 			bool useDepth, useStencil;
-
         private:
 
             bool firstSubmit;
@@ -97,6 +102,7 @@ namespace odfaeg {
             std::uint32_t currentFrame;
             bool framebufferResized = false;
             std::uint32_t viewMask;
+            Color clearColor;
         };			
 	}
 }
