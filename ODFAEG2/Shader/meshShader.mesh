@@ -7,13 +7,7 @@ layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 // Déclaration du type de primitive + limites
 layout (triangles, max_vertices = 64, max_primitives = 32) out;
-layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec4 inColor;
-layout(location = 2) in vec2 inTexCoord;
-layout(location = 3) in vec3 normals;
-layout(location = 4) in uint drawableDataId;
-
-layout(location = 0) out uint fragColor[];
+layout(location = 0) out vec4 fragColor[];
 layout(location = 1) out vec2 fragTexCoord[];
 layout(location = 2) out vec3 normal[];
 layout(location = 3) flat out int materialID[];
@@ -81,21 +75,33 @@ layout (push_constant) uniform PushConstant {
 layout (std430, set = 0, binding = 0) buffer TastDataSSBO {
     TaskData taskData[];
 } taskDatas[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 1) buffer ModelDataSSBO {
+layout(std430, set = 0, binding = 1) buffer TaskCountSSBO {
+    uint taskCount;
+} TaskCounts[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+layout (std430, set = 0, binding = 2) buffer ModelDataSSBO {
     ModelData modelData[];
 } modelDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 2) buffer SubMeshDataSSBO {
+layout (std430, set = 0, binding = 3) buffer SubMeshDataSSBO {
     SubMesh subMeshData[];
 } SubMeshDatas[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 3) buffer vertexBufferSSBO {
+layout (std430, set = 0, binding = 4) buffer vertexBufferSSBO {
     Vertex vertices[];
 } vertexData[NB_PRIMITIVE_TYPES];
-layout (std430, set = 0, binding = 4) buffer indexBufferSSBO {
+layout (std430, set = 0, binding = 5) buffer indexBufferSSBO {
     uint indexes[];
 } indexData[NB_PRIMITIVE_TYPES];
-layout (std430, set=0, binding = 5) buffer LodLevelBuffer {
+layout (std430, set=0, binding = 6) buffer LodLevelBuffer {
     LODLevel lodLevel[];
 } lodLevelData;
+vec4 unpackColor(uint c)
+{
+    float r = float((c >> 24) & 0xFFu) / 255.0;
+    float g = float((c >> 16) & 0xFFu) / 255.0;
+    float b = float((c >>  8) & 0xFFu) / 255.0;
+    float a = float((c      ) & 0xFFu) / 255.0;
+
+    return vec4(r, g, b, a);
+}
 void main() {    
     //Instance id = taskId (base instance) + workGroupId.x (instance id).
     uint instanceId = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].baseInstance + gl_WorkGroupID.x;
@@ -109,7 +115,7 @@ void main() {
         for (uint i = 0; i < subMesh.nbVertices; i++) {
             uint v = subMesh.vertexOffset + i;
             gl_MeshVerticesEXT[i].gl_Position = pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(vertexData[pc.primitiveType].vertices[v].position, 1.0);
-            fragColor[v] = vertexData[pc.primitiveType].vertices[v].color;
+            fragColor[v] = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
             fragTexCoord[v] = vertexData[pc.primitiveType].vertices[v].texCoords;
             normal[v] = vertexData[pc.primitiveType].vertices[v].normal;
             materialID[v] = payload.taskId;

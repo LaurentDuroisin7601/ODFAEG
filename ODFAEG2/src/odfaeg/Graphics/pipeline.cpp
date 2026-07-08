@@ -449,6 +449,7 @@ namespace odfaeg {
 			//std::cout<<"shader stages : "<<shaderStages.size()<<std::endl;
 			VkGraphicsPipelineCreateInfo pipelineInfo{};
 			pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+			pipelineInfo.pNext = &renderingCreateInfo;
 			pipelineInfo.stageCount = shaderStages.size();
 			pipelineInfo.pStages = shaderStages.data();
 			pipelineInfo.pVertexInputState = nullptr;

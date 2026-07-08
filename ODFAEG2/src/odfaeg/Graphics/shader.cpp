@@ -91,31 +91,46 @@ namespace odfaeg {
                 // Compile the shader program
                 return compile(&vertexShader[0], &fragmentShader[0]);
             }
-            bool Shader::loadMeshFromFileSpv(const std::string& meshShaderFileName, const std::string& fragmentShaderFileName, const std::string& taskShaderFileName) {
-                std::vector<char> meshShader;
-                if (!getFileContents(meshShaderFileName, meshShader))
-                {
-                    std::cerr << "Failed to open mesh shader file \"" << meshShaderFileName << "\"" << std::endl;
+            bool Shader::loadMeshFromFileSpv(const std::string& meshShaderFileName,
+                                 const std::string& fragmentShaderFileName,
+                                 const std::string& taskShaderFileName)
+{
+                auto loadSpv = [](const std::string& path, std::vector<uint32_t>& out) -> bool {
+                    std::ifstream file(path, std::ios::ate | std::ios::binary);
+                    if (!file.is_open()) {
+                        std::cerr << "Failed to open SPIR-V file \"" << path << "\"" << std::endl;
+                        return false;
+                    }
+
+                    size_t fileSize = (size_t)file.tellg();
+                    if (fileSize % 4 != 0) {
+                        std::cerr << "SPIR-V file size is not aligned to 4 bytes: " << path << std::endl;
+                        return false;
+                    }
+
+                    out.resize(fileSize / sizeof(uint32_t));
+
+                    file.seekg(0);
+                    file.read(reinterpret_cast<char*>(out.data()), fileSize);
+                    file.close();
+
+                    return true;
+                };
+
+                // Mesh shader
+                if (!loadSpv(meshShaderFileName, spvMeshShaderCode))
                     return false;
+
+                // Fragment shader
+                if (!loadSpv(fragmentShaderFileName, spvFragmentShaderCode))
+                    return false;
+
+                // Task shader (optionnel)
+                if (!taskShaderFileName.empty()) {
+                    if (!loadSpv(taskShaderFileName, spvTaskShaderCode))
+                        return false;
                 }
 
-                // Read the fragment shader file
-                std::vector<char> fragmentShader;
-                if (!getFileContents(fragmentShaderFileName, fragmentShader))
-                {
-                    std::cerr << "Failed to open fragment shader file \"" << fragmentShaderFileName << "\"" << std::endl;
-                    return false;
-                }
-                std::vector<char> taskShader;
-                if (!taskShaderFileName.empty() && !getFileContents(taskShaderFileName, taskShader)) {
-                    std::cerr << "Failed to open task shader file \"" << taskShaderFileName << "\"" << std::endl;
-                    return false;
-                }
-                meshShaderCode = std::string(&meshShader[0]);
-                fragmentShaderCode = std::string(&fragmentShader[0]);
-                if (taskShader.size() > 0) {
-                    taskShaderCode = std::string(&taskShader[0]);
-                }                
                 return true;
             }
             ////////////////////////////////////////////////////////////
@@ -397,7 +412,7 @@ namespace odfaeg {
                 createMSInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
                 createMSInfo.codeSize = 4 * spvMeshShaderCode.size();
                 createMSInfo.pCode = spvMeshShaderCode.data();
-                std::cout<<"mesh shader code : "<<meshShaderCode<<std::endl;
+                //std::cout<<"mesh shader code : "<<meshShaderCode<<std::endl;
                 if (vkCreateShaderModule(device.getDevice(), &createMSInfo, nullptr, &meshShaderModule) != VK_SUCCESS) {
                     throw std::runtime_error("Failed to create mesh shader module");
                 }
@@ -409,7 +424,7 @@ namespace odfaeg {
                     throw std::runtime_error("Failed to create fragment shader module");
                 }
                 //std::cout<<"task shader code : "<<taskShaderCode<<std::endl;
-                if (taskShaderCode != "") {
+                if (spvTaskShaderCode.size() > 0) {
                     VkShaderModuleCreateInfo createTSInfo{};
                     createTSInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
                     createTSInfo.codeSize = 4 * spvTaskShaderCode.size();

@@ -306,7 +306,9 @@ namespace odfaeg {
                 if (meshFeatures.meshShader && meshFeatures.taskShader) {
                     meshSupported = true;
                     meshFeatures.meshShader = VK_TRUE;
-                    meshFeatures.taskShader = VK_TRUE;                    
+                    meshFeatures.taskShader = VK_TRUE; 
+                    // On ne veut PAS utiliser le shading rate via mesh shader pour l’instant
+                    meshFeatures.primitiveFragmentShadingRateMeshShader = VK_FALSE;                   
                 }
                 // Maintenance4
                 if (maintenance4Features.maintenance4)

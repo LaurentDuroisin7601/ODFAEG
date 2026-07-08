@@ -122,9 +122,13 @@ namespace odfaeg {
 	    void Texture::setSamplerAddressMode(VkSamplerAddressMode wrapU, VkSamplerAddressMode wrapV) {
             this->wrapU = wrapU;
             this->wrapV = wrapV;
-            for (unsigned int i = 0; i < nbBuffers; i++) {
-                GPUContext::instance().getSharedTextures(0)[id-1].images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
-            }            
+            if (GPUContext::instance().getSharedTextures(0).size() > 0) {
+                for (unsigned int i = 0; i < GPUContext::instance().getSharedTextures(0).size(); i++) {
+                    for (unsigned int j = 0; j < GPUContext::instance().getSharedTextures(0)[i].images.size(); j++) {
+                        GPUContext::instance().getSharedTextures(0)[i].images[j].createSampler(wrapU, wrapV, GPUContext::instance().getSharedTextures(0)[i].mipLevels, GPUContext::instance().getSharedTextures(0)[i].m_Smooth, GPUContext::instance().getSharedTextures(0)[i].unormalized);
+                    }
+                }
+            }                      
         }
 	    unsigned int Texture::getLayerCount() {
             return layerCount;
