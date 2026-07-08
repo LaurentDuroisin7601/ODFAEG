@@ -1,0 +1,1224 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "odfaeg-editor"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_executable",
+			"target_link_libraries",
+			"set_target_properties",
+			"include",
+			"find_package",
+			"set_property",
+			"find_dependency",
+			"add_compile_definitions",
+			"target_include_directories"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt",
+			"/usr/local/lib/cmake/odfaeg/odfaegTargets.cmake",
+			"/usr/local/lib/cmake/odfaeg/odfaegConfig.cmake",
+			"build/assimp-Target-release.cmake",
+			"build/assimpTargets.cmake",
+			"build/assimp-config.cmake",
+			"build/minizip-Target-release.cmake",
+			"build/minizipTargets.cmake",
+			"build/minizip-config.cmake",
+			"/usr/share/cmake-3.28/Modules/CMakeFindDependencyMacro.cmake",
+			"build/BZip2-Target-release.cmake",
+			"build/BZip2Targets.cmake",
+			"build/BZip2Config.cmake",
+			"build/pugixml-Target-release.cmake",
+			"build/pugixmlTargets.cmake",
+			"build/pugixml-config.cmake",
+			"build/zip-Target-release.cmake",
+			"build/zipTargets.cmake",
+			"build/zip-config.cmake",
+			"build/poly2tri-Target-release.cmake",
+			"build/poly2triTargets.cmake",
+			"build/poly2tri-config.cmake",
+			"build/draco-Target-release.cmake",
+			"build/dracoTargets.cmake",
+			"build/draco-config.cmake",
+			"build/clipper-Target-release.cmake",
+			"build/clipperTargets.cmake",
+			"build/clipper-config.cmake",
+			"build/openddlparser-Target-release.cmake",
+			"build/openddlparserTargets.cmake",
+			"build/openddlparser-config.cmake",
+			"build/ZLIB-Target-release.cmake",
+			"build/ZLIBTargets.cmake",
+			"build/ZLIBConfig.cmake",
+			"build/shaderc-Target-release.cmake",
+			"build/shadercTargets.cmake",
+			"build/shaderc-config.cmake",
+			"build/glslang-Target-release.cmake",
+			"build/glslangTargets.cmake",
+			"build/glslang-config.cmake",
+			"build/SPIRV-Tools-Target-release.cmake",
+			"build/SPIRV-ToolsTargets.cmake",
+			"build/SPIRV-ToolsConfig.cmake",
+			"build/conan_toolchain.cmake"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 27,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 28,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 38,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 15,
+				"parent" : 0
+			},
+			{
+				"file" : 2,
+				"parent" : 4
+			},
+			{
+				"command" : 3,
+				"file" : 2,
+				"line" : 28,
+				"parent" : 5
+			},
+			{
+				"file" : 1,
+				"parent" : 6
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 260,
+				"parent" : 7
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 311,
+				"parent" : 7
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 333,
+				"parent" : 7
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 16,
+				"parent" : 0
+			},
+			{
+				"file" : 5,
+				"parent" : 11
+			},
+			{
+				"command" : 3,
+				"file" : 5,
+				"line" : 16,
+				"parent" : 12
+			},
+			{
+				"file" : 4,
+				"parent" : 13
+			},
+			{
+				"command" : 3,
+				"file" : 4,
+				"line" : 24,
+				"parent" : 14
+			},
+			{
+				"file" : 3,
+				"parent" : 15
+			},
+			{
+				"command" : 5,
+				"file" : 3,
+				"line" : 38,
+				"parent" : 16
+			},
+			{
+				"command" : 6,
+				"file" : 5,
+				"line" : 24,
+				"parent" : 12
+			},
+			{
+				"command" : 4,
+				"file" : 9,
+				"line" : 76,
+				"parent" : 18
+			},
+			{
+				"file" : 8,
+				"parent" : 19
+			},
+			{
+				"command" : 3,
+				"file" : 8,
+				"line" : 16,
+				"parent" : 20
+			},
+			{
+				"file" : 7,
+				"parent" : 21
+			},
+			{
+				"command" : 3,
+				"file" : 7,
+				"line" : 24,
+				"parent" : 22
+			},
+			{
+				"file" : 6,
+				"parent" : 23
+			},
+			{
+				"command" : 5,
+				"file" : 6,
+				"line" : 38,
+				"parent" : 24
+			},
+			{
+				"command" : 6,
+				"file" : 8,
+				"line" : 24,
+				"parent" : 20
+			},
+			{
+				"command" : 4,
+				"file" : 9,
+				"line" : 76,
+				"parent" : 26
+			},
+			{
+				"file" : 12,
+				"parent" : 27
+			},
+			{
+				"command" : 3,
+				"file" : 12,
+				"line" : 16,
+				"parent" : 28
+			},
+			{
+				"file" : 11,
+				"parent" : 29
+			},
+			{
+				"command" : 3,
+				"file" : 11,
+				"line" : 24,
+				"parent" : 30
+			},
+			{
+				"file" : 10,
+				"parent" : 31
+			},
+			{
+				"command" : 5,
+				"file" : 10,
+				"line" : 38,
+				"parent" : 32
+			},
+			{
+				"command" : 6,
+				"file" : 5,
+				"line" : 24,
+				"parent" : 12
+			},
+			{
+				"command" : 4,
+				"file" : 9,
+				"line" : 76,
+				"parent" : 34
+			},
+			{
+				"file" : 15,
+				"parent" : 35
+			},
+			{
+				"command" : 3,
+				"file" : 15,
+				"line" : 16,
+				"parent" : 36
+			},
+			{
+				"file" : 14,
+				"parent" : 37
+			},
+			{
+				"command" : 3,
+				"file" : 14,
+				"line" : 28,
+				"parent" : 38
+			},
+			{
+				"file" : 13,
+				"parent" : 39
+			},
+			{
+				"command" : 5,
+				"file" : 13,
+				"line" : 38,
+				"parent" : 40
+			},
+			{
+				"command" : 6,
+				"file" : 5,
+				"line" : 24,
+				"parent" : 12
+			},
+			{
+				"command" : 4,
+				"file" : 9,
+				"line" : 76,
+				"parent" : 42
+			},
+			{
+				"file" : 18,
+				"parent" : 43
+			},
+			{
+				"command" : 3,
+				"file" : 18,
+				"line" : 16,
+				"parent" : 44
+			},
+			{
+				"file" : 17,
+				"parent" : 45
+			},
+			{
+				"command" : 3,
+				"file" : 17,
+				"line" : 24,
+				"parent" : 46
+			},
+			{
+				"file" : 16,
+				"parent" : 47
+			},
+			{
+				"command" : 5,
+				"file" : 16,
+				"line" : 38,
+				"parent" : 48
+			},
+			{
+				"command" : 6,
+				"file" : 5,
+				"line" : 24,
+				"parent" : 12
+			},
+			{
+				"command" : 4,
+				"file" : 9,
+				"line" : 76,
+				"parent" : 50
+			},
+			{
+				"file" : 21,
+				"parent" : 51
+			},
+			{
+				"command" : 3,
+				"file" : 21,
+				"line" : 16,
+				"parent" : 52
+			},
+			{
+				"file" : 20,
+				"parent" : 53
+			},
+			{
+				"command" : 3,
+				"file" : 20,
+				"line" : 24,
+				"parent" : 54
+			},
+			{
+				"file" : 19,
+				"parent" : 55
+			},
+			{
+				"command" : 5,
+				"file" : 19,
+				"line" : 38,
+				"parent" : 56
+			},
+			{
+				"command" : 6,
+				"file" : 5,
+				"line" : 24,
+				"parent" : 12
+			},
+			{
+				"command" : 4,
+				"file" : 9,
+				"line" : 76,
+				"parent" : 58
+			},
+			{
+				"file" : 24,
+				"parent" : 59
+			},
+			{
+				"command" : 3,
+				"file" : 24,
+				"line" : 16,
+				"parent" : 60
+			},
+			{
+				"file" : 23,
+				"parent" : 61
+			},
+			{
+				"command" : 3,
+				"file" : 23,
+				"line" : 24,
+				"parent" : 62
+			},
+			{
+				"file" : 22,
+				"parent" : 63
+			},
+			{
+				"command" : 5,
+				"file" : 22,
+				"line" : 38,
+				"parent" : 64
+			},
+			{
+				"command" : 6,
+				"file" : 5,
+				"line" : 24,
+				"parent" : 12
+			},
+			{
+				"command" : 4,
+				"file" : 9,
+				"line" : 76,
+				"parent" : 66
+			},
+			{
+				"file" : 27,
+				"parent" : 67
+			},
+			{
+				"command" : 3,
+				"file" : 27,
+				"line" : 16,
+				"parent" : 68
+			},
+			{
+				"file" : 26,
+				"parent" : 69
+			},
+			{
+				"command" : 3,
+				"file" : 26,
+				"line" : 24,
+				"parent" : 70
+			},
+			{
+				"file" : 25,
+				"parent" : 71
+			},
+			{
+				"command" : 5,
+				"file" : 25,
+				"line" : 38,
+				"parent" : 72
+			},
+			{
+				"command" : 6,
+				"file" : 5,
+				"line" : 24,
+				"parent" : 12
+			},
+			{
+				"command" : 4,
+				"file" : 9,
+				"line" : 76,
+				"parent" : 74
+			},
+			{
+				"file" : 30,
+				"parent" : 75
+			},
+			{
+				"command" : 3,
+				"file" : 30,
+				"line" : 16,
+				"parent" : 76
+			},
+			{
+				"file" : 29,
+				"parent" : 77
+			},
+			{
+				"command" : 3,
+				"file" : 29,
+				"line" : 24,
+				"parent" : 78
+			},
+			{
+				"file" : 28,
+				"parent" : 79
+			},
+			{
+				"command" : 5,
+				"file" : 28,
+				"line" : 38,
+				"parent" : 80
+			},
+			{
+				"command" : 6,
+				"file" : 8,
+				"line" : 24,
+				"parent" : 20
+			},
+			{
+				"command" : 4,
+				"file" : 9,
+				"line" : 76,
+				"parent" : 82
+			},
+			{
+				"file" : 33,
+				"parent" : 83
+			},
+			{
+				"command" : 3,
+				"file" : 33,
+				"line" : 16,
+				"parent" : 84
+			},
+			{
+				"file" : 32,
+				"parent" : 85
+			},
+			{
+				"command" : 3,
+				"file" : 32,
+				"line" : 24,
+				"parent" : 86
+			},
+			{
+				"file" : 31,
+				"parent" : 87
+			},
+			{
+				"command" : 5,
+				"file" : 31,
+				"line" : 38,
+				"parent" : 88
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 17,
+				"parent" : 0
+			},
+			{
+				"file" : 36,
+				"parent" : 90
+			},
+			{
+				"command" : 3,
+				"file" : 36,
+				"line" : 16,
+				"parent" : 91
+			},
+			{
+				"file" : 35,
+				"parent" : 92
+			},
+			{
+				"command" : 3,
+				"file" : 35,
+				"line" : 24,
+				"parent" : 93
+			},
+			{
+				"file" : 34,
+				"parent" : 94
+			},
+			{
+				"command" : 5,
+				"file" : 34,
+				"line" : 38,
+				"parent" : 95
+			},
+			{
+				"command" : 6,
+				"file" : 36,
+				"line" : 24,
+				"parent" : 91
+			},
+			{
+				"command" : 4,
+				"file" : 9,
+				"line" : 76,
+				"parent" : 97
+			},
+			{
+				"file" : 39,
+				"parent" : 98
+			},
+			{
+				"command" : 3,
+				"file" : 39,
+				"line" : 16,
+				"parent" : 99
+			},
+			{
+				"file" : 38,
+				"parent" : 100
+			},
+			{
+				"command" : 3,
+				"file" : 38,
+				"line" : 24,
+				"parent" : 101
+			},
+			{
+				"file" : 37,
+				"parent" : 102
+			},
+			{
+				"command" : 5,
+				"file" : 37,
+				"line" : 73,
+				"parent" : 103
+			},
+			{
+				"command" : 5,
+				"file" : 37,
+				"line" : 133,
+				"parent" : 103
+			},
+			{
+				"command" : 5,
+				"file" : 37,
+				"line" : 193,
+				"parent" : 103
+			},
+			{
+				"command" : 5,
+				"file" : 37,
+				"line" : 373,
+				"parent" : 103
+			},
+			{
+				"command" : 5,
+				"file" : 3,
+				"line" : 15,
+				"parent" : 16
+			},
+			{
+				"command" : 5,
+				"file" : 37,
+				"line" : 433,
+				"parent" : 103
+			},
+			{
+				"command" : 6,
+				"file" : 39,
+				"line" : 24,
+				"parent" : 99
+			},
+			{
+				"command" : 4,
+				"file" : 9,
+				"line" : 76,
+				"parent" : 110
+			},
+			{
+				"file" : 42,
+				"parent" : 111
+			},
+			{
+				"command" : 3,
+				"file" : 42,
+				"line" : 16,
+				"parent" : 112
+			},
+			{
+				"file" : 41,
+				"parent" : 113
+			},
+			{
+				"command" : 3,
+				"file" : 41,
+				"line" : 28,
+				"parent" : 114
+			},
+			{
+				"file" : 40,
+				"parent" : 115
+			},
+			{
+				"command" : 5,
+				"file" : 40,
+				"line" : 313,
+				"parent" : 116
+			},
+			{
+				"command" : 5,
+				"file" : 40,
+				"line" : 373,
+				"parent" : 116
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 211,
+				"parent" : 7
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 161,
+				"parent" : 7
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 112,
+				"parent" : 7
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 61,
+				"parent" : 7
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 83,
+				"parent" : 7
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 2,
+				"parent" : 0
+			},
+			{
+				"file" : 43,
+				"parent" : 124
+			},
+			{
+				"command" : 7,
+				"file" : 43,
+				"line" : 46,
+				"parent" : 125
+			},
+			{
+				"command" : 8,
+				"file" : 0,
+				"line" : 42,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-m64 -O3 -DNDEBUG -std=c++20"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Core"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Math"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Window"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Physics"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Entity"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Graphics"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 2,
+					"define" : "ODFAEG_INSTALL_DIR=\"/usr/local\""
+				},
+				{
+					"backtrace" : 126,
+					"define" : "_GLIBCXX_USE_CXX11_ABI=0"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 127,
+					"path" : "/home/laurent/ODFAEG-master/ODFAEG2Editor"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/lib/llvm-18/include"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/local/share/odfaeg/modules/Core"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/local/share/odfaeg/modules/Math"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/local/share/odfaeg/modules/Window"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/local/share/odfaeg/modules/Physics"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/local/share/odfaeg/modules/Entity"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/local/share/odfaeg/modules/Graphics"
+				}
+			],
+			"language" : "CXX",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					2
+				],
+				"standard" : "20"
+			},
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 3,
+			"id" : "imgui_custom::@6890427a1f51a3e7e1df"
+		}
+	],
+	"id" : "odfaeg-editor::@6890427a1f51a3e7e1df",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "-m64 -O3 -DNDEBUG",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "-m64",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-L/home/laurent/.conan2/p/b/assim1430cbbc53906/p/lib",
+				"role" : "libraryPath"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-L/home/laurent/.conan2/p/b/miniz6da750ec9a031/p/lib",
+				"role" : "libraryPath"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-L/home/laurent/.conan2/p/b/zlibf7662cd68a526/p/lib",
+				"role" : "libraryPath"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-L/home/laurent/.conan2/p/b/bzip2cd7fbe3a3d690/p/lib",
+				"role" : "libraryPath"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-L/home/laurent/.conan2/p/b/pugixc4add3f232626/p/lib",
+				"role" : "libraryPath"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-L/home/laurent/.conan2/p/b/kuba-87c04591aee84/p/lib",
+				"role" : "libraryPath"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-L/home/laurent/.conan2/p/b/poly25edfc427eed4d/p/lib",
+				"role" : "libraryPath"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-L/home/laurent/.conan2/p/b/dracoda068cd4a19f1/p/lib",
+				"role" : "libraryPath"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-L/home/laurent/.conan2/p/b/clippded9a3338d852/p/lib",
+				"role" : "libraryPath"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-L/home/laurent/.conan2/p/b/opend7e5f1fb4653cf/p/lib",
+				"role" : "libraryPath"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-L/home/laurent/.conan2/p/b/shade666a6e1056262/p/lib",
+				"role" : "libraryPath"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-L/home/laurent/.conan2/p/b/glslacdd7987ba73f6/p/lib",
+				"role" : "libraryPath"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-L/home/laurent/.conan2/p/b/spirvd341e24e50396/p/lib",
+				"role" : "libraryPath"
+			},
+			{
+				"fragment" : "-Wl,-rpath,/home/laurent/.conan2/p/b/assim1430cbbc53906/p/lib:/home/laurent/.conan2/p/b/miniz6da750ec9a031/p/lib:/home/laurent/.conan2/p/b/zlibf7662cd68a526/p/lib:/home/laurent/.conan2/p/b/bzip2cd7fbe3a3d690/p/lib:/home/laurent/.conan2/p/b/pugixc4add3f232626/p/lib:/home/laurent/.conan2/p/b/kuba-87c04591aee84/p/lib:/home/laurent/.conan2/p/b/poly25edfc427eed4d/p/lib:/home/laurent/.conan2/p/b/dracoda068cd4a19f1/p/lib:/home/laurent/.conan2/p/b/clippded9a3338d852/p/lib:/home/laurent/.conan2/p/b/opend7e5f1fb4653cf/p/lib:/home/laurent/.conan2/p/b/shade666a6e1056262/p/lib:/home/laurent/.conan2/p/b/glslacdd7987ba73f6/p/lib:/home/laurent/.conan2/p/b/spirvd341e24e50396/p/lib:/usr/lib/llvm-18/lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/usr/local/lib/libodfaeg-core.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/usr/local/lib/libodfaeg-math.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/usr/local/lib/libodfaeg-window.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/usr/local/lib/libodfaeg-graphics.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/usr/local/lib/libodfaeg-entity.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/usr/local/lib/libodfaeg-physics.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "libimgui_custom.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libvulkan.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 8,
+				"fragment" : "-lvulkan",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 8,
+				"fragment" : "-lX11",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 8,
+				"fragment" : "-lXrandr",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 8,
+				"fragment" : "-lXrender",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 8,
+				"fragment" : "-lXext",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 8,
+				"fragment" : "-lXfixes",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 8,
+				"fragment" : "-lXcursor",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 8,
+				"fragment" : "-lXi",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 8,
+				"fragment" : "-lXinerama",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 9,
+				"fragment" : "/usr/local/lib/libodfaeg-graphics-mod.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 8,
+				"fragment" : "/usr/local/lib/libodfaeg-window-mod.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 10,
+				"fragment" : "/usr/local/lib/libmeshoptimizer.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 10,
+				"fragment" : "/usr/local/lib/libvma.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 17,
+				"fragment" : "/home/laurent/.conan2/p/b/assim1430cbbc53906/p/lib/libassimp.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 25,
+				"fragment" : "/home/laurent/.conan2/p/b/miniz6da750ec9a031/p/lib/libminizip.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 33,
+				"fragment" : "/home/laurent/.conan2/p/b/bzip2cd7fbe3a3d690/p/lib/libbz2.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 41,
+				"fragment" : "/home/laurent/.conan2/p/b/pugixc4add3f232626/p/lib/libpugixml.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 49,
+				"fragment" : "/home/laurent/.conan2/p/b/kuba-87c04591aee84/p/lib/libzip.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 57,
+				"fragment" : "/home/laurent/.conan2/p/b/poly25edfc427eed4d/p/lib/libpoly2tri.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 65,
+				"fragment" : "/home/laurent/.conan2/p/b/dracoda068cd4a19f1/p/lib/libdraco.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 73,
+				"fragment" : "/home/laurent/.conan2/p/b/clippded9a3338d852/p/lib/libpolyclipping.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 81,
+				"fragment" : "/home/laurent/.conan2/p/b/opend7e5f1fb4653cf/p/lib/libopenddlparser.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 89,
+				"fragment" : "/home/laurent/.conan2/p/b/zlibf7662cd68a526/p/lib/libz.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 96,
+				"fragment" : "/home/laurent/.conan2/p/b/shade666a6e1056262/p/lib/libshaderc.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 96,
+				"fragment" : "/home/laurent/.conan2/p/b/shade666a6e1056262/p/lib/libshaderc_util.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 104,
+				"fragment" : "/home/laurent/.conan2/p/b/glslacdd7987ba73f6/p/lib/libSPIRV.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 105,
+				"fragment" : "/home/laurent/.conan2/p/b/glslacdd7987ba73f6/p/lib/libglslang.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 106,
+				"fragment" : "/home/laurent/.conan2/p/b/glslacdd7987ba73f6/p/lib/libMachineIndependent.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 107,
+				"fragment" : "/home/laurent/.conan2/p/b/glslacdd7987ba73f6/p/lib/libOSDependent.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 108,
+				"fragment" : "-lpthread",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 109,
+				"fragment" : "/home/laurent/.conan2/p/b/glslacdd7987ba73f6/p/lib/libGenericCodeGen.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 117,
+				"fragment" : "/home/laurent/.conan2/p/b/spirvd341e24e50396/p/lib/libSPIRV-Tools-opt.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 118,
+				"fragment" : "/home/laurent/.conan2/p/b/spirvd341e24e50396/p/lib/libSPIRV-Tools.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 108,
+				"fragment" : "-lrt",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 108,
+				"fragment" : "-lm",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 108,
+				"fragment" : "-lstdc++",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 119,
+				"fragment" : "/usr/local/lib/libodfaeg-physics-mod.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 120,
+				"fragment" : "/usr/local/lib/libodfaeg-entity-mod.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 121,
+				"fragment" : "/usr/local/lib/libodfaeg-math-mod.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 122,
+				"fragment" : "/usr/local/lib/libodfaeg-core-mod.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 123,
+				"fragment" : "/usr/lib/llvm-18/lib/libclang-18.so",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX"
+	},
+	"name" : "odfaeg-editor",
+	"nameOnDisk" : "odfaeg-editor",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "main.cpp",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "EXECUTABLE"
+}

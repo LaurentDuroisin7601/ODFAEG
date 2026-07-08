@@ -1,0 +1,273 @@
+module;
+#include <iostream>
+#include <odfaeg/config.hpp>
+//import odfaeg.graphic.shape;
+module odfaeg.graphic.shape;
+import odfaeg.math.maths;
+import odfaeg.graphic.primitiveType;
+import odfaeg.graphic.renderStates;
+import odfaeg.graphic.renderTarget;
+import odfaeg.math.vec;
+namespace
+{
+    // Compute the normal of a segment
+    odfaeg::math::Vec3f computeNormal(const odfaeg::math::Vec3f& p1, const odfaeg::math::Vec3f& p2)
+    {
+        odfaeg::math::Vec3f normal(p1.y() - p2.y(), p2.x() - p1.x(), 0.f);
+        float length = odfaeg::math::Math::sqrt(normal.x() * normal.x() + normal.y() * normal.y());
+        if (length != 0.f)
+            normal = normal / length;
+        return normal;
+    }
+
+    // Compute the dot product of two vectors
+    float dotProduct(const odfaeg::math::Vec3f& p1, const odfaeg::math::Vec3f& p2)
+    {
+        return p1.x() * p2.x() + p1.y() * p2.y() + p1.z() * p2.z();
+    }
+}
+namespace odfaeg
+{
+    namespace graphic {
+        unsigned int Shape::nbShapes = 0;
+        ////////////////////////////////////////////////////////////
+        Shape::~Shape()
+        {
+        }
+
+        const unsigned int& Shape::getId() {
+            return id;
+        }
+        ////////////////////////////////////////////////////////////
+        void Shape::setTexture(const Texture* texture, bool resetRect)
+        {
+            if (texture)
+            {
+                // Recompute the texture area if requested, or if there was no texture & rect before
+                if (resetRect || (!m_texture && (m_textureRect == IntRect())))
+                    setTextureRect(IntRect(0, 0, texture->getSize().x(), texture->getSize().y()));
+            }
+
+            // Assign the new texture
+            m_texture = texture;
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        const Texture* Shape::getTexture() const
+        {
+            return m_texture;
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        void Shape::setTextureRect(const IntRect& rect)
+        {
+            m_textureRect = rect;
+            updateTexCoords();
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        const IntRect& Shape::getTextureRect() const
+        {
+            return m_textureRect;
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        void Shape::setFillColor(const Color& color)
+        {
+            m_fillColor = color;
+            updateFillColors();
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        const Color& Shape::getFillColor() const
+        {
+            return m_fillColor;
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        void Shape::setOutlineColor(const Color& color)
+        {
+            m_outlineColor = color;
+            updateOutlineColors();
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        const Color& Shape::getOutlineColor() const
+        {
+            return m_outlineColor;
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        void Shape::setOutlineThickness(float thickness)
+        {
+            m_outlineThickness = thickness;
+            update(); // recompute everything because the whole shape must be offset
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        float Shape::getOutlineThickness() const
+        {
+            return m_outlineThickness;
+        }
+
+        ////////////////////////////////////////////////////////////
+        Shape::Shape(Device& device) :
+            m_texture(nullptr),
+            m_textureRect(),
+            m_fillColor(255, 255, 255),
+            m_outlineColor(255, 255, 255),
+            m_outlineThickness(0),
+            m_vertices(device, TriangleFan, MAX_FRAMES_IN_FLIGHT),
+            m_outlineVertices(device, TriangleStrip, MAX_FRAMES_IN_FLIGHT),
+            m_insideBounds(),
+            m_bounds()
+        {
+            id = nbShapes;
+            nbShapes++;
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        void Shape::update()
+        {
+            // Get the total number of points of the shape
+            unsigned int count = getPointCount();
+            if (count < 3)
+            {
+                m_vertices.resize(0, 0);
+                m_outlineVertices.resize(0, 0);
+                return;
+            }
+
+            m_vertices.resize(count + 2, 0); // + 2 for center and repeated first point
+
+            // Position
+            for (unsigned int i = 0; i < count; ++i) {
+                m_vertices[i + 1].position = getPoint(i);                
+            }
+            m_vertices[count + 1].position = m_vertices[1].position;
+
+            // Update the bounding rectangle
+            m_vertices[0] = m_vertices[1]; // so that the result of getBounds() is correct
+            m_insideBounds = m_vertices.getBounds();
+
+            // Compute the center and make it the first vertex
+            m_vertices[0].position[0] = m_insideBounds.getPosition().x() + m_insideBounds.getWidth() / 2;
+            m_vertices[0].position[1] = m_insideBounds.getPosition().y() + m_insideBounds.getHeight() / 2;
+            m_vertices[0].position[2] = m_insideBounds.getPosition().z() + m_insideBounds.getDepth() / 2;
+            // Color
+            updateFillColors();
+
+            // Texture coordinates
+            updateTexCoords();
+
+            // Outline
+            updateOutline();
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        void Shape::updateFillColors()
+        {
+            for (unsigned int i = 0; i < m_vertices.getVertexCount(); ++i)
+                m_vertices[i].color = m_fillColor;
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        void Shape::updateTexCoords()
+        {
+            for (unsigned int i = 0; i < m_vertices.getVertexCount(); ++i)
+            {
+                float xratio = (m_vertices[i].position[0] - m_insideBounds.getPosition().x()) / m_insideBounds.getWidth();
+                float yratio = (m_vertices[i].position[1] - m_insideBounds.getPosition().y()) / m_insideBounds.getHeight();
+                m_vertices[i].texCoords[0] = m_textureRect.left + m_textureRect.width * xratio;
+                m_vertices[i].texCoords[1] = m_textureRect.top + m_textureRect.height * yratio;
+            }
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        void Shape::updateOutline()
+        {
+            unsigned int count = m_vertices.getVertexCount() - 2;
+            m_outlineVertices.resize((count + 1) * 2, 0);
+
+            for (unsigned int i = 0; i < count; ++i)
+            {
+                unsigned int index = i + 1;
+
+                // Get the two segments shared by the current point
+                math::Vec3f p0 = (i == 0) ? m_vertices[count].position : m_vertices[index - 1].position;
+                math::Vec3f p1 = m_vertices[index].position;
+                math::Vec3f p2 = m_vertices[index + 1].position;
+
+                // Compute their normal
+                math::Vec3f n1 = computeNormal(p0, p1);
+                math::Vec3f n2 = computeNormal(p1, p2);
+
+                // Make sure that the normals point towards the outside of the shape
+                // (this depends on the order in which the points were defined)
+                if (dotProduct(n1, m_vertices[0].position - p1) > 0)
+                    n1 = -n1;
+                if (dotProduct(n2, m_vertices[0].position - p1) > 0)
+                    n2 = -n2;
+
+                // Combine them to get the extrusion direction
+                float factor = 1.f + (n1.x() * n2.x() + n1.y() * n2.y());
+                math::Vec3f normal = (n1 + n2) / factor;
+
+                // Update the outline points
+                m_outlineVertices[i * 2 + 0].position = p1;
+                m_outlineVertices[i * 2 + 1].position = p1 + normal * m_outlineThickness;
+            }
+
+            // Duplicate the first point at the end, to close the outline
+            m_outlineVertices[count * 2 + 0].position = m_outlineVertices[0].position;
+            m_outlineVertices[count * 2 + 1].position = m_outlineVertices[1].position;
+
+
+            // Update outline colors
+            updateOutlineColors();
+
+            // Update the shape's bounds
+            m_bounds = m_outlineVertices.getBounds();
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        void Shape::updateOutlineColors()
+        {
+            for (unsigned int i = 0; i < m_outlineVertices.getVertexCount(); ++i)
+                m_outlineVertices[i].color = m_outlineColor;
+        }
+        physic::BoundingBox Shape::getLocalBounds() const {
+            return m_bounds;
+        }
+        physic::BoundingBox& Shape::getGlobalBounds() {
+            m_globalBounds = m_bounds.transform(getTransform());
+            return m_globalBounds;
+        }
+        void Shape::draw(RenderTarget& renderTarget, RenderStates states) {
+            states.texture = m_texture;
+            states.transform = getTransform();
+            //std::cout<<"draw fill"<<std::endl;
+            //m_vertices.update(renderTarget.getCommandPool().getHandle(renderTarget.getCurrentFrame()), renderTarget.getCurrentFrame());
+            renderTarget.draw(m_vertices, states);
+            /*renderTarget.submit();
+            renderTarget.beginRecordCommandBuffer();*/
+            //std::cout<<"draw outline"<<std::endl;
+            //m_outlineVertices.update(renderTarget.getCommandPool().getHandle(renderTarget.getCurrentFrame()), renderTarget.getCurrentFrame());
+            renderTarget.draw(m_outlineVertices,states);
+        }
+    }
+} // namespace sf

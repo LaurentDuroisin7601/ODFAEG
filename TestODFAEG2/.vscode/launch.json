@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Clang Output",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${fileDirname}/${fileBasenameNoExtension}.out",
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "Build with Clang"
+    }
+  ]
+}

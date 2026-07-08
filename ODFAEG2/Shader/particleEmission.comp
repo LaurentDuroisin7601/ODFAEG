@@ -1,0 +1,137 @@
+#version 460
+#extension GL_EXT_debug_printf : enable
+struct ParticleSystem {
+    uint id;
+    uint offsetInAliveCountBuffer;
+    uint offsetInSubMeshBuffer;
+    uint offsetInParticleBuffer;
+    uint offsetInQuadBuffer;
+    uint subMeshCount;
+};
+struct Particle {
+    vec3 position;
+    vec3 velocity;
+    vec3 scale;
+    uint color;
+    uint id;
+    uint textureId;
+    float rotation;
+    float rotationSpeed;
+    float passedLifeTime;
+    float totalLifeTime;
+    uint alive;
+    uint particleSystemId;
+};
+struct UniversalEmittor {
+    float timeUntilRemoval;
+    uint particleSystemId;
+    int alive;
+    float emissionRate, emissionDifference;
+    float minParticleLifeTime, maxParticleLifeTime;
+    vec3 minParticlePosition, maxParticlePosition;
+    vec3 minParticleVelocity, maxParticleVelocity;
+    float minParticleRotation, maxParticleRotation;
+    float minParticleRotationSpeed, maxParticleRotationSpeed;
+    vec3 minParticleScale, maxParticleScale;
+    uint minParticleColor, maxParticleColor;
+    uint minParticleTextureIndex, maxParticleTextureIndex;
+};
+layout (push_constant) uniform PushConstant {
+    float dt;
+} pc;
+layout (std430, binding = 0, set = 0) buffer ParticleSSBO {
+    Particle particles[];
+} particleData;
+layout (std430, binding = 1, set = 0) buffer EmitterSSBO {
+    UniversalEmittor emittors[];
+} emittorData;
+layout (std430, binding = 2, set = 0) buffer AliveCountBuffer {
+    uint aliveCounts[];
+} aliveCountData;
+layout (std430, binding = 3, set = 0) buffer ParticleSystemSSBO {
+    ParticleSystem particleSystems[];
+} particleSystemData;
+float rand01(uint seed) {
+    seed = (seed ^ 61u) ^ (seed >> 16u);
+    seed *= 9u;
+    seed = seed ^ (seed >> 4u);
+    seed *= 0x27d4eb2du;
+    seed = seed ^ (seed >> 15u);
+    return float(seed & 0x00FFFFFFu) / float(0x01000000u);
+}
+
+float randRange(uint seed, float minVal, float maxVal) {
+    return minVal + rand01(seed) * (maxVal - minVal);
+}
+vec3 vec3Distribution(vec3 min, vec3 max, uint particleId) {
+    return vec3(
+        randRange(particleId * 3u + 0u, min.x, max.x),
+        randRange(particleId * 3u + 1u, min.y, max.y),
+        randRange(particleId * 3u + 2u, min.z, max.z)
+    );
+}
+uint randUint(inout uint seed) {
+    seed ^= seed << 13;
+    seed ^= seed >> 17;
+    seed ^= seed << 5;
+    return seed;
+}
+uint colorDistribution(uint minColor, uint maxColor, inout uint seed) {
+    // Génère 4 composantes 8 bits
+    uint r = minColor + (randUint(seed) & 0xFFu) % (maxColor - minColor + 1u);
+    uint g = minColor + (randUint(seed) & 0xFFu) % (maxColor - minColor + 1u);
+    uint b = minColor + (randUint(seed) & 0xFFu) % (maxColor - minColor + 1u);
+    uint a = 255u;
+    // Pack RGBA dans un uint : 0xAABBGGRR
+    return (a << 24) | (b << 16) | (g << 8) | r;
+}
+void emitParticles(UniversalEmittor emittor, ParticleSystem particleSystem) {
+    uint seed = gl_GlobalInvocationID.x * 1234567u;
+    float particleAmount = emittor.emissionRate * pc.dt + emittor.emissionDifference;
+    uint nbParticles = uint(particleAmount);
+    //debugPrintfEXT("emission rate : %f, nbParticles %i, dt : %f", emittor.emissionRate, nbParticles, pc.dt);
+    // Compute difference for next frame, return current amount
+    emittor.emissionDifference = particleAmount - nbParticles;
+    emittorData.emittors[gl_GlobalInvocationID.y] = emittor;
+    for (uint i = 0; i < nbParticles; i++) {
+        Particle particle;
+        uint aliveCount = atomicAdd(aliveCountData.aliveCounts[particleSystem.offsetInAliveCountBuffer], 1);
+        //debugPrintfEXT("alive count :  %i", aliveCount);
+        particle.id = aliveCount;
+        particle.alive = 1;
+        particle.particleSystemId=particleSystem.id;
+        particle.passedLifeTime = 0;
+        particle.totalLifeTime = randRange(particle.id, emittor.minParticleLifeTime, emittor.maxParticleLifeTime);
+        //debugPrintfEXT("particle id : %i, total life time : %f", particle.id, particle.totalLifeTime);
+        particle.position = vec3Distribution(emittor.minParticlePosition, emittor.maxParticlePosition, particle.id);
+        particle.velocity = vec3Distribution(emittor.minParticleVelocity, emittor.maxParticleVelocity, particle.id);
+        particle.color = colorDistribution(emittor.minParticleColor, emittor.maxParticleColor, seed);
+        particle.rotation = randRange(particle.id, emittor.minParticleRotation, emittor.maxParticleRotation);
+        particle.rotationSpeed = randRange(particle.id, emittor.minParticleRotationSpeed, emittor.maxParticleRotationSpeed);
+        particle.scale = vec3Distribution(emittor.minParticleScale, emittor.maxParticleScale, particle.id);
+        particle.textureId = uint(randRange(particle.id, emittor.minParticleTextureIndex, emittor.maxParticleTextureIndex));
+        particleData.particles[particleSystem.offsetInParticleBuffer+aliveCount] = particle;
+        //debugPrintfEXT("position : \nmin : %v3f\nmax : %v3f, generated : %v3f", emittor.minParticlePosition, emittor.maxParticlePosition, particle.position);
+    }
+}
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+void main() {
+    uint particleSystemId = gl_GlobalInvocationID.x;
+    uint emitterId = gl_GlobalInvocationID.y;
+    ParticleSystem currentParticleSystem = particleSystemData.particleSystems[particleSystemId];
+    UniversalEmittor currentEmittor = emittorData.emittors[emitterId];
+    if (currentEmittor.particleSystemId == currentParticleSystem.id && currentEmittor.alive == 1) {
+
+        if (currentEmittor.timeUntilRemoval != 0) {
+            //debugPrintfEXT("decrease time!");
+            currentEmittor.timeUntilRemoval -= pc.dt;
+            if (currentEmittor.timeUntilRemoval <= 0) {
+                currentEmittor.alive = 0;
+            }
+        }
+        if (currentEmittor.alive == 1) {
+            //debugPrintfEXT("Emit particle!");
+            emitParticles(currentEmittor, currentParticleSystem);
+        }
+    }
+}

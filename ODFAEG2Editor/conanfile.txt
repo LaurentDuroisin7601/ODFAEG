@@ -1,0 +1,14 @@
+[requires]
+assimp/5.3.1
+freetype/2.13.2
+openal-soft/1.23.1
+libsndfile/1.2.2
+openssl/3.2.1
+entt/3.13.0
+boost/1.84.0
+shaderc/2025.3
+stb/cci.20230920
+imgui/1.91.0-docking
+[generators]
+CMakeDeps
+CMakeToolchain

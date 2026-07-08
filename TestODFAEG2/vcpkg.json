@@ -1,0 +1,13 @@
+{
+	"name": "odfaeg",
+	"version-string": "2.0.0",
+	"dependencies": [
+		"assimp",
+		"openal-soft",
+		"openssl",
+		"libsndfile",
+		"freetype",		
+		"shaderc",		
+		"dirent"
+	]
+}

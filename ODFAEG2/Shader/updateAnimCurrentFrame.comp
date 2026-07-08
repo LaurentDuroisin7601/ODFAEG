@@ -1,0 +1,34 @@
+#version 460
+#extension GL_EXT_debug_printf : enable
+struct MorphAnim {
+	int subMeshesOffset;
+	int nbSubMeshes;
+	int offsetInFramesBuffer;
+	int nbFrames;
+	int interPerc;
+	int interLevels;
+	int currentFrameIndex;
+	float passedTime;
+};
+layout (push_constant) uniform PushConstant {
+    float dt;
+} pc;
+layout(std430, binding = 0, set = 0) buffer MorphAnimSSBO {
+    MorphAnim morphAnims[];
+} morphAnimsData;
+void main() {
+    uint morphAnimIndex = gl_GlobalInvocationID.x;
+    MorphAnim morphAnim = morphAnimsData.morphAnims[morphAnimIndex];
+    morphAnim.interPerc++;
+    if (morphAnim.passedTime >= 0.1 && morphAnim.interPerc >= morphAnim.interLevels) {
+        morphAnim.passedTime = 0;
+        morphAnim.interPerc = 0;
+        morphAnim.currentFrameIndex++;
+        if (morphAnim.currentFrameIndex >= morphAnim.nbFrames) {
+            morphAnim.currentFrameIndex = 0;
+        }
+    } else {
+        morphAnim.passedTime += pc.dt;
+    }
+    morphAnimsData.morphAnims[morphAnimIndex] = morphAnim;
+}

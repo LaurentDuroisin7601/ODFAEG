@@ -1,0 +1,4 @@
+/home/laurent/ODFAEG-master/ODFAEG2Editor/build/CMakeFiles/imgui_custom.dir
+/home/laurent/ODFAEG-master/ODFAEG2Editor/build/CMakeFiles/odfaeg-editor.dir
+/home/laurent/ODFAEG-master/ODFAEG2Editor/build/CMakeFiles/edit_cache.dir
+/home/laurent/ODFAEG-master/ODFAEG2Editor/build/CMakeFiles/rebuild_cache.dir

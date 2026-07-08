@@ -1,0 +1,38 @@
+#version 460
+#extension GL_EXT_mesh_shader : require
+#define NB_PRIMITIVE_TYPES 6
+#define MAX_FRAMES_IN_FLIGHT 2 
+struct MeshDrawCommand {
+    uint groupXCount;
+    uint groupYCount;
+    uint groupZCount;
+};
+struct TaskData {
+    MeshDrawCommand meshDrawCommand;
+    uint baseInstance;
+};
+layout(push_constant) uniform PushConstant {
+    mat4 viewMatrix;
+    mat4 projMatrix;
+    uint currentFrame;
+    uint primitiveType;
+    //uint totalSubMeshesCount;
+} pc;
+struct TaskPayload {
+    uint taskId;
+};
+taskPayloadSharedEXT TaskPayload payload;
+layout(std430, set = 0, binding = 0) buffer TaskDataSSBO {
+    TaskData taskData[];
+} TaskDatas[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+layout(std430, set = 0, binding = 1) buffer TaskCountSSBO {
+    uint taskCount;
+} TaskCounts[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+void main() {
+    uint id = gl_WorkGroupID.x;
+    if(id >= TaskCounts[pc.primitiveType * MAX_FRAMES_IN_FLIGHT + pc.currentFrame].taskCount)
+        return;
+    TaskData t = TaskDatas[pc.primitiveType * MAX_FRAMES_IN_FLIGHT + pc.currentFrame].taskData[id];
+    payload.taskId = id;
+    EmitMeshTasksEXT(t.meshDrawCommand.groupXCount, t.meshDrawCommand.groupYCount, t.meshDrawCommand.groupZCount);
+} 

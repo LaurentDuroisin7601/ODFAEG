@@ -1,0 +1,126 @@
+#version 460
+#extension GL_EXT_mesh_shader : require
+#define NB_PRIMITIVE_TYPES 6
+#define MAX_FRAMES_IN_FLIGHT 2
+#define MAX_BONES_INFLUENCE 4
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+// Déclaration du type de primitive + limites
+layout (triangles, max_vertices = 64, max_primitives = 32) out;
+layout(location = 0) in vec3 inPosition;
+layout(location = 1) in vec4 inColor;
+layout(location = 2) in vec2 inTexCoord;
+layout(location = 3) in vec3 normals;
+layout(location = 4) in uint drawableDataId;
+
+layout(location = 0) out uint fragColor[];
+layout(location = 1) out vec2 fragTexCoord[];
+layout(location = 2) out vec3 normal[];
+layout(location = 3) flat out int materialID[];
+layout(location = 4) flat out int primitiveType[];
+layout(location = 5) flat out int currentFrame[];
+struct MeshDrawCommand {
+    uint groupXCount;
+    uint groupYCount;
+    uint groupZCount;
+};
+struct LODLevel {
+    uint index_offset;
+    uint index_count;
+};
+struct TaskData {
+    MeshDrawCommand meshDrawCommand;
+    uint baseInstance;
+};
+struct AABB {
+	vec3 center;
+	vec3 size;
+};
+struct SubMesh {
+	AABB globalBounds;
+	int vertexOffset;
+	int indexOffset;
+	int primitiveType;
+	int materialId;
+	int nbVertices;
+	int nbIndexes;
+	int lodOffset;
+	int id;
+    int lodLevel;
+};
+struct Vertex {
+    vec3 position; ///< 3D position of the vertex
+    uint color; ///< Color of the vertex
+    vec2 texCoords; ///< Coordinates of the texture's pixel to map to the vertex
+    vec3 normal;
+    //bone indexes which will influence this vertex
+    int m_BoneIDs[MAX_BONES_INFLUENCE];
+    //weights from each bone
+    float m_Weights[MAX_BONES_INFLUENCE];
+    int submeshId;
+};
+struct ModelData {
+    mat4 modelMatrix;
+    mat4 shadowProjMatrix;
+    mat4 borderMatrices;
+};
+struct LodLevel {
+    uint index_offset;
+    uint nbLevels;
+};
+struct TaskPayload {
+    int taskId;
+};
+taskPayloadSharedEXT TaskPayload payload;
+layout (push_constant) uniform PushConstant {
+    mat4 projMatrix;
+    mat4 viewMatrix;
+    int primitiveType;
+    int currentFrame;
+} pc;
+layout (std430, set = 0, binding = 0) buffer TastDataSSBO {
+    TaskData taskData[];
+} taskDatas[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
+layout (std430, set = 0, binding = 1) buffer ModelDataSSBO {
+    ModelData modelData[];
+} modelDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
+layout (std430, set = 0, binding = 2) buffer SubMeshDataSSBO {
+    SubMesh subMeshData[];
+} SubMeshDatas[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
+layout (std430, set = 0, binding = 3) buffer vertexBufferSSBO {
+    Vertex vertices[];
+} vertexData[NB_PRIMITIVE_TYPES];
+layout (std430, set = 0, binding = 4) buffer indexBufferSSBO {
+    uint indexes[];
+} indexData[NB_PRIMITIVE_TYPES];
+layout (std430, set=0, binding = 5) buffer LodLevelBuffer {
+    LODLevel lodLevel[];
+} lodLevelData;
+void main() {    
+    //Instance id = taskId (base instance) + workGroupId.x (instance id).
+    uint instanceId = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].baseInstance + gl_WorkGroupID.x;
+    mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId].modelMatrix;
+    SubMesh subMesh = SubMeshDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMeshData[payload.taskId];
+    uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_offset;
+    //3 = Triangles.
+    if (pc.primitiveType == 3) {
+        uint primitiveCount = subMesh.nbVertices / 3;
+        SetMeshOutputsEXT(subMesh.nbVertices, primitiveCount);
+        for (uint i = 0; i < subMesh.nbVertices; i++) {
+            uint v = subMesh.vertexOffset + i;
+            gl_MeshVerticesEXT[i].gl_Position = pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(vertexData[pc.primitiveType].vertices[v].position, 1.0);
+            fragColor[v] = vertexData[pc.primitiveType].vertices[v].color;
+            fragTexCoord[v] = vertexData[pc.primitiveType].vertices[v].texCoords;
+            normal[v] = vertexData[pc.primitiveType].vertices[v].normal;
+            materialID[v] = payload.taskId;
+            primitiveType[v] = pc.primitiveType;
+            currentFrame[v] = pc.currentFrame;
+        }
+        for (uint tri = 0; tri < primitiveCount; tri++) {
+            uint i0 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 0];
+            uint i1 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 1];
+            uint i2 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 2];
+            gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);
+        }
+    }
+}

@@ -1,0 +1,58 @@
+#version 460
+#define NB_PRIMITIVE_TYPES 6
+#define MAX_FRAMES_IN_FLIGHT 2
+#extension GL_EXT_debug_printf : enable
+layout(push_constant) uniform PushConstant {
+    uint currentFrame;
+} pc;
+struct MaterialData {   
+    vec2 uvScale;
+    vec2 uvOffset;
+    uint textureIndex;
+    uint materialType;
+    uint materialSet;
+    uint nbVertices;
+    uint nbIndexes;
+    int instanceGroupId;
+    uint vertsInstanceSet;
+    uint materialId;
+    uint objectDrawableId;
+    uint nbBuffers;
+};
+/*position dans le buffer de matrices de sortie pour les instance*/
+layout (std430, set = 0, binding = 0) buffer offsetInOutputModelDataSSBO {
+	uint modelDataOffset;
+} offsetInOutputModelBuffer[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+/*position dans le buffer des matrices de sortie*/
+layout (std430, set = 0, binding = 1) buffer offsetInOutputMeshesDataSSBO {
+	uint meshesDataOffset;
+} offsetInOutputMeshesBuffer[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+layout (std430, set = 0, binding = 2) buffer offsetInOutputMaterialSSBO {
+	uint materialDataOffset;
+} offsetInOutputMaterialBuffer[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+layout (std430, set = 0, binding = 3) buffer offsetInOutputElementsIndirectCommandSSBO {
+	uint elementIndirectCommandOffset;
+} offsetInOutputElementsIndirectCommandBuffer[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+layout (std430, set = 0, binding = 4) buffer inputMaterialDataSSBO {
+	MaterialData materialData[];
+} inputMaterialBuffer[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+layout (std430, set = 0, binding = 5) buffer drawCountSSBO {
+	uint drawCount;
+} drawCountData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+layout (std430, set = 0, binding = 6) buffer outputInstanceBaseSSBO {
+	uint instanceBase;
+} outputInstanceBase[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+void main() {
+    //debugPrintfEXT("reset  buffers");
+	uint materialId = gl_GlobalInvocationID.x;
+	uint primitiveType = gl_GlobalInvocationID.y;
+    offsetInOutputModelBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelDataOffset = 0u;
+    offsetInOutputMeshesBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshesDataOffset = 0u;
+    offsetInOutputMaterialBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame] .materialDataOffset = 0u;
+    offsetInOutputElementsIndirectCommandBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].elementIndirectCommandOffset = 0u;
+    drawCountData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].drawCount = 0u;
+    outputInstanceBase[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].instanceBase = 0u;
+    //debugPrintfEXT("reset  : %i, current frame : %i", firstIndexData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].firstIndex, pc.currentFrame);
+	inputMaterialBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].materialSet = 0u;
+}

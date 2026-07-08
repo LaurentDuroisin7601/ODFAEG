@@ -1,0 +1,90 @@
+#version 460
+#extension GL_EXT_debug_printf : enable
+#define MAX_BONE_INFLUENCE 4
+#define MAX_BONES 100
+#define NB_PRIMITIVE_TYPES 6
+#define MAX_FRAMES_IN_FLIGHT 2
+struct AABB {
+	vec3 center;
+	vec3 size;
+};
+struct Vertex {
+   vec3 position;
+   uint color;
+   vec2 texCoords;
+   vec3 normal;
+   int boneIds[MAX_BONE_INFLUENCE];
+   float weights[MAX_BONE_INFLUENCE];
+   int submeshId;
+};
+
+struct SubMesh {
+   AABB globalBounds;
+   int vertexOffset;
+   int indexOffset;
+   int primitiveType;
+   int materialId;
+   int nbVertices;
+   int nbIndexes;
+   int lodOffset;
+   int id;
+};
+struct Anim {
+    int id;
+    int animsSubmeshOffset;
+    int submeshOffset;
+    int nbSubmeshes;
+};
+layout (std430, set = 0, binding = 0) buffer animsSSBO {
+   Anim anims[];
+} animsBuffers;
+layout (std430, set = 0, binding = 1) buffer submeshSSBO {
+    SubMesh subMeshes[];
+} subMeshesBuffer;
+layout (std430, set = 0, binding = 2) buffer finalBonesMatricesSSBO {
+   mat4 finalBonesMatrices[];
+} finalBonesMatricesBuffers;
+layout (std430, set = 0, binding = 3) buffer animsSubmeshSSBO {
+  SubMesh subMeshes[];
+} animsSubMeshesBuffer;
+layout (std430, set = 0, binding = 4) buffer verticesSSBOIn {
+   Vertex vertices[];
+} verticesBuffersIn[NB_PRIMITIVE_TYPES];
+layout (std430, set = 0, binding = 5) buffer verticesSSBO {
+   Vertex vertices[];
+} verticesBuffers[NB_PRIMITIVE_TYPES];
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+void main() {
+    //debugPrintfEXT("Call shader");
+    Anim anim = animsBuffers.anims[gl_GlobalInvocationID.x];
+    uint vertexId = gl_GlobalInvocationID.y;
+    for (uint i = 0; i < anim.nbSubmeshes; i++) {
+        SubMesh sm = subMeshesBuffer.subMeshes[anim.submeshOffset+i];
+        SubMesh sm2 = animsSubMeshesBuffer.subMeshes[anim.animsSubmeshOffset];
+        Vertex vertex = verticesBuffersIn[sm.primitiveType].vertices[vertexId];
+        //debugPrintfEXT("%i %i %i", anim.submeshOffset, sm.id, verticesBuffers[sm.primitiveType].vertices[sm.vertexOffset+vertexId].submeshId);
+        if (sm.id == verticesBuffers[sm.primitiveType].vertices[sm.vertexOffset+vertexId-sm2.vertexOffset].submeshId) {
+
+            vec4 totalPosition = vec4(0.0f);
+            for(uint j = 0 ; j < MAX_BONE_INFLUENCE; j++) {
+
+
+                if (vertex.boneIds[j] == -1) {
+                    continue;
+                }
+                if(vertex.boneIds[j] >= MAX_BONES) {
+                    //debugPrintfEXT("Max!");
+                    totalPosition = vec4(vertex.position.xyz, 1);
+                    break;
+                }
+                mat4 finalBoneMatrix = finalBonesMatricesBuffers.finalBonesMatrices[anim.id*MAX_BONES+vertex.boneIds[j]];
+                vec4 localPosition = finalBoneMatrix * vec4(vertex.position.xyz, 1);
+                //debugPrintfEXT("Final bone matrix : \n0 : %v4f\n1 : %v4f\n2 : %v4f\n 3 : %v4f", finalBoneMatrix[0], finalBoneMatrix[1], finalBoneMatrix[2], finalBoneMatrix[3]);
+                totalPosition += localPosition  * vertex.weights[j];
+                //debugPrintfEXT("bone id : %i, position : %v3f, weight : %f, total position : %v4f, final bone matrix : \n0 : %v4f\n1 : %v4f\n2 : %v4f\n 3 : %v4f", vertex.boneIds[j], vertex.position, vertex.weights[j], totalPosition, finalBoneMatrix[0], finalBoneMatrix[1], finalBoneMatrix[2], finalBoneMatrix[3]);
+                //verticesBuffers[sm.primitiveType].vertices[vertexId].normal = mat3(finalBoneMatrix) * vertex.normal;
+            }
+            verticesBuffers[sm.primitiveType].vertices[sm.vertexOffset+vertexId-sm2.vertexOffset].position = vec3(totalPosition.xyz);
+        }
+    }
+}
