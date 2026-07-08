@@ -59,7 +59,7 @@ int main() {
 	ResourceManager<Texture, TextureNames> textureManager;
 	ResourceManager<Texture, std::string> modelTextureManager;
 	ModelLoader modelLoader(GPUContext::instance().getDevice(), modelTextureManager);
-	GameObject* bistroExterior = modelLoader.loadModel("Car/car.fbx");
+	GameObject* bistroExterior = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
 	/*std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
 	textureManager.fromFileWithAlias("tilesets/wood.png", WOOD, args);
 	Texture* texWood = textureManager.getResourceByAlias(WOOD);

@@ -687,7 +687,7 @@ namespace odfaeg {
 				emissiveDefaultRenderingLayout.update();
 				if (!isDepthOnly()) {
 					for (unsigned int i = 0; i < depthStencilInfos.size(); i++) {
-						GPUContext::instance().getGraphicsPipeline(Undefined, defaultRenderingShader, blendMode,i).createGraphicPipeline( defaultRenderingShader, GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
+						GPUContext::instance().getGraphicsPipeline(Triangles, defaultRenderingShader, blendMode,i).createGraphicPipeline( defaultRenderingShader, GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
 					}
 				}
 				//std::cout<<"descriptor and pipelines created default render target"<<std::endl;

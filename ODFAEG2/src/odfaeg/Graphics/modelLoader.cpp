@@ -51,6 +51,7 @@ namespace odfaeg {
                 importFlags |= aiProcess_GenSmoothNormals;
             //if ( parameters.get< bool >( cuT( "tangent_space" ) ) )
                 importFlags |= aiProcess_CalcTangentSpace;*/
+            std::cout<<"path : "<<path<<std::endl;
             const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs /*| aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace*/);
 
             //std::cout<<"imported"<<std::endl;

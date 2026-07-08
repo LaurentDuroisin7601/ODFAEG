@@ -12,10 +12,10 @@ project(MyGame LANGUAGES CXX)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(VULKAN REQUIRED vulkan)
 pkg_check_modules(SHADERC REQUIRED shaderc)
-
+pkg_check_modules(ASSIMP REQUIRED assimp)
 
 find_package(odfaeg REQUIRED)
-find_package(assimp REQUIRED)
+#find_package(assimp REQUIRED)
 #find_package(Vulkan REQUIRED)
 #find_package(shaderc REQUIRED)
 add_executable(MyGame main.cpp)
