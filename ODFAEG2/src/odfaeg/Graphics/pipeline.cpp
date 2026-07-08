@@ -467,7 +467,7 @@ namespace odfaeg {
 			if (vkCreateGraphicsPipelines(device.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS) {
 				throw std::runtime_error("failed to create graphics pipeline!");
 			}
-			shader.cleanupShaderModules();		
+			shader.cleanupMeshShaderModules();		
 		}
 		void Pipeline::createComputePipeline(Shader& shader, std::deque<DescriptorSetLayout>& setLayouts, std::vector<VkPushConstantRange> pushConstants) {
 			if (pipeline != VK_NULL_HANDLE) {

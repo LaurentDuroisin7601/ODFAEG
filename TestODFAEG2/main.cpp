@@ -59,10 +59,10 @@ int main() {
 	ResourceManager<Texture, TextureNames> textureManager;
 	ResourceManager<Texture, std::string> modelTextureManager;
 	ModelLoader modelLoader(GPUContext::instance().getDevice(), modelTextureManager);
-	GameObject* bistroExterior = modelLoader.loadModel("Bistro_v5_2/BistroExterior.fbx");
-	std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
+	GameObject* bistroExterior = modelLoader.loadModel("Car/car.fbx");
+	/*std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
 	textureManager.fromFileWithAlias("tilesets/wood.png", WOOD, args);
-	/*Texture* texWood = textureManager.getResourceByAlias(WOOD);
+	Texture* texWood = textureManager.getResourceByAlias(WOOD);
 	texWood->setSamplerAddressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT);	
 	Plane plane(Vec3f(-25, -2, -25), Vec3f(50, 0, 50));
 	plane.setTexCoords(FloatRect(0, 0, 25, 25));
