@@ -2,7 +2,6 @@
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_EXT_debug_printf : enable
-#extension GL_EXT_multiview : enable
 #define MAX_TEXTURES 1024
 #define MAX_FRAMES_IN_FLIGHT 2
 #define NB_PRIMITIVE_TYPES 6

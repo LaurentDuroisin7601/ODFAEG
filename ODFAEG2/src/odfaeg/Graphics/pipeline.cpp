@@ -347,7 +347,7 @@ namespace odfaeg {
 			if (pipeline != VK_NULL_HANDLE) {
 				cleanup();
 			}
-			shader.createShaderModules();
+			shader.createMeshShaderModules();
 			VkShaderModule meshShaderModule = VK_NULL_HANDLE;
 			VkShaderModule fragmentShaderModule = VK_NULL_HANDLE;
 			VkShaderModule taskShaderModule = VK_NULL_HANDLE;

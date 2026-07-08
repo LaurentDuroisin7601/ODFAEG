@@ -113,7 +113,7 @@ namespace odfaeg {
                 }
                 meshShaderCode = std::string(&meshShader[0]);
                 fragmentShaderCode = std::string(&fragmentShader[0]);
-                if (taskShaderCode != "") {
+                if (taskShader.size() > 0) {
                     taskShaderCode = std::string(&taskShader[0]);
                 }                
                 return true;
@@ -397,6 +397,7 @@ namespace odfaeg {
                 createMSInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
                 createMSInfo.codeSize = 4 * spvMeshShaderCode.size();
                 createMSInfo.pCode = spvMeshShaderCode.data();
+                std::cout<<"mesh shader code : "<<meshShaderCode<<std::endl;
                 if (vkCreateShaderModule(device.getDevice(), &createMSInfo, nullptr, &meshShaderModule) != VK_SUCCESS) {
                     throw std::runtime_error("Failed to create mesh shader module");
                 }
@@ -407,6 +408,7 @@ namespace odfaeg {
                 if (vkCreateShaderModule(device.getDevice(), &createFSInfo, nullptr, &fragmentShaderModule) != VK_SUCCESS) {
                     throw std::runtime_error("Failed to create fragment shader module");
                 }
+                //std::cout<<"task shader code : "<<taskShaderCode<<std::endl;
                 if (taskShaderCode != "") {
                     VkShaderModuleCreateInfo createTSInfo{};
                     createTSInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
