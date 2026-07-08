@@ -97,7 +97,7 @@ namespace odfaeg {
 				if (!cullingBatchingShader.loadFromFile(shaderDir+"/meshCullingBatching.comp")) {
 					throw std::runtime_error("Failed to compile culling batching shader!");
 				}
-				if (!defaultRenderingShader.loadMeshFromFile(shaderDir+"/meshShader.mesh", shaderDir+"/meshRenderTarget.frag", shaderDir+"/taskShader.task")) {
+				if (!defaultRenderingShader.loadMeshFromFileSpv(shaderDir+"/meshShader.mesh", shaderDir+"/meshRenderTarget.frag", shaderDir+"/taskShader.task")) {
 					throw std::runtime_error("Failed to compile render target default shader!");
 				}
 				if (!vertexBufferShader.loadFromFile(shaderDir+"/vertexBuffer.vert", shaderDir+"/vertexBuffer.frag")) {
