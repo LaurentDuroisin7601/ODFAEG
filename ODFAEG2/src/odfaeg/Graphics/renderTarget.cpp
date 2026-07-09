@@ -570,7 +570,7 @@ namespace odfaeg {
 				commandPool.beginRecordCommandBuffer(getCurrentFrame());				//cullingBatchingPc.totalSubmeshCount = currentSubmeshesOffset;
 				
 				//vertices.clear();
-				//needToUpdateDescriptorSets = true;
+				needToUpdateDescriptorSets = true;
 
 				//std::cout<<"data updated!"<<std::endl;
 				ParticleSystemUpdater::instance(cv, mtx).setBuffersReady(true);
