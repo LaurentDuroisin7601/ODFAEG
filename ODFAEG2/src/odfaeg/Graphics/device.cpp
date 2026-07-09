@@ -103,8 +103,9 @@ namespace odfaeg {
             // --- 2. Vérifier les extensions ---
             if (!checkDeviceExtensionSupport(device))
                 return false;
-            if (!checkDeviceMeshExtensionSupport(device))
-                meshSupported = false;
+            if (checkDeviceMeshExtensionSupport(device))
+                meshSupported = true;
+            //std::cout<<"mesh supported ? "<<meshSupported<<std::endl;  
             // --- 3. Vérifier le swapchain si surface fournie ---
             if (surface != VK_NULL_HANDLE)
             {
@@ -205,6 +206,7 @@ namespace odfaeg {
         void Device::createLogicalDevice(VkSurfaceKHR surface) {
             //std::cout<<"create logical device"<<std::endl;
             if (device == VK_NULL_HANDLE) {
+                
                 //std::cout<<"create logical device"<<std::endl;
                 std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
                 std::set<uint32_t> uniqueQueueFamilies;

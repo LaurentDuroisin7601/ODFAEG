@@ -109,10 +109,13 @@ void main() {
     SubMesh subMesh = SubMeshDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMeshData[payload.taskId];
     uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_offset;
     //3 = Triangles.
-    if (pc.primitiveType == 3) {
-        uint primitiveCount = subMesh.nbVertices / 3;
-        SetMeshOutputsEXT(subMesh.nbVertices, primitiveCount);
-        for (uint i = 0; i < subMesh.nbVertices; i++) {
+    uint maxVerts = 64u;
+    uint maxPrims = 32u;
+    uint vertexCount   = min(subMesh.nbVertices, maxVerts);
+    uint primitiveCount = min(subMesh.nbVertices / 3u, maxPrims);
+    //if (pc.primitiveType == 3) {       
+        SetMeshOutputsEXT(vertexCount, primitiveCount);
+        for (uint i = 0; i < vertexCount; i++) {
             uint v = subMesh.vertexOffset + i;
             gl_MeshVerticesEXT[i].gl_Position = pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(vertexData[pc.primitiveType].vertices[v].position, 1.0);
             fragColor[i] = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
@@ -128,5 +131,5 @@ void main() {
             uint i2 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 2];
             gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);
         }
-    }
+    //}
 }

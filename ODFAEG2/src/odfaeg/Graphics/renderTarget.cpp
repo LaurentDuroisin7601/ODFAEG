@@ -39,9 +39,7 @@ namespace odfaeg {
 		{
 			
 			id = registeredRenderTargets.size();			
-			registeredRenderTargets.push_back(this);
-			vkCmdDrawMeshTasksEXT =
-    (		PFN_vkCmdDrawMeshTasksEXT) vkGetDeviceProcAddr(device.getDevice(), "vkCmdDrawMeshTasksEXT");
+			registeredRenderTargets.push_back(this);			
 			//std::cout<<"id : "<<id<<std::endl;
 		}
 		unsigned int RenderTarget::getId() {
@@ -84,6 +82,13 @@ namespace odfaeg {
 			}
 		}
 		void RenderTarget::initialize() {
+			vkCmdDrawMeshTasksEXT =
+    		(PFN_vkCmdDrawMeshTasksEXT) vkGetDeviceProcAddr(device.getDevice(), "vkCmdDrawMeshTasksEXT");
+			if (!vkCmdDrawMeshTasksEXT) {
+				std::cerr << "vkCmdDrawMeshTasksEXT is NULL (extension VK_EXT_mesh_shader pas dispo / pas activée)" << std::endl;
+				// Ne JAMAIS appeler la fonction dans ce cas
+				system("PAUSE");
+			}
 			//std::cout<<"initialize"<<std::endl;
 			//std::cout<<"size : "<<getSize().x()<<','<<getSize().y()<<std::endl;
 			//std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
@@ -1313,7 +1318,7 @@ namespace odfaeg {
 				vkCmdDispatch(commandPool.getHandle(getCurrentFrame()), gameObjects.size(), Material::getNbMaterials(), NB_PRIMITIVE_TYPES);
 
 
-				mem.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+				/*mem.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
 				mem.dstAccessMask =
 					VK_ACCESS_SHADER_READ_BIT |            // SSBO dans VS/FS
 					VK_ACCESS_INDIRECT_COMMAND_READ_BIT;   // draw indirect
@@ -1327,7 +1332,7 @@ namespace odfaeg {
 					1, &mem,
 					0, nullptr,
 					0, nullptr
-				);
+				);*/
 
 				//computeCommandPool.endRecordCommandBuffer(getCurrentFrame());
 				/*VkSubmitInfo submitInfo{};
@@ -1651,26 +1656,42 @@ namespace odfaeg {
 			viewProjInfos.currentFrame = getCurrentFrame();
 			indexesPC.currentImageIndex = getImageIndex();
 			states.blendMode.updateIds();
-			VkMemoryBarrier mem{};
-			mem.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-			mem.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-			mem.dstAccessMask =
-				VK_ACCESS_INDIRECT_COMMAND_READ_BIT |   // draw indirect
-				VK_ACCESS_INDEX_READ_BIT |              // index buffer
-				VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-			/*Device::QueueFamilyIndices indexes = device.findQueueFamilies(device.getPhysicalDevice());// vertex buffer
-			mem.srcQueueFamilyIndex = indexes.computeFamily.value();
-			mem.dstQueueFamilyIndex = indexes.graphicsFamily.value();*/
-			vkCmdPipelineBarrier(
-				commandPool.getHandle(getCurrentFrame()),
-				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-				VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT |
-				VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-				0,
-				1, &mem,
-				0, nullptr,
-				0, nullptr
-			);
+			if (device.areMeshShadersSupported()) {
+				VkMemoryBarrier2 barrier{};
+				barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2;
+				barrier.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+				barrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
+				barrier.dstStageMask = VK_PIPELINE_STAGE_2_MESH_SHADER_BIT_EXT;
+				barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+
+				VkDependencyInfo depInfo{};
+				depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+				depInfo.memoryBarrierCount = 1;
+				depInfo.pMemoryBarriers = &barrier;
+
+				vkCmdPipelineBarrier2(commandPool.getHandle(getCurrentFrame()), &depInfo);
+			} else {				
+				VkMemoryBarrier mem{};
+				mem.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+				mem.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+				mem.dstAccessMask =
+					VK_ACCESS_INDIRECT_COMMAND_READ_BIT |   // draw indirect
+					VK_ACCESS_INDEX_READ_BIT |              // index buffer
+					VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+				/*Device::QueueFamilyIndices indexes = device.findQueueFamilies(device.getPhysicalDevice());// vertex buffer
+				mem.srcQueueFamilyIndex = indexes.computeFamily.value();
+				mem.dstQueueFamilyIndex = indexes.graphicsFamily.value();*/
+				vkCmdPipelineBarrier(
+					commandPool.getHandle(getCurrentFrame()),
+					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+					VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT |
+					VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+					0,
+					1, &mem,
+					0, nullptr,
+					0, nullptr
+				);
+			}
 			beginRendering();
 			DepthStencilType depthStencilInfoId;
 			if (!useDepthTest() && !useStencilTest()) {
