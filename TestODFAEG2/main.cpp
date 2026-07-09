@@ -122,8 +122,8 @@ int main() {
 		window.draw(Triangles);
 		/*shadowRenderer.clear();
 		//shadowRenderer.drawNextFrame();
-		shadowRenderer.draw();
-		window.submit(true);*/
+		shadowRenderer.draw();*/
+		window.submit(true);
 		window.display();
 		fps++;
 		if (clock.getElapsedTime() >= seconds(1.f)) {
