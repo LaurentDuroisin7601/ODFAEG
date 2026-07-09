@@ -50,6 +50,7 @@ void main() {
     vec2 uv = fragTexCoord;
     // --- Diffuse ---
     vec4 diffuse = fragColor;
+    debugPrintfEXT("diffuse %i", mat.diffuseTextureIndex);
     if (mat.diffuseTextureIndex > 0 && mat.diffuseTextureIndex < MAX_TEXTURES) {
         diffuse *= texture(diffuseTextures[mat.diffuseTextureIndex-1], uv);
     }
@@ -79,14 +80,14 @@ void main() {
     }
 	// --- Éclairage simple ---
     vec3 L = normalize(vec3(0.5, 1.0, 0.3));
-    float diff = max(dot(-N, L), 0.0);
+    float diff = max(dot(N, L), 0.0);
     // Specular simple
     vec3 V = normalize(vec3(0,0,1));
     vec3 H = normalize(L + V);
     float spec = pow(max(dot(N, H), 0.0), 32.0) * specularStrength;
     //debugPrintfEXT("texture index : %i, normal : %v3f, fragTexCoord %v2f, color : %v4f, fragColor : %v4f", mat.diffuseTextureIndex, normal, fragTexCoord, diffuse * diff * ao + spec + emissive, fragColor);
     //debugPrintfEXT("normal : %v3f", N);
-    outColor = diffuse /** diff * ao + spec + emissive*/;
-    if (outColor.a == 0)
-        debugPrintfEXT("out color : %v4f", outColor);
+    outColor = diffuse * diff * ao + spec + emissive;
+   /* if (outColor.a == 0)
+        debugPrintfEXT("out color : %v4f", outColor);*/
 };

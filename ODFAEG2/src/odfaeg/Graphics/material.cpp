@@ -163,12 +163,12 @@ namespace odfaeg {
             return texInfos[0].size();
         }
         void Material::setTexture(const Texture* texture, TexType texType, unsigned int texUnit, std::string texId) {
-            std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
+            //std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
             for (unsigned int i = 0; i < NBTEXTYPES; i++) {
                 if (texUnit >= texInfos[i].size())
                     texInfos[i].resize(texUnit+1);
             }
-            //std::cout<<"set texture : "<<texture<<std::endl;
+            //std::cout<<"size : "<<texInfos.size()<<","<<texInfos[texType].size()<<","<<texType<<","<<texUnit<<std::endl;
             TextureInfo texInfo(texture, texId);
             texInfos[texType][texUnit] = texInfo;
             //updateIds();

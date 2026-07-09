@@ -525,6 +525,7 @@ namespace odfaeg {
         }
 	    void Texture::update(CommandPool& commandPool, Buffer& staggingBuffer, unsigned int texWidth, unsigned int texHeight, unsigned int x, unsigned int y, size_t srcStart, size_t mipLevel) {
             //std::cout<<"data size : "<<imageSize<<"image size : "<<texWidth<<","<<texHeight<<std::endl;
+            //create(texWidth, texHeight, 1, mipLevels, false, false);
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 transitionImageLayout(images[i], commandPool.getHandle(i),VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevel, 0, 1, 1);
                 images[i].copyBufferToImage(commandPool.getHandle(i), staggingBuffer, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), static_cast<uint32_t>(x), static_cast<uint32_t>(y), srcStart, mipLevel);
@@ -535,6 +536,7 @@ namespace odfaeg {
                 auto& vec = GPUContext::instance().getSharedTextures(texType);
                 id = vec.size()+1;
                 vec.emplace_back(device);
+                //vec.push_back(std::move(*this));
                 vec.back().copyFrom(commandPool, *this);
             }
         }

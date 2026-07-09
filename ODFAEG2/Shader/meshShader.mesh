@@ -135,7 +135,8 @@ void main() {
             uint i0 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 0];
             uint i1 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 1];
             uint i2 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 2];
-            //debugPrintfEXT("Indexes : %i,%i,%i", i0, i1, i2);
+            if (i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount)
+                debugPrintfEXT("Indexes : %i,%i,%i,%i", i0, i1, i2, vertexCount);
             gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);
         }
     //}

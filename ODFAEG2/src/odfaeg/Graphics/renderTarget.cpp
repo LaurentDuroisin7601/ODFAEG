@@ -376,7 +376,7 @@ namespace odfaeg {
 		}
 		void RenderTarget::updateBuffers() {
 			if (needToUpdateBuffers && gameObjects.size() > 0) {
-				std::cout<<"update buffers"<<std::endl;
+				//std::cout<<"update buffers"<<std::endl;
 				currentSubmeshesOffset = 0;
 				currentModelDataOffset = 0;
 				for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
@@ -451,6 +451,7 @@ namespace odfaeg {
 						subMeshData.vertexOffset = currentVertexOffset[primitiveType];
 						subMeshData.indexOffset = currentIndexOffset[primitiveType];
 						subMeshData.materialId = subMesh.getMaterial().getId();
+						//std::cout<<"material id : "<<subMeshData.materialId<<std::endl;
 						subMeshData.nbVertices = subMesh.getVertexBuffer().getVertexCount();
 						subMeshData.nbIndexes = subMesh.getVertexBuffer().getIndexCount();
 						//std::cout<<"vertices count : "<<subMesh.getVertexBuffer().getVertexCount()<<std::endl;

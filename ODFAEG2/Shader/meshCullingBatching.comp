@@ -256,6 +256,7 @@ void main() {
                         outputModelData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceBase] = modelData;
                         //debugPrintfEXT("offsets : %i, %i, %i", objectDataOffset, offsetInOutputMaterial, indirectElementsDrawCommandOffset);
                         MaterialData material = inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId];
+                        //debugPrintfEXT("texture id : %i", material.diffuseTextureIndex);
                         material.materialId = materialId;
                         //debugPrintfEXT("culling shader draw id : %i, material id : %i", indirectElementsDrawCommandOffset, materialId);
                         //debugPrintfEXT("instance base : %i", instanceBase);

@@ -200,14 +200,14 @@ namespace odfaeg {
             for (unsigned int i = 0; i < Material::NBTEXTYPES; i++)
                 subMesh.getMaterial().setTexture(nullptr, static_cast<Material::TexType>(i));*/
            
-            Color diffuseColor;           
+            //Color diffuseColor;           
             std::vector<Texture*> diffuseMaps, specularMaps, normalMaps, metalnessMaps, roughnessMaps, aoMaps, emissiveMaps;
             if(mesh->mMaterialIndex >= 0) {
                 //std::cout<<"load materials"<<std::endl;
 
 
                 aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
-                 aiColor4D color;
+                /* aiColor4D color;
                 if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, color)) {
                     // color.r, color.g, color.b, color.a
                     diffuseColor.r = color.r;
@@ -215,7 +215,7 @@ namespace odfaeg {
                     diffuseColor.b = color.b;
                     diffuseColor.a = color.a;
                     //std::cout<<"color : "<<(int) diffuseColor.r<<std::endl;
-                }
+                }*/
                 if (loadTextures) {
                     //system("PAUSE");
                     diffuseMaps = loadMaterialTextures(scene, material,
@@ -418,8 +418,8 @@ namespace odfaeg {
             for (unsigned int v = 0; v < vertices.size(); v += MAX_VERTS) {
                 //std::cout<<"vertices : "<<vertices.size()<<std::endl;
                 SubMesh subMesh(device);
-                /*for (unsigned int i = 0; i < Material::NBTEXTYPES; i++)
-                    subMesh.getMaterial().setTexture(nullptr, static_cast<Material::TexType>(i));*/
+                for (unsigned int i = 0; i < Material::NBTEXTYPES; i++)
+                    subMesh.getMaterial().setTexture(nullptr, static_cast<Material::TexType>(i));
                 for (unsigned int i = 0; i < diffuseMaps.size(); i++) {
                     //diffuseMaps[i]->setTexType(Material::DIFFUSE);
                     //std::cout<<"diffuse : "<<diffuseMaps[i]->getId()<<std::endl;
@@ -456,9 +456,8 @@ namespace odfaeg {
                     subMesh.getMaterial().setTexture(emissiveMaps[i], Material::EMISSIVE, i);
                 }
                 size_t vertexCount = std::min(MAX_VERTS, vertices.size()  - v);
-                //std::cout<<"vertex count : "<<vertexCount<<std::endl;
-                size_t triStart = (v / MAX_VERTS) * MAX_PRIMS;
-                size_t indexOffset = triStart * 3;                
+                //std::cout<<"vertex count : "<<vertexCount<<std::endl;                
+                size_t indexOffset = (v / MAX_VERTS) * MAX_PRIMS * 3;               
                 size_t indexCount  = std::min(MAX_PRIMS * 3, indexes.size() - indexOffset);
                 //std::cout<<"index count : "<<indexOffset<<","<<indexCount<<std::endl;
                 /*if (indexOffset > indexes.size()) {
@@ -472,7 +471,7 @@ namespace odfaeg {
                 }
                 for (unsigned int i = 0; i < indexCount; i++) {
                     //std::cout<<"index : "<<indexes[indexOffset + i]<<std::endl;
-                    vb.setIndex(i, indexes[indexOffset + i]-indexOffset);                    
+                    vb.setIndex(i, indexes[indexOffset + i]-v);                    
                 }
                 physic::BoundingBox bounds = vb.getBounds();
                 //std::cout<<"bounds : "<<bounds.getSize()<<std::endl;

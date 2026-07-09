@@ -74,6 +74,7 @@ namespace odfaeg {
 				int lodOffset;
 				int id;
 				int lodLevel;
+				int pad[3];
 			};
 			struct ModelData {
 				math::Matrix4f modelMatrix;

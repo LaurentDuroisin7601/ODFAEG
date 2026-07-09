@@ -47,6 +47,8 @@ layout(location = 5) flat in int currentFrame;
 layout(location = 0) out vec4 outColor;
 void main() {
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[materialID];
+    //if (primitiveType != 3)
+        //debugPrintfEXT("primitive type : %i", currentFrame);
     vec2 uv = fragTexCoord;
     // --- Diffuse ---
     vec4 diffuse = fragColor; 
@@ -90,6 +92,6 @@ void main() {
     float spec = pow(max(dot(N, H), 0.0), 32.0) * specularStrength;
     //debugPrintfEXT("texture index : %i, normal : %v3f, fragTexCoord %v2f, color : %v4f, fragColor : %v4f", mat.diffuseTextureIndex, normal, fragTexCoord, diffuse * diff * ao + spec + emissive, fragColor);
     //debugPrintfEXT("normal : %v3f", N);
-    //outColor = diffuse * diff * ao + spec + emissive;
-    outColor = diffuse;
+    outColor = diffuse * diff * ao + spec + emissive;
+    //outColor = diffuse;
 };
