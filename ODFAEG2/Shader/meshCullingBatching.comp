@@ -214,7 +214,7 @@ void main() {
                             inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet = 1;
                             taskDataOffset = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
                             MeshDrawCommand meshDrawCommand;
-                            meshDrawCommand.groupXCount = 1;
+                            meshDrawCommand.groupXCount = 0;
                             meshDrawCommand.groupYCount = 1;
                             meshDrawCommand.groupZCount = 1;
                             TaskData taskData;
