@@ -49,8 +49,7 @@ void main() {
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[materialID];
     vec2 uv = fragTexCoord;
     // --- Diffuse ---
-    vec4 diffuse = fragColor;
-    //debugPrintfEXT("Texture : %i", mat.diffuseTextureIndex);
+    vec4 diffuse = fragColor;    
     if (mat.diffuseTextureIndex > 0 && mat.diffuseTextureIndex < MAX_TEXTURES) {
         
         diffuse *= texture(diffuseTextures[mat.diffuseTextureIndex-1], uv);
@@ -89,4 +88,5 @@ void main() {
     //debugPrintfEXT("texture index : %i, normal : %v3f, fragTexCoord %v2f, color : %v4f, fragColor : %v4f", mat.diffuseTextureIndex, normal, fragTexCoord, diffuse * diff * ao + spec + emissive, fragColor);
     //debugPrintfEXT("normal : %v3f", N);
     outColor = diffuse * diff * ao + spec + emissive;
+    //outColor = diffuse;
 };
