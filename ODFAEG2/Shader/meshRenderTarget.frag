@@ -88,5 +88,5 @@ void main() {
     float spec = pow(max(dot(N, H), 0.0), 32.0) * specularStrength;
     //debugPrintfEXT("texture index : %i, normal : %v3f, fragTexCoord %v2f, color : %v4f, fragColor : %v4f", mat.diffuseTextureIndex, normal, fragTexCoord, diffuse * diff * ao + spec + emissive, fragColor);
     //debugPrintfEXT("normal : %v3f", N);
-    outColor = diffuse /** diff * ao + spec + emissive*/;
+    outColor = diffuse * diff * ao + spec + emissive;
 };
