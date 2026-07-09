@@ -208,11 +208,11 @@ void main() {
                          //debugPrintfEXT("Instanced!");
 
                          uint instanceBase = atomicAdd(outputInstanceBase[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].instanceBase, 1);
-                         uint indirectElementsDrawCommandOffset = 0;
+                         uint taskDataOffset = 0;
                          //Si la commande n'est pas encore ajoutée pour cette instance, on l'ajoute.
                          if(inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet == 0) {
                             inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet = 1;
-                            uint taskDataOffset = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
+                            taskDataOffset = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
                             MeshDrawCommand meshDrawCommand;
                             meshDrawCommand.groupXCount = 1;
                             meshDrawCommand.groupYCount = 1;
@@ -229,8 +229,7 @@ void main() {
                         }
                         ModelData modelData = inputModelData.modelData[object.modelDataOffset];
                         outputModelData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceBase] = modelData;
-                        //nombre d'instances + 1.
-                        uint taskDataOffset = outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount - 1;
+                        //nombre d'instances + 1.                        
                         outputTaskData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupXCount++;
                         //Matériel non instancé.                                               
                     } else {                        
