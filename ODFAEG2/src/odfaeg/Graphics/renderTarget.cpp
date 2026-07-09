@@ -1641,11 +1641,11 @@ namespace odfaeg {
 			}
 		}
 		void RenderTarget::draw(PrimitiveType primitiveType, RenderStates states) {
-			if (needToUpdateCullBatchIndCmds) {
+			//if (needToUpdateCullBatchIndCmds) {
 				applyCullingAndBatching();
 				//std::cout<<"draw"<<std::endl;
 				needToUpdateCullBatchIndCmds = false;
-			}
+			//}
 			Shader* shader = (states.shader == nullptr) ? &defaultRenderingShader : states.shader;
 			viewProjInfos.primitiveType = primitiveType;
 			viewProjInfos.currentFrame = getCurrentFrame();
@@ -1682,10 +1682,10 @@ namespace odfaeg {
 			} else {
 				depthStencilInfoId = DEPTHSTENCIL;
 			}
-			//states.blendMode = BlendAlpha;
+			/*states.blendMode = BlendAlpha;
 			states.blendMode.updateIds();
 			std::cout<<"pipeline  : "<<primitiveType<<","<<shader->getId()<<","<<states.blendMode.id<<","<<depthStencilInfoId<<std::endl;
-			std::cout<<"pipeline handle : "<<GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getHandle()<<std::endl;
+			std::cout<<"pipeline handle : "<<GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getHandle()<<std::endl;*/
 			vkCmdBindPipeline(commandPool.getHandle(getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getHandle());
 			if (device.areMeshShadersSupported()) {
 				vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getLayout(), VK_SHADER_STAGE_TASK_BIT_EXT | VK_SHADER_STAGE_MESH_BIT_EXT, 0, sizeof(ViewProjMatPC), &viewProjInfos);
@@ -1707,6 +1707,7 @@ namespace odfaeg {
 
 			applyViewportAndScissor(commandPool.getHandle(getCurrentFrame()));
 			if (device.areMeshShadersSupported()) {
+				//std::cout<<"command pool : "<<commandPool.getHandle(getCurrentFrame())<<std::endl;
 				vkCmdDrawMeshTasksEXT(commandPool.getHandle(getCurrentFrame()), MAX_TASKS, 1, 1);
 
 			} else {
