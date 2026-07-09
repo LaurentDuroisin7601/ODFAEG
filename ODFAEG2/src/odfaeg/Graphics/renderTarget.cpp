@@ -21,6 +21,8 @@ import odfaeg.graphic.gpuContext;
 import odfaeg.graphic.particleSystemUpdater;
 import odfaeg.graphic.morphAnimUpdater;
 import odfaeg.graphic.boneAnimUpdater;
+import odfaeg.graphic.renderStates;
+import odfaeg.graphic.blendMode;
 namespace odfaeg {
 	namespace graphic {
 
@@ -635,7 +637,7 @@ namespace odfaeg {
 				cullingBatchingLayout.update();
 				//std::cout<<"create culling compute pipeline"<<std::endl;
 				GPUContext::instance().getComputePipeline(cullingBatchingShader).createComputePipeline(cullingBatchingShader, GPUContext::instance().getDescriptorSetLayout(cullingBatchingShader), pushConstants);
-				BlendMode blendMode;
+				BlendMode blendMode;				
 				pushConstants.clear();
 				pushConstant.offset = 0;
 				pushConstant.size = sizeof(ViewProjMatPC);
@@ -687,6 +689,9 @@ namespace odfaeg {
 				emissiveDefaultRenderingLayout.update();
 				if (!isDepthOnly()) {
 					for (unsigned int i = 0; i < depthStencilInfos.size(); i++) {
+						/*blendMode = BlendAlpha;
+						blendMode.updateIds();
+						std::cout<<"pipeline  : "<<Triangles<<","<<defaultRenderingShader.getId()<<","<<blendMode.id<<","<<i<<std::endl;*/
 						GPUContext::instance().getGraphicsPipeline(Triangles, defaultRenderingShader, blendMode,i).createGraphicPipeline( defaultRenderingShader, GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
 					}
 				}
@@ -1677,8 +1682,16 @@ namespace odfaeg {
 			} else {
 				depthStencilInfoId = DEPTHSTENCIL;
 			}
+			//states.blendMode = BlendAlpha;
+			states.blendMode.updateIds();
+			std::cout<<"pipeline  : "<<primitiveType<<","<<shader->getId()<<","<<states.blendMode.id<<","<<depthStencilInfoId<<std::endl;
+			std::cout<<"pipeline handle : "<<GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getHandle()<<std::endl;
 			vkCmdBindPipeline(commandPool.getHandle(getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getHandle());
-			vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ViewProjMatPC), &viewProjInfos);
+			if (device.areMeshShadersSupported()) {
+				vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getLayout(), VK_SHADER_STAGE_TASK_BIT_EXT | VK_SHADER_STAGE_MESH_BIT_EXT, 0, sizeof(ViewProjMatPC), &viewProjInfos);
+			} else {
+				vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ViewProjMatPC), &viewProjInfos);
+			}			
 			vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(ViewProjMatPC), sizeof(IndexesPC), &indexesPC);
 			if (!device.areMeshShadersSupported()) {
 				VkBuffer vertexBuffers[] = { vertices[primitiveType].getVertexBuffer(0).getHandle()};

@@ -1,10 +1,11 @@
 module;
 //import odfaeg.graphic.renderStates;
 module odfaeg.graphic.renderStates;
+import odfaeg.graphic.blendMode;
 namespace odfaeg {
-    namespace graphic {        
+    namespace graphic { 
         RenderStates::RenderStates() :
-            blendMode(BlendAlpha),
+            blendMode(),
             transform(),
             texture(nullptr),
             shader(nullptr)
@@ -15,7 +16,7 @@ namespace odfaeg {
 
         ////////////////////////////////////////////////////////////
         RenderStates::RenderStates(const entity::TransformMatrix& theTransform) :
-            blendMode(BlendAlpha),
+            blendMode(),
             transform(theTransform),
             texture(nullptr),
             shader(nullptr)
@@ -35,7 +36,7 @@ namespace odfaeg {
 
         ////////////////////////////////////////////////////////////
         RenderStates::RenderStates(const Texture* theTexture) :
-            blendMode(BlendAlpha),
+            blendMode(),
             transform(),
             texture(theTexture),
             shader(nullptr)
@@ -45,7 +46,7 @@ namespace odfaeg {
 
         ////////////////////////////////////////////////////////////
         RenderStates::RenderStates(Shader* theShader) :
-            blendMode(BlendAlpha),
+            blendMode(),
             transform(),
             texture(nullptr),
             shader(theShader)

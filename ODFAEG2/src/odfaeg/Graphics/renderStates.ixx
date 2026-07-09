@@ -78,7 +78,7 @@ namespace odfaeg {
             entity::TransformMatrix      transform; ///< Transform
             const Texture* texture; ///< Texture
             Shader* shader; ///< Shader
-        };
-        RenderStates RenderStates::Default;
+        };     
+        RenderStates RenderStates::Default = RenderStates();     
 	}
 }
