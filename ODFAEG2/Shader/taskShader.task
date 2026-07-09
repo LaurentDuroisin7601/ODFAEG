@@ -1,5 +1,6 @@
 #version 460
 #extension GL_EXT_mesh_shader : require
+#extension GL_EXT_debug_printf : enable
 #define NB_PRIMITIVE_TYPES 6
 #define MAX_FRAMES_IN_FLIGHT 2 
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
@@ -15,8 +16,8 @@ struct TaskData {
 layout(push_constant) uniform PushConstant {
     mat4 viewMatrix;
     mat4 projMatrix;
-    uint currentFrame;
-    uint primitiveType;
+    int primitiveType;
+    int currentFrame;    
     //uint totalSubMeshesCount;
 } pc;
 struct TaskPayload {
@@ -31,8 +32,10 @@ layout(std430, set = 0, binding = 1) buffer TaskCountSSBO {
 } TaskCounts[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 void main() {
     uint id = gl_WorkGroupID.x;
+    debugPrintfEXT("Primitive type : %i", pc.primitiveType);
+    //debugPrintfEXT("Task id : %i, nb tasks %i", id, TaskCounts[pc.primitiveType * MAX_FRAMES_IN_FLIGHT + pc.currentFrame].taskCount);
     if(id >= TaskCounts[pc.primitiveType * MAX_FRAMES_IN_FLIGHT + pc.currentFrame].taskCount)
-        return;
+        return;        
     TaskData t = TaskDatas[pc.primitiveType * MAX_FRAMES_IN_FLIGHT + pc.currentFrame].taskData[id];
     payload.taskId = id;
     EmitMeshTasksEXT(t.meshDrawCommand.groupXCount, t.meshDrawCommand.groupYCount, t.meshDrawCommand.groupZCount);

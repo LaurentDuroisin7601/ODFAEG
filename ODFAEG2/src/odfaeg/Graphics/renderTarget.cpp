@@ -601,7 +601,7 @@ namespace odfaeg {
 			staggingObjectTypes[currentFrame].update(objectTypes.data(), sizeof(int) * objectTypes.size());
 			this->objectTypes[currentFrame].create(sizeof(int) * objectTypes.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 			Buffer::copyBuffer(staggingObjectTypes[currentFrame], this->objectTypes[currentFrame], sizeof(int) * objectTypes.size(), commandPool.getHandle(getCurrentFrame()));
-			//needToUpdateDescriptorSets = true;
+			needToUpdateDescriptorSets = true;
 			needToUpdateCullBatchIndCmds = true;
 		}
 		std::vector<VkPipelineDepthStencilStateCreateInfo> RenderTarget::getDepthStencilInfos() {
@@ -1063,8 +1063,8 @@ namespace odfaeg {
 				if (hasDiffuseTextures)
 					vertexBufferSet.updateImageInfos(1, GPUContext::instance().getSharedTextures(0), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 				vertexBufferSet.updateDescriptorSet();
-				std::cout<<"update descriptor sets"<<std::endl;
-				system("PAUSE");
+				/*std::cout<<"update descriptor sets"<<std::endl;
+				system("PAUSE");*/
 			} else {
 				DescriptorSet& resetBuffersSet = GPUContext::instance().getDescriptorSets(resetBuffersShader, 7, 1)[0];
 				//std::cout<<"update offset in output model data"<<std::endl;
@@ -1655,6 +1655,8 @@ namespace odfaeg {
 			//}
 			Shader* shader = (states.shader == nullptr) ? &defaultRenderingShader : states.shader;
 			viewProjInfos.primitiveType = primitiveType;
+			/*std::cout<<"primitive type : "<<viewProjInfos.primitiveType<<std::endl;
+			system("PAUSE");*/
 			viewProjInfos.currentFrame = getCurrentFrame();
 			indexesPC.currentImageIndex = getImageIndex();
 			states.blendMode.updateIds();
