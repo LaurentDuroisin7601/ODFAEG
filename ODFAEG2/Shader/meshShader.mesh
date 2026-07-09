@@ -123,7 +123,7 @@ void main() {
             gl_MeshVerticesEXT[i].gl_Position = pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(vertexData[pc.primitiveType].vertices[v].position, 1.0);
             fragColor[i] = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
             fragTexCoord[i] = vertexData[pc.primitiveType].vertices[v].texCoords;
-            normal[i] = vertexData[pc.primitiveType].vertices[v].normal;
+            normal[i] = mat3(transpose(inverse(modelMatrix))) * vertexData[pc.primitiveType].vertices[v].normal;
             materialID[i] = payload.taskId;
             primitiveType[i] = pc.primitiveType;
             currentFrame[i] = pc.currentFrame;

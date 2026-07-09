@@ -170,7 +170,7 @@ namespace odfaeg {
             beginRecordCommandBuffer();
             vkCmdPipelineBarrier(getCommandPool().getHandle(currentFrame), VK_PIPELINE_STAGE_NONE, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentToClearBarrier);
             vkCmdClearColorImage(getCommandPool().getHandle(currentFrame), swapchain.getSwapchainImages()[imageIndex].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearValue, 1, &imageRange);
-            vkCmdPipelineBarrier(getCommandPool().getHandle(currentFrame), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToPresentBarrier);
+            vkCmdPipelineBarrier(getCommandPool().getHandle(currentFrame), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_MESH_SHADER_BIT_EXT, 0, 0, nullptr, 0, nullptr, 1, &clearToPresentBarrier);
             if (useDepthTest() || useStencilTest()) {
                 VkClearDepthStencilValue clearDepthStencilValue = {
                     .depth = 1.f,
@@ -234,7 +234,8 @@ namespace odfaeg {
                 if (firstSubmit) {
 
                     waitSemaphores.push_back(imageAvailableSemaphores[currentFrame].getHandle());
-                    waitStages.push_back(VK_PIPELINE_STAGE_TRANSFER_BIT);
+                    waitStages.push_back(VK_PIPELINE_STAGE_MESH_SHADER_BIT_EXT
+                                         | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
                     if (waitValues.size() > 0) {
                         ////////std::cout<<"wait semaphore : "<<semaphore[currentFrame]<<std::endl;
                         waitValues.push_back(0);
@@ -261,7 +262,7 @@ namespace odfaeg {
                     VkImageMemoryBarrier toPresent = {
                         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                         .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                        .dstAccessMask = 0,
+                        .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
                         .oldLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR,
                         .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -271,8 +272,10 @@ namespace odfaeg {
                     };
                     vkCmdPipelineBarrier(
                         getCommandPool().getHandle(getCurrentFrame()),
+                        VK_PIPELINE_STAGE_MESH_SHADER_BIT_EXT
+                        | 
                         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                        VK_PIPELINE_STAGE_NONE,
+                        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
                         0,
                         0, nullptr,
                         0, nullptr,

@@ -271,6 +271,7 @@ namespace odfaeg {
 					//std::cout<<"add texture info!"<<std::endl;
 					imageInfos[binding][i * images[i].getNbBuffers() + j].imageLayout = images[i].getImage(j).getLayout();
 					imageInfos[binding][i * images[i].getNbBuffers() + j].imageView = images[i].getImage(j).getImageView().getHandle();
+					//std::cout<<"sampler = "<<images[i].getImage(j).getSampler().getHandle()<<std::endl;
 					imageInfos[binding][i * images[i].getNbBuffers() + j].sampler = images[i].getImage(j).getSampler().getHandle();
 				}
 			}

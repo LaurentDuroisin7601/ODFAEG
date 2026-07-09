@@ -128,6 +128,7 @@ namespace odfaeg {
                     dataOffset = (dataOffset + 15) & ~15;
                     staggingBuffer.update(imageLoaders[i].getPixelsPtr(j), imageLoaders[i].getDataSize(j), dataOffset);
                     textureManager.getResourceByAlias(textureManager.getAliases()[currentTexturesOffset+i])->update(commandPool, staggingBuffer, imageLoaders[i].getSize(j).x(), imageLoaders[i].getSize(j).y(), 0, 0, dataOffset, j);
+                    //std::cout<<"id : "<<textureManager.getResourceByAlias(textureManager.getAliases()[currentTexturesOffset+i])->getId()<<std::endl;
                     /*std::cout << "mip " << j << " size = " << imageLoaders[i].getDataSize(j)
                     << "  offset : " << dataOffset << std::endl;*/
 
@@ -376,7 +377,7 @@ namespace odfaeg {
                 }
                 //baseIndex += face.mNumIndices;
             }
-            std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
+            
             /*math::Vec3f center = vb.getBounds().getCenter();
             math::Vec3f worldPos = finalTransform * center;
 
@@ -408,6 +409,7 @@ namespace odfaeg {
                     subMesh.getMaterial().setTexture(nullptr, static_cast<Material::TexType>(i));*/
                 for (unsigned int i = 0; i < diffuseMaps.size(); i++) {
                     //diffuseMaps[i]->setTexType(Material::DIFFUSE);
+                    //std::cout<<"diffuse : "<<diffuseMaps[i]->getId()<<std::endl;
                     subMesh.getMaterial().setTexture(diffuseMaps[i], Material::DIFFUSE, i);
                 }
                 for (unsigned int i = 0; i < specularMaps.size(); i++) {
@@ -417,6 +419,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < normalMaps.size(); i++) {
                     //std::cout<<"normals"<<std::endl;
                     //normalMaps[i]->setTexType(Material::NORMAL);
+                    //std::cout<<"specular : "<<specularMaps[i]->getId()<<std::endl;
                     subMesh.getMaterial().setTexture(normalMaps[i], Material::NORMAL,i);
                 }                
                 for (unsigned int i = 0; i < metalnessMaps.size(); i++) {
@@ -482,9 +485,13 @@ namespace odfaeg {
                 }
                 //std::cout<<"size : "<<currentSize<<std::endl;                
                 subMesh.setVertexBuffer(vb);
+                std::lock_guard<std::recursive_mutex>(getGlobalMutex());
                 mnode->addSubMesh(std::move(subMesh));
-            }            
-            mnode->setSize(currentSize);
+                
+            }     
+            std::lock_guard<std::recursive_mutex>(getGlobalMutex());
+            mnode->setSize(currentSize);       
+            
             //std::cout<<"size : "<<vb.getBounds().getSize()<<std::endl;
             /*entity::TransformMatrix tm;
             tm.setMatrix(finalTransform);
@@ -565,7 +572,7 @@ namespace odfaeg {
         }
         std::vector<Texture*> ModelLoader::loadMaterialTextures(const aiScene* scene, aiMaterial *mat, aiTextureType type)
         {
-            //std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
+            std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
             std::vector<Texture*> textures;
             //std::cout<<"nb textures to load : "<<mat->GetTextureCount(type)<<std::endl;
             for(unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
