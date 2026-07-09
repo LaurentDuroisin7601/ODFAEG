@@ -114,7 +114,7 @@ void main() {
     uint maxPrims = 21u;
     uint vertexCount   = min(subMesh.nbVertices, maxVerts);
     uint primitiveCount = min(subMesh.nbVertices / 3u, maxPrims);
-    debugPrintfEXT("submesh vertex count : %i", subMesh.nbVertices);
+    //debugPrintfEXT("submesh vertex count : %i", subMesh.nbVertices);
     //if (pc.primitiveType == 3) {       
         SetMeshOutputsEXT(vertexCount, primitiveCount);
         for (uint i = 0; i < vertexCount; i++) {

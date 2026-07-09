@@ -205,42 +205,43 @@ namespace odfaeg {
                 aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 
                 if (loadTextures) {
-                    std::vector<Texture*> diffuseMaps = loadMaterialTextures(scene, material,
+                    //system("PAUSE");
+                    diffuseMaps = loadMaterialTextures(scene, material,
                                                         aiTextureType_DIFFUSE);
                     /*for (unsigned int i = 0; i < diffuseMaps.size(); i++) {
                         subMesh.getMaterial().setTexture(diffuseMaps[i], Material::DIFFUSE, i);
                     }*/
-                    std::vector<Texture*> specularMaps = loadMaterialTextures(scene, material,
+                    specularMaps = loadMaterialTextures(scene, material,
                                                         aiTextureType_SPECULAR);
                     /*for (unsigned int i = 0; i < specularMaps.size(); i++) {
                         specularMaps[i]->setTexType(Material::SPECULAR);
                         subMesh.getMaterial().setTexture(specularMaps[i], Material::SPECULAR, i);
                     }*/
-                    std::vector<Texture*> normalMaps = loadMaterialTextures(scene, material, aiTextureType_NORMALS);
+                    normalMaps = loadMaterialTextures(scene, material, aiTextureType_NORMALS);
                     /*for (unsigned int i = 0; i < normalMaps.size(); i++) {
                         //std::cout<<"normals"<<std::endl;
                         normalMaps[i]->setTexType(Material::NORMAL);
                         subMesh.getMaterial().setTexture(normalMaps[i], Material::NORMAL,i);
                     }*/
-                    std::vector<Texture*> metalnessMaps = loadMaterialTextures(scene, material, aiTextureType_METALNESS);
+                    metalnessMaps = loadMaterialTextures(scene, material, aiTextureType_METALNESS);
                     /*for (unsigned int i = 0; i < metalnessMaps.size(); i++) {
                         //std::cout<<"metalness"<<std::endl;
                         metalnessMaps[i]->setTexType(Material::METALNESS);
                         subMesh.getMaterial().setTexture(metalnessMaps[i], Material::METALNESS, i);
                     }*/
-                    std::vector<Texture*> roughnessMaps = loadMaterialTextures(scene, material, aiTextureType_DIFFUSE_ROUGHNESS);
+                    roughnessMaps = loadMaterialTextures(scene, material, aiTextureType_DIFFUSE_ROUGHNESS);
                     /*for (unsigned int i = 0; i < roughnessMaps.size(); i++) {
                         //std::cout<<"roughness"<<std::endl;
                         roughnessMaps[i]->setTexType(Material::ROUGHNESS);
                         subMesh.getMaterial().setTexture(roughnessMaps[i], Material::ROUGHNESS, i);
                     }*/
-                    std::vector<Texture*> aoMaps = loadMaterialTextures(scene, material, aiTextureType_AMBIENT_OCCLUSION);
+                    aoMaps = loadMaterialTextures(scene, material, aiTextureType_AMBIENT_OCCLUSION);
                     /*for (unsigned int i = 0; i < aoMaps.size(); i++) {
                         //std::cout<<"ao"<<std::endl;
                         aoMaps[i]->setTexType(Material::AO);
                         subMesh.getMaterial().setTexture(aoMaps[i], Material::AO, i);
                     }*/
-                    std::vector<Texture*> emissiveMaps = loadMaterialTextures(scene, material, aiTextureType_EMISSIVE);
+                    emissiveMaps = loadMaterialTextures(scene, material, aiTextureType_EMISSIVE);
                     /*for (unsigned int i = 0; i < emissiveMaps.size(); i++) {
                         //std::cout<<"emissive"<<std::endl;
                         emissiveMaps[i]->setTexType(Material::EMISSIVE);
