@@ -110,12 +110,13 @@ void main() {
     mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId].modelMatrix;
     SubMesh subMesh = SubMeshDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMeshData[payload.taskId];
     uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_offset;
+    //debugPrintfEXT("First index : %i", firstIndex);
     //3 = Triangles.
     uint maxVerts = 63u;
     uint maxPrims = 21u;
     uint vertexCount   = min(subMesh.nbVertices, maxVerts);
-    uint primitiveCount = min(subMesh.nbVertices / 3u, maxPrims);
-    //debugPrintfEXT("submesh vertex count : %i", subMesh.nbVertices);
+    uint primitiveCount = min(subMesh.nbIndexes / 3u, maxPrims);
+    //debugPrintfEXT("submesh vertex count : %i", subMesh.nbIndexes);
     //if (pc.primitiveType == 3) {       
         SetMeshOutputsEXT(vertexCount, primitiveCount);
         for (uint i = 0; i < vertexCount; i++) {
@@ -127,11 +128,14 @@ void main() {
             materialID[i] = payload.taskId;
             primitiveType[i] = pc.primitiveType;
             currentFrame[i] = pc.currentFrame;
+            //debugPrintfEXT("position : %i",  i);
         }
         for (uint tri = 0; tri < primitiveCount; tri++) {
+            //debugPrintfEXT("gen tri : %i", tri);
             uint i0 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 0];
             uint i1 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 1];
             uint i2 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 2];
+            //debugPrintfEXT("Indexes : %i,%i,%i", i0, i1, i2);
             gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);
         }
     //}

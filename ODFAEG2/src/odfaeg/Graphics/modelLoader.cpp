@@ -15,6 +15,7 @@ module odfaeg.graphic.modelLoader;
 import odfaeg.graphic.assimpHelper;
 import odfaeg.entity.transformMatrix;
 import odfaeg.physic.boundingBox;
+import odfaeg.graphic.color;
 namespace odfaeg {
     namespace graphic {
         ModelLoader::ModelLoader (Device& device, core::ResourceManager<Texture, std::string>& textureManager) : device(device), textureManager(textureManager),
@@ -51,7 +52,7 @@ namespace odfaeg {
                 importFlags |= aiProcess_GenSmoothNormals;
             //if ( parameters.get< bool >( cuT( "tangent_space" ) ) )
                 importFlags |= aiProcess_CalcTangentSpace;*/
-            std::cout<<"path : "<<path<<std::endl;
+            //std::cout<<"path : "<<path<<std::endl;
             const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs /*| aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace*/);
 
             //std::cout<<"imported"<<std::endl;
@@ -198,13 +199,23 @@ namespace odfaeg {
 
             for (unsigned int i = 0; i < Material::NBTEXTYPES; i++)
                 subMesh.getMaterial().setTexture(nullptr, static_cast<Material::TexType>(i));*/
+           
+            Color diffuseColor;           
             std::vector<Texture*> diffuseMaps, specularMaps, normalMaps, metalnessMaps, roughnessMaps, aoMaps, emissiveMaps;
             if(mesh->mMaterialIndex >= 0) {
                 //std::cout<<"load materials"<<std::endl;
 
 
                 aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
-
+                 aiColor4D color;
+                if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, color)) {
+                    // color.r, color.g, color.b, color.a
+                    diffuseColor.r = color.r;
+                    diffuseColor.g = color.g;
+                    diffuseColor.b = color.b;
+                    diffuseColor.a = color.a;
+                    //std::cout<<"color : "<<(int) diffuseColor.r<<std::endl;
+                }
                 if (loadTextures) {
                     //system("PAUSE");
                     diffuseMaps = loadMaterialTextures(scene, material,
@@ -337,6 +348,7 @@ namespace odfaeg {
                 vertices[i].normal[0] = mesh->mNormals[i].x;
                 vertices[i].normal[1] = mesh->mNormals[i].y;
                 vertices[i].normal[2] = mesh->mNormals[i].z;
+                vertices[i].color = Color::White;
             }
             extractBoneWeightForVertices(vertices, mesh, scene, mnode);
             /*VertexBuffer vb(device, Triangles);
@@ -404,6 +416,7 @@ namespace odfaeg {
             const size_t MAX_VERTS = 63;
             const size_t MAX_PRIMS = 21;
             for (unsigned int v = 0; v < vertices.size(); v += MAX_VERTS) {
+                //std::cout<<"vertices : "<<vertices.size()<<std::endl;
                 SubMesh subMesh(device);
                 /*for (unsigned int i = 0; i < Material::NBTEXTYPES; i++)
                     subMesh.getMaterial().setTexture(nullptr, static_cast<Material::TexType>(i));*/
@@ -443,19 +456,22 @@ namespace odfaeg {
                     subMesh.getMaterial().setTexture(emissiveMaps[i], Material::EMISSIVE, i);
                 }
                 size_t vertexCount = std::min(MAX_VERTS, vertices.size()  - v);
+                //std::cout<<"vertex count : "<<vertexCount<<std::endl;
                 size_t triStart = (v / MAX_VERTS) * MAX_PRIMS;
                 size_t indexOffset = triStart * 3;                
                 size_t indexCount  = std::min(MAX_PRIMS * 3, indexes.size() - indexOffset);
+                //std::cout<<"index count : "<<indexOffset<<","<<indexCount<<std::endl;
                 /*if (indexOffset > indexes.size()) {
                     std::cout<<"indexs offset : "<<indexOffset<<","<<indexes.size()<<std::endl;
                 }*/
                 VertexBuffer vb(device, Triangles);
                 vb.resize(vertexCount, indexCount);                
                 for (unsigned int i = 0; i < vertexCount; i++) {
-                    //std::cout<<"vertex count : "<<vertexCount<<std::endl;
+                    //std::cout<<"vertex : "<<vertices[v+i].position<<std::endl;
                     vb[i] = vertices[v+i];
                 }
                 for (unsigned int i = 0; i < indexCount; i++) {
+                    //std::cout<<"index : "<<indexes[indexOffset + i]<<std::endl;
                     vb.setIndex(i, indexes[indexOffset + i]-indexOffset);                    
                 }
                 physic::BoundingBox bounds = vb.getBounds();

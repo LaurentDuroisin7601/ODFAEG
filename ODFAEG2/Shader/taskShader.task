@@ -33,9 +33,10 @@ layout(std430, set = 0, binding = 1) buffer TaskCountSSBO {
 void main() {
     uint id = gl_WorkGroupID.x;
     //debugPrintfEXT("Primitive type : %i", pc.primitiveType);
-    //debugPrintfEXT("Task id : %i, nb tasks %i", id, TaskCounts[pc.primitiveType * MAX_FRAMES_IN_FLIGHT + pc.currentFrame].taskCount);
+    
     if(id >= TaskCounts[pc.primitiveType * MAX_FRAMES_IN_FLIGHT + pc.currentFrame].taskCount)
-        return;        
+        return; 
+    //debugPrintfEXT("Task id : %i, nb tasks %i", id, TaskCounts[pc.primitiveType * MAX_FRAMES_IN_FLIGHT + pc.currentFrame].taskCount);       
     TaskData t = TaskDatas[pc.primitiveType * MAX_FRAMES_IN_FLIGHT + pc.currentFrame].taskData[id];
     payload.taskId = id;
     EmitMeshTasksEXT(t.meshDrawCommand.groupXCount, t.meshDrawCommand.groupYCount, t.meshDrawCommand.groupZCount);

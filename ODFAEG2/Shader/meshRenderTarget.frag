@@ -83,13 +83,13 @@ void main() {
     }
 	// --- Éclairage simple ---
     vec3 L = normalize(vec3(0.5, 1.0, 0.3));
-    float diff = max(dot(-N, L), 0.0);
+    float diff = max(dot(N, L), 0.0);
     // Specular simple
     vec3 V = normalize(vec3(0,0,1));
     vec3 H = normalize(L + V);
     float spec = pow(max(dot(N, H), 0.0), 32.0) * specularStrength;
     //debugPrintfEXT("texture index : %i, normal : %v3f, fragTexCoord %v2f, color : %v4f, fragColor : %v4f", mat.diffuseTextureIndex, normal, fragTexCoord, diffuse * diff * ao + spec + emissive, fragColor);
     //debugPrintfEXT("normal : %v3f", N);
-    outColor = diffuse * diff * ao + spec + emissive;
-    //outColor = diffuse;
+    //outColor = diffuse * diff * ao + spec + emissive;
+    outColor = diffuse;
 };

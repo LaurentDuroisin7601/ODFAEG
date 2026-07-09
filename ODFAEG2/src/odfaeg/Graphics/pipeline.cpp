@@ -398,7 +398,7 @@ namespace odfaeg {
 			rasterizer.rasterizerDiscardEnable = VK_FALSE;
 			rasterizer.polygonMode = polygonMode;
 			rasterizer.lineWidth = 1.0f;
-			rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+			rasterizer.cullMode = VK_CULL_MODE_NONE;
 			rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
 			VkPipelineMultisampleStateCreateInfo multisampling{};
@@ -408,7 +408,7 @@ namespace odfaeg {
 
 			VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 			colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-			colorBlendAttachment.blendEnable = VK_TRUE;
+			colorBlendAttachment.blendEnable = VK_FALSE;
 
 
 			colorBlendAttachment.srcColorBlendFactor = factorToVkConstant(blendMode.colorSrcFactor);

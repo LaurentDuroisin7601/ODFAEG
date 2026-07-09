@@ -235,7 +235,7 @@ void main() {
                         //Matériel non instancé.                                               
                     } else {                        
                         uint offsetTaskData = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
-                        //debugPrintfEXT("primitive type : %i", subMesh.primitiveType);
+                        //debugPrintfEXT("offset task : %i", offsetTaskData);
                         uint instanceBase = atomicAdd(outputInstanceBase[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].instanceBase, 1);
                         MeshDrawCommand meshDrawCommand;                        
                         meshDrawCommand.groupXCount = 1;
