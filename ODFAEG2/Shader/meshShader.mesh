@@ -1,12 +1,13 @@
 #version 460
 #extension GL_EXT_mesh_shader : require
+#extension GL_EXT_debug_printf : enable
 #define NB_PRIMITIVE_TYPES 6
 #define MAX_FRAMES_IN_FLIGHT 2
 #define MAX_BONES_INFLUENCE 4
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 // Déclaration du type de primitive + limites
-layout (triangles, max_vertices = 64, max_primitives = 32) out;
+layout (triangles, max_vertices = 63, max_primitives = 21) out;
 layout(location = 0) out vec4 fragColor[];
 layout(location = 1) out vec2 fragTexCoord[];
 layout(location = 2) out vec3 normal[];
@@ -109,10 +110,11 @@ void main() {
     SubMesh subMesh = SubMeshDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMeshData[payload.taskId];
     uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_offset;
     //3 = Triangles.
-    uint maxVerts = 64u;
-    uint maxPrims = 32u;
+    uint maxVerts = 63u;
+    uint maxPrims = 21u;
     uint vertexCount   = min(subMesh.nbVertices, maxVerts);
     uint primitiveCount = min(subMesh.nbVertices / 3u, maxPrims);
+    debugPrintfEXT("submesh vertex count : %i", subMesh.nbVertices);
     //if (pc.primitiveType == 3) {       
         SetMeshOutputsEXT(vertexCount, primitiveCount);
         for (uint i = 0; i < vertexCount; i++) {

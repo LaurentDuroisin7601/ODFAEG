@@ -55,6 +55,7 @@ namespace odfaeg {
             Vertex& operator [](unsigned int index);
             Device& getDevice();
             std::array<LODLevel, 5> getLODs() const;
+            void setIndex(unsigned int pos, unsigned int idx);
         private:
             bool commandBuffersCreated;
             std::array<LODLevel, 5> lods={};

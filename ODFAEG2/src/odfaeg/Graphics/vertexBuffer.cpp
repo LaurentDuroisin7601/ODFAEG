@@ -126,10 +126,13 @@ namespace odfaeg {
                 float bottom = m_vertices[0].position.y();
                 float nearest = m_vertices[0].position.z();
                 float farest = m_vertices[0].position.z();
+                //std::cout<<"first position : "<<m_vertices[0].position<<std::endl;
 
                 for (std::size_t i = 1; i < m_vertices.size(); ++i)
                 {
                     math::Vec3f position = m_vertices[i].position;
+                    /*std::cout<<"position : "<<position<<std::endl;
+                    system("PAUSE");*/
 
                     // Update left and right
                     if (position.x() < left)
@@ -150,8 +153,7 @@ namespace odfaeg {
                     else if (position.z() < nearest)
                         nearest = position.z();
 
-                }
-
+                }                
                 return physic::BoundingBox(left, top, nearest, right - left, bottom - top, farest - nearest);
             }
             else
@@ -439,6 +441,11 @@ namespace odfaeg {
             for (unsigned int i = 0; i < nbBuffers; i++)
                 needToUpdateVertexBuffer[i] = true;
             return m_vertices[index];
+        }
+        void VertexBuffer::setIndex(unsigned int pos, unsigned int idx) {
+            for (unsigned int i = 0; i < nbBuffers; i++)
+               needToUpdateIndexBuffer[i] = true;
+            indices[pos] = idx;
         }
     }	
 }
