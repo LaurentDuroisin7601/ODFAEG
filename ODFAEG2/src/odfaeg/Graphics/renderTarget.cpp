@@ -376,7 +376,7 @@ namespace odfaeg {
 		}
 		void RenderTarget::updateBuffers() {
 			if (needToUpdateBuffers && gameObjects.size() > 0) {
-				//std::cout<<"update buffers"<<std::endl;
+				std::cout<<"update buffers"<<std::endl;
 				currentSubmeshesOffset = 0;
 				currentModelDataOffset = 0;
 				for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
@@ -451,7 +451,6 @@ namespace odfaeg {
 						subMeshData.vertexOffset = currentVertexOffset[primitiveType];
 						subMeshData.indexOffset = currentIndexOffset[primitiveType];
 						subMeshData.materialId = subMesh.getMaterial().getId();
-						//std::cout<<"material id : "<<subMeshData.materialId<<std::endl;
 						subMeshData.nbVertices = subMesh.getVertexBuffer().getVertexCount();
 						subMeshData.nbIndexes = subMesh.getVertexBuffer().getIndexCount();
 						//std::cout<<"vertices count : "<<subMesh.getVertexBuffer().getVertexCount()<<std::endl;
@@ -1015,7 +1014,7 @@ namespace odfaeg {
 				defaultRenderingSet.updateBufferInfos(4, true, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(5, false, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(6, lodLevel, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				defaultRenderingSet.updateBufferInfos(7, outputMaterialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				defaultRenderingSet.updateBufferInfos(7, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				if (hasDiffuseTextures ) {
 					//std::cout<<"textures : "<<Texture::getAllTextures().size()<<std::endl;
 					defaultRenderingSet.updateImageInfos(8, GPUContext::instance().getSharedTextures(Material::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
@@ -1335,7 +1334,7 @@ namespace odfaeg {
 					1, &mem,
 					0, nullptr,
 					0, nullptr
-				);*/
+				);
 
 				//computeCommandPool.endRecordCommandBuffer(getCurrentFrame());
 				/*VkSubmitInfo submitInfo{};

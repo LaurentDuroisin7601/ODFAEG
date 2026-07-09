@@ -125,7 +125,7 @@ void main() {
             fragColor[i] = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
             fragTexCoord[i] = vertexData[pc.primitiveType].vertices[v].texCoords;
             normal[i] = mat3(transpose(inverse(modelMatrix))) * vertexData[pc.primitiveType].vertices[v].normal;
-            materialID[i] = payload.taskId;
+            materialID[i] = subMesh.materialId;
             primitiveType[i] = pc.primitiveType;
             currentFrame[i] = pc.currentFrame;
             //debugPrintfEXT("position : %i",  i);
@@ -135,8 +135,8 @@ void main() {
             uint i0 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 0];
             uint i1 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 1];
             uint i2 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 2];
-            if (i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount)
-                debugPrintfEXT("Indexes : %i,%i,%i,%i", i0, i1, i2, vertexCount);
+            /*if (i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount)
+                debugPrintfEXT("Indexes : %i,%i,%i,%i", i0, i1, i2, vertexCount);*/
             gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);
         }
     //}
