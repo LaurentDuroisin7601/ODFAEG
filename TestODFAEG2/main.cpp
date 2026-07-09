@@ -59,9 +59,9 @@ int main() {
 	ResourceManager<Texture, TextureNames> textureManager;
 	ResourceManager<Texture, std::string> modelTextureManager;
 	ModelLoader modelLoader(GPUContext::instance().getDevice(), modelTextureManager);
-	GameObject* bistroExterior = modelLoader.loadModel("CubeTest/cube_test.glb"/*"car/scene.gltf"*/);
+	GameObject* bistroExterior = modelLoader.loadModel("CubeTest/cube_test.glb"/*car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx"*/);
 	bistroExterior->setRotation(45, Vec3f(0, 1, 0));
-	/*std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
+	std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
 	textureManager.fromFileWithAlias("tilesets/wood.png", WOOD, args);
 	Texture* texWood = textureManager.getResourceByAlias(WOOD);
 	texWood->setSamplerAddressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT);	
@@ -96,8 +96,8 @@ int main() {
 	cube5.move(Vec3f(-1.5f, 2.0f, -3.0));
     cube5.setRotation(60.0f, Vec3f(1.0, 0.0, 1.0));
     cube5.scale(Vec3f(0.75f, 0.75f, 0.75f));
-   	window.addGameObject(&cube5);*/
-	window.addGameObject(bistroExterior);	
+   	window.addGameObject(&cube5);
+	//window.addGameObject(bistroExterior);	
 		//std::cout<<"i : "<<i<<std::endl;
 	
 	//std::cout<<"ok"<<std::endl;

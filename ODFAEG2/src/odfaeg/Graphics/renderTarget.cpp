@@ -1648,11 +1648,11 @@ namespace odfaeg {
 			}
 		}
 		void RenderTarget::draw(PrimitiveType primitiveType, RenderStates states) {
-			//if (needToUpdateCullBatchIndCmds) {
+			if (needToUpdateCullBatchIndCmds) {
 				applyCullingAndBatching();
 				//std::cout<<"draw"<<std::endl;
 				needToUpdateCullBatchIndCmds = false;
-			//}
+			}
 			Shader* shader = (states.shader == nullptr) ? &defaultRenderingShader : states.shader;
 			viewProjInfos.primitiveType = primitiveType;
 			/*std::cout<<"primitive type : "<<viewProjInfos.primitiveType<<std::endl;

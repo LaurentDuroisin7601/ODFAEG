@@ -34,6 +34,7 @@ struct SubMesh {
 	int nbIndexes;
 	int lodOffset;
 	int id;
+    int lodLevel;
 };
 /*Matrices*/
 struct ModelData {
@@ -188,6 +189,7 @@ void main() {
 	    //debugPrintfEXT("type : %i,%i", t, object.type );
 		if (object.type == objectTypes[pc.currentFrame].types[t] && intersects(object.globalBounds, ubo[pc.currentFrame].frustrum)) {
 		    //debugPrintfEXT("Object in frustrum");
+            //debugPrintfEXT("nb sub meshes : %i", object.nbSubMeshes);
 			for (uint s = 0; s < object.nbSubMeshes; s++) {
 
 				SubMesh subMesh = inputSubmeshesBuffer.subMeshes[object.subMeshesOffset+s];
@@ -227,9 +229,10 @@ void main() {
                         outputIndirectElementsDrawCommands[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].indirectElementsDrawCommands[indirectElementsDrawCommandOffset].instance_count++;
                        //Matériel non instancé.
                     } else {
-                        //debugPrintfEXT("Non instanced!");
+                        
                         uint indirectElementsDrawCommandOffset = atomicAdd(outputDrawCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].drawCount, 1);
                         uint instanceBase = atomicAdd(outputInstanceBase[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].instanceBase, 1);
+                        //debugPrintfEXT("Non instanced! %i", indirectElementsDrawCommandOffset);
                         IndirectElementsDrawCommand indirectElementsDrawCommand;
                         //debugPrintfEXT("submesh nb indexes : %i, index offset : %i, vertex offset : %i, nb vertices : %i", subMesh.nbIndexes,subMesh.indexOffset, subMesh.vertexOffset, subMesh.nbVertices);
                         /*if (subMesh.lodOffset + lod >= 215)
