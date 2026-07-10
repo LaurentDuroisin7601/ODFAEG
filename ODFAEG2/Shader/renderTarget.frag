@@ -50,7 +50,7 @@ void main() {
     vec2 uv = fragTexCoord;
     // --- Diffuse ---
     vec4 diffuse = fragColor;
-    debugPrintfEXT("diffuse %i", mat.diffuseTextureIndex);
+    //debugPrintfEXT("diffuse %i", mat.diffuseTextureIndex);
     if (mat.diffuseTextureIndex > 0 && mat.diffuseTextureIndex < MAX_TEXTURES) {
         diffuse *= texture(diffuseTextures[mat.diffuseTextureIndex-1], uv);
     }

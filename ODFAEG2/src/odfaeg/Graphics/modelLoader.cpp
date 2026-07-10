@@ -411,6 +411,84 @@ namespace odfaeg {
             } else {
                 //std::cout<<"texture"<<std::endl;
             }*/
+            /*math::Vec3f currentSize = mnode->getSize();
+            SubMesh subMesh(device);
+            for (unsigned int i = 0; i < Material::NBTEXTYPES; i++)
+                subMesh.getMaterial().setTexture(nullptr, static_cast<Material::TexType>(i));
+            for (unsigned int i = 0; i < diffuseMaps.size(); i++) {
+                //diffuseMaps[i]->setTexType(Material::DIFFUSE);
+                //std::cout<<"diffuse : "<<diffuseMaps[i]->getId()<<std::endl;
+                subMesh.getMaterial().setTexture(diffuseMaps[i], Material::DIFFUSE, i);
+            }
+            for (unsigned int i = 0; i < specularMaps.size(); i++) {
+                //specularMaps[i]->setTexType(Material::SPECULAR);
+                subMesh.getMaterial().setTexture(specularMaps[i], Material::SPECULAR, i);
+            }
+            for (unsigned int i = 0; i < normalMaps.size(); i++) {
+                //std::cout<<"normals"<<std::endl;
+                //normalMaps[i]->setTexType(Material::NORMAL);
+                //std::cout<<"specular : "<<specularMaps[i]->getId()<<std::endl;
+                subMesh.getMaterial().setTexture(normalMaps[i], Material::NORMAL,i);
+            }                
+            for (unsigned int i = 0; i < metalnessMaps.size(); i++) {
+                //std::cout<<"metalness"<<std::endl;
+                //metalnessMaps[i]->setTexType(Material::METALNESS);
+                subMesh.getMaterial().setTexture(metalnessMaps[i], Material::METALNESS, i);
+            }                
+            for (unsigned int i = 0; i < roughnessMaps.size(); i++) {
+                //std::cout<<"roughness"<<std::endl;
+                //roughnessMaps[i]->setTexType(Material::ROUGHNESS);
+                subMesh.getMaterial().setTexture(roughnessMaps[i], Material::ROUGHNESS, i);
+            }                
+            for (unsigned int i = 0; i < aoMaps.size(); i++) {
+                //std::cout<<"ao"<<std::endl;
+                //aoMaps[i]->setTexType(Material::AO);
+                subMesh.getMaterial().setTexture(aoMaps[i], Material::AO, i);
+            }                
+            for (unsigned int i = 0; i < emissiveMaps.size(); i++) {
+                //std::cout<<"emissive"<<std::endl;
+                //emissiveMaps[i]->setTexType(Material::EMISSIVE);
+                subMesh.getMaterial().setTexture(emissiveMaps[i], Material::EMISSIVE, i);
+            }
+            VertexBuffer vb(device, Triangles);
+            vb.resize(vertices.size(), indexes.size());
+            for (unsigned int v = 0; v < vertices.size(); v++) {  
+                vb[v] = vertices[v];
+            }
+            for (unsigned int i = 0; i < indexes.size(); i++) {
+                vb.setIndex(i, indexes[i]);
+            }
+               
+            physic::BoundingBox bounds = vb.getBounds();
+            //std::cout<<"bounds : "<<bounds.getSize()<<std::endl;
+            if (bounds.getSize().x() > 1000 && bounds.getSize().y() > 1000 && bounds.getSize().z() > 1000) {
+                //std::cout<<"scale correction."<<std::endl;
+                scaleCorrection.setScale(math::Vec3f(0.01f, 0.01f, 0.01f));
+            }
+            math::Matrix4f finalCorrection = scaleCorrection.getMatrix() *
+                                            axisCorrection.getMatrix() *
+                                            handednessCorrection.getMatrix();
+            math::Matrix4f finalTransform = world * finalCorrection;
+            //std::cout<<"final transform : "<<finalTransform<<std::endl;
+            
+            if (vb.getBounds().getSize().x() > currentSize.x())
+                currentSize.x() = vb.getBounds().getSize().x();
+            if (vb.getBounds().getSize().y() > currentSize.y())
+                currentSize.y() = vb.getBounds().getSize().y();
+            if (vb.getBounds().getSize().z() > currentSize.z())
+                currentSize.z() = vb.getBounds().getSize().z();
+            if (!isSkinned) {
+                for (unsigned int i = 0; i < vb.getVertexCount(); i++) {
+                    vb[i].position = finalTransform * vb[i].position;
+                    vb[i].normal = finalCorrection * -vb[i].normal;
+                    //std::cout<<"vertex position : "<<vb[i].position<<std::endl;
+                }
+            }
+            //std::cout<<"size : "<<currentSize<<std::endl;                
+            subMesh.setVertexBuffer(vb);
+            std::lock_guard<std::recursive_mutex>(getGlobalMutex());
+            mnode->addSubMesh(std::move(subMesh));*/
+                
             
             math::Vec3f currentSize = mnode->getSize();
             const size_t MAX_VERTS = 63;
@@ -460,9 +538,7 @@ namespace odfaeg {
                 size_t indexOffset = (v / MAX_VERTS) * MAX_PRIMS * 3;               
                 size_t indexCount  = std::min(MAX_PRIMS * 3, indexes.size() - indexOffset);
                 //std::cout<<"index count : "<<indexOffset<<","<<indexCount<<std::endl;
-                /*if (indexOffset > indexes.size()) {
-                    std::cout<<"indexs offset : "<<indexOffset<<","<<indexes.size()<<std::endl;
-                }*/
+                
                 VertexBuffer vb(device, Triangles);
                 vb.resize(vertexCount, indexCount);                
                 for (unsigned int i = 0; i < vertexCount; i++) {

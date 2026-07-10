@@ -376,7 +376,7 @@ namespace odfaeg {
 		}
 		void RenderTarget::updateBuffers() {
 			if (needToUpdateBuffers && gameObjects.size() > 0) {
-				std::cout<<"update buffers"<<std::endl;
+				//std::cout<<"update buffers"<<std::endl;
 				currentSubmeshesOffset = 0;
 				currentModelDataOffset = 0;
 				for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
@@ -453,6 +453,7 @@ namespace odfaeg {
 						subMeshData.materialId = subMesh.getMaterial().getId();
 						subMeshData.nbVertices = subMesh.getVertexBuffer().getVertexCount();
 						subMeshData.nbIndexes = subMesh.getVertexBuffer().getIndexCount();
+						subMeshData.objectId = i;
 						//std::cout<<"vertices count : "<<subMesh.getVertexBuffer().getVertexCount()<<std::endl;
 						/*int pause;
 						std::cin>>pause;*/
@@ -582,11 +583,7 @@ namespace odfaeg {
 				BoneAnimUpdater::instance(cv, mtx).setBuffersReady(true);
 				BoneAnimUpdater::instance(cv, mtx).cv3.notify_all();
 				
-			}
-			
-			
-
-
+			}	
 		}
 		void RenderTarget::setTypesToRender(std::string expression, unsigned int currentFrame) {
 			std::vector<int> objectTypes;
@@ -1238,7 +1235,7 @@ namespace odfaeg {
 		void RenderTarget::applyCullingAndBatching() {
 			//computeCommandPool.beginRecordCommandBuffer(getCurrentFrame());
 			
-			if (gameObjects.size()) {
+			if (gameObjects.size() > 0) {
 
 				updateBuffers();
 				if (needToUpdateDescriptorSets) {
@@ -1317,7 +1314,7 @@ namespace odfaeg {
 					0, nullptr
 				);
 				//std::cout<<"dispatch : nbObjects  : "<<gameObjects.size()<<"nb material : "<<Material::getNbMaterials()<<std::endl;
-				vkCmdDispatch(commandPool.getHandle(getCurrentFrame()), gameObjects.size(), Material::getNbMaterials(), NB_PRIMITIVE_TYPES);
+				vkCmdDispatch(commandPool.getHandle(getCurrentFrame()), currentSubmeshesOffset, Material::getNbMaterials(), NB_PRIMITIVE_TYPES);
 
 
 				/*mem.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
