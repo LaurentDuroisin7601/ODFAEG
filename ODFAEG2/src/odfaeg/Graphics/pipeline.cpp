@@ -136,7 +136,7 @@ namespace odfaeg {
 				std::cout<<"color attachment"<<std::endl;*/
 			VkPipelineColorBlendAttachmentState colorBlendAttachment{};			
 			colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-			colorBlendAttachment.blendEnable = VK_TRUE;
+			colorBlendAttachment.blendEnable = VK_FALSE;
 
 
 			colorBlendAttachment.srcColorBlendFactor = factorToVkConstant(blendMode.colorSrcFactor);
@@ -408,7 +408,7 @@ namespace odfaeg {
 
 			VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 			colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-			colorBlendAttachment.blendEnable = VK_TRUE;
+			colorBlendAttachment.blendEnable = VK_FALSE;
 
 
 			colorBlendAttachment.srcColorBlendFactor = factorToVkConstant(blendMode.colorSrcFactor);
