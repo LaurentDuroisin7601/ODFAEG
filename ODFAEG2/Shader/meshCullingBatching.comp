@@ -22,6 +22,8 @@ struct Object {
 struct LODLevel {
     uint index_offset;
     uint index_count;
+    int mesheltOffset;
+    int meshletCount;
 };
 /*subMesh*/
 struct SubMesh {
@@ -37,6 +39,7 @@ struct SubMesh {
     int lodLevel;
     int objectId;
     int meshletOffset;
+    int meshletCount;
 };
 /*Matrices*/
 struct ModelData {
@@ -219,7 +222,7 @@ void main() {
                             inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].materialSet = taskDataOffset;
                             MeshDrawCommand meshDrawCommand;
                             meshDrawCommand.groupXCount = 0;
-                            meshDrawCommand.groupYCount = 1;
+                            meshDrawCommand.groupYCount = lodLevelData.lodLevel[subMesh.lodOffset+lod].meshletCount;
                             meshDrawCommand.groupZCount = 1;
                             TaskData taskData;
                             taskData.meshDrawCommand = meshDrawCommand; 
@@ -243,7 +246,7 @@ void main() {
                         uint instanceBase = atomicAdd(outputInstanceBase[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].instanceBase, 1);
                         MeshDrawCommand meshDrawCommand;                        
                         meshDrawCommand.groupXCount = 1;
-                        meshDrawCommand.groupYCount = 1;
+                        meshDrawCommand.groupYCount = lodLevelData.lodLevel[subMesh.lodOffset+lod].meshletCount;
                         meshDrawCommand.groupZCount = 1;
                         TaskData taskData;
                         taskData.meshDrawCommand = meshDrawCommand;

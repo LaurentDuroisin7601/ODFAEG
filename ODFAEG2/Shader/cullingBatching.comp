@@ -22,6 +22,8 @@ struct Object {
 struct LODLevel {
     uint index_offset;
     uint index_count;
+    int mesheltOffset;
+    int meshletCount;
 };
 /*subMesh*/
 struct SubMesh {
@@ -37,6 +39,7 @@ struct SubMesh {
     int lodLevel;
     int objectId;
     int mesheltOffset;
+    int meshletCount;
 };
 /*Matrices*/
 struct ModelData {

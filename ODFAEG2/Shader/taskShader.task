@@ -19,6 +19,8 @@ struct MeshLet {
     uint indexOffset;
     uint nbVertices;
     uint nbIndexes;
+    uint minVertex;
+    uint maxVertex;
 };
 struct SubMesh {
 	AABB globalBounds;
@@ -63,15 +65,6 @@ layout(std430, set = 0, binding = 1) buffer TaskCountSSBO {
 layout(std430, set = 0, binding = 2) buffer SubMeshDataSSBO {
     SubMesh subMesh[];
 } subMeshDatas[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
-layout (std430, set=0, binding = 6) buffer LodLevelBuffer {
-    LODLevel lodLevel[];
-} lodLevelData;
-layout (std430, set = 0, binding = 7) buffer MeshletsSSBO {
-    MeshLet meshlet[];
-} meshletDatas[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 8) buffer MeshletCountSSBO {
-    int meshletCount;
-} meshletCountDatas[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 void main() {
     uint id = gl_WorkGroupID.x;
     //debugPrintfEXT("Primitive type : %i", pc.primitiveType);
@@ -80,27 +73,6 @@ void main() {
         return; 
     //debugPrintfEXT("Task id : %i, nb tasks %i", id, TaskCounts[pc.primitiveType * MAX_FRAMES_IN_FLIGHT + pc.currentFrame].taskCount);       
     TaskData t = TaskDatas[pc.primitiveType * MAX_FRAMES_IN_FLIGHT + pc.currentFrame].taskData[id];
-    payload.taskId = id;    
-    SubMesh subMesh = subMeshDatas[pc.primitiveType * MAX_FRAMES_IN_FLIGHT + pc.currentFrame].subMesh[id];   
-    subMesh.meshletOffset = int(meshletCountDatas[pc.primitiveType * MAX_FRAMES_IN_FLIGHT + pc.currentFrame].meshletCount);    
-    subMeshDatas[pc.primitiveType * MAX_FRAMES_IN_FLIGHT + pc.currentFrame].subMesh[id] = subMesh;
-    uint meshletCount = 0;
-    for (uint i = 0; i < lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_count; i += MAX_VERTS) {
-        uint vertexCount = min(MAX_VERTS, subMesh.nbVertices-i);
-        uint indexOffset = (i / MAX_VERTS) * MAX_PRIMS * 3;               
-        uint indexCount  = min(MAX_PRIMS * 3, lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_count - indexOffset);        
-        /*if (vertexCount > MAX_VERTS || indexCount > MAX_PRIMS * 3) 
-            debugPrintfEXT("vertex count : %i, vertex offset : %i, index count %i, index offset : %i", vertexCount, i, indexCount, indexOffset);*/
-        MeshLet meshlet;
-        meshlet.vertexOffset = i;
-        meshlet.indexOffset = indexOffset;
-        meshlet.nbVertices = vertexCount;
-        meshlet.nbIndexes = indexCount;
-        uint meshletOffset = atomicAdd(meshletCountDatas[pc.primitiveType * MAX_FRAMES_IN_FLIGHT + pc.currentFrame].meshletCount, 1);
-        meshletDatas[pc.primitiveType * MAX_FRAMES_IN_FLIGHT + pc.currentFrame].meshlet[meshletOffset] = meshlet;  
-        meshletCount++;              
-    }
-    t.meshDrawCommand.groupYCount = meshletCount;
-    //debugPrintfEXT("group Y : %i", t.meshDrawCommand.groupYCount);
+    payload.taskId = id;
     EmitMeshTasksEXT(t.meshDrawCommand.groupXCount, t.meshDrawCommand.groupYCount, t.meshDrawCommand.groupZCount);
 } 

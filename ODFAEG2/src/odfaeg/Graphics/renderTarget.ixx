@@ -62,6 +62,8 @@ namespace odfaeg {
 			struct LODLevelData {
 				int index_offset;
 				int index_count;
+				int meshletOffset;
+				int meshletCount;
 			};
 			struct SubMeshData {
 				AABB globalBounds;
@@ -74,15 +76,15 @@ namespace odfaeg {
 				int lodOffset;
 				int id;
 				int lodLevel;
-				int objectId;
-				int meshletOffset;
-				int padding;
+				int objectId;				
 			};
 			struct Meshlet {
 				unsigned int vertexOffset;
 				unsigned int indexOffset;
 				unsigned int nbVertices;
 				unsigned int nbIndexes;
+				unsigned int minVertex;
+				unsigned int maxVertex;
 			};
 			struct ModelData {
 				math::Matrix4f modelMatrix;
@@ -242,6 +244,7 @@ namespace odfaeg {
 			std::deque<Buffer>& staggingObjects;
 			std::deque<Buffer>& subMeshes;
 			std::deque<Buffer>& staggingSubMeshes;
+			std::deque<Buffer> staggingMeshlets;
 			std::deque<Buffer>& staggingLODLevel;
 			std::deque<Buffer>& lodLevel;
 			std::deque<VertexBuffer>& vertices;
@@ -258,7 +261,7 @@ namespace odfaeg {
 			std::deque<Buffer>& outputMaterialDatas;
 			std::deque<Buffer> outputElementsDrawIndirectCommand;
 			std::deque<Buffer> outputTaskDatas;
-			std::deque<Buffer> outputMeshlets;
+			std::deque<Buffer> intputMeshlets;
 			std::deque<Buffer> offsetInOutputModelData;
 			std::deque<Buffer> offsetInOutputObjectData;
 			std::deque<Buffer> offsetInOutputMaterialData;
@@ -269,10 +272,12 @@ namespace odfaeg {
 			std::deque<Buffer> ubo;
 			std::deque<Buffer> drawCount;
 			std::deque<Buffer> taskCount;
-			std::deque<Buffer>& outputMeshes;
-			std::deque<Buffer> meshletCount;
+			std::deque<Buffer>& outputMeshes;			
 			std::array<std::vector<VertexBufferData>, MAX_FRAMES_IN_FLIGHT> cpuVertexBufferDatas;
 			VertexBufferPC vertexBufferPc;
+			inline static const unsigned int MAX_PRIM = 85;
+			inline static const unsigned int MAX_VERTS = 255;
+			inline static unsigned int totalMeshlets = 0;
 			inline static bool needToUpdateBuffers = false;
 			Camera m_defaultCamera, m_camera;
 			std::vector<GameObject*>& gameObjects;
