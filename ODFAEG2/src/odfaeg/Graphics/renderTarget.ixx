@@ -75,7 +75,14 @@ namespace odfaeg {
 				int id;
 				int lodLevel;
 				int objectId;
-				int padding[2];
+				int meshletOffset;
+				int padding;
+			};
+			struct Meshlet {
+				unsigned int vertexOffset;
+				unsigned int indexOffset;
+				unsigned int nbVertices;
+				unsigned int nbIndexes;
 			};
 			struct ModelData {
 				math::Matrix4f modelMatrix;
@@ -251,17 +258,19 @@ namespace odfaeg {
 			std::deque<Buffer>& outputMaterialDatas;
 			std::deque<Buffer> outputElementsDrawIndirectCommand;
 			std::deque<Buffer> outputTaskDatas;
+			std::deque<Buffer> outputMeshlets;
 			std::deque<Buffer> offsetInOutputModelData;
 			std::deque<Buffer> offsetInOutputObjectData;
 			std::deque<Buffer> offsetInOutputMaterialData;
 			std::deque<Buffer> offsetInOutputElementsIndirectCommands;
 			std::deque<Buffer> offsetInOutputTaskDatas;
+			std::deque<Buffer> offsetInOutputMeshes;			
 			std::deque<Buffer> instanceBase;
 			std::deque<Buffer> ubo;
 			std::deque<Buffer> drawCount;
 			std::deque<Buffer> taskCount;
 			std::deque<Buffer>& outputMeshes;
-			std::deque<Buffer> offsetInOutputMeshes;
+			std::deque<Buffer> meshletCount;
 			std::array<std::vector<VertexBufferData>, MAX_FRAMES_IN_FLIGHT> cpuVertexBufferDatas;
 			VertexBufferPC vertexBufferPc;
 			inline static bool needToUpdateBuffers = false;

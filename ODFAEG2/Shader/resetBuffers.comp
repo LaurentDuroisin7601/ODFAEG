@@ -42,6 +42,9 @@ layout (std430, set = 0, binding = 5) buffer drawCountSSBO {
 layout (std430, set = 0, binding = 6) buffer outputInstanceBaseSSBO {
 	uint instanceBase;
 } outputInstanceBase[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+layout (std430, set = 0, binding = 7) buffer meshletCountSSBO {
+	uint meshletCount;
+} meshletCountData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void main() {
     //debugPrintfEXT("reset  buffers");
@@ -52,6 +55,7 @@ void main() {
     offsetInOutputMaterialBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame] .materialDataOffset = 0u;
     offsetInOutputElementsIndirectCommandBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].elementIndirectCommandOffset = 0u;
     drawCountData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].drawCount = 0u;
+    meshletCountData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshletCount = 0u;
     outputInstanceBase[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].instanceBase = 0u;
     //debugPrintfEXT("reset  : %i, current frame : %i", firstIndexData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].firstIndex, pc.currentFrame);
 	inputMaterialBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet = 0;

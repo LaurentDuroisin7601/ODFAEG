@@ -31,6 +31,12 @@ struct AABB {
 	vec3 center;
 	vec3 size;
 };
+struct MeshLet {
+    uint vertexOffset;
+    uint indexOffset;
+    uint nbVertices;
+    uint nbIndexes;
+};
 struct SubMesh {
 	AABB globalBounds;
 	int vertexOffset;
@@ -43,6 +49,7 @@ struct SubMesh {
 	int id;
     int lodLevel;
     int objectId;
+    int meshletOffset;
 };
 struct Vertex {
     vec3 position; ///< 3D position of the vertex
@@ -80,12 +87,13 @@ layout (std430, set = 0, binding = 0) buffer TastDataSSBO {
 layout(std430, set = 0, binding = 1) buffer TaskCountSSBO {
     uint taskCount;
 } TaskCounts[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 2) buffer ModelDataSSBO {
-    ModelData modelData[];
-} modelDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 3) buffer SubMeshDataSSBO {
+layout (std430, set = 0, binding = 2) buffer SubMeshDataSSBO {
     SubMesh subMeshData[];
 } SubMeshDatas[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
+layout (std430, set = 0, binding = 3) buffer ModelDataSSBO {
+    ModelData modelData[];
+} modelDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
+
 layout (std430, set = 0, binding = 4) buffer vertexBufferSSBO {
     Vertex vertices[];
 } vertexData[NB_PRIMITIVE_TYPES];
@@ -95,6 +103,9 @@ layout (std430, set = 0, binding = 5) buffer indexBufferSSBO {
 layout (std430, set=0, binding = 6) buffer LodLevelBuffer {
     LODLevel lodLevel[];
 } lodLevelData;
+layout (std430, set = 0, binding = 7) buffer MeshletsSSBO {
+    MeshLet meshlet[];
+} meshletDatas[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 vec4 unpackColor(uint c)
 {
     float r = float((c >> 24) & 0xFFu) / 255.0;
@@ -110,18 +121,20 @@ void main() {
     //debugPrintfEXT("Instance id : %i", gl_WorkGroupID.x); 
     mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId].modelMatrix;
     SubMesh subMesh = SubMeshDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMeshData[payload.taskId];
-    uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_offset;
+    //debugPrintfEXT("meshlet offets : %i, %i", subMesh.meshletOffset, gl_WorkGroupID.y);
+    MeshLet meshlet = meshletDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlet[subMesh.meshletOffset+gl_WorkGroupID.y];
+    uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_offset + meshlet.indexOffset;
     //debugPrintfEXT("First index : %i", firstIndex);
     //3 = Triangles.
     uint maxVerts = 255u;
     uint maxPrims = 85u;
-    uint vertexCount   = min(subMesh.nbVertices, maxVerts);
-    uint primitiveCount = min(subMesh.nbIndexes / 3u, maxPrims);
-    //debugPrintfEXT("submesh vertex count : %i", subMesh.nbIndexes);
+    uint vertexCount   = min(meshlet.nbVertices, maxVerts);
+    uint primitiveCount = min(meshlet.nbIndexes / 3u, maxPrims);
+    //debugPrintfEXT("submesh vertex count : %i, %i", vertexCount, primitiveCount);
     //if (pc.primitiveType == 3) {       
         SetMeshOutputsEXT(vertexCount, primitiveCount);
         for (uint i = 0; i < vertexCount; i++) {
-            uint v = subMesh.vertexOffset + i;
+            uint v = subMesh.vertexOffset + meshlet.vertexOffset + i;
             gl_MeshVerticesEXT[i].gl_Position = pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(vertexData[pc.primitiveType].vertices[v].position, 1.0);
             fragColor[i] = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
             fragTexCoord[i] = vertexData[pc.primitiveType].vertices[v].texCoords;
@@ -133,9 +146,11 @@ void main() {
         }
         for (uint tri = 0; tri < primitiveCount; tri++) {
             //debugPrintfEXT("gen tri : %i", tri);
-            uint i0 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 0];
-            uint i1 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 1];
-            uint i2 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 2];            
+            uint i0 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 0] - meshlet.vertexOffset;
+            uint i1 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 1] - meshlet.vertexOffset;
+            uint i2 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 2] - meshlet.vertexOffset;            
+            if (i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount)
+                debugPrintfEXT("triangle indexes : %i, %i, %i, %i", i0, i1, i2, meshlet.vertexOffset);
             gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);
         }
     //}

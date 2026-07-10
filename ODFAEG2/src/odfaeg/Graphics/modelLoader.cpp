@@ -413,7 +413,7 @@ namespace odfaeg {
             }*/
 
             math::Vec3f currentSize = mnode->getSize();
-            if (!device.areMeshShadersSupported()) {
+            //if (!device.areMeshShadersSupported()) {
                 SubMesh subMesh(device);
                 for (unsigned int i = 0; 
                     i < Material::NBTEXTYPES; i++)
@@ -492,7 +492,7 @@ namespace odfaeg {
                 subMesh.setVertexBuffer(vb);
                 std::lock_guard<std::recursive_mutex>(getGlobalMutex());
                 mnode->addSubMesh(std::move(subMesh));
-            } else {
+            /*} else {
                 const size_t MAX_VERTS = 255;
                 const size_t MAX_PRIMS = 85;
                 for (unsigned int v = 0; v < vertices.size(); v += MAX_VERTS) {
@@ -581,11 +581,9 @@ namespace odfaeg {
                     subMesh.setVertexBuffer(vb);
                     std::lock_guard<std::recursive_mutex>(getGlobalMutex());
                     mnode->addSubMesh(std::move(subMesh));
-                    /*entity::TransformMatrix tm;
-                    tm.setMatrix(finalTransform);
-                    mnode->setTransform(tm);*/
+                    
                 } 
-            }    
+            }    */
             std::lock_guard<std::recursive_mutex>(getGlobalMutex());
             mnode->setSize(currentSize);       
             
