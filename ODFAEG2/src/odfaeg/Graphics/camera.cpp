@@ -65,7 +65,7 @@ namespace odfaeg {
             setPerspective(fovy, width / height, zNear, zFar);
             this->center = math::Vec3f(0.f, 0.f, 0.f);
             this->forward = math::Vec3f(0.f, 0.f, -1.f);  // vers -Z
-            this->up = math::Vec3f(0.f, -1.f, 0.f);        // Y en haut
+            this->up = math::Vec3f(0.f, 1.f, 0.f);        // Y en haut
             this->left = forward.cross(up).normalize();   // X vers la gauche
             this->up = left.cross(forward).normalize();   // recalcule up pour ortho
             this->target = center + forward;           
