@@ -150,7 +150,7 @@ void main() {
             uint i1 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 1] - meshlet.vertexOffset;
             uint i2 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 2] - meshlet.vertexOffset;            
             if (i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount)
-                debugPrintfEXT("triangle indexes : %i, %i, %i, %i", i0, i1, i2, meshlet.vertexOffset);
+                debugPrintfEXT("triangle indexes : %i, %i, %i, %i", indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 0], indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 1], indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 2], meshlet.vertexOffset);
             gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);
         }
     //}

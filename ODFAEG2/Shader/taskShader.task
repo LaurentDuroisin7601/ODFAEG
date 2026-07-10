@@ -10,6 +10,10 @@ struct AABB {
 	vec3 center;
 	vec3 size;
 };
+struct LODLevel {
+    uint index_offset;
+    uint index_count;
+};
 struct MeshLet {
     uint vertexOffset;
     uint indexOffset;
@@ -59,12 +63,15 @@ layout(std430, set = 0, binding = 1) buffer TaskCountSSBO {
 layout(std430, set = 0, binding = 2) buffer SubMeshDataSSBO {
     SubMesh subMesh[];
 } subMeshDatas[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+layout (std430, set=0, binding = 6) buffer LodLevelBuffer {
+    LODLevel lodLevel[];
+} lodLevelData;
 layout (std430, set = 0, binding = 7) buffer MeshletsSSBO {
     MeshLet meshlet[];
 } meshletDatas[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 layout (std430, set = 0, binding = 8) buffer MeshletCountSSBO {
     int meshletCount;
-} meshletCountDatas[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];;
+} meshletCountDatas[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 void main() {
     uint id = gl_WorkGroupID.x;
     //debugPrintfEXT("Primitive type : %i", pc.primitiveType);
@@ -80,7 +87,7 @@ void main() {
     for (uint v = 0; v < subMesh.nbVertices; v += MAX_VERTS) {
         uint vertexCount = min(MAX_VERTS, subMesh.nbVertices - v);                                
         uint indexOffset = (v / MAX_VERTS) * MAX_PRIMS * 3;               
-        uint indexCount  = min(MAX_PRIMS * 3, subMesh.nbIndexes - indexOffset);
+        uint indexCount  = min(MAX_PRIMS * 3, lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_count - indexOffset);
         // debugPrintfEXT("vertex count : %i, index count %i", vertexCount, indexCount);
         MeshLet meshlet;
         meshlet.vertexOffset = v;
