@@ -54,5 +54,5 @@ void main() {
     drawCountData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].drawCount = 0u;
     outputInstanceBase[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].instanceBase = 0u;
     //debugPrintfEXT("reset  : %i, current frame : %i", firstIndexData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].firstIndex, pc.currentFrame);
-	inputMaterialBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].materialSet = 0u;
+	inputMaterialBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet = 0;
 }

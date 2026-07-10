@@ -213,6 +213,7 @@ void main() {
                          if(inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet == 0) {
                             inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet = 1;
                             uint taskDataOffset = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
+                            inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].materialSet = taskDataOffset;
                             MeshDrawCommand meshDrawCommand;
                             meshDrawCommand.groupXCount = 0;
                             meshDrawCommand.groupYCount = 1;
@@ -230,7 +231,7 @@ void main() {
                         ModelData modelData = inputModelData.modelData[object.modelDataOffset];
                         outputModelData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceBase] = modelData;
                         //nombre d'instances + 1.
-                        uint taskDataOffset = outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount - 1;
+                        uint taskDataOffset = inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].materialSet;
                         outputTaskData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupXCount++;
                         //Matériel non instancé.                                               
                     } else {                        
