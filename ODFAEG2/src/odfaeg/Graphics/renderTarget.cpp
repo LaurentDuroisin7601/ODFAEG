@@ -1314,7 +1314,8 @@ namespace odfaeg {
 					0, nullptr
 				);
 				//std::cout<<"dispatch : nbObjects  : "<<gameObjects.size()<<"nb material : "<<Material::getNbMaterials()<<std::endl;
-				vkCmdDispatch(commandPool.getHandle(getCurrentFrame()), currentSubmeshesOffset, Material::getNbMaterials(), NB_PRIMITIVE_TYPES);
+				//std::cout<<"nb submeshes : "<<currentSubmeshesOffset<<std::endl;
+				vkCmdDispatch(commandPool.getHandle(getCurrentFrame()), (device.areMeshShadersSupported()) ? currentSubmeshesOffset : gameObjects.size(), Material::getNbMaterials(), NB_PRIMITIVE_TYPES);
 
 
 				/*mem.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
@@ -1334,7 +1335,7 @@ namespace odfaeg {
 				);
 
 				//computeCommandPool.endRecordCommandBuffer(getCurrentFrame());
-				/*VkSubmitInfo submitInfo{};
+				VkSubmitInfo submitInfo{};
 				submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 				submitInfo.signalSemaphoreCount = 1;
 				submitInfo.pSignalSemaphores = &computeFinishedSemaphores[getCurrentFrame()].getHandle();

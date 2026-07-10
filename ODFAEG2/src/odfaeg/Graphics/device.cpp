@@ -206,7 +206,25 @@ namespace odfaeg {
         void Device::createLogicalDevice(VkSurfaceKHR surface) {
             //std::cout<<"create logical device"<<std::endl;
             if (device == VK_NULL_HANDLE) {
-                
+                VkPhysicalDeviceMeshShaderPropertiesEXT meshProps = {};
+                meshProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_EXT;
+
+                VkPhysicalDeviceProperties2 props = {};
+                props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+                props.pNext = &meshProps;
+
+                vkGetPhysicalDeviceProperties2(physicalDevice, &props);
+
+                /*std::cout << "Max mesh output vertices: "
+                        << meshProps.maxMeshOutputVertices << std::endl;
+
+                std::cout << "Max mesh output primitives: "
+                        << meshProps.maxMeshOutputPrimitives << std::endl;
+
+                std::cout << "Max mesh workgroup size: "
+                        << meshProps.maxMeshWorkGroupSize[0] << ", "
+                        << meshProps.maxMeshWorkGroupSize[1] << ", "
+                        << meshProps.maxMeshWorkGroupSize[2] << std::endl;*/
                 //std::cout<<"create logical device"<<std::endl;
                 std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
                 std::set<uint32_t> uniqueQueueFamilies;

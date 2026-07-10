@@ -59,7 +59,7 @@ int main() {
 	ResourceManager<Texture, TextureNames> textureManager;
 	ResourceManager<Texture, std::string> modelTextureManager;
 	ModelLoader modelLoader(GPUContext::instance().getDevice(), modelTextureManager);
-	GameObject* bistroExterior = modelLoader.loadModel(/*"CubeTest/cube_test.glb"*/"car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx"/*"Bistro_v5_2/BistroExterior.fbx"*/);
+	GameObject* bistroExterior = modelLoader.loadModel(/*"CubeTest/cube_test.glb"*//**/"car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx"/*"Bistro_v5_2/BistroExterior.fbx"*/);
 	//bistroExterior->setRotation(45, Vec3f(0, 1, 0));
 	/*std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
 	textureManager.fromFileWithAlias("tilesets/wood.png", WOOD, args);
