@@ -89,7 +89,8 @@ void main() {
         uint vertexCount = min(MAX_VERTS, subMesh.nbVertices-i);
         uint indexOffset = (i / MAX_VERTS) * MAX_PRIMS * 3;               
         uint indexCount  = min(MAX_PRIMS * 3, lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_count - indexOffset);        
-        //debugPrintfEXT("vertex count : %i, vertex offset : %i, index count %i, index offset : %i", vertexCount, i, indexCount, indexOffset);
+        /*if (vertexCount > MAX_VERTS || indexCount > MAX_PRIMS * 3) 
+            debugPrintfEXT("vertex count : %i, vertex offset : %i, index count %i, index offset : %i", vertexCount, i, indexCount, indexOffset);*/
         MeshLet meshlet;
         meshlet.vertexOffset = i;
         meshlet.indexOffset = indexOffset;
