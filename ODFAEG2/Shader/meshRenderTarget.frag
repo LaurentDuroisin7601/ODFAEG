@@ -85,7 +85,7 @@ void main() {
     }
 	// --- Éclairage simple ---
     vec3 L = normalize(vec3(0.5, 1.0, 0.3));
-    float diff = max(dot(N, L), 0.0);
+    float diff = max(dot(-N, L), 0.0);
     // Specular simple
     vec3 V = normalize(vec3(0,0,1));
     vec3 H = normalize(L + V);

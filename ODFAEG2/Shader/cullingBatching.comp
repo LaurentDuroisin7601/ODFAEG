@@ -260,6 +260,8 @@ void main() {
                         //debugPrintfEXT("culling shader draw id : %i, material id : %i", indirectElementsDrawCommandOffset, materialId);
                         //debugPrintfEXT("instance base : %i", instanceBase);
                         outputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[indirectElementsDrawCommandOffset] = material;
+                        uint offsetInOutputMeshData = atomicAdd(offsetInOutputMeshData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshDataOffset, 1);
+                        outputMeshesData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshData[offsetInOutputMeshData]  = subMesh;
                         //debugPrintfEXT("material datas %v2f", material.uvScale);
                         //debugPrintfEXT("Output Model Matrix : %i\n%v4f\n%v4f\n%v4f\n%v4f",objectDataOffset,outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[0], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[1], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[2], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[3]);
                     } 

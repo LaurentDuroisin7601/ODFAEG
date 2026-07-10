@@ -28,10 +28,10 @@ struct MaterialData {
     uint nbBuffers;
     uint padding;
 };
-layout (std430, set = 0, binding = 1) buffer MaterialDataSSBO {
+layout (std430, set = 0, binding = 2) buffer MaterialDataSSBO {
     MaterialData materialData[];
 } materialDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
-layout(set = 0, binding = 2) uniform sampler2D diffuseTextures[MAX_TEXTURES];
+layout(set = 0, binding = 3) uniform sampler2D diffuseTextures[MAX_TEXTURES];
 layout(set = 1, binding = 0) uniform sampler2D specularTextures[MAX_TEXTURES];
 layout(set = 2, binding = 0) uniform sampler2D normalTextures[MAX_TEXTURES];
 layout(set = 3, binding = 0) uniform sampler2D metalnessTextures[MAX_TEXTURES];
@@ -41,12 +41,12 @@ layout(set = 6, binding = 0) uniform sampler2D emissiveTextures[MAX_TEXTURES];
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in vec3 normal;
-layout(location = 3) flat in int v_DrawID;
+layout(location = 3) flat in int materialID;
 layout(location = 4) flat in int primitiveType;
 layout(location = 5) flat in int currentFrame;
 layout(location = 0) out vec4 outColor;
 void main() {
-    MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[v_DrawID];
+    MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[materialID];
     vec2 uv = fragTexCoord;
     // --- Diffuse ---
     vec4 diffuse = fragColor;

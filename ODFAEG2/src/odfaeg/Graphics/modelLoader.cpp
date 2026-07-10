@@ -474,12 +474,7 @@ namespace odfaeg {
                 math::Matrix4f finalTransform = world * finalCorrection;
                 //std::cout<<"final transform : "<<finalTransform<<std::endl;
                 
-                if (vb.getBounds().getSize().x() > currentSize.x())
-                    currentSize.x() = vb.getBounds().getSize().x();
-                if (vb.getBounds().getSize().y() > currentSize.y())
-                    currentSize.y() = vb.getBounds().getSize().y();
-                if (vb.getBounds().getSize().z() > currentSize.z())
-                    currentSize.z() = vb.getBounds().getSize().z();
+                
                 if (!isSkinned) {
                     for (unsigned int i = 0; i < vb.getVertexCount(); i++) {
                         vb[i].position = finalTransform * vb[i].position;
@@ -487,6 +482,12 @@ namespace odfaeg {
                         //std::cout<<"vertex position : "<<vb[i].position<<std::endl;
                     }
                 }
+                if (vb.getBounds().getSize().x() > currentSize.x())
+                    currentSize.x() = vb.getBounds().getSize().x();
+                if (vb.getBounds().getSize().y() > currentSize.y())
+                    currentSize.y() = vb.getBounds().getSize().y();
+                if (vb.getBounds().getSize().z() > currentSize.z())
+                    currentSize.z() = vb.getBounds().getSize().z();
                 //std::cout<<"size : "<<currentSize<<std::endl;                
                 subMesh.setVertexBuffer(vb);
                 std::lock_guard<std::recursive_mutex>(getGlobalMutex());
@@ -562,33 +563,34 @@ namespace odfaeg {
                     math::Matrix4f finalTransform = world * finalCorrection;
                     //std::cout<<"final transform : "<<finalTransform<<std::endl;
                     
+                    
+                    if (!isSkinned) {
+                        for (unsigned int i = 0; i < vb.getVertexCount(); i++) {
+                            vb[i].position = finalTransform * vb[i].position;
+                            vb[i].normal = finalCorrection * vb[i].normal;
+                            //std::cout<<"vertex position : "<<vb[i].position<<std::endl;
+                        }                       
+                    }
                     if (vb.getBounds().getSize().x() > currentSize.x())
                         currentSize.x() = vb.getBounds().getSize().x();
                     if (vb.getBounds().getSize().y() > currentSize.y())
                         currentSize.y() = vb.getBounds().getSize().y();
                     if (vb.getBounds().getSize().z() > currentSize.z())
                         currentSize.z() = vb.getBounds().getSize().z();
-                    if (!isSkinned) {
-                        for (unsigned int i = 0; i < vb.getVertexCount(); i++) {
-                            vb[i].position = finalTransform * vb[i].position;
-                            vb[i].normal = finalCorrection * -vb[i].normal;
-                            //std::cout<<"vertex position : "<<vb[i].position<<std::endl;
-                        }
-                    }
                     //std::cout<<"size : "<<currentSize<<std::endl;                
                     subMesh.setVertexBuffer(vb);
                     std::lock_guard<std::recursive_mutex>(getGlobalMutex());
                     mnode->addSubMesh(std::move(subMesh));
-                    
+                    /*entity::TransformMatrix tm;
+                    tm.setMatrix(finalTransform);
+                    mnode->setTransform(tm);*/
                 } 
             }    
             std::lock_guard<std::recursive_mutex>(getGlobalMutex());
             mnode->setSize(currentSize);       
             
             //std::cout<<"size : "<<vb.getBounds().getSize()<<std::endl;
-            /*entity::TransformMatrix tm;
-            tm.setMatrix(finalTransform);
-            mnode->setTransform(tm);*/
+           
           
         }
         void ModelLoader::setVertexBoneDataToDefault(Vertex& vertex)
