@@ -25,7 +25,7 @@ namespace odfaeg {
             meshSupported = false;
         }
         bool Device::areMeshShadersSupported() {
-            return false/*meshSupported*/;
+            return meshSupported;
         }
         bool Device::checkDeviceMeshExtensionSupport(VkPhysicalDevice device) {
             uint32_t extensionCount;
