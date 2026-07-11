@@ -291,7 +291,7 @@ namespace odfaeg {
             bool isLeftHandled = false;
             float det = world.getDet();
             bool isLeftHanded = false;
-            if (det > 0.0f) {
+            if (det < 0.0f) {
                 //std::cout<<"left handed!"<<std::endl;
                 isLeftHanded = true;
             }
