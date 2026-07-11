@@ -528,9 +528,9 @@ namespace odfaeg {
 								triBatch.maxVertex = std::max(triBatch.maxVertex, maxVertex);
 								unsigned int vertBatchId = (triBatch.maxVertex - triBatch.minVertex) / MAX_VERTS;								
 								unsigned int meshletId = triBatchId+nbBatchs*vertBatchId;
-								if(vertBatchId > 0) {
+								/*if(vertBatchId > 0) {
 									std::cout<<"vert batch id : "<<vertBatchId<<std::endl;
-								} 
+								}*/ 
 								if (meshletId + currentSubmeshMeshletOffset + currentLodMeshletOffset >= meshletDatas.size()) {
 									Meshlet meshlet;			
 									meshlet.indexOffset = 0;
@@ -543,7 +543,7 @@ namespace odfaeg {
 								meshlet.nbIndexes += 3;
 								meshlet.indexOffset = triBatchId * MAX_PRIMS*3;								
 								meshlet.vertexOffset = triBatch.minVertex; 
-								meshlet.nbVertices = triBatch.maxVertex - triBatch.minVertex + 1;								
+								meshlet.nbVertices = triBatch.maxVertex - triBatch.minVertex+1;								
 								/*if (meshlet.nbVertices > MAX_VERTS) {
 									std::cout<<"nb vertices : "<<meshlet.nbVertices<<std::endl;
 									system("PAUSE");
@@ -555,15 +555,17 @@ namespace odfaeg {
 							//std::cout<<"meshlet count : "<<	meshletDatas.size()<<","<<currentLodMeshletOffset<<std::endl;																		
 							lodLevelDatas.push_back(lodLevelData);
 							for (unsigned int m = currentSubmeshMeshletOffset+lodLevelData.meshletOffset; m < currentSubmeshMeshletOffset+lodLevelData.meshletOffset + lodLevelData.meshletCount; m++) {
-								Meshlet meshlet = meshletDatas[m];							
+								Meshlet meshlet = meshletDatas[m];
+								unsigned int firstIndex = subMeshData.indexOffset + lods[l].indexOffset + meshlet.indexOffset; 
+								//std::cout<<"meshlet : "<<lodLevelData.meshletCount<<","<<currentSubmeshMeshletOffset<<","<<subMeshData.indexOffset<<","<<meshlet.nbIndexes<<","<<meshlet.nbVertices<<","<<meshlet.indexOffset<<","<<meshlet.vertexOffset<<std::endl;							
 								for (unsigned int t = 0; t < meshlet.nbIndexes  / 3; t++) {
 									int i0 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[l].indexOffset + meshlet.indexOffset+t*3+0) - meshlet.vertexOffset;
 									int i1 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[l].indexOffset + meshlet.indexOffset+t*3+1) - meshlet.vertexOffset;
 									int i2 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[l].indexOffset + meshlet.indexOffset+t*3+2) - meshlet.vertexOffset;
-									if (i0 >= meshlet.nbVertices || i1 >= meshlet.nbVertices || i2 >= meshlet.nbVertices) {
+									/*if (i0 >= meshlet.nbVertices || i1 >= meshlet.nbVertices || i2 >= meshlet.nbVertices) {
 										std::cout<<"indexes : "<<i0<<","<<i1<<","<<i2<<","<<meshlet.nbVertices<<std::endl;
 										system("PAUSE");
-									}
+									}*/
 								}
 							}
 						}											

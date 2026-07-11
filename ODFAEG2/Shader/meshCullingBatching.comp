@@ -20,8 +20,8 @@ struct Object {
 	int paddings[3];
 };
 struct LODLevel {
-    uint index_offset;
-    uint index_count;
+    int index_offset;
+    int index_count;
     int meshletOffset;
     int meshletCount;
 };
@@ -232,7 +232,7 @@ void main() {
                             outputTaskData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = taskData;
                             outputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[taskDataOffset] = material;
                             uint offsetInOutputMeshData = atomicAdd(offsetInOutputMeshData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshDataOffset, 1);
-                            outputMeshData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshData[offsetInOutputMeshData]  = subMesh;
+                            outputMeshData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshData[taskDataOffset]  = subMesh;
                         }
                         ModelData modelData = inputModelData.modelData[object.modelDataOffset];
                         outputModelData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceBase] = modelData;
@@ -252,9 +252,7 @@ void main() {
                         taskData.meshDrawCommand = meshDrawCommand;
                         taskData.instanceBase = instanceBase;
                         //debugPrintfEXT("lod infos : %i, %i",subMesh.lodLevel[lod].index_offset,subMesh.lodLevel[lod].index_count);
-                        //debugPrintfEXT("instance base %i", instanceBase);
-                        
-                        
+                        //debugPrintfEXT("instance base %i", instanceBase); 
                         outputTaskData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[offsetTaskData] = taskData;
                         //debugPrintfEXT("indirect elements draw command offset : %i", indirectElementsDrawCommandOffset);
                         ModelData modelData = inputModelData.modelData[object.modelDataOffset];
@@ -269,7 +267,7 @@ void main() {
                         //debugPrintfEXT("instance base : %i", instanceBase);
                         outputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[offsetTaskData] = material;
                         uint offsetInOutputMeshData = atomicAdd(offsetInOutputMeshData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshDataOffset, 1);
-                        outputMeshData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshData[offsetInOutputMeshData]  = subMesh;
+                        outputMeshData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshData[offsetTaskData]  = subMesh;
                         //debugPrintfEXT("material datas %v2f", material.uvScale);
                         //debugPrintfEXT("Output Model Matrix : %i\n%v4f\n%v4f\n%v4f\n%v4f",objectDataOffset,outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[0], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[1], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[2], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[3]);
                     }
