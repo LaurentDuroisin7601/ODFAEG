@@ -501,17 +501,19 @@ namespace odfaeg {
 
 						std::array<VertexBuffer::LODLevel, 5> lods = subMesh.getVertexBuffer().getLODs();
 						unsigned int currentSubmeshMeshletOffset = meshletDatas.size();
-						for (unsigned int i = 0; i < lods.size(); i++) {
+						
+						for (unsigned int l = 0; l < lods.size(); l++) {
 							LODLevelData lodLevelData{};
-							lodLevelData.index_offset = lods[i].indexOffset;
-							lodLevelData.index_count = lods[i].indexCount;
+							lodLevelData.index_offset = lods[l].indexOffset;
+							lodLevelData.index_count = lods[l].indexCount;
+							std::cout<<"currentSubmeshMeshletOffset : "<<currentSubmeshMeshletOffset<<" "<<meshletDatas.size()<<std::endl;
 							unsigned int currentLodMeshletOffset = meshletDatas.size() - currentSubmeshMeshletOffset;
 							lodLevelData.meshletOffset = currentLodMeshletOffset;							
-							for (unsigned int tri = 0; tri < lods[i].indexCount / 3; tri++) {
-								int g0 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[i].indexOffset+tri*3+0);								
-								int g1 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[i].indexOffset+tri*3+1);
-								int g2 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[i].indexOffset+tri*3+2);
-								//std::cout<<"index : "<<g0<<","<<g1<<","<<g2<<std::endl;								
+							for (unsigned int tri = 0; tri < lods[l].indexCount / 3; tri++) {
+								int g0 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[l].indexOffset+tri*3+0);								
+								int g1 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[l].indexOffset+tri*3+1);
+								int g2 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[l].indexOffset+tri*3+2);
+																
 								unsigned int minVertex = std::min(g0, std::min(g1, g2));
     							unsigned int maxVertex = std::max(g0, std::max(g1, g2));
 								unsigned int meshletId = maxVertex / (MAX_VERTS+1);								
@@ -532,24 +534,28 @@ namespace odfaeg {
 								meshlet.maxVertex = std::max(meshlet.maxVertex, maxVertex);
 								meshlet.vertexOffset = meshlet.minVertex; 
 								meshlet.nbVertices = meshlet.maxVertex - meshlet.minVertex + 1;
+								
 								/*if (meshlet.nbVertices > MAX_VERTS) {
 									std::cout<<"nb vertices : "<<meshlet.nbVertices<<std::endl;
 									system("PAUSE");
 								}*/
 							}
+							std::cout<<"lod meshlet count : "<<(meshletDatas.size() - currentLodMeshletOffset - currentSubmeshMeshletOffset)<<std::endl;
 							lodLevelData.meshletOffset = currentLodMeshletOffset;
-							lodLevelData.meshletCount = meshletDatas.size() - currentLodMeshletOffset;																			
+							lodLevelData.meshletCount = meshletDatas.size() - currentLodMeshletOffset - currentSubmeshMeshletOffset;
+							//std::cout<<"meshlet count : "<<	meshletDatas.size()<<","<<currentLodMeshletOffset<<std::endl;																		
 							lodLevelDatas.push_back(lodLevelData);
 						}
 						subMeshData.meshletOffset = currentSubmeshMeshletOffset;
 						subMeshData.meshletCount = meshletDatas.size() - currentSubmeshMeshletOffset;
-						subMeshData.lodOffset = currentSubmeshesOffset * 5;
+						subMeshData.lodOffset = currentSubmeshesOffset * lods.size();
+						std::cout<<"submesh meshlet count : "<<(meshletDatas.size() - currentSubmeshMeshletOffset)<<std::endl;
 						subMeshesDatas.push_back(subMeshData);	
 						currentSubmeshesOffset++;					
-					}	
+					}
 					totalMeshlets = meshletDatas.size();				
 				}
-				std::cout<<"total meshlets : "<<totalMeshlets<<std::endl;
+				system("PAUSE");
 				for (unsigned int i = 0; i < 1; i++) {
 					for (unsigned int j = 0; j < NB_PRIMITIVE_TYPES; j++) {
 						//std::cout<<"update vertices"<<std::endl;

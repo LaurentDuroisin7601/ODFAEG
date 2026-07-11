@@ -277,7 +277,7 @@ namespace odfaeg {
 			std::deque<Buffer>& outputMeshes;			
 			std::array<std::vector<VertexBufferData>, MAX_FRAMES_IN_FLIGHT> cpuVertexBufferDatas;
 			VertexBufferPC vertexBufferPc;
-			inline static const unsigned int MAX_PRIM = 85;
+			inline static const unsigned int MAX_PRIMS = 85;
 			inline static const unsigned int MAX_VERTS = 255;
 			inline static unsigned int totalMeshlets = 0;
 			inline static bool needToUpdateBuffers = false;
