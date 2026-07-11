@@ -509,8 +509,8 @@ namespace odfaeg {
 							LODLevelData lodLevelData{};
 							lodLevelData.index_offset = lods[i].indexOffset;
 							lodLevelData.index_count = lods[i].indexCount;
-							unsigned int currentMeshletOffset = meshletDatas.size() - currentSubmeshMeshletOffset;
-							lodLevelData.meshletOffset = currentMeshletOffset;							
+							unsigned int currentLodMeshletOffset = meshletDatas.size() - currentSubmeshMeshletOffset;
+							lodLevelData.meshletOffset = currentLodMeshletOffset;							
 							for (unsigned int tri = 0; tri < lods[i].indexCount / 3; tri++) {
 								int g0 = vertices.getIndex(subMeshData.indexOffset + lods[i].indexOffset+tri*3+0);								
 								int g1 = vertices.getIndex(subMeshData.indexOffset + lods[i].indexOffset+tri*3+1);
@@ -518,7 +518,7 @@ namespace odfaeg {
 								unsigned int minVertex = std::min(std::min(g0, std::min(g1, g2)));
     							unsigned int maxVertex = std::max(std::max(g0, std::max(g1, g2)));
 								unsigned int meshletId = maxVertex / MAX_VERTS;
-								if (meshletId + subMeshData.indexOffset + lods[i].indexOffset >= meshletDatas.size()) {
+								if (meshletId + currentSubmeshMeshletOffset + currentLodMeshletOffset >= meshletDatas.size()) {
 									Meshlet meshlet;			
 									meshlet.indexOffset = 0;
 									meshlet.indexCount = 0;	
@@ -526,7 +526,7 @@ namespace odfaeg {
 									meshlet.vertexCount = 0;	
 									meshlet.minVertex = std::numeric_limits<unsigned int>::max();
 									meshlet.maxVertex = 0;
-									meshletDatas.resize(mesheltId + subMeshData.indexOffset + lods[i].indexOffset+1, meshlet);
+									meshletDatas.resize(mesheltId + currentSubmeshMeshletOffset + currentLodMeshletOffset + 1, meshlet);
 								}
 								Meshlet meshlet = meshletDatas[meshletId];
 								meshlet.indexCount += 3;

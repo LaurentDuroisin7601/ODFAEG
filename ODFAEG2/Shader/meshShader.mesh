@@ -110,7 +110,7 @@ layout (std430, set=0, binding = 6) buffer LodLevelBuffer {
 } lodLevelData;
 layout (std430, set = 0, binding = 7) buffer MeshletsSSBO {
     MeshLet meshlet[];
-} meshletDatas[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+} meshletDatas;
 vec4 unpackColor(uint c)
 {
     float r = float((c >> 24) & 0xFFu) / 255.0;
