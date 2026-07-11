@@ -514,7 +514,7 @@ namespace odfaeg {
 								//std::cout<<"index : "<<g0<<","<<g1<<","<<g2<<std::endl;								
 								unsigned int minVertex = std::min(g0, std::min(g1, g2));
     							unsigned int maxVertex = std::max(g0, std::max(g1, g2));
-								unsigned int meshletId = maxVertex / MAX_VERTS;								
+								unsigned int meshletId = maxVertex / (MAX_VERTS+1);								
 								if (meshletId + currentSubmeshMeshletOffset + currentLodMeshletOffset >= meshletDatas.size()) {
 									Meshlet meshlet;			
 									meshlet.indexOffset = 0;
