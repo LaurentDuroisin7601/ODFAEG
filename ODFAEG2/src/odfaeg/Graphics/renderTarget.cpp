@@ -508,9 +508,9 @@ namespace odfaeg {
 							unsigned int currentLodMeshletOffset = meshletDatas.size() - currentSubmeshMeshletOffset;
 							lodLevelData.meshletOffset = currentLodMeshletOffset;							
 							for (unsigned int tri = 0; tri < lods[i].indexCount / 3; tri++) {
-								int g0 = vertices[subMesh.getVertexBuffer().getPrimitiveType()].getIndex(subMeshData.indexOffset + lods[i].indexOffset+tri*3+0);								
-								int g1 = vertices[subMesh.getVertexBuffer().getPrimitiveType()].getIndex(subMeshData.indexOffset + lods[i].indexOffset+tri*3+1);
-								int g2 = vertices[subMesh.getVertexBuffer().getPrimitiveType()].getIndex(subMeshData.indexOffset + lods[i].indexOffset+tri*3+2);								
+								int g0 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[i].indexOffset+tri*3+0);								
+								int g1 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[i].indexOffset+tri*3+1);
+								int g2 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[i].indexOffset+tri*3+2);								
 								unsigned int minVertex = std::min(g0, std::min(g1, g2));
     							unsigned int maxVertex = std::max(g0, std::max(g1, g2));
 								unsigned int meshletId = maxVertex / MAX_VERTS;
@@ -539,10 +539,12 @@ namespace odfaeg {
 						subMeshData.meshletOffset = currentSubmeshMeshletOffset;
 						subMeshData.meshletCount = meshletDatas.size() - currentSubmeshMeshletOffset;
 						subMeshData.lodOffset = currentSubmeshesOffset * 5;
-						subMeshesDatas.push_back(subMeshData);						
+						subMeshesDatas.push_back(subMeshData);	
+						currentSubmeshesOffset++;					
 					}	
 					totalMeshlets = meshletDatas.size();				
 				}
+				std::cout<<"total meshlets : "<<totalMeshlets<<std::endl;
 				for (unsigned int i = 0; i < 1; i++) {
 					for (unsigned int j = 0; j < NB_PRIMITIVE_TYPES; j++) {
 						//std::cout<<"update vertices"<<std::endl;
@@ -802,10 +804,8 @@ namespace odfaeg {
 				for (unsigned int i = 6; i < 8; i++) {
 					defaultRenderingPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
 				}
-				for (unsigned int i = 8; i < 10; i++) {
-					defaultRenderingPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT);	
-				}			
-				defaultRenderingPool.updatePoolSize(10, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
+				defaultRenderingPool.updatePoolSize(8, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT);
+				defaultRenderingPool.updatePoolSize(9, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
 				defaultRenderingPool.update();
 				DescriptorPool& specularDefaultRenderingPool = GPUContext::instance().getDescriptorPool(defaultRenderingShader, 1, 1);
 				specularDefaultRenderingPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);

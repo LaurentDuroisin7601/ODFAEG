@@ -22,7 +22,7 @@ struct Object {
 struct LODLevel {
     uint index_offset;
     uint index_count;
-    int mesheltOffset;
+    int meshletOffset;
     int meshletCount;
 };
 /*subMesh*/
