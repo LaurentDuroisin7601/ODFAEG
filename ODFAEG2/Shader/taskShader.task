@@ -10,18 +10,6 @@ struct AABB {
 	vec3 center;
 	vec3 size;
 };
-struct LODLevel {
-    uint index_offset;
-    uint index_count;
-};
-struct MeshLet {
-    uint vertexOffset;
-    uint indexOffset;
-    uint nbVertices;
-    uint nbIndexes;
-    uint minVertex;
-    uint maxVertex;
-};
 struct SubMesh {
 	AABB globalBounds;
 	int vertexOffset;
