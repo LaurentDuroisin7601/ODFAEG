@@ -532,7 +532,10 @@ namespace odfaeg {
 								meshlet.maxVertex = std::max(meshlet.maxVertex, maxVertex);
 								meshlet.vertexOffset = meshlet.minVertex; 
 								meshlet.nbVertices = meshlet.maxVertex - meshlet.minVertex + 1;
-								//std::cout<<"min vertex : "<<meshlet.minVertex<<std::endl;
+								/*if (meshlet.nbVertices > MAX_VERTS) {
+									std::cout<<"nb vertices : "<<meshlet.nbVertices<<std::endl;
+									system("PAUSE");
+								}*/
 							}
 							lodLevelData.meshletOffset = currentLodMeshletOffset;
 							lodLevelData.meshletCount = meshletDatas.size() - currentLodMeshletOffset;																			
