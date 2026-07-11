@@ -508,7 +508,12 @@ namespace odfaeg {
 							lodLevelData.index_count = lods[l].indexCount;							
 							unsigned int currentLodMeshletOffset = meshletDatas.size() - currentSubmeshMeshletOffset;
 							//std::cout<<"currentSubmeshMeshletOffset : "<<currentSubmeshMeshletOffset<<" "<<currentLodMeshletOffset<<","<<meshletDatas.size()<<std::endl;
-							lodLevelData.meshletOffset = currentLodMeshletOffset;							
+							lodLevelData.meshletOffset = currentLodMeshletOffset;
+							TriangleBatch triBatchInit;
+							triBatchInit.minVertex = std::numeric_limits<unsigned int>::max();
+							triBatchInit.maxVertex = 0;
+							unsigned int nbBatchs = (lods[l].indexCount / 3)/MAX_PRIMS+1;
+							std::vector<TriangleBatch> triBatchs(nbBatchs, triBatchInit);							
 							for (unsigned int tri = 0; tri < lods[l].indexCount / 3; tri++) {
 								int g0 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[l].indexOffset+tri*3+0);								
 								int g1 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[l].indexOffset+tri*3+1);
@@ -516,25 +521,29 @@ namespace odfaeg {
 																
 								unsigned int minVertex = std::min(g0, std::min(g1, g2));
     							unsigned int maxVertex = std::max(g0, std::max(g1, g2));
-								unsigned int meshletId = tri / MAX_PRIMS;								
+								unsigned int triBatchId = tri / MAX_PRIMS;
+								TriangleBatch& triBatch = triBatchs[triBatchId];	
+															
+								triBatch.minVertex = std::min(triBatch.minVertex, minVertex);
+								triBatch.maxVertex = std::max(triBatch.maxVertex, maxVertex);
+								unsigned int vertBatchId = (triBatch.maxVertex - triBatch.minVertex) / MAX_VERTS;								
+								unsigned int meshletId = triBatchId+nbBatchs*vertBatchId;
+								if(vertBatchId > 0) {
+									std::cout<<"vert batch id : "<<vertBatchId<<std::endl;
+								} 
 								if (meshletId + currentSubmeshMeshletOffset + currentLodMeshletOffset >= meshletDatas.size()) {
 									Meshlet meshlet;			
 									meshlet.indexOffset = 0;
 									meshlet.nbIndexes = 0;	
 									meshlet.vertexOffset = 0;
-									meshlet.nbVertices = 0;	
-									meshlet.minVertex = std::numeric_limits<unsigned int>::max();
-									meshlet.maxVertex = 0;
+									meshlet.nbVertices = 0;
 									meshletDatas.resize(meshletId + currentSubmeshMeshletOffset + currentLodMeshletOffset + 1, meshlet);
 								}
-								Meshlet& meshlet = meshletDatas[meshletId + currentSubmeshMeshletOffset + currentLodMeshletOffset];
+								Meshlet& meshlet = meshletDatas[meshletId + currentSubmeshMeshletOffset + currentLodMeshletOffset];								
 								meshlet.nbIndexes += 3;
-								meshlet.indexOffset = meshletId * (MAX_PRIMS*3);
-								meshlet.minVertex = std::min(meshlet.minVertex, minVertex);
-								meshlet.maxVertex = std::max(meshlet.maxVertex, maxVertex);
-								meshlet.vertexOffset = meshlet.minVertex; 
-								meshlet.nbVertices = meshlet.maxVertex - meshlet.minVertex + 1;
-								
+								meshlet.indexOffset = triBatchId * MAX_PRIMS*3;								
+								meshlet.vertexOffset = triBatch.minVertex; 
+								meshlet.nbVertices = triBatch.maxVertex - triBatch.minVertex + 1;								
 								/*if (meshlet.nbVertices > MAX_VERTS) {
 									std::cout<<"nb vertices : "<<meshlet.nbVertices<<std::endl;
 									system("PAUSE");

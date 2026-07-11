@@ -37,9 +37,7 @@ struct MeshLet {
     uint vertexOffset;
     uint indexOffset;
     uint nbVertices;
-    uint nbIndexes;
-    uint minVertex;
-    uint maxVertex;
+    uint nbIndexes;    
 };
 struct SubMesh {
 	AABB globalBounds;

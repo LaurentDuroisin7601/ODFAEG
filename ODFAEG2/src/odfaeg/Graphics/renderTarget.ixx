@@ -84,7 +84,9 @@ namespace odfaeg {
 				unsigned int vertexOffset;
 				unsigned int indexOffset;
 				unsigned int nbVertices;
-				unsigned int nbIndexes;
+				unsigned int nbIndexes;				
+			};
+			struct TriangleBatch {
 				unsigned int minVertex;
 				unsigned int maxVertex;
 			};
