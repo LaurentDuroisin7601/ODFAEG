@@ -76,7 +76,9 @@ namespace odfaeg {
 				int lodOffset;
 				int id;
 				int lodLevel;
-				int objectId;				
+				int objectId;
+				int meshletOffset;
+				int meshletCount;				
 			};
 			struct Meshlet {
 				unsigned int vertexOffset;
@@ -261,7 +263,7 @@ namespace odfaeg {
 			std::deque<Buffer>& outputMaterialDatas;
 			std::deque<Buffer> outputElementsDrawIndirectCommand;
 			std::deque<Buffer> outputTaskDatas;
-			std::deque<Buffer> intputMeshlets;
+			std::deque<Buffer> inputMeshlets;
 			std::deque<Buffer> offsetInOutputModelData;
 			std::deque<Buffer> offsetInOutputObjectData;
 			std::deque<Buffer> offsetInOutputMaterialData;

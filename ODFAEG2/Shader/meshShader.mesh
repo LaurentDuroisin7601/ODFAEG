@@ -22,7 +22,7 @@ struct MeshDrawCommand {
 struct LODLevel {
     uint index_offset;
     uint index_count;
-    int mesheltOffset;
+    int meshletOffset;
     int meshletCount;
 };
 struct TaskData {
@@ -127,7 +127,7 @@ void main() {
     mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId].modelMatrix;
     SubMesh subMesh = SubMeshDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMeshData[payload.taskId];
     //debugPrintfEXT("meshlet offets : %i, %i", subMesh.meshletOffset, gl_WorkGroupID.y);
-    MeshLet meshlet = meshletDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlet[subMesh.meshletOffset+lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletOffset+gl_WorkGroupID.y];
+    MeshLet meshlet = meshletDatas.meshlet[subMesh.meshletOffset+lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletOffset+gl_WorkGroupID.y];
     uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_offset + meshlet.indexOffset;
     //debugPrintfEXT("First index : %i", firstIndex);
     //3 = Triangles.

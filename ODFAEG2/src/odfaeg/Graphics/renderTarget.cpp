@@ -250,9 +250,9 @@ namespace odfaeg {
 					outputMeshes.emplace_back(device);
 					outputMeshes.back().create(sizeof(SubMesh)*totalMeshlets, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
-				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
-					outputMeshlets.emplace_back(device);
-					outputMeshlets.back().create(sizeof(Meshlet)*totalMeshlets, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+				for (unsigned int i = 0; i < 1; i++) {
+					inputMeshlets.emplace_back(device);
+					inputMeshlets.back().create(sizeof(Meshlet)*totalMeshlets, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 					outputObjectDatas.emplace_back(device);
@@ -282,11 +282,7 @@ namespace odfaeg {
 			for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 				taskCount.emplace_back(device);
 				taskCount.back().create(sizeof(unsigned int), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-			}
-			for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
-				meshletCount.emplace_back(device);
-				meshletCount.back().create(sizeof(unsigned int), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-			}
+			}			
 			for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 				offsetInOutputMeshes.emplace_back(device);
 				offsetInOutputMeshes.back().create(sizeof(unsigned int), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
@@ -512,38 +508,40 @@ namespace odfaeg {
 							unsigned int currentLodMeshletOffset = meshletDatas.size() - currentSubmeshMeshletOffset;
 							lodLevelData.meshletOffset = currentLodMeshletOffset;							
 							for (unsigned int tri = 0; tri < lods[i].indexCount / 3; tri++) {
-								int g0 = vertices.getIndex(subMeshData.indexOffset + lods[i].indexOffset+tri*3+0);								
-								int g1 = vertices.getIndex(subMeshData.indexOffset + lods[i].indexOffset+tri*3+1);
-								int g2 = vertices.getIndex(subMeshData.indexOffset + lods[i].indexOffset+tri*3+2);								
-								unsigned int minVertex = std::min(std::min(g0, std::min(g1, g2)));
-    							unsigned int maxVertex = std::max(std::max(g0, std::max(g1, g2)));
+								int g0 = vertices[subMesh.getVertexBuffer().getPrimitiveType()].getIndex(subMeshData.indexOffset + lods[i].indexOffset+tri*3+0);								
+								int g1 = vertices[subMesh.getVertexBuffer().getPrimitiveType()].getIndex(subMeshData.indexOffset + lods[i].indexOffset+tri*3+1);
+								int g2 = vertices[subMesh.getVertexBuffer().getPrimitiveType()].getIndex(subMeshData.indexOffset + lods[i].indexOffset+tri*3+2);								
+								unsigned int minVertex = std::min(g0, std::min(g1, g2));
+    							unsigned int maxVertex = std::max(g0, std::max(g1, g2));
 								unsigned int meshletId = maxVertex / MAX_VERTS;
 								if (meshletId + currentSubmeshMeshletOffset + currentLodMeshletOffset >= meshletDatas.size()) {
 									Meshlet meshlet;			
 									meshlet.indexOffset = 0;
-									meshlet.indexCount = 0;	
+									meshlet.nbIndexes = 0;	
 									meshlet.vertexOffset = 0;
-									meshlet.vertexCount = 0;	
+									meshlet.nbVertices = 0;	
 									meshlet.minVertex = std::numeric_limits<unsigned int>::max();
 									meshlet.maxVertex = 0;
-									meshletDatas.resize(mesheltId + currentSubmeshMeshletOffset + currentLodMeshletOffset + 1, meshlet);
+									meshletDatas.resize(meshletId + currentSubmeshMeshletOffset + currentLodMeshletOffset + 1, meshlet);
 								}
 								Meshlet meshlet = meshletDatas[meshletId];
-								meshlet.indexCount += 3;
+								meshlet.nbIndexes += 3;
 								meshlet.indexOffset = meshletId * MAX_VERTS;
 								meshlet.minVertex = std::min(meshlet.minVertex, minVertex);
-								meshlet.maxVertex = std::max(msehlet.maxVertex, maxVertex);
+								meshlet.maxVertex = std::max(meshlet.maxVertex, maxVertex);
 								meshlet.vertexOffset = meshlet.minVertex; 
 								meshlet.nbVertices = meshlet.maxVertex - meshlet.minVertex + 1;
 							}
-							lodLevel.meshletCount = meshletDatas.size() - currentMeshletOffset;																			
+							lodLevelData.meshletOffset = currentLodMeshletOffset;
+							lodLevelData.meshletCount = meshletDatas.size() - currentLodMeshletOffset;																			
 							lodLevelDatas.push_back(lodLevelData);
 						}
-						subMeshData.currentMeshletOffset = currentSubmeshMeshletOffset;
+						subMeshData.meshletOffset = currentSubmeshMeshletOffset;
 						subMeshData.meshletCount = meshletDatas.size() - currentSubmeshMeshletOffset;
 						subMeshData.lodOffset = currentSubmeshesOffset * 5;
 						subMeshesDatas.push_back(subMeshData);						
-					}					
+					}	
+					totalMeshlets = meshletDatas.size();				
 				}
 				for (unsigned int i = 0; i < 1; i++) {
 					for (unsigned int j = 0; j < NB_PRIMITIVE_TYPES; j++) {
@@ -572,8 +570,8 @@ namespace odfaeg {
 					//std::cout<<"submeshes buffer : "<<staggingObjects[i].getHandle()<<std::endl;
 				}
 				for (unsigned int i = 0; i < 1; i++) {
-					staggingMesheslets[i].create(meshletDatas.size() * sizeof(Meshlet), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
-					staggingMesheslets[i].update(meshletDatas.data(), meshletDatas.size() * sizeof(Meshlet));
+					staggingMeshlets[i].create(meshletDatas.size() * sizeof(Meshlet), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+					staggingMeshlets[i].update(meshletDatas.data(), meshletDatas.size() * sizeof(Meshlet));
 					inputMeshlets[i].create(meshletDatas.size() * sizeof(Meshlet), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 					Buffer::copyBuffer(staggingMeshlets[i], inputMeshlets[i], meshletDatas.size() * sizeof(Meshlet), commandPool.getHandle(getCurrentFrame()));
 				}
@@ -611,8 +609,7 @@ namespace odfaeg {
 						outputObjectDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 						outputModelDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);;
 						outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(MaterialData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-						outputMeshes[j * NB_PRIMITIVE_TYPES + k].create(sizeof(SubMesh) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-						outputMeshlets[j * NB_PRIMITIVE_TYPES + k].create(sizeof(Meshlet) * totalMeshlets, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+						outputMeshes[j * NB_PRIMITIVE_TYPES + k].create(sizeof(SubMesh) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);						
 						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 					}
@@ -1078,7 +1075,7 @@ namespace odfaeg {
 				defaultRenderingSet.updateBufferInfos(4, true, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(5, false, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(6, lodLevel, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				defaultRenderingSet.updateBufferInfos(7, intputMeshlets, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);				
+				defaultRenderingSet.updateBufferInfos(7, inputMeshlets, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);				
 				defaultRenderingSet.updateBufferInfos(8, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				if (hasDiffuseTextures) {
 					//std::cout<<"textures : "<<Texture::getAllTextures().size()<<std::endl;
