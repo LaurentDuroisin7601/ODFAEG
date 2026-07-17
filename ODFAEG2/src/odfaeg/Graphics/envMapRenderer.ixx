@@ -40,17 +40,20 @@ namespace odfaeg {
             private:
                 VertexBuffer fullScreenQuad;
                 RenderTexture envMap;
-                Shader envMapShader, reflRefrShader;
-                CommandPool envMapCmdPool, reflRefrCmdPool, commandPool;
+                Shader envMapShader, reflRefrShader, envMapQuadShader;
+                CommandPool reflRefrCmdPool, commandPool;
+                std::vector<CommandPool> envMapCmdPools;
                 core::ThreadPool threadPool;
                 std::array<core::JobFence, MAX_FRAMES_IN_FLIGHT> jobFence={};
                 std::string typesToRenderExpression;
                 std::deque<Buffer> nodeCounterBuffer;
                 std::deque<Buffer> linkedListBuffer;
-                std::deque<Image> headPtrsStorageImage;
+                std::deque<Buffer> viewMatricesBuffer;
+                std::deque<Image> headPtrsStorageImage;                
                 int layer;
                 inline static const unsigned int ENV_MAP_SIZE = 1024;
-                std::vector<SubMesh> reflRefractSubmeshes;
+                std::vector<GameObject*> reflRefractGameObjects;
+                std::array<math::Vec3f, 6> dirs, ups;
                 // Private members and methods
         };
     }

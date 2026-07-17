@@ -534,9 +534,9 @@ namespace odfaeg {
             mipsInfos.push_back({texWidth, texHeight});
             if (mipLevel == mipLevels-1) {
                 auto& vec = GPUContext::instance().getSharedTextures(texType);
-                id = vec.size()+1;
-                vec.emplace_back(device);
+                id = vec.size()+1;                
                 //vec.push_back(std::move(*this));
+                vec.emplace_back(device);
                 vec.back().copyFrom(commandPool, *this);
             }
         }

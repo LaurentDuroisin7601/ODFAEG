@@ -63,5 +63,5 @@ void main() {
         vec3 r = refract (i, normalize(normal), ratio);
         refractColor = texture(sceneBox[pushConsts.imageIndex], r);
     }
-    outColor = fragColor * reflectColor * refractColor;
+    outColor = reflectColor * refractColor;
 }  

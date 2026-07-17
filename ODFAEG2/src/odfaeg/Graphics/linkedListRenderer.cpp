@@ -223,8 +223,15 @@ namespace odfaeg {
                     bool useDepthTest = parentRenderer.useDepthTest();
                     bool useStencilTest = parentRenderer.useStencilTest();
                     parentRenderer.setDepthStencil(false, false);
+                    VkCommandBufferInheritanceRenderingInfo inheritanceRenderingInfo{};
+                    inheritanceRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
+                    inheritanceRenderingInfo.colorAttachmentCount = 1;
+                    inheritanceRenderingInfo.pColorAttachmentFormats = &parentRenderer.getImageFormat(),
+                    inheritanceRenderingInfo.depthAttachmentFormat = parentRenderer.getDepthStencilTexture().getFormat();    // VK_FORMAT_D32_SFLOAT, etc.                    
+                    inheritanceRenderingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;                    
                     VkCommandBufferInheritanceInfo inheritanceInfo{};
                     inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                    inheritanceInfo.pNext = &inheritanceRenderingInfo;
                     inheritanceInfo.renderPass = VK_NULL_HANDLE;
                     inheritanceInfo.framebuffer = VK_NULL_HANDLE;
                     linkedListCmdPool.beginRecordCommandBuffer(parentRenderer.getCurrentFrame(), inheritanceInfo);
@@ -257,8 +264,14 @@ namespace odfaeg {
                     bool useDepthTest = parentRenderer.useDepthTest();
                     bool useStencilTest = parentRenderer.useStencilTest();
                     parentRenderer.setDepthStencil(false, false);
+                    VkCommandBufferInheritanceRenderingInfo inheritanceRenderingInfo{};
+                    inheritanceRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
+                    inheritanceRenderingInfo.colorAttachmentCount = 1;
+                    inheritanceRenderingInfo.pColorAttachmentFormats = &parentRenderer.getImageFormat(),
+                    inheritanceRenderingInfo.depthAttachmentFormat = parentRenderer.getDepthStencilTexture().getFormat();    // VK_FORMAT_D32_SFLOAT, etc.                    
                     VkCommandBufferInheritanceInfo inheritanceInfo{};
                     inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                    inheritanceInfo.pNext = &inheritanceRenderingInfo;
                     inheritanceInfo.renderPass = VK_NULL_HANDLE;
                     inheritanceInfo.framebuffer = VK_NULL_HANDLE;
                     quadLinkedListCommandPool.beginRecordCommandBuffer(parentRenderer.getCurrentFrame(), inheritanceInfo);
@@ -298,7 +311,7 @@ namespace odfaeg {
             if (!stop.load()) {
                 bool useDepthTest = parentRenderer.useDepthTest();
                 bool useStencilTest = parentRenderer.useStencilTest();
-                parentRenderer.setDepthStencil(false, false);
+                parentRenderer.setDepthStencil(false, false);                
                 parentRenderer.applyComputeGraphicsBarrier();
                 //std::cout<<"commands : !"<<parentRenderer.getCurrentFrame()<<" registered!"<<std::endl;
                 parentRenderer.beginRendering();
