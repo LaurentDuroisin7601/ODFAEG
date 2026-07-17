@@ -1,16 +1,34 @@
 module;
-module odfaeg.Graphics.envMapRenderer;
+#include <string>
+#include <odfaeg/config.hpp>
+#include <vulkan/vulkan.hpp>
+#include "vk_mem_alloc.h"
+import odfaeg.core.delegate;
+import odfaeg.math.vec;
+import odfaeg.math.matrix;
+import odfaeg.window.command;
+import odfaeg.graphic.gpuContext;
+import odfaeg.graphic.renderTarget;
+import odfaeg.physic.boundingBox;
+import odfaeg.graphic.renderTexture;
+import odfaeg.graphic.texture;
+import odfaeg.graphic.device;
+import odfaeg.graphic.vertex;
+import odfaeg.graphic.gameObject;
+import odfaeg.graphic.descriptor;
+import odfaeg.graphic.blendMode;
+import odfaeg.graphic.primitiveType;
+module odfaeg.graphic.envMapRenderer;
 namespace odfaeg {
     namespace graphic {
-        EnvMapRenderer::EnvMapRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, bool usethread) : 
+        EnvMapRenderer::EnvMapRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, bool useThread) : 
+          parentRenderer(parentRenderer),
           fullScreenQuad(GPUContext::instance().getDevice()),
           envMap(GPUContext::instance().getDevice()),
           envMapShader(GPUContext::instance().getDevice()),
           envMapQuadShader(GPUContext::instance().getDevice()),
           reflRefrShader(GPUContext::instance().getDevice()),
-          commandPool(GPUContext::instance().getDevice()),
-          envMapCmdPool(GPUContext::instance().getDevice()),
-          reflRefrCmdPool(GPUContext::instance().getDevice()),
+          commandPool(GPUContext::instance().getDevice()),          
           threadPool(6),
           typesToRenderExpression(typesToRenderExpression),
           layer(layer),
@@ -21,12 +39,14 @@ namespace odfaeg {
             envMap.createCubeMap(ENV_MAP_SIZE, false, false);
             envMap.getCamera().setViewport(physic::BoundingBox(0, 0, parentRenderer.getCamera().getViewport().getPosition().z(), ENV_MAP_SIZE, ENV_MAP_SIZE, parentRenderer.getCamera().getViewport().getSize().z()));
             createCommandPools();
-            commandPool.beginRecordCommandBuffer(0);
+            maxNodes = 20 * ENV_MAP_SIZE * ENV_MAP_SIZE;
+            unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int);
+            commandPool.beginRecordCommandBuffer(0);            
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT*6; i++) {
                 headPtrsStorageImage.emplace_back(GPUContext::instance().getDevice());
                 linkedListBuffer.emplace_back(GPUContext::instance().getDevice());
                 nodeCounterBuffer.emplace_back(GPUContext::instance().getDevice());
-                headPtrsStorageImage.back().create(size.x(), size.y(), 1, VK_IMAGE_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY,
+                headPtrsStorageImage.back().create(ENV_MAP_SIZE, ENV_MAP_SIZE, 1, VK_IMAGE_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY,
                     1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
                 Texture::transitionImageLayout(headPtrsStorageImage.back(), commandPool.getHandle(0), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
                 headPtrsStorageImage.back().createImageView(VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
@@ -36,7 +56,7 @@ namespace odfaeg {
             }      
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {    
                 viewMatricesBuffer.emplace_back(GPUContext::instance().getDevice());
-                viewMatricesBuffer.create(sizeof(math::Matrix4f)*6, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU);
+                viewMatricesBuffer.back().create(sizeof(EnvViewMatrix), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
             }  
             commandPool.endRecordCommandBuffer(0);
             VkSubmitInfo submitInfo{};
@@ -84,7 +104,7 @@ namespace odfaeg {
             ups[4] = math::Vec3f(0, -1, 0);
             ups[5] = math::Vec3f(0, -1, 0);
             createDescriptorsAndPipelines();
-            window::Command rendererReadyCmd(core::FastDelegate<bool>(&ShadowRenderer::isRendererReady, this), core::FastDelegate<void>(&ShadowRenderer::drawNextFrame, this));
+            window::Command rendererReadyCmd(core::FastDelegate<bool>(&EnvMapRenderer::isRendererReady, this), core::FastDelegate<void>(&EnvMapRenderer::drawNextFrame, this));
             eventListener.connect("RendererReady",rendererReadyCmd); 
             if (useThread) {
                 //std::cout<<"lanch"<<std::endl;
@@ -99,26 +119,26 @@ namespace odfaeg {
             for (unsigned int i = 0; i < gameObject->getChildren().size(); i++) {
                 addReflRefrGameObject(gameObject->getChildren()[i]);
             }
-            relfRefrGameObjects.push_back(gameObject);
+            reflRefrGameObjects.push_back(gameObject);
             needToUpdateBuffers = true;
             needToUpdateDescriptorSets = true;
         }
         void EnvMapRenderer::createCommandPools() {
             Device::QueueFamilyIndices queueFamilyIndices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice());
             commandPool.create(queueFamilyIndices.graphicsFamily.value());
-            commandPool.createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT);
-            envMapCmdPools.resize(reflRefGameObjects.size());
-            for (unsigned int i = 0; i < envMapCmdPools.size(); i++) {
+            commandPool.createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT);            
+            for (unsigned int i = 0; i < reflRefrGameObjects.size(); i++) {
+                envMapCmdPools.emplace_back(GPUContext::instance().getDevice());
                 envMapCmdPools[i].create(queueFamilyIndices.graphicsFamily.value());
                 envMapCmdPools[i].createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT);
-            }
-            envMapQuadCmdPools.resize(reflRefGameObjects.size());
-            for (unsigned int i = 0; i < envMapQuadCmdPools.size(); i++) {
+            }            
+            for (unsigned int i = 0; i < reflRefrGameObjects.size(); i++) {
+                envMapQuadCmdPools.emplace_back(GPUContext::instance().getDevice());
                 envMapQuadCmdPools[i].create(queueFamilyIndices.graphicsFamily.value());
                 envMapQuadCmdPools[i].createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT);
-            }
-            reflRefrCmdPools.resize(reflRefGameObjects.size());
-            for (unsigned int i = 0; i < reflRefrCmdPools.size(); i++) {
+            }            
+            for (unsigned int i = 0; i < reflRefrGameObjects.size(); i++) {
+                reflRefrCmdPools.emplace_back(GPUContext::instance().getDevice());
                 reflRefrCmdPools[i].create(queueFamilyIndices.graphicsFamily.value());
                 reflRefrCmdPools[i].createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT);
             }

@@ -87,6 +87,7 @@ target_sources(odfaeg-graphics-mod
 		${SRCROOT}/animator.ixx
 		${SRCROOT}/boneAnimUpdater.ixx
 		${SRCROOT}/linkedListRenderer.ixx
+		${SRCROOT}/envMapRenderer.ixx
 		${SRCROOT}/shadowRenderer.ixx
 		${SRCROOT}/cube.ixx
 		${SRCROOT}/plane.ixx
@@ -128,21 +129,22 @@ target_sources(odfaeg-graphics-mod PRIVATE
     ${SRCROOT}/swapchain.cpp    
     ${SRCROOT}/shape.cpp
     ${SRCROOT}/rectangleShape.cpp
-	${SRCROOT}/model.cpp
-	${SRCROOT}/modelLoader.cpp
-	${SRCROOT}/particleSystem.cpp
-	${SRCROOT}/particleSystemUpdater.cpp
-	${SRCROOT}/morphAnim.cpp
-	${SRCROOT}/morphAnimUpdater.cpp
-	${SRCROOT}/bone.cpp
-	${SRCROOT}/animation.cpp
-	${SRCROOT}/animator.cpp
-	${SRCROOT}/boneAnimUpdater.cpp
-	${SRCROOT}/linkedListRenderer.cpp
-	${SRCROOT}/shadowRenderer.cpp
-	${SRCROOT}/cube.cpp
-	${SRCROOT}/plane.cpp
-	${SRCROOT}/renderWindow.cpp
+    ${SRCROOT}/model.cpp
+    ${SRCROOT}/modelLoader.cpp
+    ${SRCROOT}/particleSystem.cpp
+    ${SRCROOT}/particleSystemUpdater.cpp
+    ${SRCROOT}/morphAnim.cpp
+    ${SRCROOT}/morphAnimUpdater.cpp
+    ${SRCROOT}/bone.cpp
+    ${SRCROOT}/animation.cpp
+    ${SRCROOT}/animator.cpp
+    ${SRCROOT}/boneAnimUpdater.cpp
+    ${SRCROOT}/linkedListRenderer.cpp
+    ${SRCROOT}/shadowRenderer.cpp
+    ${SRCROOT}/envMapRenderer.cpp
+    ${SRCROOT}/cube.cpp
+    ${SRCROOT}/plane.cpp
+    ${SRCROOT}/renderWindow.cpp
 )
 target_compile_features(odfaeg-graphics-mod PUBLIC cxx_std_20)
 

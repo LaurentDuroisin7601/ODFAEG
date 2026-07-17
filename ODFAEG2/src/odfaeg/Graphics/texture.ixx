@@ -65,7 +65,7 @@ namespace odfaeg {
 			void setId(unsigned int id);
 			std::vector<Image>& getImages();
             Image& getImage(unsigned int currentFrame=0);
-            VkFormat getFormat();
+            VkFormat& getFormat();
             math::Vector2u getSize();
             unsigned int getNbBuffers() const;
             unsigned int getLayerCount();

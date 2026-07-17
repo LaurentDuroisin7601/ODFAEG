@@ -932,7 +932,7 @@ namespace odfaeg {
         Image& Texture::getImage(unsigned int currentFrame) {
             return images[currentFrame];
         }        
-        VkFormat Texture::getFormat() {
+        VkFormat& Texture::getFormat() {
             return m_format;
         }
         math::Vector2u Texture::getSize() {

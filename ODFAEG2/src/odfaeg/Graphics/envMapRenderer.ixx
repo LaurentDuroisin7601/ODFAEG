@@ -1,5 +1,22 @@
 module;
-export module odfaeg.Graphics.envMapRenderer;
+#include <mutex>
+#include <condition_variable>
+#include <string>
+#include <odfaeg/config.hpp>
+#include <deque>
+import odfaeg.core.threadPool;
+import odfaeg.math.matrix;
+import odfaeg.math.vec;
+import odfaeg.window.listener;
+import odfaeg.graphic.renderTarget;
+import odfaeg.graphic.renderTexture;
+import odfaeg.graphic.gameObject;
+import odfaeg.graphic.vertexBuffer;
+import odfaeg.graphic.shader;
+import odfaeg.graphic.commandPool;
+import odfaeg.graphic.buffer;
+import odfaeg.graphic.image;
+export module odfaeg.graphic.envMapRenderer;
 namespace odfaeg {
     namespace graphic {
         class EnvMapRenderer {
@@ -38,16 +55,18 @@ namespace odfaeg {
                 void clear();
                 void drawNextFrame();
                 void draw();
-                void addReflRefGameObject(GameObject* gameObject);
+                void addReflRefrGameObject(GameObject* gameObject);
                 unsigned int getLayer();
                 bool isRendererReady();   
             private:
+                unsigned int maxNodes;
                 bool needToUpdateBuffers, needToUpdateDescriptorSets, useThread;
                 std::atomic<bool> rendererReady;
                 std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> commandBuffersReady={};
                 std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> registerFramesJob={};
                 std::atomic<bool> stop = {};
                 VertexBuffer fullScreenQuad;
+                RenderTarget& parentRenderer;
                 RenderTexture envMap;
                 Shader envMapShader, reflRefrShader, envMapQuadShader;
                 CommandPool commandPool;
@@ -62,11 +81,11 @@ namespace odfaeg {
                 Buffer staggingViewMatricesBuffer;               
                 int layer;
                 inline static const unsigned int ENV_MAP_SIZE = 1024;
-                std::vector<GameObject*> reflRefractGameObjects;
+                std::vector<GameObject*> reflRefrGameObjects;
                 std::array<math::Vec3f, 6> dirs, ups;
                 std::condition_variable cv;
                 std::mutex mtx;
-                Listener eventListener;
+                window::Listener eventListener;
                 // Private members and methods
         };
     }
