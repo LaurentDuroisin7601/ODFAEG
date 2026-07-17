@@ -52,13 +52,14 @@ namespace odfaeg {
                 void createCommandPools(); 
                 void createDescriptorsAndPipelines();
                 void updateDescriptorSets();
+                void updateBuffers();
                 void clear();
                 void drawNextFrame();
                 void draw();
-                void addReflRefrGameObject(GameObject* gameObject);
+                void addReflRefrGameObject(GameObject* gameObject);                
                 unsigned int getLayer();
                 bool isRendererReady();   
-            private:
+            private:                
                 unsigned int maxNodes;
                 bool needToUpdateBuffers, needToUpdateDescriptorSets, useThread;
                 std::atomic<bool> rendererReady;

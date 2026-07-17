@@ -465,5 +465,11 @@ namespace odfaeg {
                 parentRenderer.endRendering();
             }           
         }
+        unsigned int EnvMapRenderer::getLayer() {
+            return layer;
+        }
+        bool EnvMapRenderer::isRendererReady() {
+            return rendererReady.load();
+        }
     }
 }
