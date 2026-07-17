@@ -513,6 +513,6 @@ namespace odfaeg {
         }        
 	    void RenderWindow::endRendering() {
             vkCmdEndRendering(getCommandPool().getHandle(getCurrentFrame()));            
-        }
+        }       
 	}
 }

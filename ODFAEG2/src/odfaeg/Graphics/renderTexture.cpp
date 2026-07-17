@@ -411,5 +411,8 @@ namespace odfaeg {
         std::vector<Semaphore>& RenderTexture::getSemaphores() {
             return imageAvailableSemaphores;
         }
+        std::uint32_t RenderTexture::getSwapchainImagesCount() {
+            return NB_SWAPCHAIN_IMAGES;
+        }
 	}
 }

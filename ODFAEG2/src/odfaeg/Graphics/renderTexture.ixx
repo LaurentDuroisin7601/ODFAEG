@@ -46,6 +46,7 @@ namespace odfaeg {
             bool isDepthOnly();
             std::vector<Texture>& getTextures();
             std::vector<Semaphore>& getSemaphores();
+            std::uint32_t getSwapchainImagesCount();
             ~RenderTexture();
         private:
 

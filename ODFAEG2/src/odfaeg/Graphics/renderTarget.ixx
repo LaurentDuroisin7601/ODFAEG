@@ -205,6 +205,7 @@ namespace odfaeg {
 			virtual void endRenderPass() = 0;
 			virtual void beginRendering(bool secondaryCommandBuffers=false) = 0;
 			virtual void endRendering() = 0;
+			virtual unsigned int getSwapchainImagesCount() = 0;
 			void beginRecordCommandBuffer();
 			void endRecordCommandBuffer();
 			virtual uint32_t getCurrentFrame() = 0;

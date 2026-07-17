@@ -51,7 +51,7 @@ namespace odfaeg {
             std::uint32_t getSwapchainMinImagesCount();
             std::uint32_t getSwapchainImagesCount();
             RenderPass& getRenderPass(unsigned int renderPassId);
-            VkSurfaceKHR getSurface();
+            VkSurfaceKHR getSurface();            
         protected:
 
             ////////////////////////////////////////////////////////////

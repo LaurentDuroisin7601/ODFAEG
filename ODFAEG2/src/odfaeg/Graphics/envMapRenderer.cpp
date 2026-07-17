@@ -178,25 +178,25 @@ namespace odfaeg {
             }
             DescriptorSetLayout& reflRefrLayout = GPUContext::instance().getDescriptorSetLayout(reflRefrShader, 2);
             reflRefrLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
-            reflRefrLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, parentRenderer.getSwapchainImages().size(), VK_SHADER_STAGE_FRAGMENT_BIT);
+            reflRefrLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, parentRenderer.getSwapchainImagesCount(), VK_SHADER_STAGE_FRAGMENT_BIT);
             reflRefrLayout.update();
             renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
             renderingCreateInfo.colorAttachmentCount = 1;
-            renderingCreateInfo.pColorAttachmentFormats = &parentRenderer.getTexture().getFormat();
+            renderingCreateInfo.pColorAttachmentFormats = &parentRenderer.getImageFormat();
             renderingCreateInfo.depthAttachmentFormat = parentRenderer.getDepthStencilTexture().getFormat();
             pushConstants.clear();
             vertexPCRange.offset = 0;
             vertexPCRange.size = sizeof(ReflRefrVertPC);
             vertexPCRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
             pushConstants.push_back(vertexPCRange);            
-            fragmentPCRange.offset = sizeof(ReflRefrertPC);
+            fragmentPCRange.offset = sizeof(ReflRefrVertPC);
             fragmentPCRange.size = sizeof(ReflRefrFragPC);
             fragmentPCRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
             pushConstants.push_back(fragmentPCRange);
             for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {   
                 GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).createGraphicPipeline(reflRefrShader, static_cast<PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(reflRefrShader), renderingCreateInfo, parentRenderer.getDepthStencilInfos()[RenderTarget::DEPTHNOSTENCIL], blendMode, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);                
             }
-            DescriporPool& envMapPool = GPU::instance().getDescriptorPool(envMapShader, 7);
+            DescriptorPool& envMapPool = GPU::instance().getDescriptorPool(envMapShader, 7);
             envMapPool.updatePoolSizes(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT);
             envMapPool.updatePoolSizes(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, MAX_FRAMES_IN_FLIGHT);
             envMapPool.updatePoolSizes(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT);
