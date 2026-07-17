@@ -277,9 +277,9 @@ namespace odfaeg {
                         states.blendMode = blendMode;
                         envMapVertPC.maxNodes = maxNodes;
                         envMapFragPC.currentImageIndex = envMap.getImageIndex();
-                        std::vector<uint32_t> offsetEnViewMatrices;
+                        std::vector<uint32_t> offsetEnvViewMatrices;
                         for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
-                            offsetEnViewMatrices.push_back(e * minEnvViewMatrixAlignSize);
+                            offsetEnvViewMatrices.push_back(e * minEnvViewMatrixAlignSize);
                         }
                         std::vector<VkDescriptorSet> sets;
                         for (unsigned int i = 0; i <  GPUContext::instance().getDescriptorSets(envMapShader).size(); i++) {
@@ -292,7 +292,7 @@ namespace odfaeg {
                             //std::cout<<"bind pipeline : "<<linkedListPipeline[i][RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id].getHandle()<<std::endl;
                             vkCmdBindPipeline(envMapCmdPools[cmd], GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
                             //std::cout<<"pipeline bound"<<std::endl;
-                            vkCmdBindDescriptorSets(envMapCmdPools[cmd].getHandle(envMap.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, linkedListPipeline[i][RenderTarget::NODEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id].getLayout(), 0, sets.size(), sets.data(), offsetEnViewMatrices.data(), offsetEnViewMatrices.size());
+                            vkCmdBindDescriptorSets(envMapCmdPools[cmd].getHandle(envMap.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, linkedListPipeline[i][RenderTarget::NODEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id].getLayout(), 0, sets.size(), sets.data(), offsetEnvViewMatrices.data(), offsetEnvViewMatrices.size());
                             vkCmdPushConstants(envMapCmdPools[cmd].getHandle(envMap.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle(), sizeof(ReflRefrFragPC), &reflRefrFragPC);
                             parentRenderer.draw(envMapCmdPools[cmd], static_cast<PrimitiveType>(i), states);
                         }
