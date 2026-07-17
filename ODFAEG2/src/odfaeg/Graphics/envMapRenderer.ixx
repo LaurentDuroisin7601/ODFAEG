@@ -4,6 +4,9 @@ namespace odfaeg {
     namespace graphic {
         class EnvMapRenderer {
             public:
+                struct EnvViewMatrix {
+                    math::Matrix4f viewMatrices[6];
+                };
                 struct EnvMapFragPC {
                     unsigned int maxNodes;
                     int currentImageIndex;
@@ -38,6 +41,7 @@ namespace odfaeg {
                 unsigned int getLayer();
                 bool isRendererReady();   
             private:
+                bool needToUpdateBuffers;
                 VertexBuffer fullScreenQuad;
                 RenderTexture envMap;
                 Shader envMapShader, reflRefrShader, envMapQuadShader;
@@ -49,7 +53,8 @@ namespace odfaeg {
                 std::deque<Buffer> nodeCounterBuffer;
                 std::deque<Buffer> linkedListBuffer;
                 std::deque<Buffer> viewMatricesBuffer;
-                std::deque<Image> headPtrsStorageImage;                
+                std::deque<Image> headPtrsStorageImage; 
+                Buffer staggingViewMatricesBuffer;               
                 int layer;
                 inline static const unsigned int ENV_MAP_SIZE = 1024;
                 std::vector<GameObject*> reflRefractGameObjects;

@@ -34,7 +34,7 @@ namespace odfaeg {
             }      
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {    
                 viewMatricesBuffer.emplace_back(GPUContext::instance().getDevice());
-                viewMatricesBuffer.create(sizeof(math::Matrix4f)*6, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+                viewMatricesBuffer.create(sizeof(math::Matrix4f)*6, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU);
             }  
             commandPool.endRecordCommandBuffer(0);
             VkSubmitInfo submitInfo{};
@@ -106,7 +106,7 @@ namespace odfaeg {
         void EnvMapRenderer::createDescriptorsAndPipelines() {
             DescriptorSetLayout& envMapLayout = GPUContext::instance().getDescriptorSetLayout(envMapShader, 7,true);
             envMapLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_VERTEX_BIT);
-            envMapLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_VERTEX_BIT); 
+            envMapLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_VERTEX_BIT); 
             envMapLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
             envMapLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT*6, VK_SHADER_STAGE_FRAGMENT_BIT);
             envMapLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*6, VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -158,7 +158,7 @@ namespace odfaeg {
             }
             DescriporPool& envMapPool = GPU::instance().getDescriptorPool(envMapShader, 7);
             envMapPool.updatePoolSizes(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT);
-            envMapPool.updatePoolSizes(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT);
+            envMapPool.updatePoolSizes(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, MAX_FRAMES_IN_FLIGHT);
             envMapPool.updatePoolSizes(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT);
             envMapPool.updatePoolSizes(3, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT*6);
             envMapPool.updatePoolSizes(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*6);
@@ -172,12 +172,51 @@ namespace odfaeg {
             reflRefrPool.update();
             DescriptorSet::allocate(envMapPool, envMapLayout, GPUContext::instance().getDescriptorSets(envMapShader, 6, 1), MAX_TEXTURES);
             DescriptorSet::allocate(reflRefrPool, reflRefrLayout, GPUContext::instance().getDescriptorSets(refrReflShader, 2, 1));          
+        }
+        void EnvMapRenderer::updateBuffers() { 
+            VkPhysicalDeviceProperties props;
+            vkGetPhysicalDeviceProperties(GPUContext::instance().getDevice().getPhysicalDevice(), &props); 
+            uint32_t minAlign = props.limits.minStorageBufferOffsetAlignment;  
+            uint32_t viewMatrixAlignSize = (sizeof(EnvViewMatrix) + minAlign - 1) & ~(minAlign - 1);              
+            std::vector<EnvViewMatrix> viewMatrices;
+            for (unsigned int r = 0; r < reflRefrGameObjects.size(); r++) {
+                EnvViewMatrix envViewMatrices;                
+                Camera envMapCamera = envMap.getCamera();
+                envMapCamera.setCenter(reflRefrGameObjects[r].getCenter());
+                for (unsigned int m = 0; m < 6; m++) {
+                    math::Vec3f target = envMapCamera.getCenter() + dirs[m];
+                    envMapCamera.lookAt(target.x(), target.y(), target.z(), ups[m]);    
+                    envViewMatrices.viewMatrix[m] = envMapCamera.getViewMatrix().getMatrix().transpose();                                    
+                }
+                viewMatrices.push_back(envViewMatrices);            
+            }
+            staggingViewMatricesBuffer.create(sizeof(EnvViewMatrix)*reflRefrGameObjects.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU);
+            for (unsigned int i = 0; i < viewMatrices.size(); i++) {
+                staggingViewMatricesBuffer.update(viewMatrices.data(), sizeof(EnvViewMatrix), i * viewMatrixAlignSize);
+            }
+            for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {  
+                commandPool.beginRecordCommandBuffer(i);  
+                viewMatricesBuffer.emplace_back(GPUContext::instance().getDevice());
+                viewMatricesBuffer.back().create(sizeof(EnvViewMatrix)*reflRefrGameObjects.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU);
+                viewMatricesBuffer.back().setRange(sizeof(EnvViewMatrix));
+                Buffer::copyBuffer(staggingViewMatrices, viewMatricesBuffer.back(), sizeof(EnvViewMatrix)*viewMatrices.size(), commandPool.getHandle(i));   
+                commandPool.endRecordCommandBuffer(i);             
+            }
+            VkSubmitInfo submitInfo{};
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = commandPool.getHandles().size();
+            submitInfo.pCommandBuffers = commandPool.getHandles().data();
+            Device::QueueFamilyIndices indices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice(), VK_NULL_HANDLE);
+            if (vkQueueSubmit(GPUContext::instance().getDevice().getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+                throw std::runtime_error("Echec de l'envoi d'un command buffer!");
+            }
+            vkDeviceWaitIdle(GPUContext::instance().getDevice().getDevice());     
         }  
         void EnvMapRenderer::updateDescriptorSets() {
             bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(Material::DIFFUSE).size() != 0;
             DescriptorSet& envMapSet = GPUContext::instance().getDescriptorSets(envMapShader, (hasDiffuseTexture) ? 6 : 5, 1)[0];
             envMapSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-            envMapSet.updateImageInfos(1, viewMatricesBuffer,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+            envMapSet.updateImageInfos(1, viewMatricesBuffer,VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC);
             envMapSet.updateBufferInfos(2, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             envMapSet.updateBufferInfos(3, headPtrsStorageImage, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
             envMapSet.updateBufferInfos(4, linkedList, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -206,6 +245,10 @@ namespace odfaeg {
                 }
                 jobFence[parentRenderer.getCurrentFrame()].reset(reflRefrCmdPools.size()*2+1);
                           );
+                          VkPhysicalDeviceProperties props;
+                vkGetPhysicalDeviceProperties(GPUContext::instance().getDevice().getPhysicalDevice(), &props); 
+                uint32_t minAlign = props.limits.minStorageBufferOffsetAlignment;  
+                uint32_t envViewMatrixAlignSize = (sizeof(EnvViewMatrix) + minAlign - 1) & ~(minAlign - 1); 
                 for (unsigned int e = 0; e < reflRefrCmdPools.size(); e++) {
                     unsigned int cmp = e;
                     std::array<math::Matrix4f, 6> viewMatrices;
@@ -234,6 +277,10 @@ namespace odfaeg {
                         states.blendMode = blendMode;
                         envMapVertPC.maxNodes = maxNodes;
                         envMapFragPC.currentImageIndex = envMap.getImageIndex();
+                        std::vector<uint32_t> offsetEnViewMatrices;
+                        for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
+                            offsetEnViewMatrices.push_back(e * minEnvViewMatrixAlignSize);
+                        }
                         std::vector<VkDescriptorSet> sets;
                         for (unsigned int i = 0; i <  GPUContext::instance().getDescriptorSets(envMapShader).size(); i++) {
                             //std::cout<<"set : "<<linkedListSets[i][0].getHandle()<<std::endl;
@@ -245,7 +292,7 @@ namespace odfaeg {
                             //std::cout<<"bind pipeline : "<<linkedListPipeline[i][RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id].getHandle()<<std::endl;
                             vkCmdBindPipeline(envMapCmdPools[cmd], GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
                             //std::cout<<"pipeline bound"<<std::endl;
-                            vkCmdBindDescriptorSets(envMapCmdPools[cmd].getHandle(envMap.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, linkedListPipeline[i][RenderTarget::NODEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id].getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
+                            vkCmdBindDescriptorSets(envMapCmdPools[cmd].getHandle(envMap.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, linkedListPipeline[i][RenderTarget::NODEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id].getLayout(), 0, sets.size(), sets.data(), offsetEnViewMatrices.data(), offsetEnViewMatrices.size());
                             vkCmdPushConstants(envMapCmdPools[cmd].getHandle(envMap.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle(), sizeof(ReflRefrFragPC), &reflRefrFragPC);
                             parentRenderer.draw(envMapCmdPools[cmd], static_cast<PrimitiveType>(i), states);
                         }
@@ -330,16 +377,7 @@ namespace odfaeg {
                 return commandBuffersReady[parentRenderer.getCurrentFrame()].load() || stop.load();
             });
             commandBuffersReady[parentRenderer.getCurrentFrame()].store(false);
-            for (unsigned int e = 0; e < reflRefrGameObjects.size(); e++) {                
-                std::array<math::Matrix4f, 6> viewMatrices;
-                Camera envMapCamera = envMap.getCamera();
-                envMapCamera.setCenter(reflRefrGameObjects.getCenter());
-                for (unsigned int i = 0; i < viewMatrices.size(); i++) {
-                    math::Vec3f target = reflectView.getPosition() + dirs[m];
-                    envMapCamera.lookAt(target.x(), target.y(), target.z(), ups[m]);    
-                    viewMatrices[i] = envMapCamera.getViewMatrix().getMatrix().transpose();                                    
-                } 
-                viewMatricesBuffer[parentRenderer.getCurrentFrame()].update(viewMatrices.data(), sizeof(math::Matrix4f) * viewMatrices.size());
+            for (unsigned int e = 0; e < reflRefrGameObjects.size(); e++) {
                 envMap.clear();
                 envMap.beginRendering();
                 vkCmdExecuteCommands(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &envMapCmdPools[e].getHandle(parentRenderer.getCurrentFrame()));

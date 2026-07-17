@@ -158,7 +158,8 @@ namespace odfaeg {
                 lightViewsPLMatricesStaggingBuffer.update(lightViewsPLMatrices.data(), sizeof(ViewPLMatrix), l * lightViewPLMatrixAlignSize);
             }
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {                
-                lightViewsPLMatricesBuffer[i].create(sizeof(ViewPLMatrix) * lightViewsPLMatrices.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);                              
+                lightViewsPLMatricesBuffer[i].create(sizeof(ViewPLMatrix) * lightViewsPLMatrices.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY); 
+                lightViewsPLMatricesBuffer[i].setRange(sizeof(ViewPLMatrix));                             
             } 
             pointLightsStaggingBufferFinal.create(sizeof(PointLight) * pointLights.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
             pointLightsStaggingBufferFinal.update(pointLights.data(), sizeof(PointLight) * pointLights.size());                                         
