@@ -13,7 +13,8 @@ namespace odfaeg {
           reflRefrCmdPool(GPUContext::instance().getDevice()),
           threadPool(6),
           typesToRenderExpression(typesToRenderExpression),
-          layer(layer)
+          layer(layer),
+          staggingViewMatricesBuffer(GPUContext::instance().getDevice())
         {
             rendererReady.store(false);
             envMap.createCubeMap(ENV_MAP_SIZE, false, false);
@@ -82,6 +83,10 @@ namespace odfaeg {
             ups[4] = math::Vec3f(0, -1, 0);
             ups[5] = math::Vec3f(0, -1, 0);
             createDescriptorsAndPipelines();
+        }
+        void EnvMapRenderer::addReflRefrGameObject(GameObject* gameObject) {
+            relfRefrGameObjects.push_back(gameObject);
+            needToUpdateBuffers = true;
         }
         void EnvMapRenderer::createCommandPools() {
             Device::QueueFamilyIndices queueFamilyIndices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice());
@@ -229,7 +234,14 @@ namespace odfaeg {
             reflRefrSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_BIT);
             reflRefrSet.updateImageInfos(1, envMap.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             reflRefrSet.updateDescriptorSets();
-        }   
+        } 
+        void EnMapRenderer::clear() {
+            parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
+            parentRenderer.applyCullingAndBatching();
+            envMap.setTypesToRender(typesToRenderExpression, envMap.getCurrentFrame());
+            envMap.applyCullingAnBatching();
+            cv.notify_one();
+        }  
         void EnvMapRenderer::drawNextFrame() {            
             std::unique_lock<std::mutex> lock(mtx);
             cv.wait(lock, [this] {
@@ -238,6 +250,11 @@ namespace odfaeg {
             });
             registerFramesJob[envMap.getCurrentFrame()].store(false);
             if (!stop.load()) {
+                if (needToUpdateBuffers) {
+                    createCommandPools();
+                    updateBuffers();
+                    needToUpdateBuffers = false;
+                }
                 if (needToUpdateDescriptorSets) {
                     //std::cout<<"update ds"<<std::endl;
                     updateDescriptorSets();
