@@ -18,6 +18,7 @@ import odfaeg.graphic.gameObject;
 import odfaeg.graphic.descriptor;
 import odfaeg.graphic.blendMode;
 import odfaeg.graphic.primitiveType;
+import odfaeg.graphic.camera;
 module odfaeg.graphic.envMapRenderer;
 namespace odfaeg {
     namespace graphic {
