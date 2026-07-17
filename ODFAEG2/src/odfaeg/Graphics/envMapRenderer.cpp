@@ -14,7 +14,8 @@ namespace odfaeg {
           threadPool(6),
           typesToRenderExpression(typesToRenderExpression),
           layer(layer),
-          staggingViewMatricesBuffer(GPUContext::instance().getDevice())
+          staggingViewMatricesBuffer(GPUContext::instance().getDevice()),
+          useThread(useThread)
         {
             rendererReady.store(false);
             envMap.createCubeMap(ENV_MAP_SIZE, false, false);
@@ -83,10 +84,24 @@ namespace odfaeg {
             ups[4] = math::Vec3f(0, -1, 0);
             ups[5] = math::Vec3f(0, -1, 0);
             createDescriptorsAndPipelines();
+            window::Command rendererReadyCmd(core::FastDelegate<bool>(&ShadowRenderer::isRendererReady, this), core::FastDelegate<void>(&ShadowRenderer::drawNextFrame, this));
+            eventListener.connect("RendererReady",rendererReadyCmd); 
+            if (useThread) {
+                //std::cout<<"lanch"<<std::endl;
+                eventListener.launch();
+            } 
+            needToUpdateDescriptorSets = true;
+            needToUpdateBuffers = false;
+            stop.store(false);
+            rendererReady.store(true);
         }
         void EnvMapRenderer::addReflRefrGameObject(GameObject* gameObject) {
+            for (unsigned int i = 0; i < gameObject->getChildren().size(); i++) {
+                addReflRefrGameObject(gameObject->getChildren()[i]);
+            }
             relfRefrGameObjects.push_back(gameObject);
             needToUpdateBuffers = true;
+            needToUpdateDescriptorSets = true;
         }
         void EnvMapRenderer::createCommandPools() {
             Device::QueueFamilyIndices queueFamilyIndices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice());

@@ -38,10 +38,15 @@ namespace odfaeg {
                 void clear();
                 void drawNextFrame();
                 void draw();
+                void addReflRefGameObject(GameObject* gameObject);
                 unsigned int getLayer();
                 bool isRendererReady();   
             private:
-                bool needToUpdateBuffers;
+                bool needToUpdateBuffers, needToUpdateDescriptorSets, useThread;
+                std::atomic<bool> rendererReady;
+                std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> commandBuffersReady={};
+                std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> registerFramesJob={};
+                std::atomic<bool> stop = {};
                 VertexBuffer fullScreenQuad;
                 RenderTexture envMap;
                 Shader envMapShader, reflRefrShader, envMapQuadShader;
@@ -59,6 +64,9 @@ namespace odfaeg {
                 inline static const unsigned int ENV_MAP_SIZE = 1024;
                 std::vector<GameObject*> reflRefractGameObjects;
                 std::array<math::Vec3f, 6> dirs, ups;
+                std::condition_variable cv;
+                std::mutex mtx;
+                Listener eventListener;
                 // Private members and methods
         };
     }
