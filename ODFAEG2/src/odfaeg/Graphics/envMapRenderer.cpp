@@ -216,8 +216,7 @@ namespace odfaeg {
             envMapPool.updatePoolSize(3, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT*6);
             envMapPool.updatePoolSize(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*6);
             envMapPool.updatePoolSize(5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*6);
-            envMapPool.updatePoolSize(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
-            VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
+            envMapPool.updatePoolSize(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
             envMapPool.update();
             DescriptorPool& quadLinkedListPool = GPUContext::instance().getDescriptorPool(envMapQuadShader, 2);
             quadLinkedListPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT);
@@ -225,11 +224,11 @@ namespace odfaeg {
             quadLinkedListPool.update();
             DescriptorPool& reflRefrPool = GPUContext::instance().getDescriptorPool(reflRefrShader, 2);
             reflRefrPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT);
-            reflRefrPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, parentRenderer.getSwapchainImages().size());  
+            reflRefrPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, parentRenderer.getSwapchainImagesCount());  
             reflRefrPool.update();
             DescriptorSet::allocate(envMapPool, envMapLayout, GPUContext::instance().getDescriptorSets(envMapShader, 6, 1), MAX_TEXTURES);
             DescriptorSet::allocate(quadLinkedListPool, quadLinkedListLayout, GPUContext::instance().getDescriptorSets(envMapQuadShader, 2, 1));
-            DescriptorSet::allocate(reflRefrPool, reflRefrLayout, GPUContext::instance().getDescriptorSets(refrReflShader, 2, 1));          
+            DescriptorSet::allocate(reflRefrPool, reflRefrLayout, GPUContext::instance().getDescriptorSets(reflRefrShader, 2, 1));          
         }
         void EnvMapRenderer::updateBuffers() { 
             VkPhysicalDeviceProperties props;
