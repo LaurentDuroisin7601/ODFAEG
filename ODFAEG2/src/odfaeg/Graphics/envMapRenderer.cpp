@@ -87,13 +87,21 @@ namespace odfaeg {
             Device::QueueFamilyIndices queueFamilyIndices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice());
             commandPool.create(queueFamilyIndices.graphicsFamily.value());
             commandPool.createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT);
-            envMapCmdPools.resize(reflRefSubmeshes.size());
+            envMapCmdPools.resize(reflRefGameObjects.size());
             for (unsigned int i = 0; i < envMapCmdPools.size(); i++) {
                 envMapCmdPools[i].create(queueFamilyIndices.graphicsFamily.value());
                 envMapCmdPools[i].createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT);
             }
-            reflRefrCmdPool.create(queueFamilyIndices.graphicsFamily.value());
-            reflRefrCmdPool.createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT);
+            envMapQuadCmdPools.resize(reflRefGameObjects.size());
+            for (unsigned int i = 0; i < envMapQuadCmdPools.size(); i++) {
+                envMapQuadCmdPools[i].create(queueFamilyIndices.graphicsFamily.value());
+                envMapQuadCmdPools[i].createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT);
+            }
+            reflRefrCmdPools.resize(reflRefGameObjects.size());
+            for (unsigned int i = 0; i < reflRefrCmdPools.size(); i++) {
+                reflRefrCmdPools[i].create(queueFamilyIndices.graphicsFamily.value());
+                reflRefrCmdPools[i].createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT);
+            }
         }
         void EnvMapRenderer::createDescriptorsAndPipelines() {
             DescriptorSetLayout& envMapLayout = GPUContext::instance().getDescriptorSetLayout(envMapShader, 7,true);
@@ -196,7 +204,7 @@ namespace odfaeg {
                     updateDescriptorSets();
                     needToUpdateDescriptorSets = false;
                 }
-                jobFence[parentRenderer.getCurrentFrame()].reset(2+reflRefrCmdPools.size());
+                jobFence[parentRenderer.getCurrentFrame()].reset(reflRefrCmdPools.size()*2+1);
                           );
                 for (unsigned int e = 0; e < reflRefrCmdPools.size(); e++) {
                     unsigned int cmp = e;
@@ -205,9 +213,8 @@ namespace odfaeg {
                     envMapCamera.setCenter(reflRefrGameObjects.getCenter());
                     for (unsigned int i = 0; i < 6; i++) {
                         math::Vec3f target = reflectView.getPosition() + dirs[m];
-                        envMapCamera.lookAt(target.x(), target.y(), target.z(), ups[m]);
-                        
-                    }
+                        envMapCamera.lookAt(target.x(), target.y(), target.z(), ups[m]);                        
+                    }                    
                     threadPool.enqueue([this, cmp] { 
                         VkCommandBufferInheritanceRenderingInfo inheritanceRenderingInfo{};
                         inheritanceRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
@@ -244,79 +251,115 @@ namespace odfaeg {
                         }
                         envMapCmdPools[cmd].endRecordCommandBuffer(envMap.getCurrentFrame());                        
                         jobFence[envMap.getCurrentFrame()].jobDone();
+                    });                
+                    threadPool.enqueue([this] { 
+                        VkCommandBufferInheritanceInfo inheritanceInfo{};
+                        inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                        inheritanceInfo.renderPass = VK_NULL_HANDLE;
+                        inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                        envMapQuadCmdPools[cmp].beginRecordCommandBuffer(parentRenderer.getCurrentFrame(), inheritanceInfo);
+                        BlendMode blendMode;
+                        RenderStates states;
+                        states.shader = &quadLinkedListShader;
+                        states.blendMode = blendMode;
+                        unsigned int currentFrame = parentRenderer.getCurrentFrame();
+                        std::vector<VkDescriptorSet> sets;
+                        for (unsigned int i = 0; i < GPUContext::getDescriptorSets(envMapQuadShader).size(); i++) {
+                            sets.push_back(GPUContext::getDescriptorSets(envMapQuadShader).getHandle());
+                        }
+                        blendMode.updateIds();
+                        //std::cout<<"sizes = "<<quadLinkedListPipeline.size()<<","<<quadLinkedListPipeline[Triangles].size()<<",ids : "<<Triangles<<","<<RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id<<std::endl;
+                        //std::cout<<"bind pipeline : "<<quadLinkedListPipeline[Triangles][RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id].getHandle()<<std::endl;
+                        vkCmdBindPipeline(envMapQuadCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,quadLinkedListPipeline[Triangles][RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id].getHandle());
+                        //std::cout<<"pipeline bound"<<std::endl;
+                        vkCmdBindDescriptorSets(envMapQuadCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapQuadShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
+                        vkCmdPushConstants(envMapQuadCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapQuadShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(unsigned int), &currentFrame);
+                        envMap.draw(envMapQuadCmdPools[cmp], fullScreenQuad, states);
+                        envMapQuadCmdPools[cmp].endRecordCommandBuffer(parentRenderer.getCurrentFrame());                        
+                        jobFence[parentRenderer.getCurrentFrame()].jobDone();
+                    });                
+                    threadPool.enqueue([this] {
+                        VkCommandBufferInheritanceRenderingInfo inheritanceRenderingInfo{};
+                        inheritanceRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
+                        inheritanceRenderingInfo.colorAttachmentCount = 1;
+                        inheritanceRenderingInfo.pColorAttachmentFormats = &parentRenederer.getImageFormat(),
+                        inheritanceRenderingInfo.depthAttachmentFormat = parentRenderer.getDepthTexture().getFormat();                    
+                        inheritanceRenderingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;                      
+                        VkCommandBufferInheritanceInfo inheritanceInfo{};
+                        inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                        inheritanceInfo.pNext = &inheritanceRenderingInfo;
+                        inheritanceInfo.renderPass = VK_NULL_HANDLE;
+                        inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                        reflRefrCmdPool.beginRecordCommandBuffer(envMap.getCurrentFrame(), inheritanceInfo);
+                        BlendMode blendMode;
+                        RenderStates states;
+                        states.shader = &reflRefrShader;
+                        states.blendMode = blendMode;
+                        reflRefrVertPC.maxNodes = maxNodes;
+                        reflRefFragPC.currentImageIndex = parentRenderer.getImageIndex();
+                        std::vector<VkDescriptorSet> sets;
+                        for (unsigned int i = 0; i <  GPUContext::instance().getDescriptorSets(reflRefrShader).size(); i++) {
+                            //std::cout<<"set : "<<linkedListSets[i][0].getHandle()<<std::endl;
+                            sets.push_back(GPUContext::instance().getDescriptorSets(reflRefrShader)[0].getHandle());
+                        }
+                        blendMode.updateIds();
+                        for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
+                            //std::cout<<"sizes = "<<linkedListPipeline.size()<<","<<linkedListPipeline[i].size()<<",ids : "<<i<<","<<RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id<<std::endl;
+                            //std::cout<<"bind pipeline : "<<linkedListPipeline[i][RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id].getHandle()<<std::endl;
+                            vkCmdBindPipeline(GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
+                            //std::cout<<"pipeline bound"<<std::endl;
+                            vkCmdBindDescriptorSets(reflRefrCmdPool.getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
+                            vkCmdPushConstants(reflRefrCmdPool.getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle(), sizeof(ReflRefrFragPC), &reflRefrFragPC);
+                            for (unsigned int s = 0; s < reflRefrGameObjects[cmp].getSubMeshes().size(); s++) {
+                                parentRenderer.draw(reflRefrCmdPools[i], reflRefrGameObjects[cmp].getSubMeshes()[s].getVertexBuffer(), states);
+                            }
+                        }
+                        reflRefrCmdPools[cmp].endRecordCommandBuffer(parentRenderer.getCurrentFrame());                   
+                        jobFence[parentRenderer.getCurrentFrame()].jobDone();
                     });
                 }
-                threadPool.enqueue([this] { 
-                    VkCommandBufferInheritanceInfo inheritanceInfo{};
-                    inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-                    inheritanceInfo.renderPass = VK_NULL_HANDLE;
-                    inheritanceInfo.framebuffer = VK_NULL_HANDLE;
-                    quadLinkedListCommandPool.beginRecordCommandBuffer(parentRenderer.getCurrentFrame(), inheritanceInfo);
-                    BlendMode blendMode;
-                    RenderStates states;
-                    states.shader = &quadLinkedListShader;
-                    states.blendMode = blendMode;
-                    unsigned int currentFrame = parentRenderer.getCurrentFrame();
-                    std::vector<VkDescriptorSet> sets;
-                    for (unsigned int i = 0; i < GPUContext::getDescriptorSets(envMapQuadShader).size(); i++) {
-                        sets.push_back(GPUContext::getDescriptorSets(envMapQuadShader).getHandle());
-                    }
-                    blendMode.updateIds();
-                    //std::cout<<"sizes = "<<quadLinkedListPipeline.size()<<","<<quadLinkedListPipeline[Triangles].size()<<",ids : "<<Triangles<<","<<RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id<<std::endl;
-                    //std::cout<<"bind pipeline : "<<quadLinkedListPipeline[Triangles][RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id].getHandle()<<std::endl;
-                    vkCmdBindPipeline(quadLinkedListCommandPool.getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,quadLinkedListPipeline[Triangles][RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id].getHandle());
-                    //std::cout<<"pipeline bound"<<std::endl;
-                    vkCmdBindDescriptorSets(quadLinkedListCommandPool.getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapQuadShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
-                    vkCmdPushConstants(quadLinkedListCommandPool.getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapQuadShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(unsigned int), &currentFrame);
-                    parentRenderer.draw(quadLinkedListCommandPool, fullScreenQuad, states);
-                    quadLinkedListCommandPool.endRecordCommandBuffer(parentRenderer.getCurrentFrame());
-                    parentRenderer.setDepthStencil(useDepthTest, useStencilTest);
-                    jobFence[parentRenderer.getCurrentFrame()].jobDone();
-                });
-                threadPool.enqueue([this] {
-                    VkCommandBufferInheritanceRenderingInfo inheritanceRenderingInfo{};
-                    inheritanceRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
-                    inheritanceRenderingInfo.colorAttachmentCount = 1;
-                    inheritanceRenderingInfo.pColorAttachmentFormats = &parentRenederer.getImageFormat(),
-                    inheritanceRenderingInfo.depthAttachmentFormat = parentRenderer.getDepthTexture().getFormat();                    
-                    inheritanceRenderingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;                      
-                    VkCommandBufferInheritanceInfo inheritanceInfo{};
-                    inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-                    inheritanceInfo.pNext = &inheritanceRenderingInfo;
-                    inheritanceInfo.renderPass = VK_NULL_HANDLE;
-                    inheritanceInfo.framebuffer = VK_NULL_HANDLE;
-                    reflRefrCmdPool.beginRecordCommandBuffer(envMap.getCurrentFrame(), inheritanceInfo);
-                    BlendMode blendMode;
-                    RenderStates states;
-                    states.shader = &reflRefrShader;
-                    states.blendMode = blendMode;
-                    reflRefrVertPC.maxNodes = maxNodes;
-                    reflRefFragPC.currentImageIndex = parentRenderer.getImageIndex();
-                    std::vector<VkDescriptorSet> sets;
-                    for (unsigned int i = 0; i <  GPUContext::instance().getDescriptorSets(reflRefrShader).size(); i++) {
-                        //std::cout<<"set : "<<linkedListSets[i][0].getHandle()<<std::endl;
-                        sets.push_back(GPUContext::instance().getDescriptorSets(reflRefrShader)[0].getHandle());
-                    }
-                    blendMode.updateIds();
-                    for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
-                        //std::cout<<"sizes = "<<linkedListPipeline.size()<<","<<linkedListPipeline[i].size()<<",ids : "<<i<<","<<RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id<<std::endl;
-                        //std::cout<<"bind pipeline : "<<linkedListPipeline[i][RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id].getHandle()<<std::endl;
-                        vkCmdBindPipeline(GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
-                        //std::cout<<"pipeline bound"<<std::endl;
-                        vkCmdBindDescriptorSets(reflRefrCmdPool.getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
-                        vkCmdPushConstants(reflRefrCmdPool.getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle(), sizeof(ReflRefrFragPC), &reflRefrFragPC);
-                        parentRenderer.draw(reflRefrCmdPool, static_cast<PrimitiveType>(i), states);
-                    }
-                    reflRefrCmdPool.endRecordCommandBuffer(parentRenderer.getCurrentFrame());                   
-                    jobFence[parentRenderer.getCurrentFrame()].jobDone();
-                });
                 jobFence[parentRenderer.getCurrentFrame()].wait();            
             }            
             commandBuffersReady[parentRenderer.getCurrentFrame()].store(true);
             cv.notify_all();                    
         } 
         void EnvMapRenderer::draw() {
-
+            std::unique_lock<std::mutex> lock(mtx);
+            cv.wait(lock, [this] {
+                    //std::cout<<"draw frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
+                return commandBuffersReady[parentRenderer.getCurrentFrame()].load() || stop.load();
+            });
+            commandBuffersReady[parentRenderer.getCurrentFrame()].store(false);
+            for (unsigned int e = 0; e < reflRefrGameObjects.size(); e++) {                
+                std::array<math::Matrix4f, 6> viewMatrices;
+                Camera envMapCamera = envMap.getCamera();
+                envMapCamera.setCenter(reflRefrGameObjects.getCenter());
+                for (unsigned int i = 0; i < viewMatrices.size(); i++) {
+                    math::Vec3f target = reflectView.getPosition() + dirs[m];
+                    envMapCamera.lookAt(target.x(), target.y(), target.z(), ups[m]);    
+                    viewMatrices[i] = envMapCamera.getViewMatrix().getMatrix().transpose();                                    
+                } 
+                viewMatricesBuffer[parentRenderer.getCurrentFrame()].update(viewMatrices.data(), sizeof(math::Matrix4f) * viewMatrices.size());
+                envMap.clear();
+                envMap.beginRendering();
+                vkCmdExecuteCommands(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &envMapCmdPools[e].getHandle(parentRenderer.getCurrentFrame()));
+                envMap.endRendering();
+                VkMemoryBarrier memoryBarrier{};
+                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                memoryBarrier.pNext = VK_NULL_HANDLE;
+                memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                envMap.beginRendering();
+                vkCmdExecuteCommands(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &envMapQuadCmdPools[e].getHandle(parentRenderer.getCurrentFrame()));
+                envMap.endRendering(); 
+                envMap.submit(true);
+                envMap.display();                
+                vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);               
+                parentRenderer.beginRendering();
+                vkCmdExecuteCommands(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &reflRefrCommandPools[e].getHandle(parentRenderer.getCurrentFrame()));
+                parentRenderer.endRendering();
+            }           
         }
     }
 }

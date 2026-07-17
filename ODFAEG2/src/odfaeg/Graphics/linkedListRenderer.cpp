@@ -323,7 +323,7 @@ namespace odfaeg {
                 memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                 memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                 vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                parentRenderer.endRendering();
+                parentRenderer.beginRendering();
                 vkCmdExecuteCommands(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &quadLinkedListCommandPool.getHandle(parentRenderer.getCurrentFrame()));
                 parentRenderer.endRendering();
                 parentRenderer.setDepthStencil(useDepthTest, useStencilTest);

@@ -41,8 +41,8 @@ namespace odfaeg {
                 VertexBuffer fullScreenQuad;
                 RenderTexture envMap;
                 Shader envMapShader, reflRefrShader, envMapQuadShader;
-                CommandPool reflRefrCmdPool, commandPool;
-                std::vector<CommandPool> envMapCmdPools;
+                CommandPool commandPool;
+                std::vector<CommandPool> envMapCmdPools, envMapQuadCmdPools, reflRefrCmdPools;
                 core::ThreadPool threadPool;
                 std::array<core::JobFence, MAX_FRAMES_IN_FLIGHT> jobFence={};
                 std::string typesToRenderExpression;
