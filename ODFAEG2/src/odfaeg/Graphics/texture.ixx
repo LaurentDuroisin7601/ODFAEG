@@ -12,6 +12,7 @@ import odfaeg.graphic.imageLoader;
 import odfaeg.entity.rect;
 import odfaeg.graphic.commandPool;
 import odfaeg.core.nonCopyable;
+import odfaeg.core.resourceManager;
 import odfaeg.graphic.buffer;
 namespace odfaeg {
 	namespace graphic {
@@ -68,7 +69,7 @@ namespace odfaeg {
             VkFormat& getFormat();
             math::Vector2u getSize();
             unsigned int getNbBuffers() const;
-            unsigned int getLayerCount();
+            unsigned int getLayerCount();            
         private :
             unsigned int texType, mipLevels;
             Device& device;
@@ -84,6 +85,12 @@ namespace odfaeg {
             VkImageAspectFlags imageAspectMask;
 			VkSamplerAddressMode wrapU, wrapV;
 			std::vector<MipInfo> mipsInfos;
-		};
-	}
+		};         
+	}    
+}
+export namespace odfaeg {
+    namespace core {
+        template <typename I=std::string>
+        using TextureManager = ResourceManager<odfaeg::graphic::Texture, I>;
+    }
 }

@@ -41,7 +41,16 @@ namespace odfaeg {
             std::unique_ptr<Material> ptr;
             ptr.reset(material);
             materials.push_back(std::move(ptr));
-        }           
+        }   
+        void Mesh::buildMaterialsFromTexture(Texture* texture) {
+            for(unsigned int i = 0; i < gameObject->getSubMeshes().size(); i++) {
+                materials.push_back(std::make_unique<Material>());
+                materials.back()->setTexture(texture, entity::SubMesh::DIFFUSE);
+            }
+            for (unsigned int i = 0; i < children.size(); i++) {
+                children[i]->buildMaterialsFromTexture(texture);
+            }
+        }  
         std::vector<Material*> Mesh::getMaterials() {
             std::vector<Material*> mats;
             for (unsigned int i = 0; i < materials.size(); i++) {

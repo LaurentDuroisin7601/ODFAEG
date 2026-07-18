@@ -17,7 +17,7 @@ import odfaeg.graphic.vertex;
 import odfaeg.math.vec;
 import odfaeg.entity.tile;
 import odfaeg.graphic.renderTarget;
-import odfaeg.graphic.rect;
+import odfaeg.entity.rect;
 import odfaeg.graphic.semaphore;
 import odfaeg.core.clock;
 import odfaeg.graphic.modelLoader;
@@ -40,6 +40,7 @@ import odfaeg.entity.plane;
 import odfaeg.entity.cube;
 import odfaeg.graphic.shadowRenderer;
 import odfaeg.core.string;
+import odfaeg.core.utilities;
 import odfaeg.graphic.mesh;
 using namespace odfaeg::entity;
 using namespace odfaeg::window;
@@ -62,46 +63,63 @@ int main() {
 	ResourceManager<Texture, std::string> modelTextureManager;
 	ModelLoader modelLoader(GPUContext::instance().getDevice(), modelTextureManager);
 	//GameObject* bistroExterior = modelLoader.loadModel("Bistro_v5_2/BistroExterior.fbx");
-	Mesh* bistroExterior = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
+	//Mesh* bistroExterior = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
 	//GameObject* bistroExterior = modelLoader.loadModel(/*"CubeTest/cube_test.glb"*//**/"carGLTF/scene.gltf"/*"Bistro_v5_2/BistroExterior.fbx"*/);
 	//bistroExterior->setRotation(45, Vec3f(0, 1, 0));
-	/*std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
+	std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
 	textureManager.fromFileWithAlias("tilesets/wood.png", WOOD, args);
 	Texture* texWood = textureManager.getResourceByAlias(WOOD);
 	texWood->setSamplerAddressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT);	
 	Plane plane(Vec3f(-25, -2, -25), Vec3f(50, 0, 50));
 	plane.setTexCoords(FloatRect(0, 0, 25, 25));
-	plane.setTexture(texWood);
+	plane.setTexture(conversionIntString(WOOD));	
 	
-	window.addGameObject(&plane);
 		
-	Cube cube(Vec3f(-1, -1, -1), 2, 2, 2, Color::White);		
-	cube.setTexture(textureManager.getResourceByAlias(WOOD));
-	cube.move(Vec3f(4.0f, -3.5f, 0.0));
-    cube.scale(Vec3f(0.5f, 0.5f, 0.5f));   
-	window.addGameObject(&cube);
+	Cube cube1(Vec3f(-1, -1, -1), 2, 2, 2, Color::White);		
+	cube1.setTexture(conversionIntString(WOOD));
+	cube1.move(Vec3f(4.0f, -3.5f, 0.0));
+    cube1.scale(Vec3f(0.5f, 0.5f, 0.5f));   
+	
     Cube cube2(Vec3f(-1, -1, -1), 2, 2, 2, Color::White);
-	cube2.setTexture(textureManager.getResourceByAlias(WOOD));
+	cube2.setTexture(conversionIntString(WOOD));
     cube2.move(Vec3f(2.0f, 3.0f, 1.0));
     cube2.scale(Vec3f(0.75f, 0.75f, 0.75f));
-    window.addGameObject(&cube2);
+    
     Cube cube3(Vec3f(-1, -1, -1), 2, 2, 2, Color::White);
-	cube3.setTexture(textureManager.getResourceByAlias(WOOD));
+	cube3.setTexture(conversionIntString(WOOD));
     cube3.move(Vec3f(-3.0f, -1.0f, 0.0));
     cube3.scale(Vec3f(0.5f, 0.5f, 0.5f));
-    window.addGameObject(&cube3);
+    
 	Cube cube4(Vec3f(-1, -1, -1), 2, 2, 2, Color::White);
-	cube4.setTexture(textureManager.getResourceByAlias(WOOD));
+	cube4.setTexture(conversionIntString(WOOD));
     cube4.move(Vec3f(-1.5f, 1.0f, 1.5));
     cube4.scale(Vec3f(0.5f, 0.5f, 0.5f));
-    window.addGameObject(&cube4);
+   
     Cube cube5(Vec3f(-1, -1, -1), 2, 2, 2, Color::White);
-	cube5.setTexture(textureManager.getResourceByAlias(WOOD));
+	cube5.setTexture(conversionIntString(WOOD));
 	cube5.move(Vec3f(-1.5f, 2.0f, -3.0));
     cube5.setRotation(60.0f, Vec3f(1.0, 0.0, 1.0));
     cube5.scale(Vec3f(0.75f, 0.75f, 0.75f));
-   	window.addGameObject(&cube5);*/
-	window.addGameObject(bistroExterior);	
+   	
+	Mesh planeMesh(&plane);
+	Mesh cube1Mesh(&cube1);
+	Mesh cube2Mesh(&cube2);
+	Mesh cube3Mesh(&cube2);
+	Mesh cube4Mesh(&cube3);
+	Mesh cube5Mesh(&cube5);
+	planeMesh.buildMaterialsFromTextureManager(textureManager);
+	cube1Mesh.buildMaterialsFromTextureManager(textureManager);
+	cube2Mesh.buildMaterialsFromTextureManager(textureManager);
+	cube3Mesh.buildMaterialsFromTextureManager(textureManager);
+	cube4Mesh.buildMaterialsFromTextureManager(textureManager);
+	cube5Mesh.buildMaterialsFromTextureManager(textureManager);
+	window.addGameObject(&planeMesh);
+	window.addGameObject(&cube1Mesh);
+	window.addGameObject(&cube2Mesh);
+	window.addGameObject(&cube3Mesh);
+	window.addGameObject(&cube4Mesh);
+	window.addGameObject(&cube5Mesh);
+	//window.addGameObject(bistroExterior);	
 		//std::cout<<"i : "<<i<<std::endl;
 	
 	//std::cout<<"ok"<<std::endl;
