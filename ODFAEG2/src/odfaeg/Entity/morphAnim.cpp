@@ -8,7 +8,12 @@ namespace odfaeg {
         MorphAnim::MorphAnim(math::Vec3f position, math::Vec3f size, unsigned int interpLevels) : GameObject(position, size, size * 0.5f, "E_MORPH_ANIMATION") {
             this->interpLevels = interpLevels;
         }
-        void MorphAnim::addFrame(GameObject* frame) {            
+        void MorphAnim::addFrame(GameObject* frame) {   
+            if (frames.size() == 0) {
+                for(unsigned int i = 0; i < frame->getSubMeshes().size(); i++) {
+                    addSubMesh(frame->getSubMeshes()[i]);
+                }
+            }         
             frames.push_back(frame);
         }
         unsigned int MorphAnim::getIntLevels() {
