@@ -30,7 +30,7 @@ namespace odfaeg {
         	}
         	return graphicsPipeline[shader.getId()];
         }
-		Pipeline& GPUContext::getGraphicsPipeline(PrimitiveType primType, Shader& shader, BlendMode blendMode, unsigned int depthStencilId) {
+		Pipeline& GPUContext::getGraphicsPipeline(entity::PrimitiveType primType, Shader& shader, BlendMode blendMode, unsigned int depthStencilId) {
 			blendMode.updateIds();
 			if (graphicsPipeline.size() <=  shader.getId()) {
 				graphicsPipeline.resize(shader.getId() + 1);

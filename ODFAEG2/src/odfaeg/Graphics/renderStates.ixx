@@ -1,7 +1,7 @@
 module;
 export module odfaeg.graphic.renderStates;
 import odfaeg.graphic.blendMode;
-import odfaeg.entity.transformMatrix;
+import odfaeg.math.transformMatrix;
 import odfaeg.graphic.texture;
 import odfaeg.graphic.shader;
 namespace odfaeg {
@@ -37,7 +37,7 @@ namespace odfaeg {
            /// \param theTransform Transform to use
            ///
            ////////////////////////////////////////////////////////////
-            RenderStates(const entity::TransformMatrix& theTransform);
+            RenderStates(const math::TransformMatrix& theTransform);
 
             ////////////////////////////////////////////////////////////
             /// \brief Construct a default set of render states with a custom texture
@@ -64,7 +64,7 @@ namespace odfaeg {
             /// \param theShader    Shader to use
             ///
             ////////////////////////////////////////////////////////////
-            RenderStates(BlendMode theBlendMode, const entity::TransformMatrix& theTransform,
+            RenderStates(BlendMode theBlendMode, const math::TransformMatrix& theTransform,
                 const Texture* theTexture, Shader* theShader);
             ////////////////////////////////////////////////////////////
             // Static member data
@@ -75,7 +75,7 @@ namespace odfaeg {
             // Member data
             ////////////////////////////////////////////////////////////
             BlendMode      blendMode; ///< Blending mode
-            entity::TransformMatrix      transform; ///< Transform
+            math::TransformMatrix      transform; ///< Transform
             const Texture* texture; ///< Texture
             Shader* shader; ///< Shader
         };     

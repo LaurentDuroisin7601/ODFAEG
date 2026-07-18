@@ -5,15 +5,15 @@ module;
 #include <vector>
 export module odfaeg.graphic.material;
 import odfaeg.graphic.texture;
-import odfaeg.graphic.color;
+import odfaeg.entity.color;
 import odfaeg.math.vec;
+import odfaeg.entity.gameObject;
 namespace odfaeg {
 	namespace graphic {
 		export class Material {
             class TextureInfo {
             private:
-                const Texture* texture; /**> A texture used by the material.*/
-                std::string texId; /**> An identifier to the texture of the material. */
+                const Texture* texture; /**> A texture used by the material.*/                
             public:
                 /**
                 * \fn TextureInfo()
@@ -24,19 +24,7 @@ namespace odfaeg {
                 * \fn TextureInfo(const Texture* texture, IntRect rect, std::string texId="")
                 * \brief constructor
                 */
-                TextureInfo(const Texture* texture, std::string texId="");
-                /**
-                * \fn void setTexId(std::string texId)
-                * \brief set the texture id.
-                * \param texId : the texId.
-                */
-                void setTexId(std::string texId);
-                /**
-                * \fn std::string getTexId() const
-                * \brief return the id of the texture.
-                * \return std::string a string representation of the id.
-                */
-                std::string getTexId() const;
+                TextureInfo(const Texture* texture);               
                 /**
                 * \fn bool operator== (TextureInfo& info)
                 * \brief compare a texture info with another one.
@@ -60,18 +48,12 @@ namespace odfaeg {
                 template <typename Archive>
                 void vtserialize(Archive& ar) {
                     ////////std::cout<<"mat rect height : "<<rect.height<<std::endl;                    
-                    ar(texId);
+                    
                     ////////std::cout<<"mat tex id : "<<texId<<std::endl;
 
                 }
             };
-        public:
-			enum Type {
-				AIR, WATER, ICE, GLASS, DIAMOND
-			};
-		    enum TexType {
-		        DIFFUSE, NORMAL, METALNESS, ROUGHNESS, AO, EMISSIVE, SPECULAR, NBTEXTYPES, UNKNOWN
-		    };
+        public:			
             Material();
             unsigned int getId();
             static unsigned int getNbMaterials();
@@ -88,33 +70,20 @@ namespace odfaeg {
             * \param texture : the texture.
             * \param text : the texture coordinates.
             */
-            void setTexture(const Texture* texture,TexType texType, unsigned int texUnit=0, std::string texId="");
-            void setLightInfos(math::Vec4f lightCenter, Color lightColor);
+            void setTexture(const Texture* texture,entity::SubMesh::TexType texType, unsigned int texUnit=0, std::string texId="");
+            void setLightInfos(math::Vec4f lightCenter, entity::Color lightColor);
             math::Vec4f getLightCenter();
-            Color getLightColor();  
+            entity::Color getLightColor();  
+            void setType(entity::SubMesh::Type type);
+            entity::SubMesh::Type getType();
             /**
             * \fn const Texture* getTexture(int texUnit = 0)
             * \brief get the texture of the given unit. (0 = the first texture by default)
             * \param texUnit : the unit of the texture.
             * \return a pointer to the texture.
             */
-            const Texture* getTexture(TexType texType, int texUnit = 0);
-            /**
-            * \fn std::string getTexId(int texUnit = 0)
-            * \brief get the texture id of the given unit. (the first texture by default)
-            * \param texUnit : the texture unit.
-            * \return the id of the texture.
-            */
-            std::string getTexId(TexType texType, int texUnit = 0);
-            /**
-            * \fn void setTexId(std::string texId, int texUnit = 0)
-            * \brief set the texId of the given texture unit.
-            * \param texId : the texture id.
-            * \param texUnit : the texture unit.
-            */
-            void setTexId(TexType texType, std::string texId, int texUnit = 0);
-            /**
-            * \fn bool useSameTextures (const Material& material)
+            const Texture* getTexture(entity::SubMesh::TexType texType, int texUnit = 0);            
+            /* \fn bool useSameTextures (const Material& material)
             * \brief check if two material are using the same textures.
             * \param material : the other material.
             * \return if the materials are using the same texture.
@@ -178,9 +147,7 @@ namespace odfaeg {
                     maxSpecularIntensity = (specularIntensity > maxSpecularIntensity) ? specularIntensity : maxSpecularIntensity;
                     maxSpecularPower = (specularPower > maxSpecularPower) ? specularPower : maxSpecularPower;
                 }
-            }            
-            void setType(Type type);
-            Type getType();
+            }     
             static std::deque<Material*> getAllMaterials();
 		    int getInstanceGroup();
             ~Material();
@@ -193,7 +160,8 @@ namespace odfaeg {
             Material& operator=(const Material&) = delete;
             Material(const Material&&) = delete;
             Material& operator=(const Material&&) = delete;
-            std::array<std::deque<TextureInfo>, NBTEXTYPES> texInfos={}; /**> The informations about the textures. */
+            std::array<std::deque<TextureInfo>, entity::SubMesh::NBTEXTYPES> texInfos={}; /**> The informations about the textures. */
+            entity::SubMesh::Type type;
             float specularIntensity, specularPower, refractionFactor;
             inline static unsigned int nbMaterials = 0;
             unsigned int id, layer;
@@ -202,8 +170,7 @@ namespace odfaeg {
             inline static std::deque<Material*> sameMaterials = std::deque<Material*>();
             bool reflectable, refractable;
             math::Vec4f lightCenter;
-            Color lightColor;
-            Type type;  
+            entity::Color lightColor;            
             inline static unsigned int maxSpecularIntensity = 0;
             inline static unsigned int maxSpecularPower = 0;
             inline static unsigned int nbLayers = 0;

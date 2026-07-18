@@ -6,7 +6,7 @@ module;
 #include <memory>
 export module odfaeg.graphic.linkedListRenderer;
 import odfaeg.graphic.renderTarget;
-import odfaeg.graphic.primitiveType;
+import odfaeg.entity.primitiveType;
 import odfaeg.graphic.renderStates;
 import odfaeg.graphic.descriptor;
 import odfaeg.graphic.pipeline;
@@ -59,8 +59,6 @@ namespace odfaeg {
             LinkedListPC linkedListPC;
             bool needToUpdateDescriptorSets;
             CommandPool commandPool;
-            std::deque<std::deque<Pipeline>> &linkedListPipeline, &quadLinkedListPipeline;
-            std::deque<std::deque<DescriptorSet>> &linkedListSets, &quadLinkedListSets;
         };
     }
 }

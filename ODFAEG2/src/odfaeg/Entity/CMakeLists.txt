@@ -10,17 +10,69 @@ target_sources(odfaeg-entity-mod
     PUBLIC
         FILE_SET cxx_modules TYPE CXX_MODULES
         BASE_DIRS ${SRCROOT}
-        FILES ${SRCROOT}/transformMatrix.ixx
+        FILES
+	    ${SRCROOT}/primitiveType.ixx
+	    ${SRCROOT}/rect.ixx	
+            ${SRCROOT}/assimpHelper.ixx		 
+	    ${SRCROOT}/transformable.ixx          
             ${SRCROOT}/entity.ixx 
-            ${SRCROOT}/impl.ixx  	       	
+            ${SRCROOT}/impl.ixx
+	    ${SRCROOT}/color.ixx
+	    ${SRCROOT}/vertex.ixx
+	    ${SRCROOT}/vertexArray.ixx
+            ${SRCROOT}/gameObject.ixx
+	    ${SRCROOT}/tile.ixx
+	    ${SRCROOT}/model.ixx
+            ${SRCROOT}/plane.ixx
+	    ${SRCROOT}/cube.ixx
+	    ${SRCROOT}/morphAnim.ixx
+            ${SRCROOT}/bone.ixx
+            ${SRCROOT}/animation.ixx
+	    ${SRCROOT}/animator.ixx
+            ${SRCROOT}/particle.ixx
+	    ${SRCROOT}/emittors.ixx
+	    ${SRCROOT}/particleSystem.ixx			
 )
 
-target_sources(odfaeg-entity-mod PRIVATE ${SRCROOT}/transformMatrix.cpp
-            ${SRCROOT}/impl.cpp         	)
+target_sources(odfaeg-entity-mod PRIVATE 
+            ${SRCROOT}/impl.cpp   
+            ${SRCROOT}/transformable.cpp           
+            ${SRCROOT}/impl.cpp
+	    ${SRCROOT}/color.cpp 
+	    ${SRCROOT}/vertex.cpp
+	    ${SRCROOT}/vertexArray.cpp
+            ${SRCROOT}/gameObject.cpp
+	    ${SRCROOT}/tile.cpp
+	    ${SRCROOT}/model.cpp
+            ${SRCROOT}/plane.cpp
+	    ${SRCROOT}/cube.cpp
+	    ${SRCROOT}/morphAnim.cpp
+            ${SRCROOT}/bone.cpp
+            ${SRCROOT}/animation.cpp
+	    ${SRCROOT}/animator.cpp
+	    ${SRCROOT}/particleSystem.cpp
+)
+target_include_directories(odfaeg-entity-mod PRIVATE ${PROJECT_SOURCE_DIR}/external)
+target_include_directories(odfaeg-entity-mod PRIVATE ${PROJECT_SOURCE_DIR}/external/meshoptimizer/src)
+file(GLOB_RECURSE MESH_OPTIMIZER_SRC CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/external/meshoptimizer/src/*.cpp")
+add_library(meshoptimizer STATIC
+    ${MESH_OPTIMIZER_SRC}
+)
+target_link_libraries(odfaeg-entity-mod PRIVATE meshoptimizer)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(ASSIMP REQUIRED assimp)
+target_include_directories(odfaeg-entity-mod PRIVATE ${ASSIMP_INCLUDE_DIRS})
+target_link_directories(odfaeg-entity-mod PRIVATE ${ASSIMP_LIBRARY_DIRS})
+target_link_libraries(odfaeg-entity-mod PRIVATE ${ASSIMP_LIBRARIES})
+
 target_compile_features(odfaeg-entity-mod PUBLIC cxx_std_20)
 target_include_directories(odfaeg-entity-mod PRIVATE ${PROJECT_SOURCE_DIR}/external/entt)
-target_link_libraries(odfaeg-entity-mod PUBLIC odfaeg-math-mod odfaeg-core-mod)
-
+target_link_libraries(odfaeg-entity-mod PUBLIC odfaeg-physics-mod odfaeg-math-mod odfaeg-core-mod)
+target_include_directories(odfaeg-entity-mod
+		PUBLIC
+		$<INSTALL_INTERFACE:include>
+		$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+)
 add_library(odfaeg-entity STATIC)
 
 target_sources(odfaeg-entity

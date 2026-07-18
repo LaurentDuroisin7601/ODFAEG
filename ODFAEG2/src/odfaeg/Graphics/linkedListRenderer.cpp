@@ -8,28 +8,25 @@ module;
 module odfaeg.graphic.linkedListRenderer;
 import odfaeg.graphic.gpuContext;
 import odfaeg.graphic.renderTarget;
-import odfaeg.graphic.vertex;
+import odfaeg.entity.vertex;
 import odfaeg.graphic.blendMode;
 import odfaeg.graphic.device;
 import odfaeg.core.delegate;
 import odfaeg.window.command;
 import odfaeg.graphic.material;
 import odfaeg.graphic.texture;
+import odfaeg.entity.gameObject;
 namespace odfaeg {
     namespace graphic {
         LinkedListRenderer::LinkedListRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, bool useThread) : threadPool(6),
         typesToRenderExpression(typesToRenderExpression),
         layer(layer),
-        fullScreenQuad(GPUContext::instance().getDevice(), Triangles),
+        fullScreenQuad(GPUContext::instance().getDevice(), entity::PrimitiveType::Triangles),
         linkedListShader(GPUContext::instance().getDevice()),
         quadLinkedListShader(GPUContext::instance().getDevice()),
         linkedListCmdPool(GPUContext::instance().getDevice()),
         quadLinkedListCommandPool(GPUContext::instance().getDevice()),
-        parentRenderer(parentRenderer), commandPool(GPUContext::instance().getDevice()),
-        linkedListPipeline(GPUContext::instance().getGraphicsPipeline(linkedListShader)),
-        quadLinkedListPipeline(GPUContext::instance().getGraphicsPipeline(quadLinkedListShader)),
-        linkedListSets(GPUContext::instance().getDescriptorSets(linkedListShader)),
-        quadLinkedListSets(GPUContext::instance().getDescriptorSets(quadLinkedListShader)) {
+        parentRenderer(parentRenderer), commandPool(GPUContext::instance().getDevice()) {        
             rendererReady.store(false);
             unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int);
             math::Vector2u size = parentRenderer.getSize();
@@ -70,10 +67,10 @@ namespace odfaeg {
             }
             fullScreenQuad.resize(4, 0);
             //All the screen area (in NDC coords)
-            fullScreenQuad[0] = Vertex(math::Vec3f(-1.f, -1.f, 0.f));
-            fullScreenQuad[1] = Vertex(math::Vec3f(-1.f, 1.f, 0.f));
-            fullScreenQuad[2] = Vertex(math::Vec3f(1.f, 1.f, 0.f));
-            fullScreenQuad[3] = Vertex(math::Vec3f(1.f, -1.f, 0.f));
+            fullScreenQuad[0] = entity::Vertex(math::Vec3f(-1.f, -1.f, 0.f));
+            fullScreenQuad[1] = entity::Vertex(math::Vec3f(-1.f, 1.f, 0.f));
+            fullScreenQuad[2] = entity::Vertex(math::Vec3f(1.f, 1.f, 0.f));
+            fullScreenQuad[3] = entity::Vertex(math::Vec3f(1.f, -1.f, 0.f));
             fullScreenQuad.addIndex(0);
             fullScreenQuad.addIndex(1);
             fullScreenQuad.addIndex(2);
@@ -128,7 +125,7 @@ namespace odfaeg {
             renderingCreateInfo.pColorAttachmentFormats = &parentRenderer.getImageFormat();
             renderingCreateInfo.depthAttachmentFormat = parentRenderer.getDepthStencilTexture().getFormat();
             for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
-                GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), linkedListShader, blendMode,0).createGraphicPipeline(linkedListShader, static_cast<PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(linkedListShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);
+                GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), linkedListShader, blendMode,0).createGraphicPipeline(linkedListShader, static_cast<entity::PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(linkedListShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);
             }
             DescriptorSetLayout& quadLinkedListLayout = GPUContext::instance().getDescriptorSetLayout(quadLinkedListShader, 2);
             quadLinkedListLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -141,7 +138,7 @@ namespace odfaeg {
             quadPushConstant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
             pushConstants.push_back(quadPushConstant);
             for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
-                GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), quadLinkedListShader, blendMode, 0).createGraphicPipeline(quadLinkedListShader, static_cast<PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(quadLinkedListShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);
+                GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), quadLinkedListShader, blendMode, 0).createGraphicPipeline(quadLinkedListShader, static_cast<entity::PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(quadLinkedListShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);
             }
             DescriptorPool& linkedListPool = GPUContext::instance().getDescriptorPool(linkedListShader, 6);
             linkedListPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES);
@@ -161,7 +158,7 @@ namespace odfaeg {
             //std::cout<<"pipeline descritpors created"<<std::endl;
         }
         void LinkedListRenderer::updateDescriptorSets() {
-            bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(Material::DIFFUSE).size() != 0;
+            bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
             DescriptorSet& linkedListSet = GPUContext::instance().getDescriptorSets(linkedListShader, (hasDiffuseTexture) ? 6 : 5, 1)[0];
             linkedListSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             linkedListSet.updateImageInfos(1, headPtrsStorageImage, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
@@ -170,7 +167,7 @@ namespace odfaeg {
             linkedListSet.updateBufferInfos(4, nodeCounterBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             if (hasDiffuseTexture) {
                 //std::cout<<"diffuse texture"<<std::endl;
-                linkedListSet.updateImageInfos(5, GPUContext::instance().getSharedTextures(Material::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                linkedListSet.updateImageInfos(5, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             }
             linkedListSet.updateDescriptorSet();
             DescriptorSet& linkedListQuadSet = GPUContext::instance().getDescriptorSets(quadLinkedListShader, 2, 1)[0];
@@ -242,19 +239,19 @@ namespace odfaeg {
                     linkedListPC.maxNodes = maxNodes;
                     linkedListPC.currentImageIndex = parentRenderer.getImageIndex();
                     std::vector<VkDescriptorSet> sets;
-                    for (unsigned int i = 0; i < linkedListSets.size(); i++) {
+                    for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(linkedListShader).size(); i++) {
                         //std::cout<<"set : "<<linkedListSets[i][0].getHandle()<<std::endl;
-                        sets.push_back(linkedListSets[i][0].getHandle());
+                        sets.push_back(GPUContext::instance().getDescriptorSets(linkedListShader)[i][0].getHandle());
                     }
                     blendMode.updateIds();
                     for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
                         //std::cout<<"sizes = "<<linkedListPipeline.size()<<","<<linkedListPipeline[i].size()<<",ids : "<<i<<","<<RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id<<std::endl;
                         //std::cout<<"bind pipeline : "<<linkedListPipeline[i][RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id].getHandle()<<std::endl;
-                        vkCmdBindPipeline(linkedListCmdPool.getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,linkedListPipeline[i][RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id].getHandle());
+                        vkCmdBindPipeline(linkedListCmdPool.getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), linkedListShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getHandle());
                         //std::cout<<"pipeline bound"<<std::endl;
-                        vkCmdBindDescriptorSets(linkedListCmdPool.getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, linkedListPipeline[i][RenderTarget::NODEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id].getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
-                        vkCmdPushConstants(linkedListCmdPool.getHandle(parentRenderer.getCurrentFrame()), linkedListPipeline[i][RenderTarget::NODEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id].getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(RenderTarget::ViewProjMatPC), sizeof(LinkedListPC), &linkedListPC);
-                        parentRenderer.draw(linkedListCmdPool, static_cast<PrimitiveType>(i), states);
+                        vkCmdBindDescriptorSets(linkedListCmdPool.getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), linkedListShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
+                        vkCmdPushConstants(linkedListCmdPool.getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), linkedListShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(RenderTarget::ViewProjMatPC), sizeof(LinkedListPC), &linkedListPC);
+                        parentRenderer.draw(linkedListCmdPool, static_cast<entity::PrimitiveType>(i), states);
                     }
                     linkedListCmdPool.endRecordCommandBuffer(parentRenderer.getCurrentFrame());
                     parentRenderer.setDepthStencil(useDepthTest, useStencilTest);
@@ -281,16 +278,16 @@ namespace odfaeg {
                     states.blendMode = blendMode;
                     unsigned int currentFrame = parentRenderer.getCurrentFrame();
                     std::vector<VkDescriptorSet> sets;
-                    for (unsigned int i = 0; i < quadLinkedListSets.size(); i++) {
-                        sets.push_back(quadLinkedListSets[i][0].getHandle());
+                    for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(quadLinkedListShader).size(); i++) {
+                        sets.push_back( GPUContext::instance().getDescriptorSets(quadLinkedListShader)[i][0].getHandle());
                     }
                     blendMode.updateIds();
                     //std::cout<<"sizes = "<<quadLinkedListPipeline.size()<<","<<quadLinkedListPipeline[Triangles].size()<<",ids : "<<Triangles<<","<<RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id<<std::endl;
                     //std::cout<<"bind pipeline : "<<quadLinkedListPipeline[Triangles][RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id].getHandle()<<std::endl;
-                    vkCmdBindPipeline(quadLinkedListCommandPool.getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,quadLinkedListPipeline[Triangles][RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id].getHandle());
+                    vkCmdBindPipeline(quadLinkedListCommandPool.getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, quadLinkedListShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getHandle());
                     //std::cout<<"pipeline bound"<<std::endl;
-                    vkCmdBindDescriptorSets(quadLinkedListCommandPool.getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, quadLinkedListPipeline[Triangles][RenderTarget::NODEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id].getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
-                    vkCmdPushConstants(quadLinkedListCommandPool.getHandle(parentRenderer.getCurrentFrame()), quadLinkedListPipeline[Triangles][RenderTarget::NODEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id].getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(unsigned int), &currentFrame);
+                    vkCmdBindDescriptorSets(quadLinkedListCommandPool.getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, quadLinkedListShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
+                    vkCmdPushConstants(quadLinkedListCommandPool.getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, quadLinkedListShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(unsigned int), &currentFrame);
                     parentRenderer.draw(quadLinkedListCommandPool, fullScreenQuad, states);
                     quadLinkedListCommandPool.endRecordCommandBuffer(parentRenderer.getCurrentFrame());
                     parentRenderer.setDepthStencil(useDepthTest, useStencilTest);

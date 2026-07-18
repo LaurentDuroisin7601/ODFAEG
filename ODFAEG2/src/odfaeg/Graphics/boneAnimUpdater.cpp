@@ -17,8 +17,8 @@ import odfaeg.graphic.gpuContext;
 import odfaeg.graphic.descriptor;
 import odfaeg.math.matrix;
 import odfaeg.graphic.device;
-import odfaeg.graphic.vertex;
-import odfaeg.graphic.primitiveType;
+import odfaeg.entity.vertex;
+import odfaeg.entity.primitiveType;
 namespace odfaeg {
     namespace graphic {
         BoneAnimUpdater& BoneAnimUpdater::instance(std::condition_variable& cv, std::mutex& mtx) {
@@ -76,7 +76,7 @@ namespace odfaeg {
         void BoneAnimUpdater::setReady(bool r) {
             ready.store(r);
         }
-        void BoneAnimUpdater::addBoneAnim(Animator* boneAnim) {
+        void BoneAnimUpdater::addBoneAnim(entity::Animator* boneAnim) {
             anims.push_back(boneAnim);
             needToUpdateBuffers = true;
         }
@@ -120,14 +120,14 @@ namespace odfaeg {
                     finalBoneMatricesSize += anims[i]->getFinalBoneMatrices().size();
                     currentBoneAnimId++;
                     for (unsigned int j = 0; j < anims[i]->getSubMeshesCount(); j++) {
-                        for (unsigned int k = 0; k < anims[i]->getSubMeshes()[j].getVertexBuffer().getVertexCount(); k++) {
-                            verticesIn[anims[i]->getSubMeshes()[j].getVertexBuffer().getPrimitiveType()].append(anims[i]->getSubMeshes()[j].getVertexBuffer()[k]);
+                        for (unsigned int k = 0; k < anims[i]->getSubMeshes()[j].getVertexArray().getVertexCount(); k++) {
+                            verticesIn[anims[i]->getSubMeshes()[j].getVertexArray().getPrimitiveType()].append(anims[i]->getSubMeshes()[j].getVertexArray()[k]);
                             currentVertexOffset++;
                         }
                     }
                 }
                 for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
-                    verticesIn[i].setPrimitiveType(static_cast<PrimitiveType>(i));
+                    verticesIn[i].setPrimitiveType(static_cast<entity::PrimitiveType>(i));
                     verticesIn[i].update(commandPool.getHandle(0));
                 }
                 staggingBoneAnims.create(sizeof(BoneAnimData) * boneAnimsData.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
@@ -250,7 +250,7 @@ namespace odfaeg {
                         1, &buf,
                         0, nullptr
                     );
-                    buf.buffer = GPUContext::instance().getSharedVertexBuffer(VERTEX_BUFFER)[Triangles].getVertexBuffer(0).getHandle();
+                    buf.buffer = GPUContext::instance().getSharedVertexBuffer(VERTEX_BUFFER)[entity::PrimitiveType::Triangles].getVertexBuffer(0).getHandle();
                     vkCmdPipelineBarrier(
                         commandPool.getHandle(0),
                         VK_PIPELINE_STAGE_TRANSFER_BIT,

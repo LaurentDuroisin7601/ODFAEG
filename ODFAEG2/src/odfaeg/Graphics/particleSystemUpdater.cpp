@@ -15,8 +15,8 @@ module;
 module odfaeg.graphic.particleSystemUpdater;
 import odfaeg.graphic.gpuContext;
 import odfaeg.graphic.descriptor;
-import odfaeg.graphic.primitiveType;
-import odfaeg.graphic.emittors;
+import odfaeg.entity.primitiveType;
+import odfaeg.entity.emittors;
 import odfaeg.graphic.device;
 import odfaeg.core.clock;
 namespace odfaeg {
@@ -44,10 +44,10 @@ namespace odfaeg {
             particlesQuadsBuffer.emplace_back(GPUContext::instance().getDevice());
             particlesEmittorsBuffer.emplace_back(GPUContext::instance().getDevice());
             aliveCountBuffer.emplace_back(GPUContext::instance().getDevice());
-            particlesSystemsBuffer[0].create(sizeof(ParticleSystem), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VmaMemoryUsage::VMA_MEMORY_USAGE_GPU_ONLY);
+            particlesSystemsBuffer[0].create(sizeof(ParticlesSystemData), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VmaMemoryUsage::VMA_MEMORY_USAGE_GPU_ONLY);
             particlesQuadsBuffer[0].create(sizeof(Quad), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VmaMemoryUsage::VMA_MEMORY_USAGE_GPU_ONLY);
-            particlesEmittorsBuffer[0].create(sizeof(UniversalEmittor), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VmaMemoryUsage::VMA_MEMORY_USAGE_GPU_ONLY);
-            particlesBuffer[0].create(sizeof(Particle), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VmaMemoryUsage::VMA_MEMORY_USAGE_GPU_ONLY);
+            particlesEmittorsBuffer[0].create(sizeof(entity::UniversalEmittor), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VmaMemoryUsage::VMA_MEMORY_USAGE_GPU_ONLY);
+            particlesBuffer[0].create(sizeof(entity::Particle), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VmaMemoryUsage::VMA_MEMORY_USAGE_GPU_ONLY);
             aliveCountBuffer[0].create(sizeof(unsigned int),VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VmaMemoryUsage::VMA_MEMORY_USAGE_GPU_ONLY);
             needToUpdateBuffers = false;
             std::string shaderDir = std::string(ODFAEG_INSTALL_DIR) + "/Shader";
@@ -122,7 +122,7 @@ namespace odfaeg {
             start();
             //cv.notify_one();            
         }
-        void ParticleSystemUpdater::addParticleSystem(ParticleSystem* particleSystem) {
+        void ParticleSystemUpdater::addParticleSystem(entity::ParticleSystem* particleSystem) {
             particleSystem->computeQuads();
             particleSystem->computeVertices();
             particlesSystems.push_back(particleSystem);
@@ -182,44 +182,44 @@ namespace odfaeg {
                     currentQuadOffset += particlesSystems[i]->getQuads().size();
                     maxParticles += particlesSystems[i]->computeMaxParticles();
                     particlesQuadsData.insert(particlesQuadsData.end(), particlesSystems[i]->getQuads().begin(), particlesSystems[i]->getQuads().end());
-                    for (unsigned int j =0; j < particlesSystems[i]->getEmittors<UniversalEmittor>().size(); j++) {
-                        particlesSystems[i]->getEmittors<UniversalEmittor>()[j].particleSystemId = i;
+                    for (unsigned int j =0; j < particlesSystems[i]->getEmittors<entity::UniversalEmittor>().size(); j++) {
+                        particlesSystems[i]->getEmittors<entity::UniversalEmittor>()[j].particleSystemId = i;
                     }
-                    emittors.insert(emittors.end(), particlesSystems[i]->getEmittors<UniversalEmittor>().begin(), particlesSystems[i]->getEmittors<UniversalEmittor>().end());
+                    emittors.insert(emittors.end(), particlesSystems[i]->getEmittors<entity::UniversalEmittor>().begin(), particlesSystems[i]->getEmittors<entity::UniversalEmittor>().end());
                 }
                 //std::cout<<"CPU max particles : "<<maxParticles<<", nb mittors : "<<emittors.size()<<std::endl;
                 std::vector<unsigned int> aliveCounts;
                 for (unsigned int i = 0; i < particlesSystems.size(); i++) {
                     aliveCounts.push_back(0);
                 }
-                Particle particle;
+                entity::Particle particle;
                 particle.alive = 0;
-                std::vector<Particle> particles;
+                std::vector<entity::Particle> particles;
                 for (unsigned int i = 0; i < maxParticles; i++) {
                     particles.push_back(particle);
                 }
-                particlesEmittorsStaggingBuffer.create(sizeof(UniversalEmittor)*emittors.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
-                particlesEmittorsStaggingBuffer.update(emittors.data(), emittors.size()*sizeof(UniversalEmittor));
+                particlesEmittorsStaggingBuffer.create(sizeof(entity::UniversalEmittor)*emittors.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+                particlesEmittorsStaggingBuffer.update(emittors.data(), emittors.size()*sizeof(entity::UniversalEmittor));
                 particlesSystemsStaggingBuffer.create(sizeof(ParticlesSystemData)*particlesSystemsData.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
                 particlesSystemsStaggingBuffer.update(particlesSystemsData.data(), sizeof(ParticlesSystemData)*particlesSystemsData.size());
                 particlesQuadsStaggingBuffer.create(sizeof(Quad) * particlesQuadsData.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
                 particlesQuadsStaggingBuffer.update(particlesQuadsData.data(), sizeof(Quad)*particlesQuadsData.size());
-                particlesStaggingBuffer.create(sizeof(Particle) * particles.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
-                particlesStaggingBuffer.update(particles.data(), sizeof(Particle)*particles.size());
+                particlesStaggingBuffer.create(sizeof(entity::Particle) * particles.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+                particlesStaggingBuffer.update(particles.data(), sizeof(entity::Particle)*particles.size());
                 aliveCountStaggingBuffer.create(sizeof(unsigned int) * particlesSystems.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
                 aliveCountStaggingBuffer.update(aliveCounts.data(), aliveCounts.size());
-                particlesBuffer[0].create(sizeof(Particle)*maxParticles, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+                particlesBuffer[0].create(sizeof(entity::Particle)*maxParticles, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
                 particlesQuadsBuffer[0].create(sizeof(Quad)*particlesQuadsData.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-                particlesEmittorsBuffer[0].create(sizeof(UniversalEmittor) * emittors.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+                particlesEmittorsBuffer[0].create(sizeof(entity::UniversalEmittor) * emittors.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
                 particlesSystemsBuffer[0].create(sizeof(ParticlesSystemData) * particlesSystemsData.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
                 aliveCountBuffer[0].create(sizeof(unsigned int) * particlesSystems.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
                 //commandPool.beginRecordCommandBuffer(0);
-                Buffer::copyBuffer(particlesEmittorsStaggingBuffer, particlesEmittorsBuffer[0], sizeof(UniversalEmittor)*emittors.size(), commandPool.getHandle(0));
+                Buffer::copyBuffer(particlesEmittorsStaggingBuffer, particlesEmittorsBuffer[0], sizeof(entity::UniversalEmittor)*emittors.size(), commandPool.getHandle(0));
                 Buffer::copyBuffer(particlesSystemsStaggingBuffer, particlesSystemsBuffer[0], sizeof(ParticlesSystemData)*particlesSystemsData.size(), commandPool.getHandle(0));
                 Buffer::copyBuffer(particlesQuadsStaggingBuffer, particlesQuadsBuffer[0], sizeof(Quad)*particlesQuadsData.size(), commandPool.getHandle(0));
                 Buffer::copyBuffer(aliveCountStaggingBuffer, aliveCountBuffer[0], sizeof(unsigned int)*particlesSystems.size(), commandPool.getHandle(0));
-                Buffer::copyBuffer(particlesStaggingBuffer, particlesBuffer[0], sizeof(Particle)*particles.size(), commandPool.getHandle(0));
+                Buffer::copyBuffer(particlesStaggingBuffer, particlesBuffer[0], sizeof(entity::Particle)*particles.size(), commandPool.getHandle(0));
                 //commandPool.endRecordCommandBuffer(0);
                 /*VkSubmitInfo submitInfo{};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -320,7 +320,7 @@ namespace odfaeg {
                         1, &buf,
                         0, nullptr
                     );
-                    buf.buffer = GPUContext::instance().getSharedVertexBuffer(VERTEX_BUFFER)[Triangles].getVertexBuffer(0).getHandle();
+                    buf.buffer = GPUContext::instance().getSharedVertexBuffer(VERTEX_BUFFER)[entity::PrimitiveType::Triangles].getVertexBuffer(0).getHandle();
                     vkCmdPipelineBarrier(
                         commandPool.getHandle(0),
                         VK_PIPELINE_STAGE_TRANSFER_BIT,

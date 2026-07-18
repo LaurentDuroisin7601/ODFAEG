@@ -5,7 +5,7 @@ module;
 module odfaeg.graphic.camera;
 import odfaeg.graphic.projMatrix;
 import odfaeg.graphic.viewMatrix;
-import odfaeg.entity.transformMatrix;
+import odfaeg.math.transformMatrix;
 import odfaeg.math.vec;
 import odfaeg.math.maths;
 import odfaeg.physic.boundingBox;
@@ -173,7 +173,7 @@ namespace odfaeg {
             viewUpdated = true;
         }
         void Camera::rotate(float gamma) {
-            entity::TransformMatrix tm;
+            math::TransformMatrix tm;
             tm.setRotation(forward, gamma);
             up = tm.transform(up);
             left = forward.cross(up).normalize();

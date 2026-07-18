@@ -10,7 +10,7 @@ import odfaeg.math.vec;
 import odfaeg.window.listener;
 import odfaeg.graphic.renderTarget;
 import odfaeg.graphic.renderTexture;
-import odfaeg.graphic.gameObject;
+import odfaeg.graphic.mesh;
 import odfaeg.graphic.vertexBuffer;
 import odfaeg.graphic.shader;
 import odfaeg.graphic.commandPool;
@@ -56,7 +56,7 @@ namespace odfaeg {
                 void clear();
                 void drawNextFrame();
                 void draw();
-                void addReflRefrGameObject(GameObject* gameObject);                
+                void addReflRefrGameObject(Mesh* gameObject);                
                 unsigned int getLayer();
                 bool isRendererReady();   
             private:                
@@ -82,11 +82,15 @@ namespace odfaeg {
                 Buffer staggingViewMatricesBuffer;               
                 int layer;
                 inline static const unsigned int ENV_MAP_SIZE = 1024;
-                std::vector<GameObject*> reflRefrGameObjects;
+                std::vector<Mesh*> reflRefrGameObjects;
                 std::array<math::Vec3f, 6> dirs, ups;
                 std::condition_variable cv;
                 std::mutex mtx;
                 window::Listener eventListener;
+                EnvMapVertPC envMapVertPC;
+                EnvMapFragPC envMapFragPC;
+                ReflRefrVertPC reflRefrVertPC;
+                ReflRefrFragPC reflRefrFragPC;
                 // Private members and methods
         };
     }

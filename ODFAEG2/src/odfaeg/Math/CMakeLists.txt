@@ -13,6 +13,11 @@ target_sources(odfaeg-math-mod
         BASE_DIRS ${SRCROOT}
         FILES ${MODULES_INTERFACE}
 )
+target_sources(odfaeg-math-mod
+    PRIVATE
+        ${SRCROOT}/transformMatrix.cpp
+)
+
 
 target_sources(odfaeg-math-mod PRIVATE ${MODULES_IMPLEMENTATION})
 target_compile_features(odfaeg-math-mod PUBLIC cxx_std_20)

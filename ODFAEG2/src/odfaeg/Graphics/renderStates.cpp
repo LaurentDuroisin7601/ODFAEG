@@ -15,7 +15,7 @@ namespace odfaeg {
 
 
         ////////////////////////////////////////////////////////////
-        RenderStates::RenderStates(const entity::TransformMatrix& theTransform) :
+        RenderStates::RenderStates(const math::TransformMatrix& theTransform) :
             blendMode(),
             transform(theTransform),
             texture(nullptr),
@@ -55,7 +55,7 @@ namespace odfaeg {
 
 
         ////////////////////////////////////////////////////////////
-        RenderStates::RenderStates(BlendMode theBlendMode, const entity::TransformMatrix& theTransform,
+        RenderStates::RenderStates(BlendMode theBlendMode, const math::TransformMatrix& theTransform,
             const Texture* theTexture, Shader* theShader) :
             blendMode(theBlendMode),
             transform(theTransform),

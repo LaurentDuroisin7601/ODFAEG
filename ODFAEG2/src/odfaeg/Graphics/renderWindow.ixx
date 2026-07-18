@@ -13,7 +13,7 @@ import odfaeg.graphic.swapchain;
 import odfaeg.graphic.frameBuffer;
 import odfaeg.graphic.renderPass;
 import odfaeg.math.vec;
-import odfaeg.graphic.color;
+import odfaeg.entity.color;
 import odfaeg.graphic.semaphore;
 import odfaeg.graphic.fence;
 namespace odfaeg {
@@ -30,7 +30,7 @@ namespace odfaeg {
             VkExtent2D getExtents();
             
             Device& getDevice();
-            void clear(const Color& color = Color(0, 0, 0, 255));
+            void clear(const entity::Color& color = entity::Color(0, 0, 0, 255));
             uint32_t getImageIndex();
 
             virtual ~RenderWindow();
@@ -101,8 +101,7 @@ namespace odfaeg {
             std::vector<std::vector<FrameBuffer>> frameBuffers;
             std::uint32_t currentFrame;
             bool framebufferResized = false;
-            std::uint32_t viewMask;
-            Color clearColor;
+            std::uint32_t viewMask;            
         };			
 	}
 }

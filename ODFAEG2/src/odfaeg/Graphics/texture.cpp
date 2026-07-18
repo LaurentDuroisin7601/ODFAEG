@@ -401,7 +401,7 @@ namespace odfaeg {
             vkDeviceWaitIdle(device.getDevice());
             return true;
         }
-        bool Texture::loadCubeMapFromFile(std::vector<std::string> filenames, const IntRect& area) {
+        bool Texture::loadCubeMapFromFile(std::vector<std::string> filenames, const entity::IntRect& area) {
 
             createCubeMap(imageLoader.getSize().x());
             for (unsigned int i = 0; i < nbBuffers; i++) {
@@ -410,7 +410,7 @@ namespace odfaeg {
             }            
             for (unsigned int i = 0; i < 6; i++) {
                 ImageLoader imageLoader;
-                if (!imageLoader.loadFromFile(filenames[i]) || !loadCubeMapFromImage(imageLoader, area, i))
+                if (!imageLoader.loadFromFile(filenames[i]) || !loadCubeMapFromImage(imageLoader, i, area))
                     return false;
             }
             for (unsigned int i = 0; i < nbBuffers; i++) {
@@ -431,7 +431,7 @@ namespace odfaeg {
 
             return true;
         }
-        bool Texture::loadCubeMapFromImage(const ImageLoader& image, const IntRect& area, uint32_t face) {
+        bool Texture::loadCubeMapFromImage(const ImageLoader& image, uint32_t face, const entity::IntRect& area) {
             if (imageLoader.isCompressed()) {
                 m_format = image.getVkFormat();
             }
@@ -444,15 +444,15 @@ namespace odfaeg {
             updateCubeMap(pixels, texWidth, texHeight, 0, 0, face);            
             return true;
         }
-        bool Texture::loadFromFile(const std::string& filename, const IntRect& area) {
+        bool Texture::loadFromFile(const std::string& filename, const entity::IntRect& area) {
             ImageLoader imageLoader;
             return  imageLoader.loadFromFile(filename) && loadFromImage(imageLoader, area);
         }
-	    bool Texture::loadFromMemory(const void* data, std::size_t size, const IntRect& area) {
+	    bool Texture::loadFromMemory(const void* data, std::size_t size, const entity::IntRect& area) {
             ImageLoader imageLoader;
             return imageLoader.loadFromMemory(data, size) && loadFromImage(imageLoader, area);
         }
-        bool Texture::loadFromImage(const ImageLoader& imageLoader, const IntRect& area) {
+        bool Texture::loadFromImage(const ImageLoader& imageLoader, const entity::IntRect& area) {
             if (imageLoader.isCompressed()) {
 
                 m_format = imageLoader.getVkFormat();

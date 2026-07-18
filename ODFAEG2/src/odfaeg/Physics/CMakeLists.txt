@@ -15,7 +15,7 @@ target_sources(odfaeg-physics-mod PRIVATE ${SRCROOT}/boundingBox.cpp)
 
 target_compile_features(odfaeg-physics-mod PUBLIC cxx_std_20)
 
-target_link_libraries(odfaeg-physics-mod PUBLIC odfaeg-entity-mod odfaeg-math-mod odfaeg-core-mod)
+target_link_libraries(odfaeg-physics-mod PUBLIC odfaeg-math-mod odfaeg-core-mod)
 
 add_library(odfaeg-physics STATIC)
 

@@ -12,10 +12,11 @@ module;
 #include <glm/gtx/string_cast.hpp>
 //import odfaeg.graphic.modelLoader;
 module odfaeg.graphic.modelLoader;
-import odfaeg.graphic.assimpHelper;
-import odfaeg.entity.transformMatrix;
+import odfaeg.entity.assimpHelper;
+import odfaeg.math.transformMatrix;
 import odfaeg.physic.boundingBox;
-import odfaeg.graphic.color;
+import odfaeg.entity.color;
+import odfaeg.entity.primitiveType;
 namespace odfaeg {
     namespace graphic {
         ModelLoader::ModelLoader (Device& device, core::ResourceManager<Texture, std::string>& textureManager) : device(device), textureManager(textureManager),
@@ -30,9 +31,10 @@ namespace odfaeg {
             isSkinned = false;
             currentTexturesOffset = 0;
         }
-        GameObject* ModelLoader::loadModel(std::string path, bool loadTextures) {
+        Mesh* ModelLoader::loadModel(std::string path, bool loadTextures) {
             //std::cout<<"load model : "<<path<<std::endl;
-            Model* model = new Model(math::Vec3f(0.f, 0.f, 0.f), math::Vec3f(0.f, 0.f, 0.f),math::Vec3f(0.f, 0.f, 0.f), "E_MODEL");
+            entity::Model* model = new entity::Model(math::Vec3f(0.f, 0.f, 0.f), math::Vec3f(0.f, 0.f, 0.f),math::Vec3f(0.f, 0.f, 0.f), "E_MODEL");
+            Mesh* mesh = new Mesh(model);
             Assimp::Importer importer;
             //std::cout<<"import"<<std::endl;
             /*uint32_t importFlags{ aiProcess_Triangulate
@@ -59,7 +61,7 @@ namespace odfaeg {
             if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
             {
                 std::cerr << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
-                return model;
+                return mesh;
             }
             isSkinned = false;
             for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
@@ -78,7 +80,7 @@ namespace odfaeg {
             math::Matrix4f transform;
             transform.identity();
             clk2.restart();
-            processNode(transform, scene->mRootNode, scene, model, loadTextures);
+            processNode(transform, scene->mRootNode, scene, mesh, model, loadTextures);
             std::vector<ImageLoader> imageLoaders;
             size_t totalImagesSize = 0;
             for (unsigned int i = currentTexturesOffset; i < textureManager.getAliases().size(); i++) {
@@ -150,13 +152,13 @@ namespace odfaeg {
             vkDeviceWaitIdle(device.getDevice());
             currentTexturesOffset += textureManager.getAliases().size();
             //std::cout<<"scene loading time : "<<clk2.getElapsedTime().asMilliseconds()<<"ms"<<std::endl;
-            return model;
+            return mesh;
         }
-        void ModelLoader::processNode(math::Matrix4f parentTransform, aiNode *node, const aiScene *scene, Model* mnode, bool loadTextures)
+        void ModelLoader::processNode(math::Matrix4f parentTransform, aiNode *node, const aiScene *scene, Mesh* mnode, entity::Model* model, bool loadTextures)
         {
             //std::cout<<"process node"<<std::endl;
             // process all the node's meshes (if any)
-            math::Matrix4f nodeLocal = AssimpHelpers::convertAssimpToODFAEGMatrix(node->mTransformation);
+            math::Matrix4f nodeLocal = entity::AssimpHelpers::convertAssimpToODFAEGMatrix(node->mTransformation);
             math::Matrix4f world = parentTransform * nodeLocal;
             //std::cout<<"parent : "<<parentTransform<<std::endl<<"node : "<<nodeLocal<<std::endl;
             //std::cout<<"nb meshes to load : "<<node->mNumMeshes<<std::endl;
@@ -165,8 +167,8 @@ namespace odfaeg {
             for(unsigned int i = 0; i < node->mNumMeshes; i++)
             {
                 aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
-                threadPool.enqueue([this, world, mesh, scene, mnode, loadTextures] {
-                    processMesh(world, mesh, scene, mnode, loadTextures);
+                threadPool.enqueue([this, world, mesh, scene, mnode, model, loadTextures] {
+                    processMesh(world, mesh, scene, mnode, model, loadTextures);
                     jobFence.jobDone();
                 });
             }
@@ -176,7 +178,7 @@ namespace odfaeg {
             for(unsigned int i = 0; i < node->mNumChildren; i++)
             {
                 //Model* mChildNode = new Model(math::Vec3f(0.f, 0.f, 0.f), math::Vec3f(0.f, 0.f, 0.f),math::Vec3f(0.f, 0.f, 0.f), "E_MODEL");
-                processNode(world, node->mChildren[i], scene, mnode, loadTextures);
+                processNode(world, node->mChildren[i], scene, mnode, model, loadTextures);
                 /*math::Vec3f rootSize = mnode->getSize();
                 if (mChildNode->getSize().x() > rootSize.x()) {
                     rootSize.x() = mChildNode->getSize().x();
@@ -191,7 +193,7 @@ namespace odfaeg {
                 mnode->addChild(mChildNode);*/
             }
         }
-        void ModelLoader::processMesh(math::Matrix4f world, aiMesh *mesh, const aiScene *scene, Model* mnode, bool loadTextures) {
+        void ModelLoader::processMesh(math::Matrix4f world, aiMesh *mesh, const aiScene *scene, Mesh* mnode, entity::Model* model, bool loadTextures) {
             //world = world.transpose();
             //std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
             //std::cout<<"process mesh"<<std::endl;
@@ -200,7 +202,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < Material::NBTEXTYPES; i++)
                 subMesh.getMaterial().setTexture(nullptr, static_cast<Material::TexType>(i));*/
            
-            //Color diffuseColor;           
+            //Color diffuseColor;                
             std::vector<Texture*> diffuseMaps, specularMaps, normalMaps, metalnessMaps, roughnessMaps, aoMaps, emissiveMaps;
             if(mesh->mMaterialIndex >= 0) {
                 //std::cout<<"load materials"<<std::endl;
@@ -221,43 +223,43 @@ namespace odfaeg {
                     diffuseMaps = loadMaterialTextures(scene, material,
                                                         aiTextureType_DIFFUSE);
                     for (unsigned int i = 0; i < diffuseMaps.size(); i++) {
-                        diffuseMaps[i]->setTexType(Material::DIFFUSE);
+                        diffuseMaps[i]->setTexType(entity::SubMesh::DIFFUSE);
                         //subMesh.getMaterial().setTexture(diffuseMaps[i], Material::DIFFUSE, i);
                     }
                     specularMaps = loadMaterialTextures(scene, material,
                                                         aiTextureType_SPECULAR);
                     for (unsigned int i = 0; i < specularMaps.size(); i++) {
-                        specularMaps[i]->setTexType(Material::SPECULAR);
+                        specularMaps[i]->setTexType(entity::SubMesh::SPECULAR);
                         //subMesh.getMaterial().setTexture(specularMaps[i], Material::SPECULAR, i);
                     }
                     normalMaps = loadMaterialTextures(scene, material, aiTextureType_NORMALS);
                     for (unsigned int i = 0; i < normalMaps.size(); i++) {
                         //std::cout<<"normals"<<std::endl;
-                        normalMaps[i]->setTexType(Material::NORMAL);
+                        normalMaps[i]->setTexType(entity::SubMesh::NORMAL);
                         //subMesh.getMaterial().setTexture(normalMaps[i], Material::NORMAL,i);
                     }
                     metalnessMaps = loadMaterialTextures(scene, material, aiTextureType_METALNESS);
                     for (unsigned int i = 0; i < metalnessMaps.size(); i++) {
                         //std::cout<<"metalness"<<std::endl;
-                        metalnessMaps[i]->setTexType(Material::METALNESS);
+                        metalnessMaps[i]->setTexType(entity::SubMesh::METALNESS);
                         //subMesh.getMaterial().setTexture(metalnessMaps[i], Material::METALNESS, i);
                     }
                     roughnessMaps = loadMaterialTextures(scene, material, aiTextureType_DIFFUSE_ROUGHNESS);
                     for (unsigned int i = 0; i < roughnessMaps.size(); i++) {
                         //std::cout<<"roughness"<<std::endl;
-                        roughnessMaps[i]->setTexType(Material::ROUGHNESS);
+                        roughnessMaps[i]->setTexType(entity::SubMesh::ROUGHNESS);
                         //subMesh.getMaterial().setTexture(roughnessMaps[i], Material::ROUGHNESS, i);
                     }
                     aoMaps = loadMaterialTextures(scene, material, aiTextureType_AMBIENT_OCCLUSION);
                     for (unsigned int i = 0; i < aoMaps.size(); i++) {
                         //std::cout<<"ao"<<std::endl;
-                        aoMaps[i]->setTexType(Material::AO);
+                        aoMaps[i]->setTexType(entity::SubMesh::AO);
                         //subMesh.getMaterial().setTexture(aoMaps[i], Material::AO, i);
                     }
                     emissiveMaps = loadMaterialTextures(scene, material, aiTextureType_EMISSIVE);
                     for (unsigned int i = 0; i < emissiveMaps.size(); i++) {
                         //std::cout<<"emissive"<<std::endl;
-                        emissiveMaps[i]->setTexType(Material::EMISSIVE);
+                        emissiveMaps[i]->setTexType(entity::SubMesh::EMISSIVE);
                         //subMesh.getMaterial().setTexture(emissiveMaps[i], Material::EMISSIVE, i);
                     }
                 }
@@ -295,11 +297,11 @@ namespace odfaeg {
                 //std::cout<<"left handed!"<<std::endl;
                 isLeftHanded = true;
             }
-            entity::TransformMatrix axisCorrection, handednessCorrection, scaleCorrection;
+            math::TransformMatrix axisCorrection, handednessCorrection, scaleCorrection;
             axisCorrection.reset();
             handednessCorrection.reset();
             scaleCorrection.reset();
-            entity::TransformMatrix  zUpyUp;
+            math::TransformMatrix  zUpyUp;
             zUpyUp.reset();
             // 1. Correction UP (Z-up → Y-up)
             if (sceneUpAxis == Axis::Z) {
@@ -319,7 +321,7 @@ namespace odfaeg {
                 axisCorrection.setScale(math::Vec3f(1.f,1.f,-1.f));
             }
             //std::cout<<"materials loaded : "<<mat.getTexture()<<std::endl;
-            std::vector<Vertex> vertices;
+            std::vector<entity::Vertex> vertices;
             vertices.resize(mesh->mNumVertices);
             /*unsigned int uvCount = 0;
             for (unsigned int i = 0; i < AI_MAX_NUMBER_OF_TEXTURECOORDS; i++) {
@@ -348,9 +350,9 @@ namespace odfaeg {
                 vertices[i].normal[0] = mesh->mNormals[i].x;
                 vertices[i].normal[1] = mesh->mNormals[i].y;
                 vertices[i].normal[2] = mesh->mNormals[i].z;
-                vertices[i].color = Color::White;
+                vertices[i].color = entity::Color::White;
             }
-            extractBoneWeightForVertices(vertices, mesh, scene, mnode);
+            extractBoneWeightForVertices(vertices, mesh, scene, model);
             /*VertexBuffer vb(device, Triangles);
             for (unsigned int i = 0; i < vertices.size(); i++) {
                 //std::cout<<"add vertex"<<std::endl;
@@ -412,57 +414,58 @@ namespace odfaeg {
                 //std::cout<<"texture"<<std::endl;
             }*/
 
-            math::Vec3f currentSize = mnode->getSize();
+            math::Vec3f currentSize = model->getSize();
             //if (!device.areMeshShadersSupported()) {
-                SubMesh subMesh(device);
+                entity::SubMesh subMesh;
+                Material* material = new Material();
                 for (unsigned int i = 0; 
-                    i < Material::NBTEXTYPES; i++)
-                    subMesh.getMaterial().setTexture(nullptr, static_cast<Material::TexType>(i));
+                    i < entity::SubMesh::NBTEXTYPES; i++)
+                    material->setTexture(nullptr, static_cast<entity::SubMesh::TexType>(i));
                 for (unsigned int i = 0; i < diffuseMaps.size(); i++) {
                     //diffuseMaps[i]->setTexType(Material::DIFFUSE);
                     //std::cout<<"diffuse : "<<diffuseMaps[i]->getId()<<std::endl;
-                    subMesh.getMaterial().setTexture(diffuseMaps[i], Material::DIFFUSE, i);
+                    material->setTexture(diffuseMaps[i], entity::SubMesh::DIFFUSE, i);
                 }
                 for (unsigned int i = 0; i < specularMaps.size(); i++) {
                     //specularMaps[i]->setTexType(Material::SPECULAR);
-                    subMesh.getMaterial().setTexture(specularMaps[i], Material::SPECULAR, i);
+                    material->setTexture(specularMaps[i], entity::SubMesh::SPECULAR, i);
                 }
                 for (unsigned int i = 0; i < normalMaps.size(); i++) {
                     //std::cout<<"normals"<<std::endl;
                     //normalMaps[i]->setTexType(Material::NORMAL);
                     //std::cout<<"specular : "<<specularMaps[i]->getId()<<std::endl;
-                    subMesh.getMaterial().setTexture(normalMaps[i], Material::NORMAL,i);
+                    material->setTexture(normalMaps[i], entity::SubMesh::NORMAL,i);
                 }                
                 for (unsigned int i = 0; i < metalnessMaps.size(); i++) {
                     //std::cout<<"metalness"<<std::endl;
                     //metalnessMaps[i]->setTexType(Material::METALNESS);
-                    subMesh.getMaterial().setTexture(metalnessMaps[i], Material::METALNESS, i);
+                    material->setTexture(metalnessMaps[i], entity::SubMesh::METALNESS, i);
                 }                
                 for (unsigned int i = 0; i < roughnessMaps.size(); i++) {
                     //std::cout<<"roughness"<<std::endl;
                     //roughnessMaps[i]->setTexType(Material::ROUGHNESS);
-                    subMesh.getMaterial().setTexture(roughnessMaps[i], Material::ROUGHNESS, i);
+                    material->setTexture(roughnessMaps[i], entity::SubMesh::ROUGHNESS, i);
                 }                
                 for (unsigned int i = 0; i < aoMaps.size(); i++) {
                     //std::cout<<"ao"<<std::endl;
                     //aoMaps[i]->setTexType(Material::AO);
-                    subMesh.getMaterial().setTexture(aoMaps[i], Material::AO, i);
+                    material->setTexture(aoMaps[i], entity::SubMesh::AO, i);
                 }                
                 for (unsigned int i = 0; i < emissiveMaps.size(); i++) {
                     //std::cout<<"emissive"<<std::endl;
                     //emissiveMaps[i]->setTexType(Material::EMISSIVE);
-                    subMesh.getMaterial().setTexture(emissiveMaps[i], Material::EMISSIVE, i);
+                    material->setTexture(emissiveMaps[i], entity::SubMesh::EMISSIVE, i);
                 }
-                VertexBuffer vb(device, Triangles);
-                vb.resize(vertices.size(), indexes.size());
+                entity::VertexArray va(entity::PrimitiveType::Triangles);
+                va.resize(vertices.size(), indexes.size());
                 for (unsigned int v = 0; v < vertices.size(); v++) {  
-                    vb[v] = vertices[v];
+                    va[v] = vertices[v];
                 }
                 for (unsigned int i = 0; i < indexes.size(); i++) {
-                    vb.setIndex(i, indexes[i]);
+                    va.setIndex(i, indexes[i]);
                 }
                 
-                physic::BoundingBox bounds = vb.getBounds();
+                physic::BoundingBox bounds = va.getBounds();
                 //std::cout<<"bounds : "<<bounds.getSize()<<std::endl;
                 if (bounds.getSize().x() > 1000 && bounds.getSize().y() > 1000 && bounds.getSize().z() > 1000) {
                     //std::cout<<"scale correction."<<std::endl;
@@ -476,22 +479,23 @@ namespace odfaeg {
                 
                 
                 if (!isSkinned) {
-                    for (unsigned int i = 0; i < vb.getVertexCount(); i++) {
-                        vb[i].position = finalTransform * vb[i].position;
-                        vb[i].normal = finalCorrection * -vb[i].normal;
+                    for (unsigned int i = 0; i < va.getVertexCount(); i++) {
+                        va[i].position = finalTransform * va[i].position;
+                        va[i].normal = finalCorrection * -va[i].normal;
                         //std::cout<<"vertex position : "<<vb[i].position<<std::endl;
                     }
                 }
-                if (vb.getBounds().getSize().x() > currentSize.x())
-                    currentSize.x() = vb.getBounds().getSize().x();
-                if (vb.getBounds().getSize().y() > currentSize.y())
-                    currentSize.y() = vb.getBounds().getSize().y();
-                if (vb.getBounds().getSize().z() > currentSize.z())
-                    currentSize.z() = vb.getBounds().getSize().z();
+                if (va.getBounds().getSize().x() > currentSize.x())
+                    currentSize.x() = va.getBounds().getSize().x();
+                if (va.getBounds().getSize().y() > currentSize.y())
+                    currentSize.y() = va.getBounds().getSize().y();
+                if (va.getBounds().getSize().z() > currentSize.z())
+                    currentSize.z() = va.getBounds().getSize().z();
                 //std::cout<<"size : "<<currentSize<<std::endl;                
-                subMesh.setVertexBuffer(vb);
+                subMesh.setVertexArray(va);
                 std::lock_guard<std::recursive_mutex>(getGlobalMutex());
-                mnode->addSubMesh(std::move(subMesh));
+                model->addSubMesh(subMesh);
+                mnode->addMaterial(material);
             /*} else {
                 const size_t MAX_VERTS = 255;
                 const size_t MAX_PRIMS = 85;
@@ -585,13 +589,13 @@ namespace odfaeg {
                 } 
             }    */
             std::lock_guard<std::recursive_mutex>(getGlobalMutex());
-            mnode->setSize(currentSize);       
+            model->setSize(currentSize);       
             
             //std::cout<<"size : "<<vb.getBounds().getSize()<<std::endl;
            
           
         }
-        void ModelLoader::setVertexBoneDataToDefault(Vertex& vertex)
+        void ModelLoader::setVertexBoneDataToDefault(entity::Vertex& vertex)
         {
             for (int i = 0; i < MAX_BONES_INFLUENCE; i++)
             {
@@ -599,7 +603,7 @@ namespace odfaeg {
                 vertex.m_Weights[i] = 0.0f;
             }
         }
-        void ModelLoader::setVertexBoneData(Vertex& vertex, int boneID, float weight)
+        void ModelLoader::setVertexBoneData(entity::Vertex& vertex, int boneID, float weight)
         {
             for (int i = 0; i < MAX_BONES_INFLUENCE; ++i)
             {
@@ -612,7 +616,7 @@ namespace odfaeg {
                 }
             }
         }
-        void ModelLoader::extractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene, Model* model)
+        void ModelLoader::extractBoneWeightForVertices(std::vector<entity::Vertex>& vertices, aiMesh* mesh, const aiScene* scene, entity::Model* model)
         {
             auto& boneInfoMap = model->getBoneInfoMap();
             int& boneCount = model->getBoneCount();
@@ -622,9 +626,9 @@ namespace odfaeg {
                 std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
                 if (model->getBoneInfoMap().find(boneName) == model->getBoneInfoMap().end())
                 {
-                    GameObject::BoneInfo newBoneInfo;
+                    entity::GameObject::BoneInfo newBoneInfo;
                     newBoneInfo.id = boneCount;
-                    newBoneInfo.offset = AssimpHelpers::convertMatrixToGLMFormat(mesh->mBones[boneIndex]->mOffsetMatrix);
+                    newBoneInfo.offset = entity::AssimpHelpers::convertMatrixToGLMFormat(mesh->mBones[boneIndex]->mOffsetMatrix);
                     //std::cout<<"offset : "<<newBoneInfo.offset.transpose()<<std::endl;
                     boneInfoMap[boneName] = newBoneInfo;
                     boneID = boneCount;;
@@ -651,16 +655,16 @@ namespace odfaeg {
                 }
             }
         }
-        Material::TexType ModelLoader::convertAssimpType(aiTextureType type) {
+        entity::SubMesh::TexType ModelLoader::convertAssimpType(aiTextureType type) {
             switch(type) {
-                case aiTextureType_DIFFUSE:  return Material::DIFFUSE;
-                case aiTextureType_SPECULAR: return Material::SPECULAR;
-                case aiTextureType_NORMALS:  return Material::NORMAL;
-                case aiTextureType_METALNESS: return Material::METALNESS;
-                case aiTextureType_DIFFUSE_ROUGHNESS: return Material::ROUGHNESS;
-                case aiTextureType_AMBIENT_OCCLUSION: return Material::AO;
-                case aiTextureType_EMISSIVE: return Material::EMISSIVE;
-                default: return Material::UNKNOWN;
+                case aiTextureType_DIFFUSE:  return entity::SubMesh::DIFFUSE;
+                case aiTextureType_SPECULAR: return entity::SubMesh::SPECULAR;
+                case aiTextureType_NORMALS:  return entity::SubMesh::NORMAL;
+                case aiTextureType_METALNESS: return entity::SubMesh::METALNESS;
+                case aiTextureType_DIFFUSE_ROUGHNESS: return entity::SubMesh::ROUGHNESS;
+                case aiTextureType_AMBIENT_OCCLUSION: return entity::SubMesh::AO;
+                case aiTextureType_EMISSIVE: return entity::SubMesh::EMISSIVE;
+                default: return entity::SubMesh::UNKNOWN;
             }
         }
         std::vector<Texture*> ModelLoader::loadMaterialTextures(const aiScene* scene, aiMaterial *mat, aiTextureType type)

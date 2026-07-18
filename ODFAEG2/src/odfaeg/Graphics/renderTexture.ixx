@@ -8,7 +8,7 @@ import odfaeg.graphic.renderPass;
 import odfaeg.graphic.frameBuffer;
 import odfaeg.graphic.fence;
 import odfaeg.graphic.semaphore;
-import odfaeg.graphic.color;
+import odfaeg.entity.color;
 import odfaeg.math.vec;
 import odfaeg.graphic.renderTarget;
 namespace odfaeg {
@@ -30,7 +30,7 @@ namespace odfaeg {
             std::vector<FrameBuffer>& getFrameBuffers(unsigned int frameBufferId);
             void createRenderPass();
             RenderPass& getRenderPass(unsigned int renderPassId);
-            void clear(const Color& color = Color(0, 0, 0, 255));
+            void clear(const entity::Color& color = entity::Color(0, 0, 0, 255));
             void beginRendering(bool secondaryCommandBuffers=false);
             void endRendering();
             void beginRenderPass(bool secondaryCommandBuffers=false);

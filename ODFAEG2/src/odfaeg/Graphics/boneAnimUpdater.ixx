@@ -4,7 +4,7 @@ module;
 #include <atomic>
 #include <condition_variable>
 export module odfaeg.graphic.boneAnimUpdater;
-import odfaeg.graphic.animator;
+import odfaeg.entity.animator;
 import odfaeg.graphic.buffer;
 import odfaeg.core.timer;
 import odfaeg.math.vec;
@@ -45,7 +45,7 @@ namespace odfaeg {
             };
             static BoneAnimUpdater& instance(std::condition_variable& cv, std::mutex& mtx);
             void setReady(bool r);
-            void addBoneAnim(Animator* boneAnim);
+            void addBoneAnim(entity::Animator* boneAnim);
             void setBuffersReady(bool r);
             bool areBuffersReady();
             void setSubmitReady(bool r);
@@ -57,7 +57,7 @@ namespace odfaeg {
             BoneAnimUpdater(std::condition_variable& cv, std::mutex& mtx);
             void updateBuffers();
             void updateDescriptorSets();
-            std::vector<Animator*> anims;
+            std::vector<entity::Animator*> anims;
             Buffer staggingBoneAnims;
             Buffer staggingFinalBonesMatrices;
             Buffer staggingAnimsSubmeshes;

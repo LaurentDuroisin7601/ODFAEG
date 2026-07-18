@@ -106,14 +106,14 @@ namespace odfaeg {
 	    VkFormat& RenderWindow::getImageFormat() {
             return swapchain.getSwapchainImageFormat();
         }
-        void RenderWindow::clear(const Color& clearColor) {
+        void RenderWindow::clear(const entity::Color& clearColor) {
             //Solve present to present write read hazard.
             /*if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
                 vkWaitForFences(device.getDevice(), 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
                 vkResetFences(device.getDevice(), 1, &imagesInFlight[imageIndex]);
             }*/
             //std::cout<<"clear : "<<getCurrentFrame()<<std::endl;
-            this->clearColor = clearColor;
+            
             VkResult result = vkAcquireNextImageKHR(device.getDevice(), swapchain.getHandle(), UINT64_MAX, imageAvailableSemaphores[currentFrame].getHandle(), inFlightFences[currentFrame].getHandle(), &imageIndex);
             if (result == VK_ERROR_OUT_OF_DATE_KHR) {
                 framebufferResized = false;

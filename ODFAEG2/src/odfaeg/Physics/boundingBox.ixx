@@ -2,7 +2,7 @@ module;
 #include <vector>
 export module odfaeg.physic.boundingBox;
 import odfaeg.math.vec;
-import odfaeg.entity.transformMatrix;
+import odfaeg.math.transformMatrix;
 namespace odfaeg {    
     namespace physic {
         /**
@@ -93,8 +93,8 @@ namespace odfaeg {
                 points = other.points;
                 return *this;
             }*/
-            BoundingBox transform(entity::TransformMatrix& tm);
-            BoundingBox inverseTransform(entity::TransformMatrix& tm);
+            BoundingBox transform(math::TransformMatrix& tm);
+            BoundingBox inverseTransform(math::TransformMatrix& tm);
             std::vector<math::Vec3f> getVertices();
             std::vector<math::Vec3f> getFaceNormals();
             std::vector<math::Vec3f> getEdgeNormals();

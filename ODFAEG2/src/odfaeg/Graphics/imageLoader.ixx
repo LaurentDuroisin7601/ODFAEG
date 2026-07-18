@@ -5,10 +5,10 @@ module;
 #include <cctype>
 #include <vulkan/vulkan.hpp>
 export module odfaeg.graphic.imageLoader;
-import odfaeg.graphic.color;
+import odfaeg.entity.color;
 import odfaeg.math.vec;
 import odfaeg.core.inputStream;
-import odfaeg.graphic.rect;
+import odfaeg.entity.rect;
 namespace odfaeg {
     namespace graphic {
         ////////////////////////////////////////////////////////////
@@ -41,7 +41,7 @@ namespace odfaeg {
             /// \param color  Fill color
             ///
             ////////////////////////////////////////////////////////////
-            void create(unsigned int width, unsigned int height, const Color& color = Color(0, 0, 0));
+            void create(unsigned int width, unsigned int height, const entity::Color& color = entity::Color(0, 0, 0));
 
             ////////////////////////////////////////////////////////////
             /// \brief Create the image from an array of pixels
@@ -148,7 +148,7 @@ namespace odfaeg {
             /// \param alpha Alpha value to assign to transparent pixels
             ///
             ////////////////////////////////////////////////////////////
-            void createMaskFromColor(const Color& color, std::uint8_t alpha = 0);
+            void createMaskFromColor(const entity::Color& color, std::uint8_t alpha = 0);
 
             ////////////////////////////////////////////////////////////
             /// \brief Copy pixels from another image onto this one
@@ -170,7 +170,7 @@ namespace odfaeg {
             /// \param applyAlpha Should the copy take into account the source transparency?
             ///
             ////////////////////////////////////////////////////////////
-            void copy(const ImageLoader& source, unsigned int destX, unsigned int destY, const IntRect& sourceRect = IntRect(0, 0, 0, 0), bool applyAlpha = false);
+            void copy(const ImageLoader& source, unsigned int destX, unsigned int destY, const entity::IntRect& sourceRect = entity::IntRect(0, 0, 0, 0), bool applyAlpha = false);
 
             ////////////////////////////////////////////////////////////
             /// \brief Change the color of a pixel
@@ -186,7 +186,7 @@ namespace odfaeg {
             /// \see getPixel
             ///
             ////////////////////////////////////////////////////////////
-            void setPixel(unsigned int x, unsigned int y, const Color& color);
+            void setPixel(unsigned int x, unsigned int y, const entity::Color& color);
 
             ////////////////////////////////////////////////////////////
             /// \brief Get the color of a pixel
@@ -203,7 +203,7 @@ namespace odfaeg {
             /// \see setPixel
             ///
             ////////////////////////////////////////////////////////////
-            Color getPixel(unsigned int x, unsigned int y) const;
+            entity::Color getPixel(unsigned int x, unsigned int y) const;
 
 
             ////////////////////////////////////////////////////////////

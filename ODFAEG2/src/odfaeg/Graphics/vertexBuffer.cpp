@@ -2,8 +2,7 @@ module;
 #include <vector>
 #include <vulkan/vulkan.hpp>
 #include <iostream>
-#include <meshoptimizer.h>
-#include "odfaeg/config.hpp"
+#include <odfaeg/config.hpp>
 #include "vk_mem_alloc.h"
 //import odfaeg.graphic.vertexBuffer;
 module odfaeg.graphic.vertexBuffer;
@@ -13,7 +12,7 @@ import odfaeg.graphic.renderTarget;
 import odfaeg.graphic.renderStates;
 namespace odfaeg {
     namespace graphic {        
-        VertexBuffer::VertexBuffer(Device& device, unsigned int nbBuffers)  : /*Drawable(), */ device(device), nbBuffers(nbBuffers), m_primitiveType(Points),
+        VertexBuffer::VertexBuffer(Device& device, unsigned int nbBuffers)  : /*Drawable(), */ device(device), nbBuffers(nbBuffers), m_primitiveType(entity::PrimitiveType::Points),
             needToUpdateVertexBuffer(nbBuffers, true), needToUpdateIndexBuffer(nbBuffers, true),
             maxVerticesSize(nbBuffers, 0), maxIndexSize(nbBuffers, 0),
             commandPool(device) {
@@ -34,7 +33,7 @@ namespace odfaeg {
             commandPool.create(queueFamilyIndices.graphicsFamily.value());
             commandPool.createCommandBuffers(true, nbBuffers);*/
         }
-        VertexBuffer::VertexBuffer(Device& device, PrimitiveType primitiveType, unsigned int nbBuffers) : device(device), m_primitiveType(primitiveType), nbBuffers(nbBuffers),
+        VertexBuffer::VertexBuffer(Device& device, entity::PrimitiveType primitiveType, unsigned int nbBuffers) : device(device), m_primitiveType(primitiveType), nbBuffers(nbBuffers),
             needToUpdateVertexBuffer(nbBuffers, true), needToUpdateIndexBuffer(nbBuffers, true),
             maxVerticesSize(nbBuffers, 0), maxIndexSize(nbBuffers, 0),
             commandPool(device) {
@@ -162,7 +161,7 @@ namespace odfaeg {
                 return physic::BoundingBox();
             }
         }
-        physic::BoundingBox VertexBuffer::getGlobalBounds(entity::TransformMatrix& tm)
+        physic::BoundingBox VertexBuffer::getGlobalBounds(math::TransformMatrix& tm)
         {
             if (!m_vertices.empty())
             {
@@ -227,7 +226,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < nbBuffers; i++)
                 needToUpdateIndexBuffer[i] = true;
         }
-        void VertexBuffer::append(const Vertex& vertex) {
+        void VertexBuffer::append(const entity::Vertex& vertex) {
             m_vertices.push_back(vertex);
             for (unsigned int i = 0; i < nbBuffers; i++)
                 needToUpdateVertexBuffer[i] = true;
@@ -251,14 +250,14 @@ namespace odfaeg {
             return indices.size();
         }        
         ////////////////////////////////////////////////////////////
-        void VertexBuffer::setPrimitiveType(PrimitiveType type)
+        void VertexBuffer::setPrimitiveType(entity::PrimitiveType type)
         {
             m_primitiveType = type;
         }
 
 
         ////////////////////////////////////////////////////////////
-        PrimitiveType VertexBuffer::getPrimitiveType() const
+        entity::PrimitiveType VertexBuffer::getPrimitiveType() const
         {
             return m_primitiveType;
         }
@@ -266,7 +265,7 @@ namespace odfaeg {
             //commandPool.beginRecordCommandBuffer(currentFrame);
             //std::cout<<"primitive type : "<<m_primitiveType<<std::endl;
 
-            VkDeviceSize bufferSize = (m_vertices .size() == 0) ? sizeof(Vertex) : sizeof(Vertex) * m_vertices.size();
+            VkDeviceSize bufferSize = (m_vertices .size() == 0) ? sizeof(entity::Vertex) : sizeof(entity::Vertex) * m_vertices.size();
             //std::cout<<"buffer size : "<<sizeof(Vertex)<<","<<m_vertices.size()<<std::endl;
             if (needToUpdateVertexBuffer[currentFrame]) {
                 if (bufferSize > maxVerticesSize[currentFrame]) {
@@ -339,7 +338,7 @@ namespace odfaeg {
             }
             //std::cout<<"primitive type : "<<m_primitiveType<<std::endl;
             commandPool.beginRecordCommandBuffer(currentFrame);
-            VkDeviceSize bufferSize = (m_vertices.size() == 0) ? sizeof(Vertex) : sizeof(Vertex) * m_vertices.size();
+            VkDeviceSize bufferSize = (m_vertices.size() == 0) ? sizeof(entity::Vertex) : sizeof(entity::Vertex) * m_vertices.size();
             //std::cout<<"buffer size : "<<bufferSize<<std::endl;
             if (needToUpdateVertexBuffer[currentFrame]) {
                 if (bufferSize > maxVerticesSize[currentFrame]) {
@@ -402,41 +401,8 @@ namespace odfaeg {
                 throw std::runtime_error("�chec de l'envoi d'un command buffer!");
             }
             vkDeviceWaitIdle(device.getDevice());
-        }
-        void VertexBuffer::updateLods() {
-            float ratios[] = {1.0f, 0.5f, 0.25f, 0.12f, 0.06f};
-            std::vector<uint32_t> current = indices; // copie
-            indices.clear();
-            unsigned int level = 0;
-
-            for (float r : ratios)
-            {
-                std::vector<unsigned int> lod(current.size());
-                size_t count = meshopt_simplify(
-                lod.data(),
-                current.data(),
-                current.size(),
-                reinterpret_cast<const float*>(m_vertices.data()),
-                m_vertices.size(),
-                sizeof(Vertex),
-                r,
-                1e-2f);
-                lod.resize(count);
-                LODLevel lodLevel;
-                lodLevel.indexOffset = indices.size();
-                lodLevel.indexCount = lod.size();
-                lods[level] = lodLevel;
-                indices.insert(indices.end(), lod.begin(), lod.end());
-                current = lod;
-                /*std::cout<<"indices : "<<indices.size()<<std::endl;
-                std::cout<<"level : "<<lods[level].indexOffset<<","<<lods[level].indexCount<<std::endl;*/
-                level++;
-            }
-        }
-        std::array<VertexBuffer::LODLevel, 5> VertexBuffer::getLODs() const {
-            return lods;
-        }
-        Vertex& VertexBuffer::operator [](unsigned int index)
+        }        
+        entity::Vertex& VertexBuffer::operator [](unsigned int index)
         {
             for (unsigned int i = 0; i < nbBuffers; i++)
                 needToUpdateVertexBuffer[i] = true;

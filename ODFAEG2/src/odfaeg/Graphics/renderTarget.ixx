@@ -9,18 +9,18 @@ module;
 export module odfaeg.graphic.renderTarget;
 import odfaeg.math.vec;
 import odfaeg.math.matrix;
-import odfaeg.graphic.primitiveType;
+import odfaeg.entity.primitiveType;
 import odfaeg.graphic.device;
 import odfaeg.graphic.shader;
 import odfaeg.graphic.renderStates;
 import odfaeg.graphic.blendMode;
-import odfaeg.graphic.color;
+import odfaeg.entity.color;
 import odfaeg.graphic.commandPool;
 import odfaeg.graphic.buffer;
 import odfaeg.graphic.vertexBuffer;
 import odfaeg.graphic.descriptor;
 import odfaeg.graphic.pipeline;
-import odfaeg.graphic.gameObject;
+import odfaeg.graphic.mesh;
 import odfaeg.graphic.fence;
 import odfaeg.graphic.semaphore;
 import odfaeg.graphic.camera;
@@ -29,11 +29,10 @@ import odfaeg.graphic.frameBuffer;
 import odfaeg.graphic.texture;
 import odfaeg.graphic.particleSystemUpdater;
 namespace odfaeg {
-	namespace graphic {
-		
+	namespace graphic {		
 		export class RenderTarget {
-		static std::vector<GameObject*>& getGameObjects() {
-			static std::vector<GameObject*> gameObjects;
+		static std::vector<Mesh*>& getGameObjects() {
+			static std::vector<Mesh*> gameObjects;
 			return gameObjects;
 		}
 		public:
@@ -175,8 +174,8 @@ namespace odfaeg {
 			};
 			inline static std::mutex mtx = std::mutex();
 			inline static std::condition_variable cv = std::condition_variable();	
-			void addGameObject(GameObject* objet);
-			void removeGameObject(GameObject* object);
+			void addGameObject(Mesh* objet);
+			void removeGameObject(Mesh* object);
 			void resetVertexBufferDatas();
 			void createDescriptorAndPipelines();
 			void setTypesToRender(std::string expression, unsigned int currentFrame);
@@ -185,8 +184,8 @@ namespace odfaeg {
 			void draw(D& drawable, RenderStates states=RenderStates::Default);
 			void draw(VertexBuffer& vb, RenderStates states=RenderStates::Default);
 			void draw(CommandPool& commandPool, VertexBuffer& vb, RenderStates states=RenderStates::Default);
-			void draw(PrimitiveType primitiveType, RenderStates states = RenderStates::Default);
-			void draw(CommandPool& commandPool, PrimitiveType primitiveType, RenderStates states);
+			void draw(entity::PrimitiveType primitiveType, RenderStates states = RenderStates::Default);
+			void draw(CommandPool& commandPool, entity::PrimitiveType primitiveType, RenderStates states);
 			void setCamera(Camera camera);
 			Camera& getCamera();
 			Camera& getDefaultCamera();
@@ -205,7 +204,7 @@ namespace odfaeg {
 			virtual void endRenderPass() = 0;
 			virtual void beginRendering(bool secondaryCommandBuffers=false) = 0;
 			virtual void endRendering() = 0;
-			virtual unsigned int getSwapchainImagesCount() = 0;
+			virtual std::uint32_t getSwapchainImagesCount() = 0;
 			void beginRecordCommandBuffer();
 			void endRecordCommandBuffer();
 			virtual uint32_t getCurrentFrame() = 0;
@@ -213,7 +212,7 @@ namespace odfaeg {
 			virtual std::vector<FrameBuffer>& getFrameBuffers(unsigned int id=0) = 0;
 			virtual VkFormat& getImageFormat() = 0;
 			virtual VkExtent2D getExtents() = 0;
-			virtual void clear(const Color& color) = 0;
+			virtual void clear(const entity::Color& color) = 0;
 			virtual uint32_t getImageIndex() = 0;
 			virtual math::Vector2u getSize() const = 0;
 			virtual VkSurfaceKHR getSurface() = 0;
@@ -285,9 +284,10 @@ namespace odfaeg {
 			inline static const unsigned int MAX_VERTS = 255u;
 			inline static const unsigned int MAX_PRIMS = 85u;
 			inline static unsigned int totalMeshlets = 0;
+			inline static unsigned int totalSubMeshes = 0;
 			inline static bool needToUpdateBuffers = false;
 			Camera m_defaultCamera, m_camera;
-			std::vector<GameObject*>& gameObjects;
+			std::vector<Mesh*>& gameObjects;
 			inline static unsigned int currentSubmeshesOffset = 0;
 			inline static unsigned int currentModelDataOffset = 0;
 			inline static std::array<unsigned int, NB_PRIMITIVE_TYPES> currentVertexOffset = {};

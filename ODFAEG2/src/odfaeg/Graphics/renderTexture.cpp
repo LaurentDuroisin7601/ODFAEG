@@ -175,7 +175,7 @@ namespace odfaeg {
                 }
             }
         }
-        void RenderTexture::clear(const Color& clearColor) {
+        void RenderTexture::clear(const entity::Color& clearColor) {
             firstSubmit = true;
             beginRecordCommandBuffer();
             if (!isDepthOnly()) {

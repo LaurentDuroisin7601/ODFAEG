@@ -4,7 +4,7 @@ module;
 #include <atomic>
 #include <condition_variable>
 export module odfaeg.graphic.morphAnimUpdater;
-import odfaeg.graphic.morphAnim;
+import odfaeg.entity.morphAnim;
 import odfaeg.graphic.buffer;
 import odfaeg.graphic.vertexBuffer;
 import odfaeg.graphic.shader;
@@ -52,7 +52,7 @@ namespace odfaeg {
             };
             static MorphAnimUpdater& instance(std::condition_variable& cv, std::mutex& mtx);
             void setReady(bool r);
-            void addMorphAnim(MorphAnim* moprhAnim);
+            void addMorphAnim(entity::MorphAnim* moprhAnim);
             void setBuffersReady(bool r);
             bool areBuffersReady();
             void setSubmitReady(bool r);
@@ -64,7 +64,7 @@ namespace odfaeg {
             MorphAnimUpdater(std::condition_variable& cv, std::mutex& mtx);
             void updateBuffers();
             void updateDescriptorSets();
-            std::vector<MorphAnim*> anims;
+            std::vector<entity::MorphAnim*> anims;
             Buffer staggingMorphAnims;
             Buffer staggingFramesAnims;
             Buffer staggingSubmeshesFramesAnims;

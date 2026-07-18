@@ -5,8 +5,8 @@ module;
 #include <condition_variable>
 #include <mutex>
 export module odfaeg.graphic.particleSystemUpdater;
-import odfaeg.graphic.particleSystem;
-import odfaeg.graphic.particle;
+import odfaeg.entity.particleSystem;
+import odfaeg.entity.particle;
 import odfaeg.core.timer;
 import odfaeg.graphic.buffer;
 import odfaeg.graphic.pipeline;
@@ -16,14 +16,14 @@ import odfaeg.core.timer;
 import odfaeg.graphic.vertexBuffer;
 import odfaeg.graphic.commandPool;
 import odfaeg.graphic.shader;
-import odfaeg.graphic.vertex;
-import odfaeg.graphic.emittors;
+import odfaeg.entity.vertex;
+import odfaeg.entity.emittors;
 import odfaeg.graphic.camera;
 import odfaeg.math.vec;
 namespace odfaeg {
     namespace graphic {
         export class ParticleSystemUpdater : public core::Timer {
-        typedef std::array<Vertex, 4> Quad;
+        typedef std::array<entity::Vertex, 4> Quad;
         struct alignas(16) AABB {
             alignas(16) math::Vec3f center; float _pad0; // vec3 + padding
             alignas(16) math::Vec3f size;   float _pad1; // vec3 + padding
@@ -50,7 +50,7 @@ namespace odfaeg {
             void onUpdate();
             void setCamera(Camera camera);
             void setReady(bool r);
-            void addParticleSystem(ParticleSystem* particleSystem);
+            void addParticleSystem(entity::ParticleSystem* particleSystem);
             void setBuffersReady(bool r);
             bool areBuffersReady();
             void setSubmitReady(bool r);
@@ -60,7 +60,7 @@ namespace odfaeg {
             ParticleSystemUpdater(std::condition_variable& cv, std::mutex& mtx);
             void updateDescriptorSets();
             void updateBuffers();
-            std::vector<ParticleSystem*> particlesSystems;
+            std::vector<entity::ParticleSystem*> particlesSystems;
             std::deque<Buffer> particlesSystemsBuffer;
             Buffer particlesSystemsStaggingBuffer;
             Buffer aliveCountStaggingBuffer;
@@ -80,7 +80,7 @@ namespace odfaeg {
             unsigned int maxParticles;
             Camera camera;
             AABB cullingInfo;
-            std::vector<UniversalEmittor> emittors;
+            std::vector<entity::UniversalEmittor> emittors;
         };
     }
 }

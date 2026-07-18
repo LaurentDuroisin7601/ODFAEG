@@ -11,8 +11,8 @@ module odfaeg.graphic.morphAnimUpdater;
 import odfaeg.graphic.descriptor;
 import odfaeg.graphic.gpuContext;
 import odfaeg.graphic.device;
-import odfaeg.graphic.gameObject;
-import odfaeg.graphic.primitiveType;
+import odfaeg.entity.gameObject;
+import odfaeg.entity.primitiveType;
 namespace odfaeg {
     namespace graphic {
         MorphAnimUpdater& MorphAnimUpdater::instance(std::condition_variable& cv, std::mutex& mtx) {
@@ -91,7 +91,7 @@ namespace odfaeg {
             start();
             //cv.notify_one();
         }
-        void MorphAnimUpdater::addMorphAnim(MorphAnim* morphAnim) {
+        void MorphAnimUpdater::addMorphAnim(entity::MorphAnim* morphAnim) {
             anims.push_back(morphAnim);
             needToUpdateBuffers = true;
         }
@@ -143,16 +143,16 @@ namespace odfaeg {
                         for (unsigned int k = 0; k < anims[i]->getFrames()[j]->getSubMeshesCount(); k++) {
                             SubMeshData subMeshData;
                             subMeshData.id = currentFrameSubmeshOffset;
-                            subMeshData.materialId = anims[i]->getFrames()[j]->getSubMeshes()[k].getMaterial().getId();
-                            subMeshData.primitiveType = anims[i]->getFrames()[j]->getSubMeshes()[k].getVertexBuffer().getPrimitiveType();
+                            subMeshData.materialId = anims[i]->getFrames()[j]->getSubMeshes()[k].materialId;
+                            subMeshData.primitiveType = anims[i]->getFrames()[j]->getSubMeshes()[k].getVertexArray().getPrimitiveType();
                             //std::cout<<"material id = "<<subMeshData.materialId<<std::endl;
                             subMeshData.vertexOffset = currentVertexOffset;
-                            subMeshData.nbVertices = anims[i]->getFrames()[j]->getSubMeshes()[k].getVertexBuffer().getVertexCount();
+                            subMeshData.nbVertices = anims[i]->getFrames()[j]->getSubMeshes()[k].getVertexArray().getVertexCount();
                             //verticesFramesAnims[anims[i]->getFrames()[j]->getSubMeshes()[k].getVertexBuffer().getPrimitiveType()].setPrimitiveType(anims[i]->getFrames()[j]->getSubMeshes()[k].getVertexBuffer().getPrimitiveType());
                             unsigned int vertexBase = currentVertexOffset;
-                            for (unsigned int l = 0; l < anims[i]->getFrames()[j]->getSubMeshes()[k].getVertexBuffer().getVertexCount(); l++) {
-                                verticesFramesAnims[anims[i]->getFrames()[j]->getSubMeshes()[k].getVertexBuffer().getPrimitiveType()].append(anims[i]->getFrames()[j]->getSubMeshes()[k].getVertexBuffer()[l]);
-                                verticesFramesAnims[anims[i]->getFrames()[j]->getSubMeshes()[k].getVertexBuffer().getPrimitiveType()][vertexBase+l].drawableDataId = currentFrameSubmeshOffset;
+                            for (unsigned int l = 0; l < anims[i]->getFrames()[j]->getSubMeshes()[k].getVertexArray().getVertexCount(); l++) {
+                                verticesFramesAnims[anims[i]->getFrames()[j]->getSubMeshes()[k].getVertexArray().getPrimitiveType()].append(anims[i]->getFrames()[j]->getSubMeshes()[k].getVertexArray()[l]);
+                                verticesFramesAnims[anims[i]->getFrames()[j]->getSubMeshes()[k].getVertexArray().getPrimitiveType()][vertexBase+l].drawableDataId = currentFrameSubmeshOffset;
                                 currentVertexOffset++;
                             }
                             //std::cout<<"vertex offset : "<<subMeshData.vertexOffset<<std::endl;
@@ -163,7 +163,7 @@ namespace odfaeg {
                     currentFramesOffset += anims[i]->getFrames().size();
                 }
                 for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
-                    verticesFramesAnims[i].setPrimitiveType(static_cast<PrimitiveType>(i));
+                    verticesFramesAnims[i].setPrimitiveType(static_cast<entity::PrimitiveType>(i));
                     verticesFramesAnims[i].update(commandPool.getHandle(0));
                 }
                 staggingMorphAnims.create(sizeof(MorphAnimData) * morphAnimsData.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
@@ -249,7 +249,7 @@ namespace odfaeg {
                         1, &buf,
                         0, nullptr
                     );
-                    buf.buffer = GPUContext::instance().getSharedVertexBuffer(VERTEX_BUFFER)[Triangles].getVertexBuffer(0).getHandle();
+                    buf.buffer = GPUContext::instance().getSharedVertexBuffer(VERTEX_BUFFER)[entity::PrimitiveType::Triangles].getVertexBuffer(0).getHandle();
                     vkCmdPipelineBarrier(
                         commandPool.getHandle(0),
                         VK_PIPELINE_STAGE_TRANSFER_BIT,

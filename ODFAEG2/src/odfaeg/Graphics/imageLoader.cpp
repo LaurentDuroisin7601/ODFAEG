@@ -53,7 +53,7 @@ namespace odfaeg{
 
 
         ////////////////////////////////////////////////////////////
-        void ImageLoader::create(unsigned int width, unsigned int height, const Color& color)
+        void ImageLoader::create(unsigned int width, unsigned int height, const entity::Color& color)
         {
             if (width && height)
             {
@@ -455,7 +455,7 @@ namespace odfaeg{
 
 
         ////////////////////////////////////////////////////////////
-        void ImageLoader::createMaskFromColor(const Color& color, std::uint8_t alpha)
+        void ImageLoader::createMaskFromColor(const entity::Color& color, std::uint8_t alpha)
         {
             // Make sure that the image is not empty
             if (!m_pixels[0].empty())
@@ -474,14 +474,14 @@ namespace odfaeg{
 
 
         ////////////////////////////////////////////////////////////
-        void ImageLoader::copy(const ImageLoader& source, unsigned int destX, unsigned int destY, const IntRect& sourceRect, bool applyAlpha)
+        void ImageLoader::copy(const ImageLoader& source, unsigned int destX, unsigned int destY, const entity::IntRect& sourceRect, bool applyAlpha)
         {
             // Make sure that both images are valid
             if ((source.m_sizes[0].x() == 0) || (source.m_sizes[0].y() == 0) || (m_sizes[0].x() == 0) || (m_sizes[0].y() == 0))
                 return;
 
             // Adjust the source rectangle
-            IntRect srcRect = sourceRect;
+            entity::IntRect srcRect = sourceRect;
             if (srcRect.width == 0 || (srcRect.height == 0))
             {
                 srcRect.left = 0;
@@ -554,7 +554,7 @@ namespace odfaeg{
 
 
         ////////////////////////////////////////////////////////////
-        void ImageLoader::setPixel(unsigned int x, unsigned int y, const Color& color)
+        void ImageLoader::setPixel(unsigned int x, unsigned int y, const entity::Color& color)
         {
             std::uint8_t* pixel = &m_pixels[0][(x + y * m_sizes[0].x()) * 4];
             *pixel++ = color.r;
@@ -563,10 +563,10 @@ namespace odfaeg{
             *pixel++ = color.a;
         }
         ////////////////////////////////////////////////////////////
-        Color ImageLoader::getPixel(unsigned int x, unsigned int y) const
+        entity::Color ImageLoader::getPixel(unsigned int x, unsigned int y) const
         {
             const std::uint8_t* pixel = &m_pixels[0][(x + y * m_sizes[0].x()) * 4];
-            return Color(pixel[0], pixel[1], pixel[2], pixel[3]);
+            return entity::Color(pixel[0], pixel[1], pixel[2], pixel[3]);
         }
 
 

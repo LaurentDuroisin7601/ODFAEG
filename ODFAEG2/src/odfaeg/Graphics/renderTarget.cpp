@@ -15,7 +15,7 @@ import odfaeg.entity.entity;
 import odfaeg.graphic.viewportMatrix;
 import odfaeg.math.vec;
 import odfaeg.physic.boundingBox;
-import odfaeg.graphic.vertex;
+import odfaeg.entity.vertex;
 import odfaeg.graphic.texture;
 import odfaeg.graphic.gpuContext;
 import odfaeg.graphic.particleSystemUpdater;
@@ -23,6 +23,8 @@ import odfaeg.graphic.morphAnimUpdater;
 import odfaeg.graphic.boneAnimUpdater;
 import odfaeg.graphic.renderStates;
 import odfaeg.graphic.blendMode;
+import odfaeg.entity.gameObject;
+import odfaeg.entity.vertexArray;
 namespace odfaeg {
 	namespace graphic {
 
@@ -48,19 +50,22 @@ namespace odfaeg {
 		unsigned int RenderTarget::getNbRenderTarget() {
 			return registeredRenderTargets.size();
 		}
-		void RenderTarget::addGameObject(GameObject* gameObject) {
-			gameObjects.push_back(gameObject);
-			/*if (gameObject->getChildren().size() > 0)
-				std::cout<<"children = "<<gameObject->getChildren().size()<<std::endl;*/
+		void RenderTarget::addGameObject(Mesh* gameObject) {
 			for (unsigned int i = 0; i < gameObject->getChildren().size(); i++) {
 				addGameObject(gameObject->getChildren()[i]);
 			}
+			gameObjects.push_back(gameObject);
+			/*if (gameObject->getChildren().size() > 0)
+				std::cout<<"children = "<<gameObject->getChildren().size()<<std::endl;*/
+			/*for (unsigned int i = 0; i < gameObject->getGameObject()->getChildren().size(); i++) {
+				addGameObject(gameObject->getGameObject()->getChildren()[i]);
+			}*/
 			needToUpdateBuffers = true;
 			/*ParticleSystemUpdater::instance().setReady(false);
 			MorphAnimUpdater::instance().setReady(false);*/
 		}
-		void RenderTarget::removeGameObject(GameObject* gameObject) {
-			std::vector<GameObject*>::iterator it;
+		void RenderTarget::removeGameObject(Mesh* gameObject) {
+			std::vector<Mesh*>::iterator it;
 			for (it = gameObjects.begin(); it != gameObjects.end();) {
 				if (*it == gameObject) {
 					it = gameObjects.erase(it);
@@ -185,13 +190,13 @@ namespace odfaeg {
 			if (subMeshes.empty()) {
 				for (unsigned int i = 0; i < 1; i++) {
 					subMeshes.emplace_back(device);
-					subMeshes.back().create(sizeof(SubMesh), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+					subMeshes.back().create(sizeof(entity::SubMesh), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 			}
 			if (lodLevel.empty()) {
 				for (unsigned int i = 0; i < 1; i++) {
 					lodLevel.emplace_back(device);
-					lodLevel.back().create(sizeof(VertexBuffer::LODLevel) * 5, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+					lodLevel.back().create(sizeof(entity::VertexArray::LODLevel) * 5, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 			}
 			//std::cout<<"load level ok"<<std::endl;
@@ -204,7 +209,7 @@ namespace odfaeg {
 			if (vertices.empty()) {
 				for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
 					vertices.emplace_back(device, 1);
-					vertices.back().setPrimitiveType(static_cast<PrimitiveType>(i));
+					vertices.back().setPrimitiveType(static_cast<entity::PrimitiveType>(i));
 				}
 			}
 			if (materialDatas.empty()) {
@@ -220,7 +225,7 @@ namespace odfaeg {
 				std::cin>>i;*/
 				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 					outputMeshes.emplace_back(device);
-					outputMeshes.back().create(sizeof(SubMesh), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+					outputMeshes.back().create(sizeof(entity::SubMesh), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 				for (unsigned int i = 0; i < 1; i++) {
 					inputMeshlets.emplace_back(device);
@@ -242,13 +247,9 @@ namespace odfaeg {
 				/*std::cout<<"reallocate output buffers "<<std::endl;
 				int i;
 				std::cin>>i;*/
-				unsigned int totalSubmeshes = 0;
-				for (unsigned int i = 0; i < gameObjects.size(); i++) {
-					totalSubmeshes += gameObjects[i]->getSubMeshesCount();
-				}				
 				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 					outputMeshes.emplace_back(device);
-					outputMeshes.back().create(sizeof(SubMesh)*totalMeshlets, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+					outputMeshes.back().create(sizeof(entity::SubMesh)*totalMeshlets, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 				for (unsigned int i = 0; i < 1; i++) {
 					inputMeshlets.emplace_back(device);
@@ -256,15 +257,15 @@ namespace odfaeg {
 				}
 				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 					outputObjectDatas.emplace_back(device);
-					outputObjectDatas.back().create(sizeof(ModelData)*totalSubmeshes, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+					outputObjectDatas.back().create(sizeof(ModelData)*totalSubMeshes, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 					outputModelDatas.emplace_back(device);
-					outputModelDatas.back().create(sizeof(ModelData)*totalSubmeshes, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+					outputModelDatas.back().create(sizeof(ModelData)*totalSubMeshes, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 					outputMaterialDatas.emplace_back(device);
-					outputMaterialDatas.back().create(sizeof(Material)*totalSubmeshes, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+					outputMaterialDatas.back().create(sizeof(Material)*totalSubMeshes, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 			}
 			for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
@@ -327,7 +328,7 @@ namespace odfaeg {
 			for (unsigned int i = 0; i < 1; i++) {
 				for (unsigned int j = 0; j < NB_PRIMITIVE_TYPES; j++) {
 					//std::cout<<"update vertices"<<std::endl;
-					vertices[j].setPrimitiveType(static_cast<PrimitiveType>(j));
+					vertices[j].setPrimitiveType(static_cast<entity::PrimitiveType>(j));
 					vertices[j].update( i);
 				}
 			}			
@@ -405,17 +406,17 @@ namespace odfaeg {
 				for (unsigned int i = 0; i < materials.size(); i++) {
 					MaterialData material;
 					//std::cout<<"material : "<<materials[i]<<std::endl;
-					material.diffuseTextureIndex = (materials[i]->getTexture(Material::DIFFUSE) != nullptr) ? materials[i]->getTexture(Material::DIFFUSE)->getId() : 0;
-					material.specularTextureIndex = (materials[i]->getTexture(Material::SPECULAR) != nullptr) ? materials[i]->getTexture(Material::SPECULAR)->getId() : 0;
-					material.normalTextureIndex = (materials[i]->getTexture(Material::NORMAL) != nullptr) ? materials[i]->getTexture(Material::NORMAL)->getId() : 0;
-					material.metalnessTextureIndex = (materials[i]->getTexture(Material::METALNESS) != nullptr) ? materials[i]->getTexture(Material::METALNESS)->getId() : 0;
-					material.roughnessTextureIndex = (materials[i]->getTexture(Material::ROUGHNESS) != nullptr) ? materials[i]->getTexture(Material::ROUGHNESS)->getId() : 0;
-					material.aoTextureIndex = (materials[i]->getTexture(Material::AO) != nullptr) ? materials[i]->getTexture(Material::AO)->getId() : 0;
-					material.emissiveTextureIndex = (materials[i]->getTexture(Material::EMISSIVE) != nullptr) ? materials[i]->getTexture(Material::EMISSIVE)->getId() : 0;
+					material.diffuseTextureIndex = (materials[i]->getTexture(entity::SubMesh::DIFFUSE) != nullptr) ? materials[i]->getTexture(entity::SubMesh::DIFFUSE)->getId() : 0;
+					material.specularTextureIndex = (materials[i]->getTexture(entity::SubMesh::SPECULAR) != nullptr) ? materials[i]->getTexture(entity::SubMesh::SPECULAR)->getId() : 0;
+					material.normalTextureIndex = (materials[i]->getTexture(entity::SubMesh::NORMAL) != nullptr) ? materials[i]->getTexture(entity::SubMesh::NORMAL)->getId() : 0;
+					material.metalnessTextureIndex = (materials[i]->getTexture(entity::SubMesh::METALNESS) != nullptr) ? materials[i]->getTexture(entity::SubMesh::METALNESS)->getId() : 0;
+					material.roughnessTextureIndex = (materials[i]->getTexture(entity::SubMesh::ROUGHNESS) != nullptr) ? materials[i]->getTexture(entity::SubMesh::ROUGHNESS)->getId() : 0;
+					material.aoTextureIndex = (materials[i]->getTexture(entity::SubMesh::AO) != nullptr) ? materials[i]->getTexture(entity::SubMesh::AO)->getId() : 0;
+					material.emissiveTextureIndex = (materials[i]->getTexture(entity::SubMesh::EMISSIVE) != nullptr) ? materials[i]->getTexture(entity::SubMesh::EMISSIVE)->getId() : 0;
 					material.uvScale = /*(materials[i]->getTexture(Material::DIFFUSE) != nullptr) ? math::Vec2f(1.f / materials[i]->getTexture(Material::DIFFUSE)->getSize().x(), 1.f / materials[i]->getTexture(Material::DIFFUSE)->getSize().y()) :*/ math::Vec2f(1.f, 1.f);
 					material.uvOffset = math::Vec2f(0.f, 0.f);
 					material.materialType = materials[i]->getType();
-					material.nbBuffers = (materials[i]->getTexture(Material::DIFFUSE) != nullptr) ? materials[i]->getTexture(Material::DIFFUSE)->getNbBuffers() : 0;
+					material.nbBuffers = (materials[i]->getTexture(entity::SubMesh::DIFFUSE) != nullptr) ? materials[i]->getTexture(entity::SubMesh::DIFFUSE)->getNbBuffers() : 0;
 					material.vertsInstanceSet  = 0;
 					material.nbVertices = 0;
 					material.nbIndexes = 0;
@@ -431,31 +432,30 @@ namespace odfaeg {
 				std::vector<Meshlet> meshletDatas;
 				for (unsigned int i = 0; i < gameObjects.size(); i++) {
 					Object object;
-					physic::BoundingBox globalBounds = gameObjects[i]->getGlobalBounds();
-					gameObjects[i]->subMeshOffset = currentSubmeshesOffset;
+					physic::BoundingBox globalBounds = gameObjects[i]->getGameObject()->getGlobalBounds();
+					gameObjects[i]->getGameObject()->subMeshOffset = currentSubmeshesOffset;
 					AABB aabb;
 					aabb.center = globalBounds.getCenter();
 					aabb.size = globalBounds.getSize();
 					object.globalBounds = aabb;
-					object.type = gameObjects[i]->getTypeInt();
+					object.type = gameObjects[i]->getGameObject()->getTypeInt();
 					object.subMeshesOffset = currentSubmeshesOffset;
 					object.modelDataOffset = currentModelDataOffset;
-					object.nbSubMeshes = gameObjects[i]->getSubMeshesCount();
+					object.nbSubMeshes = gameObjects[i]->getGameObject()->getSubMeshesCount();
 					objectDatas.push_back(object);
 					ModelData modelData;
-					modelData.modelMatrix = gameObjects[i]->getTransform().getMatrix().transpose();
+					modelData.modelMatrix = gameObjects[i]->getGameObject()->getTransform().getMatrix().transpose();
 					//std::cout<<"model matrix : "<<gameObjects[i]->getTransform().getMatrix()<<std::endl;
 					modelData.shadowProjMatrix = math::Matrix4f();
 					modelData.borderMatrices = math::Matrix4f();
 					modelDatas.push_back(modelData);
 					currentModelDataOffset++;
-					for (unsigned int j = 0; j < gameObjects[i]->getSubMeshesCount(); j++) {
+					for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
 						//std::cout<<"add subMesh : "<<j<<std::endl;
-						SubMesh& subMesh = gameObjects[i]->getSubMeshes()[j];
-						totalMeshlets += (subMesh.getVertexBuffer().getVertexCount() / 255) + 1;
-						gameObjects[i]->getSubMeshes()[j].verticesOffset = currentVertexOffset[subMesh.getVertexBuffer().getPrimitiveType()];
+						entity::SubMesh& subMesh = gameObjects[i]->getGameObject()->getSubMeshes()[j];						
+						gameObjects[i]->getGameObject()->getSubMeshes()[j].verticesOffset = currentVertexOffset[subMesh.getVertexArray().getPrimitiveType()];
 						SubMeshData subMeshData;
-						physic::BoundingBox subMeshGlobalBounds = subMesh.getVertexBuffer().getGlobalBounds(gameObjects[i]->getTransform());
+						physic::BoundingBox subMeshGlobalBounds = subMesh.getVertexArray().getGlobalBounds(gameObjects[i]->getGameObject()->getTransform());
 						/*if (!subMeshGlobalBounds.intersects(m_camera.getViewVolume())) {
 							std::cout<<"out of furstrum"<<std::endl;
 						}*/
@@ -465,13 +465,13 @@ namespace odfaeg {
 						subMeshAABB.center = subMeshGlobalBounds.getCenter();
 						subMeshAABB.size = subMeshGlobalBounds.getSize();
 						subMeshData.globalBounds = subMeshAABB;
-						unsigned int primitiveType = subMesh.getVertexBuffer().getPrimitiveType();
+						unsigned int primitiveType = subMesh.getVertexArray().getPrimitiveType();
 						subMeshData.primitiveType = primitiveType;
 						subMeshData.vertexOffset = currentVertexOffset[primitiveType];
 						subMeshData.indexOffset = currentIndexOffset[primitiveType];
-						subMeshData.materialId = subMesh.getMaterial().getId();
-						subMeshData.nbVertices = subMesh.getVertexBuffer().getVertexCount();
-						subMeshData.nbIndexes = subMesh.getVertexBuffer().getIndexCount();
+						subMeshData.materialId = gameObjects[i]->getMaterials()[j]->getId();
+						subMeshData.nbVertices = subMesh.getVertexArray().getVertexCount();
+						subMeshData.nbIndexes = subMesh.getVertexArray().getIndexCount();
 						subMeshData.objectId = i;
 						//std::cout<<"vertices count : "<<subMesh.getVertexBuffer().getVertexCount()<<std::endl;
 						/*int pause;
@@ -481,25 +481,25 @@ namespace odfaeg {
 						/*std::cout<<"total vertex count : "<<vertices[primitiveType].getVertexCount()<<std::endl;
 						std::cout<<"total index count : "<<vertices[primitiveType].getIndexCount()<<std::endl;*/
 						//std::cout<<"vertx offset, texture id : "<<currentVertexOffset[primitiveType]<<","<<subMeshData.materialId<<std::endl;
-						subMesh.getVertexBuffer().updateLods();
+						subMesh.getVertexArray().updateLods();
 						//std::cout<<"vertex offset : "<<currentVertexOffset[primitiveType]<<std::endl;
 						unsigned int baseVertex = currentVertexOffset[primitiveType];
-						for (unsigned int v = 0; v < subMesh.getVertexBuffer().getVertexCount(); v++) {
+						for (unsigned int v = 0; v < subMesh.getVertexArray().getVertexCount(); v++) {
 							//std::cout<<"add vertex : "<<subMesh.getVertexBuffer()[v].position<<std::endl;
-							vertices[primitiveType].append(subMesh.getVertexBuffer()[v]);
+							vertices[primitiveType].append(subMesh.getVertexArray()[v]);
 							vertices[primitiveType][baseVertex+v].drawableDataId = currentSubmeshesOffset;
 							//std::cout<<"drawable data id : "<<vertices[primitiveType][v].drawableDataId<<std::endl;
 							currentVertexOffset[primitiveType]++;
 						}
-						for (unsigned int v = 0; v < subMesh.getVertexBuffer().getIndexCount(); v++) {
+						for (unsigned int v = 0; v < subMesh.getVertexArray().getIndexCount(); v++) {
 							//std::cout<<"add index"<<std::endl;
-							vertices[primitiveType].addIndex( subMesh.getVertexBuffer().getIndex(v));
+							vertices[primitiveType].addIndex( subMesh.getVertexArray().getIndex(v));
 							currentIndexOffset[primitiveType]++;
 						}
 						/*std::cout<<"new total vertex count : "<<vertices[primitiveType].getVertexCount()<<std::endl;
 						std::cout<<"new total index count : "<<vertices[primitiveType].getIndexCount()<<std::endl;*/
 
-						std::array<VertexBuffer::LODLevel, 5> lods = subMesh.getVertexBuffer().getLODs();
+						std::array<entity::VertexArray::LODLevel, 5> lods = subMesh.getVertexArray().getLODs();
 						unsigned int currentSubmeshMeshletOffset = meshletDatas.size();
 						
 						for (unsigned int l = 0; l < lods.size(); l++) {
@@ -518,7 +518,7 @@ namespace odfaeg {
 							m.minVertex = std::numeric_limits<unsigned int>::max();
 							m.maxVertex = 0;
 							m.nbIndexes = 0;
-							m.indexOffset = 0;							
+							m.indexOffset = 0;														
 							for (unsigned int tri = 0; tri < lods[l].indexCount / 3; tri++) {
 								int g0 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[l].indexOffset+tri*3+0);								
 								int g1 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[l].indexOffset+tri*3+1);
@@ -543,7 +543,7 @@ namespace odfaeg {
 									// Recalculer pour ce triangle
 									newMin = std::min(g0, std::min(g1, g2));
 									newMax = std::max(g0, std::max(g1, g2));
-									newVertexCount = newMax - newMin + 1;
+									newVertexCount = newMax - newMin + 1;									
 								}
 								// Ajouter triangle
 								m.minVertex = newMin;
@@ -580,14 +580,15 @@ namespace odfaeg {
 						//std::cout<<"submesh meshlet count : "<<(meshletDatas.size() - currentSubmeshMeshletOffset)<<std::endl;
 						subMeshesDatas.push_back(subMeshData);	
 						currentSubmeshesOffset++;					
-					}
-					totalMeshlets = meshletDatas.size();				
+					}									
 				}
+				totalMeshlets = meshletDatas.size();
+				totalSubMeshes = subMeshesDatas.size();
 				//system("PAUSE");
 				for (unsigned int i = 0; i < 1; i++) {
 					for (unsigned int j = 0; j < NB_PRIMITIVE_TYPES; j++) {
 						//std::cout<<"update vertices"<<std::endl;
-						vertices[j].setPrimitiveType(static_cast<PrimitiveType>(j));
+						vertices[j].setPrimitiveType(static_cast<entity::PrimitiveType>(j));
 						vertices[j].update(commandPool.getHandle(i), i);
 					}
 				}
@@ -650,7 +651,7 @@ namespace odfaeg {
 						outputObjectDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 						outputModelDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);;
 						outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(MaterialData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-						outputMeshes[j * NB_PRIMITIVE_TYPES + k].create(sizeof(SubMesh) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);						
+						outputMeshes[j * NB_PRIMITIVE_TYPES + k].create(sizeof(entity::SubMesh) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);						
 						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 					}
@@ -794,7 +795,7 @@ namespace odfaeg {
 						/*blendMode = BlendAlpha;
 						blendMode.updateIds();
 						std::cout<<"pipeline  : "<<Triangles<<","<<defaultRenderingShader.getId()<<","<<blendMode.id<<","<<i<<std::endl;*/
-						GPUContext::instance().getGraphicsPipeline(Triangles, defaultRenderingShader, blendMode,i).createGraphicPipeline( defaultRenderingShader, GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
+						GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, defaultRenderingShader, blendMode,i).createGraphicPipeline( defaultRenderingShader, GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
 					}
 				}
 				//std::cout<<"descriptor and pipelines created default render target"<<std::endl;
@@ -811,7 +812,7 @@ namespace odfaeg {
 				if (!isDepthOnly()) {
 					for (unsigned int i = 0; i < depthStencilInfos.size(); i++) {
 						for (unsigned int p = 0; p < NB_PRIMITIVE_TYPES; p++) {
-							GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(p), vertexBufferShader, blendMode,i).createGraphicPipeline( vertexBufferShader, static_cast<PrimitiveType>(p),GPUContext::instance().getDescriptorSetLayout(vertexBufferShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
+							GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(p), vertexBufferShader, blendMode,i).createGraphicPipeline( vertexBufferShader, static_cast<entity::PrimitiveType>(p),GPUContext::instance().getDescriptorSetLayout(vertexBufferShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
 						}
 					}
 				}
@@ -962,7 +963,7 @@ namespace odfaeg {
 				if (!isDepthOnly()) {
 					for (unsigned int i = 0; i < depthStencilInfos.size(); i++) {
 						for (unsigned int p = 0; p < NB_PRIMITIVE_TYPES; p++) {
-							GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(p), defaultRenderingShader, blendMode,i).createGraphicPipeline( defaultRenderingShader, static_cast<PrimitiveType>(p),GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
+							GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(p), defaultRenderingShader, blendMode,i).createGraphicPipeline( defaultRenderingShader, static_cast<entity::PrimitiveType>(p),GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
 							//std::cout<<"pipeline created in render target : "<<GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(p), defaultRenderingShader, blendMode,i).getHandle()<<std::endl;
 						}
 					}
@@ -981,7 +982,7 @@ namespace odfaeg {
 				if (!isDepthOnly()) {
 					for (unsigned int i = 0; i < depthStencilInfos.size(); i++) {
 						for (unsigned int p = 0; p < NB_PRIMITIVE_TYPES; p++) {
-							GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(p), vertexBufferShader, blendMode,i).createGraphicPipeline( vertexBufferShader, static_cast<PrimitiveType>(p),GPUContext::instance().getDescriptorSetLayout(vertexBufferShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
+							GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(p), vertexBufferShader, blendMode,i).createGraphicPipeline( vertexBufferShader, static_cast<entity::PrimitiveType>(p),GPUContext::instance().getDescriptorSetLayout(vertexBufferShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
 						}
 					}
 				}
@@ -1105,7 +1106,7 @@ namespace odfaeg {
 				cullingBatchingSet.updateBufferInfos(16, lodLevel, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"update culling ds"<<std::endl;
 				cullingBatchingSet.updateDescriptorSet();
-				bool hasDiffuseTextures = GPUContext::instance().getSharedTextures(Material::DIFFUSE).size() != 0;
+				bool hasDiffuseTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
 				DescriptorSet& defaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, (hasDiffuseTextures) ? 10 : 9, 1)[0];
 				defaultRenderingSet.updateBufferInfos(0, outputTaskDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(1, taskCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -1118,44 +1119,44 @@ namespace odfaeg {
 				defaultRenderingSet.updateBufferInfos(8, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				if (hasDiffuseTextures) {
 					//std::cout<<"textures : "<<Texture::getAllTextures().size()<<std::endl;
-					defaultRenderingSet.updateImageInfos(9, GPUContext::instance().getSharedTextures(Material::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					defaultRenderingSet.updateImageInfos(9, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 				}
 				defaultRenderingSet.updateDescriptorSet();
-				bool hasSpecularTextures = GPUContext::instance().getSharedTextures(Material::SPECULAR).size() != 0;
+				bool hasSpecularTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR).size() != 0;
 				if (hasSpecularTextures) {
 					DescriptorSet& specularDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 1)[0];
-					specularDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::SPECULAR), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					specularDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					specularDefaultRenderingSet.updateDescriptorSet();
 				}
-				bool hasNormalTextures = GPUContext::instance().getSharedTextures(Material::NORMAL).size() != 0;
+				bool hasNormalTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::NORMAL).size() != 0;
 				if (hasNormalTextures) {
 					DescriptorSet& normalDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader,  1, 1, 2)[0];
-					normalDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::NORMAL), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					normalDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::NORMAL), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					normalDefaultRenderingSet.updateDescriptorSet();
 				}
 
-				bool hasMetalnessTextures = GPUContext::instance().getSharedTextures(Material::METALNESS).size() != 0;
+				bool hasMetalnessTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::METALNESS).size() != 0;
 				if (hasMetalnessTextures) {
 					DescriptorSet& metalnessDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader,  1, 1, 3)[0];
-					metalnessDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::METALNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					metalnessDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::METALNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					metalnessDefaultRenderingSet.updateDescriptorSet();
 				}
-				bool hasRoughnessTextures = GPUContext::instance().getSharedTextures(Material::ROUGHNESS).size() != 0;
+				bool hasRoughnessTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::ROUGHNESS).size() != 0;
 				if (hasRoughnessTextures) {
 					DescriptorSet& roughnessDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader,  1, 1, 4)[0];
-					roughnessDefaultRenderingSet .updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::ROUGHNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					roughnessDefaultRenderingSet .updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::ROUGHNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					roughnessDefaultRenderingSet .updateDescriptorSet();
 				}
-				bool hasAOTextures = GPUContext::instance().getSharedTextures(Material::AO).size() != 0;
+				bool hasAOTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::AO).size() != 0;
 				if (hasAOTextures) {
 					DescriptorSet& aoDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 5)[0];
-					aoDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::AO), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					aoDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::AO), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					aoDefaultRenderingSet.updateDescriptorSet();
 				}
-				bool hasEmissiveTextures = GPUContext::instance().getSharedTextures(Material::EMISSIVE).size() != 0;
+				bool hasEmissiveTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::EMISSIVE).size() != 0;
 				if (hasEmissiveTextures) {
 					DescriptorSet& emissiveDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 6)[0];
-					emissiveDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::EMISSIVE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					emissiveDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::EMISSIVE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					emissiveDefaultRenderingSet.updateDescriptorSet();
 				}
 				//std::cout<<"update descriptor sets : "<<vertexBufferDatas[0].getRange()<<","<<vertexBufferDatas[1].getRange()<<std::endl;
@@ -1221,51 +1222,51 @@ namespace odfaeg {
 				cullingBatchingSet.updateBufferInfos(16, lodLevel, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"update culling ds"<<std::endl;
 				cullingBatchingSet.updateDescriptorSet();
-				bool hasDiffuseTextures = GPUContext::instance().getSharedTextures(Material::DIFFUSE).size() != 0;
+				bool hasDiffuseTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
 				DescriptorSet& defaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, (hasDiffuseTextures) ? 4 : 3, 1)[0];
 				defaultRenderingSet.updateBufferInfos(0, outputModelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(1, outputMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(2, outputMaterialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				if (hasDiffuseTextures ) {
 					//std::cout<<"textures : "<<Texture::getAllTextures().size()<<std::endl;
-					defaultRenderingSet.updateImageInfos(3, GPUContext::instance().getSharedTextures(Material::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					defaultRenderingSet.updateImageInfos(3, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 				}
 				defaultRenderingSet.updateDescriptorSet();
-				bool hasSpecularTextures = GPUContext::instance().getSharedTextures(Material::SPECULAR).size() != 0;
+				bool hasSpecularTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR).size() != 0;
 				if (hasSpecularTextures) {
 					DescriptorSet& specularDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 1)[0];
-					specularDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::SPECULAR), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					specularDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					specularDefaultRenderingSet.updateDescriptorSet();
 				}
-				bool hasNormalTextures = GPUContext::instance().getSharedTextures(Material::NORMAL).size() != 0;
+				bool hasNormalTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::NORMAL).size() != 0;
 				if (hasNormalTextures) {
 					DescriptorSet& normalDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader,  1, 1, 2)[0];
-					normalDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::NORMAL), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					normalDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::NORMAL), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					normalDefaultRenderingSet.updateDescriptorSet();
 				}
 
-				bool hasMetalnessTextures = GPUContext::instance().getSharedTextures(Material::METALNESS).size() != 0;
+				bool hasMetalnessTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::METALNESS).size() != 0;
 				if (hasMetalnessTextures) {
 					DescriptorSet& metalnessDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader,  1, 1, 3)[0];
-					metalnessDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::METALNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					metalnessDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::METALNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					metalnessDefaultRenderingSet.updateDescriptorSet();
 				}
-				bool hasRoughnessTextures = GPUContext::instance().getSharedTextures(Material::ROUGHNESS).size() != 0;
+				bool hasRoughnessTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::ROUGHNESS).size() != 0;
 				if (hasRoughnessTextures) {
 					DescriptorSet& roughnessDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader,  1, 1, 4)[0];
-					roughnessDefaultRenderingSet .updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::ROUGHNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					roughnessDefaultRenderingSet .updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::ROUGHNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					roughnessDefaultRenderingSet .updateDescriptorSet();
 				}
-				bool hasAOTextures = GPUContext::instance().getSharedTextures(Material::AO).size() != 0;
+				bool hasAOTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::AO).size() != 0;
 				if (hasAOTextures) {
 					DescriptorSet& aoDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 5)[0];
-					aoDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::AO), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					aoDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::AO), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					aoDefaultRenderingSet.updateDescriptorSet();
 				}
-				bool hasEmissiveTextures = GPUContext::instance().getSharedTextures(Material::EMISSIVE).size() != 0;
+				bool hasEmissiveTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::EMISSIVE).size() != 0;
 				if (hasEmissiveTextures) {
 					DescriptorSet& emissiveDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 6)[0];
-					emissiveDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::EMISSIVE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					emissiveDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::EMISSIVE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					emissiveDefaultRenderingSet.updateDescriptorSet();
 				}
 				//std::cout<<"update descriptor sets : "<<vertexBufferDatas[0].getRange()<<","<<vertexBufferDatas[1].getRange()<<std::endl;
@@ -1750,7 +1751,7 @@ namespace odfaeg {
 				vkCmdDraw(commandPool.getHandle(getCurrentFrame()), vb.getVertexCount(), 1, 0, 0);
 			}
 		}
-		void RenderTarget::draw(PrimitiveType primitiveType, RenderStates states) {
+		void RenderTarget::draw(entity::PrimitiveType primitiveType, RenderStates states) {
 			if (needToUpdateCullBatchIndCmds) {
 				applyCullingAndBatching();
 				//std::cout<<"draw"<<std::endl;
@@ -1854,7 +1855,7 @@ namespace odfaeg {
 				draw(drawables[i].getVertexBuffer().getPrimitiveType(), drawables[i].getRenderStates());
 			}
 		}*/
-		void RenderTarget::draw(CommandPool& commandPool, PrimitiveType primitiveType, RenderStates states) {
+		void RenderTarget::draw(CommandPool& commandPool, entity::PrimitiveType primitiveType, RenderStates states) {
 			Shader* shader = (states.shader == nullptr) ? &defaultRenderingShader : states.shader;
 			/*viewProjInfos.primitiveType = primitiveType;
 			viewProjInfos.currentFrame = getCurrentFrame();*/

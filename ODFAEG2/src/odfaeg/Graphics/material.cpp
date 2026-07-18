@@ -9,23 +9,15 @@ module odfaeg.graphic.material;
 namespace odfaeg {
 	namespace graphic {
         Material::TextureInfo::TextureInfo() {
-            texture = nullptr;            
-            texId = "";
+            texture = nullptr;   
         }
-        Material::TextureInfo::TextureInfo(const Texture* texture, std::string texId) {
+        Material::TextureInfo::TextureInfo(const Texture* texture) {
             //std::cout<<"texture : "<<texture;
-            this->texture = texture;            
-            this->texId = texId;
+            this->texture = texture;
         }
         std::deque<Material*> Material::getSameMaterials() {
             return sameMaterials;
-        }        
-        void Material::TextureInfo::setTexId(std::string texId) {
-            this->texId = texId;
-        }
-        std::string Material::TextureInfo::getTexId() const {
-            return texId;
-        }
+        } 
         bool Material::TextureInfo::operator== (const TextureInfo& info) {
             //std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
             return texture == info.texture;
@@ -43,14 +35,13 @@ namespace odfaeg {
             refractionFactor = 0;
             refractable = false;
             reflectable = false;            
-            id = 0;
-            type = Type::AIR;
+            id = 0;            
             instanceGroup = -1;
             layer = 0;
             lightCenter = math::Vec3f(0.f, 0.f, 0.f);
-            lightColor = Color::White;
-            for (unsigned int i = 0; i < NBTEXTYPES; i++) {
-                setTexture(nullptr, static_cast<TexType>(i));
+            lightColor = entity::Color::White;
+            for (unsigned int i = 0; i < entity::SubMesh::NBTEXTYPES; i++) {
+                setTexture(nullptr, static_cast<entity::SubMesh::TexType>(i));
             }
             std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
             materials.push_back(this);
@@ -89,7 +80,28 @@ namespace odfaeg {
             //materials.push_back(this);
             return *this;
         }*/
-        void Material::setLightInfos(math::Vec4f center, Color color) {
+        void Material::setType(entity::SubMesh::Type type) {
+            if (type == entity::SubMesh::AIR) {
+                refractionFactor = 1;
+            }
+            else if (type == entity::SubMesh::WATER) {
+                refractionFactor = 1.f / 1.33f;
+            }
+            else if (type == entity::SubMesh::ICE) {
+                refractionFactor = 1.f / 1.309f;
+            }
+            else if (type == entity::SubMesh::GLASS) {
+                refractionFactor = 1.f / 1.52f;
+            }
+            else {
+                refractionFactor = 1.f / 2.42f;
+            }
+            this->type = type;
+        }
+        entity::SubMesh::Type Material::getType() {
+            return type;
+        }      
+        void Material::setLightInfos(math::Vec4f center, entity::Color color) {
             lightCenter = center;
             lightColor = color;
             updateIds();
@@ -97,7 +109,7 @@ namespace odfaeg {
         math::Vec4f Material::getLightCenter() {
             return lightCenter;
         }
-        Color Material::getLightColor() {
+        entity::Color Material::getLightColor() {
             return lightColor;
         }
         void Material::setInstanceGroup(unsigned int instanceGroup) {
@@ -162,57 +174,28 @@ namespace odfaeg {
         int Material::getNbTextures() {
             return texInfos[0].size();
         }
-        void Material::setTexture(const Texture* texture, TexType texType, unsigned int texUnit, std::string texId) {
+        void Material::setTexture(const Texture* texture, entity::SubMesh::TexType texType, unsigned int texUnit, std::string texId) {
             //std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
-            for (unsigned int i = 0; i < NBTEXTYPES; i++) {
+            for (unsigned int i = 0; i < entity::SubMesh::NBTEXTYPES; i++) {
                 if (texUnit >= texInfos[i].size())
                     texInfos[i].resize(texUnit+1);
             }
             //std::cout<<"size : "<<texInfos.size()<<","<<texInfos[texType].size()<<","<<texType<<","<<texUnit<<std::endl;
-            TextureInfo texInfo(texture, texId);
+            TextureInfo texInfo(texture);
             texInfos[texType][texUnit] = texInfo;
             //updateIds();
         }        
-        const Texture* Material::getTexture(TexType texType, int texUnit) {
+        const Texture* Material::getTexture(entity::SubMesh::TexType texType, int texUnit) {
             std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
             return (texInfos.size() > 0) ? texInfos[texType][texUnit].getTexture() : nullptr;
-        }        
-        std::string Material::getTexId(TexType texType, int texUnit) {
-            return (texInfos[texType].size() > 0) ? texInfos[texType][texUnit].getTexId() : "";
-        }
-        void Material::setTexId(TexType texType, std::string texId, int texUnit) {
-            if (texInfos.size() > texUnit) {
-                texInfos[texType][texUnit].setTexId(texId);
-            }
-        }
-        void Material::setType(Type type) {
-            if (type == AIR) {
-                refractionFactor = 1;
-            }
-            else if (type == WATER) {
-                refractionFactor = 1.f / 1.33f;
-            }
-            else if (type == ICE) {
-                refractionFactor = 1.f / 1.309f;
-            }
-            else if (type == GLASS) {
-                refractionFactor = 1.f / 1.52f;
-            }
-            else {
-                refractionFactor = 1.f / 2.42f;
-            }
-            this->type = type;
-        }
-        Material::Type Material::getType() {
-            return type;
-        }
+        }  
         bool Material::useSameTextures(const Material& material) {
-            for (unsigned int i = 0; i < NBTEXTYPES; i++) {
+            for (unsigned int i = 0; i < entity::SubMesh::NBTEXTYPES; i++) {
                 if (texInfos[i].size() != material.texInfos[i].size()) {
                     return false;
                 }
             }
-            for (unsigned int i = 0; i < NBTEXTYPES; i++) {
+            for (unsigned int i = 0; i < entity::SubMesh::NBTEXTYPES; i++) {
                 for (unsigned int j = 0; j < texInfos[i].size(); j++) {
                     if (texInfos[i][j] != material.texInfos[i][j]) {
                         return false;

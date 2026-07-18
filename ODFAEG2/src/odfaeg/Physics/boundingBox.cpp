@@ -4,7 +4,7 @@ module;
 //import odfaeg.physic.boundingBox;
 module odfaeg.physic.boundingBox;
 import odfaeg.math.computer;
-import odfaeg.entity.transformMatrix;
+import odfaeg.math.transformMatrix;
 namespace odfaeg {
     namespace physic {
         //Create a bounding box at position 0, 0, 0 and with the dimensions 1, 1, 1.
@@ -429,7 +429,7 @@ namespace odfaeg {
             center[1] = y + height * 0.5f;
             center[2] = z + depth * 0.5f;
         }
-        BoundingBox BoundingBox::transform(entity::TransformMatrix& tm) {
+        BoundingBox BoundingBox::transform(math::TransformMatrix& tm) {
             std::array<math::Vec3f, 8> points;
             //Devant
             points[0] = getPosition();
@@ -450,7 +450,7 @@ namespace odfaeg {
             BoundingBox bx(store[0][0], store[1][0], store[2][0], store[0][1] - store[0][0], store[1][1] - store[1][0], store[2][1] - store[2][0]);
             return bx;
         }
-        BoundingBox BoundingBox::inverseTransform(entity::TransformMatrix& tm) {
+        BoundingBox BoundingBox::inverseTransform(math::TransformMatrix& tm) {
             std::array<math::Vec3f, 8> points;
             //Devant
             points[0] = getPosition();
@@ -473,7 +473,7 @@ namespace odfaeg {
             return bx;
         }
         void BoundingBox::move(math::Vec3f t) {
-            entity::TransformMatrix tm;            
+            math::TransformMatrix tm;            
             center = center + t;
             tm.setTranslation(center);
             for (unsigned int i = 0; i < points.size(); i++)
@@ -488,7 +488,7 @@ namespace odfaeg {
             computeVectors();
         }
         void BoundingBox::scale(math::Vec3f s) {
-            entity::TransformMatrix tm;
+            math::TransformMatrix tm;
             tm.setScale(s);            
             tm.setTranslation(center);
             for (unsigned int i = 0; i < points.size(); i++)

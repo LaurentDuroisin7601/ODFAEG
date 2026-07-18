@@ -1,10 +1,10 @@
 module;
 export module odfaeg.graphic.shape;
 import odfaeg.graphic.renderTarget;
-import odfaeg.graphic.transformable;
+import odfaeg.entity.transformable;
 import odfaeg.graphic.texture;
-import odfaeg.graphic.rect;
-import odfaeg.graphic.color;
+import odfaeg.entity.rect;
+import odfaeg.entity.color;
 import odfaeg.math.vec;
 import odfaeg.physic.boundingBox;
 import odfaeg.graphic.device;
@@ -13,7 +13,7 @@ import odfaeg.graphic.renderStates;
 import odfaeg.graphic.vertexBuffer;
 namespace odfaeg {
 	namespace graphic {
-		export class Shape : public Drawable, public Transformable {
+		export class Shape : public Drawable, public entity::Transformable {
 		public :
             
             ////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ namespace odfaeg {
             /// \see getTextureRect, setTexture
             ///
             ////////////////////////////////////////////////////////////
-            void setTextureRect(const IntRect& rect);
+            void setTextureRect(const entity::IntRect& rect);
 
             ////////////////////////////////////////////////////////////
             /// \brief Set the fill color of the shape
@@ -73,7 +73,7 @@ namespace odfaeg {
             /// \see getFillColor, setOutlineColor
             ///
             ////////////////////////////////////////////////////////////
-            void setFillColor(const Color& color);
+            void setFillColor(const entity::Color& color);
 
             ////////////////////////////////////////////////////////////
             /// \brief Set the outline color of the shape
@@ -85,7 +85,7 @@ namespace odfaeg {
             /// \see getOutlineColor, setFillColor
             ///
             ////////////////////////////////////////////////////////////
-            void setOutlineColor(const Color& color);
+            void setOutlineColor(const entity::Color& color);
 
             ////////////////////////////////////////////////////////////
             /// \brief Set the thickness of the shape's outline
@@ -124,7 +124,7 @@ namespace odfaeg {
             /// \see setTextureRect
             ///
             ////////////////////////////////////////////////////////////
-            const IntRect& getTextureRect() const;
+            const entity::IntRect& getTextureRect() const;
 
             ////////////////////////////////////////////////////////////
             /// \brief Get the fill color of the shape
@@ -134,7 +134,7 @@ namespace odfaeg {
             /// \see setFillColor
             ///
             ////////////////////////////////////////////////////////////
-            const Color& getFillColor() const;
+            const entity::Color& getFillColor() const;
 
             ////////////////////////////////////////////////////////////
             /// \brief Get the outline color of the shape
@@ -144,7 +144,7 @@ namespace odfaeg {
             /// \see setOutlineColor
             ///
             ////////////////////////////////////////////////////////////
-            const Color& getOutlineColor() const;
+            const entity::Color& getOutlineColor() const;
 
             ////////////////////////////////////////////////////////////
             /// \brief Get the outline thickness of the shape
@@ -231,9 +231,9 @@ namespace odfaeg {
             // Member data
             ////////////////////////////////////////////////////////////
             const Texture* m_texture;          ///< Texture of the shape
-            IntRect    m_textureRect;      ///< Rectangle defining the area of the source texture to display
-            Color          m_fillColor;        ///< Fill color
-            Color          m_outlineColor;     ///< Outline color
+            entity::IntRect    m_textureRect;      ///< Rectangle defining the area of the source texture to display
+            entity::Color          m_fillColor;        ///< Fill color
+            entity::Color          m_outlineColor;     ///< Outline color
             float          m_outlineThickness; ///< Thickness of the shape's outline
             VertexBuffer   m_vertices;         ///< Vertex array containing the fill geometry
             VertexBuffer   m_outlineVertices;  ///< Vertex array containing the outline geometry

@@ -4,7 +4,7 @@ module;
 //import odfaeg.graphic.shape;
 module odfaeg.graphic.shape;
 import odfaeg.math.maths;
-import odfaeg.graphic.primitiveType;
+import odfaeg.entity.primitiveType;
 import odfaeg.graphic.renderStates;
 import odfaeg.graphic.renderTarget;
 import odfaeg.math.vec;
@@ -44,8 +44,8 @@ namespace odfaeg
             if (texture)
             {
                 // Recompute the texture area if requested, or if there was no texture & rect before
-                if (resetRect || (!m_texture && (m_textureRect == IntRect())))
-                    setTextureRect(IntRect(0, 0, texture->getSize().x(), texture->getSize().y()));
+                if (resetRect || (!m_texture && (m_textureRect == entity::IntRect())))
+                    setTextureRect(entity::IntRect(0, 0, texture->getSize().x(), texture->getSize().y()));
             }
 
             // Assign the new texture
@@ -61,7 +61,7 @@ namespace odfaeg
 
 
         ////////////////////////////////////////////////////////////
-        void Shape::setTextureRect(const IntRect& rect)
+        void Shape::setTextureRect(const entity::IntRect& rect)
         {
             m_textureRect = rect;
             updateTexCoords();
@@ -69,14 +69,14 @@ namespace odfaeg
 
 
         ////////////////////////////////////////////////////////////
-        const IntRect& Shape::getTextureRect() const
+        const entity::IntRect& Shape::getTextureRect() const
         {
             return m_textureRect;
         }
 
 
         ////////////////////////////////////////////////////////////
-        void Shape::setFillColor(const Color& color)
+        void Shape::setFillColor(const entity::Color& color)
         {
             m_fillColor = color;
             updateFillColors();
@@ -84,14 +84,14 @@ namespace odfaeg
 
 
         ////////////////////////////////////////////////////////////
-        const Color& Shape::getFillColor() const
+        const entity::Color& Shape::getFillColor() const
         {
             return m_fillColor;
         }
 
 
         ////////////////////////////////////////////////////////////
-        void Shape::setOutlineColor(const Color& color)
+        void Shape::setOutlineColor(const entity::Color& color)
         {
             m_outlineColor = color;
             updateOutlineColors();
@@ -99,7 +99,7 @@ namespace odfaeg
 
 
         ////////////////////////////////////////////////////////////
-        const Color& Shape::getOutlineColor() const
+        const entity::Color& Shape::getOutlineColor() const
         {
             return m_outlineColor;
         }
@@ -126,8 +126,8 @@ namespace odfaeg
             m_fillColor(255, 255, 255),
             m_outlineColor(255, 255, 255),
             m_outlineThickness(0),
-            m_vertices(device, TriangleFan, MAX_FRAMES_IN_FLIGHT),
-            m_outlineVertices(device, TriangleStrip, MAX_FRAMES_IN_FLIGHT),
+            m_vertices(device, entity::PrimitiveType::TriangleFan, MAX_FRAMES_IN_FLIGHT),
+            m_outlineVertices(device, entity::PrimitiveType::TriangleStrip, MAX_FRAMES_IN_FLIGHT),
             m_insideBounds(),
             m_bounds()
         {

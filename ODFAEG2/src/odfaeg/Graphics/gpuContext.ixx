@@ -10,7 +10,7 @@ import odfaeg.graphic.vertexBuffer;
 import odfaeg.graphic.texture;
 import odfaeg.graphic.instance;
 import odfaeg.graphic.device;
-import odfaeg.graphic.primitiveType;
+import odfaeg.entity.primitiveType;
 import odfaeg.graphic.shader;
 import odfaeg.graphic.blendMode;
 import odfaeg.graphic.fence;
@@ -21,7 +21,7 @@ namespace odfaeg {
         public :
             static GPUContext& instance();
             std::deque<std::deque<Pipeline>>& getGraphicsPipeline(Shader& shader);
-            Pipeline& getGraphicsPipeline(PrimitiveType primType, Shader& shader, BlendMode blendMode, unsigned int depthStencilInfoId);
+            Pipeline& getGraphicsPipeline(entity::PrimitiveType primType, Shader& shader, BlendMode blendMode, unsigned int depthStencilInfoId);
             Pipeline& getComputePipeline(Shader& shader);
             DescriptorPool& getDescriptorPool(Shader& shader, unsigned int nbShaderBindings, unsigned int setBinding=0);
             DescriptorSetLayout& getDescriptorSetLayout(Shader& shader, unsigned int nbShaderBindings, bool bindless=false, unsigned int setBinding=0);

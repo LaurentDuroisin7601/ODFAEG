@@ -6,8 +6,8 @@ module;
 #include <memory>
 //import odfaeg.graphic.pipeline;
 module odfaeg.graphic.pipeline;
-import odfaeg.graphic.vertex;
 import odfaeg.graphic.blendMode;
+import odfaeg.graphic.vertexBuffer;
 namespace odfaeg {
 	namespace graphic {	
 		namespace {
@@ -51,7 +51,7 @@ namespace odfaeg {
 			}
 			return *this;
 		}
-		void Pipeline::createGraphicPipeline(Shader& shader, PrimitiveType primitveType, std::deque<DescriptorSetLayout>& setLayouts, VkPipelineRenderingCreateInfo renderingCreateInfo, VkPipelineDepthStencilStateCreateInfo depthStencil, BlendMode blendMode,
+		void Pipeline::createGraphicPipeline(Shader& shader, entity::PrimitiveType primitveType, std::deque<DescriptorSetLayout>& setLayouts, VkPipelineRenderingCreateInfo renderingCreateInfo, VkPipelineDepthStencilStateCreateInfo depthStencil, BlendMode blendMode,
 			VkCullModeFlags cullMode, VkPolygonMode polygonMode, std::vector<VkPushConstantRange> pushConstants) {
 			if (pipeline != VK_NULL_HANDLE) {
 				cleanup();
@@ -89,8 +89,8 @@ namespace odfaeg {
 				shaderStages.push_back(fragmentShaderStageInfo);
 			}
 			VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-			auto bindingDescription = Vertex::getBindingDescription();
-			auto attributeDescriptions = Vertex::getAttributeDescriptions();
+			auto bindingDescription = VertexBuffer::getBindingDescription();
+			auto attributeDescriptions = VertexBuffer::getAttributeDescriptions();
 			vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 			vertexInputInfo.vertexBindingDescriptionCount = 1;
 			vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
@@ -199,7 +199,7 @@ namespace odfaeg {
 			//std::cout<<"pipeline : "<<pipeline<<std::endl;
 			shader.cleanupShaderModules();
 		}
-		void Pipeline::createGraphicPipeline(Shader& shader, PrimitiveType primitveType, std::deque<DescriptorSetLayout>& setLayouts, RenderPass& renderPass, VkPipelineDepthStencilStateCreateInfo depthStencil, BlendMode blendMode,
+		void Pipeline::createGraphicPipeline(Shader& shader, entity::PrimitiveType primitveType, std::deque<DescriptorSetLayout>& setLayouts, RenderPass& renderPass, VkPipelineDepthStencilStateCreateInfo depthStencil, BlendMode blendMode,
 			VkCullModeFlags cullMode, VkPolygonMode polygonMode, std::vector<VkPushConstantRange> pushConstants) {
 			if (pipeline != VK_NULL_HANDLE) {
 				cleanup();
@@ -237,8 +237,8 @@ namespace odfaeg {
 				shaderStages.push_back(fragmentShaderStageInfo);
 			}
 			VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-			auto bindingDescription = Vertex::getBindingDescription();
-			auto attributeDescriptions = Vertex::getAttributeDescriptions();
+			auto bindingDescription = VertexBuffer::getBindingDescription();
+			auto attributeDescriptions = VertexBuffer::getAttributeDescriptions();
 			vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 			vertexInputInfo.vertexBindingDescriptionCount = 1;
 			vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
