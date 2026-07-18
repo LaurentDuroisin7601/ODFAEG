@@ -665,6 +665,13 @@ namespace odfaeg {
 				submitInfo.commandBufferCount = 1;
 				submitInfo.pCommandBuffers = &commandPool.getHandle(getCurrentFrame());
 				Device::QueueFamilyIndices indices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice());
+				if (ParticleSystemUpdater::instance(cv, mtx).isRunning()
+					&& MorphAnimUpdater::instance(cv, mtx).isRunning()
+					&& BoneAnimUpdater::instance(cv, mtx).isRunning()) {										
+					
+					std::unique_lock lock(mtx);	
+					//std::cout<<"wait!"<<std::endl;				
+					cv.wait(lock, [this]{return ParticleSystemUpdater::instance(cv, mtx).isSubmitReady() && MorphAnimUpdater::instance(cv, mtx).isSubmitReady() && BoneAnimUpdater::instance(cv, mtx).isSubmitReady();});
 				//std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
 				if (vkQueueSubmit(GPUContext::instance().getDevice().getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
 					throw std::runtime_error("Echec de l'envoi d'un command buffer!");
