@@ -38,9 +38,7 @@ void main() {
     gl_PointSize = 2.0f;
     mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[gl_InstanceIndex].modelMatrix;
     gl_Position = lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex] * modelMatrix * vec4(inPosition, 1);
-    fragColor = inColor;
-    fragTexCoord = inTexCoord;
-    normal = transpose(inverse(mat3(modelMatrix))) * normals;
+    
     v_DrawID = gl_DrawID;
     primitiveType = pc.primitiveType;
     currentFrame = pc.currentFrame;

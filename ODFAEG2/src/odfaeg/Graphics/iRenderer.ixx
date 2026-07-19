@@ -12,9 +12,9 @@ namespace odfaeg {
             public :
                 IRenderer(int windowId) : IComponent(windowId) {}  
                 template <typename R>
-                void connectSwapchainResizeCommand() {
+                void connectSwapchainResizedCommand() {
                     window::Action resizedAction(window::Action::RESIZED);
-                    window::Command resizedCmd(resizedAction, core::FastDelegate<void>(&R::onSwapchainRecreated, this, core::ph<0, math::Vector2i>()));
+                    window::Command resizedCmd(resizedAction, core::FastDelegate<void>(&R::onSwapchainResized, static_cast<R*>(this), core::ph<0, math::Vector2i>()));
                     getEventListener().connect("SwapchainResizeCmd", resizedCmd);
                 }              
                 virtual void clear() = 0;                

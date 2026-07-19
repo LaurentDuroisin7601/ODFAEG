@@ -42,6 +42,7 @@ import odfaeg.graphic.shadowRenderer;
 import odfaeg.core.string;
 import odfaeg.core.utilities;
 import odfaeg.graphic.mesh;
+import odfaeg.core.delegate;
 using namespace odfaeg::entity;
 using namespace odfaeg::window;
 using namespace odfaeg::graphic;
@@ -50,7 +51,7 @@ using namespace odfaeg::core;
 enum TextureNames {
 	WOOD
 };
-int main() {
+int main() {	
 	GPUContext& ctx = GPUContext::instance();
 	//String string("Test my game");	
 	RenderWindow window(VideoMode(800, 600), "Test my game", ctx.getDevice(), odfaeg::window::Style::Default, true);

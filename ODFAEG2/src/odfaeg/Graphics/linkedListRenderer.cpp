@@ -87,6 +87,7 @@ namespace odfaeg {
 
             window::Command rendererReadyCmd(core::FastDelegate<bool>(&LinkedListRenderer::isRendererReady, this), core::FastDelegate<void>(&LinkedListRenderer::drawNextFrame, this));
             getEventListener().connect("RendererReady",rendererReadyCmd);
+            connectSwapchainResizedCommand<LinkedListRenderer>();
             if (useThread) {
                 getEventListener().launch();
             }
@@ -332,6 +333,9 @@ namespace odfaeg {
         }
         unsigned int LinkedListRenderer::getLayer() {
             return layer;
-        }        
+        }    
+        void LinkedListRenderer::onSwapchainResized(math::Vector2i newSize) {
+
+        }    
     }
 }

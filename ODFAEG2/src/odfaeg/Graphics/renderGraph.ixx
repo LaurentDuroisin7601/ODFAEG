@@ -1,5 +1,6 @@
 module;
 #include <map>
+#include <string>
 export module odfaeg.graphic.renderGraph;
 import odfaeg.graphic.iRenderer;
 import odfaeg.graphic.widget;
