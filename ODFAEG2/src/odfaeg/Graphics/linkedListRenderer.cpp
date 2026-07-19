@@ -18,7 +18,7 @@ import odfaeg.graphic.texture;
 import odfaeg.entity.gameObject;
 namespace odfaeg {
     namespace graphic {
-        LinkedListRenderer::LinkedListRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, bool useThread) : threadPool(6),
+        LinkedListRenderer::LinkedListRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId, bool useThread) : IRenderer(windowId), threadPool(6),
         typesToRenderExpression(typesToRenderExpression),
         layer(layer),
         fullScreenQuad(GPUContext::instance().getDevice(), entity::PrimitiveType::Triangles),
@@ -86,9 +86,9 @@ namespace odfaeg {
             quadLinkedListCommandPool.createCommandBuffers(false, MAX_FRAMES_IN_FLIGHT);
 
             window::Command rendererReadyCmd(core::FastDelegate<bool>(&LinkedListRenderer::isRendererReady, this), core::FastDelegate<void>(&LinkedListRenderer::drawNextFrame, this));
-            eventListener.connect("RendererReady",rendererReadyCmd);
+            getEventListener().connect("RendererReady",rendererReadyCmd);
             if (useThread) {
-                eventListener.launch();
+                getEventListener().launch();
             }
             if (GPUContext::instance().getSharedSemaphore(0).empty()) {
                 GPUContext::instance().getSharedSemaphore(0).emplace_back(GPUContext::instance().getDevice());

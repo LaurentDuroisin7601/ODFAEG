@@ -75,6 +75,11 @@ target_sources(odfaeg-graphics-mod
 		${SRCROOT}/shadowRenderer.ixx
 		${SRCROOT}/renderWindow.ixx
 		${SRCROOT}/mesh.ixx
+                ${SRCROOT}/iComponent.ixx
+                ${SRCROOT}/widget.ixx
+		${SRCROOT}/iRenderer.ixx
+	        ${SRCROOT}/renderGraph.ixx
+	        ${SRCROOT}/componentManager.ixx
 )
 target_sources(odfaeg-graphics-mod PRIVATE
     ${SRCROOT}/debug.cpp
@@ -115,6 +120,7 @@ target_sources(odfaeg-graphics-mod PRIVATE
     ${SRCROOT}/envMapRenderer.cpp
     ${SRCROOT}/renderWindow.cpp
     ${SRCROOT}/mesh.cpp
+    ${SRCROOT}/renderGraph.cpp
 )
 target_compile_features(odfaeg-graphics-mod PUBLIC cxx_std_20)
 

@@ -28,7 +28,7 @@ import odfaeg.physic.boundingBox;
 import odfaeg.entity.gameObject;
 namespace odfaeg {
     namespace graphic {
-        ShadowRenderer::ShadowRenderer(RenderTarget& parentRenderer, RenderTexture& sceneColorTexture, unsigned int layer, std::string typesToRenderExpression, bool useThread) : parentRenderer(parentRenderer),
+        ShadowRenderer::ShadowRenderer(RenderTarget& parentRenderer, RenderTexture& sceneColorTexture, unsigned int layer, std::string typesToRenderExpression, int windowId, bool useThread) : IRenderer(windowId), parentRenderer(parentRenderer),
         sceneColorTexture(sceneColorTexture),
         shadowMap(GPUContext::instance().getDevice(), true), 
         shadowMapPL(GPUContext::instance().getDevice(), true),
@@ -145,10 +145,10 @@ namespace odfaeg {
             vkDeviceWaitIdle(GPUContext::instance().getDevice().getDevice());
             
             window::Command rendererReadyCmd(core::FastDelegate<bool>(&ShadowRenderer::isRendererReady, this), core::FastDelegate<void>(&ShadowRenderer::drawNextFrame, this));
-            eventListener.connect("RendererReady",rendererReadyCmd); 
+            getEventListener().connect("RendererReady",rendererReadyCmd); 
             if (useThread) {
                 //std::cout<<"lanch"<<std::endl;
-                eventListener.launch();
+                getEventListener().launch();
             }           
             if (GPUContext::instance().getSharedSemaphore(0).empty()) {
                 GPUContext::instance().getSharedSemaphore(0).emplace_back(GPUContext::instance().getDevice());

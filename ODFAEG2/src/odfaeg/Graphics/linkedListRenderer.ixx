@@ -5,6 +5,7 @@ module;
 #include <condition_variable>
 #include <memory>
 export module odfaeg.graphic.linkedListRenderer;
+import odfaeg.graphic.iRenderer;
 import odfaeg.graphic.renderTarget;
 import odfaeg.entity.primitiveType;
 import odfaeg.graphic.renderStates;
@@ -21,13 +22,13 @@ import odfaeg.core.threadPool;
 import odfaeg.window.listener;
 namespace odfaeg {
     namespace graphic {
-        export class LinkedListRenderer {
+        export class LinkedListRenderer : public IRenderer {
         public :
             struct LinkedListPC {
                 unsigned int maxNodes;
                 int currentImageIndex;
             };
-            LinkedListRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, bool usethread=true);
+            LinkedListRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
             void createCommandPools();
             void createDescriptorsAndPipelines();
             void updateDescriptorSets();
@@ -54,8 +55,7 @@ namespace odfaeg {
             std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> commandBuffersReady={};
             std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> registerFramesJob={};
             std::atomic<bool> stop= {};
-            std::atomic<bool> rendererReady;
-            window::Listener eventListener;
+            std::atomic<bool> rendererReady;            
             LinkedListPC linkedListPC;
             bool needToUpdateDescriptorSets;
             CommandPool commandPool;

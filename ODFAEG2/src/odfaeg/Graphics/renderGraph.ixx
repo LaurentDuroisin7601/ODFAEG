@@ -1,0 +1,21 @@
+module;
+#include <map>
+export module odfaeg.graphic.renderGraph;
+import odfaeg.graphic.iRenderer;
+import odfaeg.graphic.widget;
+import odfaeg.math.vec;
+import odfaeg.graphic.renderTarget;
+import odfaeg.graphic.renderTexture;
+namespace odfaeg {
+    namespace graphic {
+        export class RenderGraph {
+            public :
+            void addLinkedListPass(RenderTarget& output, unsigned int layer, std::string typesToRender, unsigned int windowId=-1);
+            void addShadowPass(RenderTarget& output, RenderTexture& input,  unsigned int layer, std::string typesToRender, unsigned int windowId=-1);
+            void render();
+            private :
+            std::map<unsigned int, IRenderer*> renderers;
+            std::map<unsigned int, Widget*> widgets;
+        };
+    }
+}

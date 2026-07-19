@@ -4,6 +4,8 @@ module;
 #include <condition_variable>
 #include <chrono>
 #include <iostream>
+#include <odfaeg/config.hpp>
+#include <mutex>
 export module odfaeg.window.listener;
 import odfaeg.window.iEvent;
 import odfaeg.window.command;
@@ -52,7 +54,14 @@ namespace odfaeg {
                 command.setName(key);
                 commands.insert(std::make_pair(key, command));
             }
+            void enable(bool enabled) {
+                this->enabled.store(enabled);
+                if (!enabled) {
+                    clearEventsStack();
+                }
+            }
             void blockCommand(std::string key, bool blocked) {
+                std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                 if (blocked) {                    
                     std::map<std::string, Command>::iterator it = commands.find(key);                    
                     if (it != commands.end()) {
@@ -87,14 +96,14 @@ namespace odfaeg {
             */
             template <typename...A>
             void setCommandSigParams(std::string key, A&&... args) {
-
+                std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                 std::map<std::string, Command>::iterator it = commands.find(key);
                 if (it != commands.end())
                     it->second.setSigParams(std::forward<A>(args)...);
             }
             template <typename...A>
             void setCommandSlotParams(std::string key, A&&... args) {
-
+                std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                 std::map<std::string, Command>::iterator it = commands.find(key);
                 if (it != commands.end())
                     it->second.setSlotParams(std::forward<A>(args)...);
@@ -107,14 +116,14 @@ namespace odfaeg {
             */
             template <typename...A>
             void bindCommandSigParams(std::string key, A&&... args) {
-
+                std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                 std::map<std::string, Command>::iterator it = commands.find(key);
                 if (it != commands.end())
                     it->second.bindSigParams(std::forward<A>(args)...);
             }
             template <typename...A>
             void bindCommandSlotParams(std::string key, A&&... args) {
-
+                std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                 std::map<std::string, Command>::iterator it = commands.find(key);
                 if (it != commands.end())
                     it->second.bindSlotParams(std::forward<A>(args)...);
@@ -138,6 +147,7 @@ namespace odfaeg {
             *   \param window::IEvent : the window::IEvent to pass into the stack.
             */
             void pushEvent(IEvent event) {
+                std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                 std::map<std::string, Command>::iterator it;
                 for (it = commands.begin(); it != commands.end(); it++) {                    
                     Action* action = it->second.getAction();
@@ -161,6 +171,7 @@ namespace odfaeg {
             void tProcessEvents() {
                 running.store(true);
                 while (running.load()) {
+                    std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                     //std::cout<<"running!"<<std::endl;
                     std::map<std::string, Command>::iterator it;
                     for (unsigned int i = 0; i < toRemove.size(); i++) {
@@ -169,21 +180,26 @@ namespace odfaeg {
                             commands.erase(it);
                         }
                     }
-                    toRemove.clear();                    
-                    for (it = commands.begin(); it != commands.end(); it++) {                        
-                        bool found = false;
-                        for (unsigned int i = 0; i < blockedCommands.size() && !found; i++) {
-                            if (it->first == blockedCommands[i])
-                                found = true;
-                        }
-                        if (!found) {
-                            if (it->second.isTriggered()) {
-                                //std::cout<<"triggered"<<std::endl;
-                                (it->second)();                                
-                            }                            
-                        }                       
-                    }                    
-                }
+                    toRemove.clear();
+                    if (enabled.load()) { 
+                        for (it = commands.begin(); it != commands.end(); it++) {
+                            bool found = false;
+                            for (unsigned int i = 0; i < blockedCommands.size() && !found; i++) {
+                                if (it->first == blockedCommands[i]) {
+                                    //std::cout<<"block command : "<<it->first<<std::endl;
+                                    found = true;
+                                }
+                            }
+                            if (!found) {
+                                /*if (it->second.getName() == "DropDownTextChanged")
+                                    std::cout<<"is icon moved triggered ? "<<std::endl;*/
+                                if (it->second.isTriggered()) {
+                                    (it->second)();                            
+                                }                        
+                            }                    
+                        } 
+                    }
+                }    
             }
             void processEvents() {
                 std::map<std::string, Command>::iterator it;
@@ -193,31 +209,35 @@ namespace odfaeg {
                         commands.erase(it);
                     }
                 }
-                toRemove.clear();                
-                for (it = commands.begin(); it != commands.end(); it++) {
-                    bool found = false;
-                    for (unsigned int i = 0; i < blockedCommands.size() && !found; i++) {
-                        if (it->first == blockedCommands[i]) {
-                            //std::cout<<"block command : "<<it->first<<std::endl;
-                            found = true;
+                toRemove.clear();  
+                if (enabled.load()) {              
+                    for (it = commands.begin(); it != commands.end(); it++) {
+                        bool found = false;
+                        for (unsigned int i = 0; i < blockedCommands.size() && !found; i++) {
+                            if (it->first == blockedCommands[i]) {
+                                //std::cout<<"block command : "<<it->first<<std::endl;
+                                found = true;
+                            }
                         }
-                    }
-                    if (!found) {
-                        /*if (it->second.getName() == "DropDownTextChanged")
-                            std::cout<<"is icon moved triggered ? "<<std::endl;*/
-                        if (it->second.isTriggered()) {
-                            (it->second)();                            
-                        }                        
-                    }                    
-                }                
+                        if (!found) {
+                            /*if (it->second.getName() == "DropDownTextChanged")
+                                std::cout<<"is icon moved triggered ? "<<std::endl;*/
+                            if (it->second.isTriggered()) {
+                                (it->second)();                            
+                            }                        
+                        }                    
+                    } 
+                }               
             }
             void clearEventsStack() {
+                std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                 std::map<std::string, Command>::iterator it;
                 for (it = commands.begin(); it != commands.end(); it++) {
                     it->second.clearEventsStack();
                 }                
             }
             void removeCommand(std::string name) {
+                std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                 toRemove.push_back(name);
             }   
             ~Listener() {
@@ -234,7 +254,7 @@ namespace odfaeg {
             std::map<std::string, Command> commands; /**> stores and execute commands.*/
             std::vector<std::string> toRemove;
             std::vector<std::string> blockedCommands;            
-            std::atomic<bool> useThread, running;
+            std::atomic<bool> useThread, running, enabled;
             std::thread m_thread;
         };
     }

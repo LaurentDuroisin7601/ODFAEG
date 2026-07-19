@@ -8,6 +8,7 @@ module;
 #include <condition_variable>
 #include <memory>
 export module odfaeg.graphic.shadowRenderer;
+import odfaeg.graphic.iRenderer;
 import odfaeg.graphic.renderTarget;
 import odfaeg.math.matrix;
 import odfaeg.math.vec;
@@ -22,7 +23,7 @@ import odfaeg.core.threadPool;
 import odfaeg.window.listener;
 namespace odfaeg {
     namespace graphic {
-        export class ShadowRenderer {
+        export class ShadowRenderer : public IRenderer {
         public :
             struct CascadeData {
                 math::Vec4f cascadePlaneDistances[NB_CASCADES+1];
@@ -76,7 +77,7 @@ namespace odfaeg {
             struct ViewPLMatrix {
                 math::Matrix4f viewsPLMatrices[6];
             };
-            ShadowRenderer(RenderTarget& parentRenderer, RenderTexture& sceneColorTexture, unsigned int layer, std::string typesToRenderExpression, bool usethread=true);
+            ShadowRenderer(RenderTarget& parentRenderer, RenderTexture& sceneColorTexture, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
             void createCommandPools();
             void createDescriptorsAndPipelines();
             void updateDescriptorSets();
@@ -105,7 +106,7 @@ namespace odfaeg {
             lightViewsPLMatricesBuffer, dirLightsBufferFinal, pointLightsBufferFinal;
             Buffer lightSpaceMatricesStaggingBuffer, lightViewsPLMatricesStaggingBuffer,
             dirLightsStaggingBufferFinal, pointLightsStaggingBufferFinal, lightSpaceMatricesStaggingBufferFinal;
-            window::Listener eventListener;
+            
             CascadeData cascadeData;
             std::atomic<bool> rendererReady;
             std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> commandBuffersReady={};
