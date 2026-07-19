@@ -61,8 +61,8 @@ namespace odfaeg {
             alloc.usage = memoryUsage;
             vmaCreateImage(device.getAllocator(), &info, &alloc, &image, &memory, nullptr);
             m_format = format;
-            if (format == VK_FORMAT_R32_UINT)
-                std::cout<<"format : "<<m_format<<std::endl;
+            /*if (format == VK_FORMAT_R32_UINT)
+                std::cout<<"format : "<<m_format<<std::endl;*/
             //std::cout<<"size : "<<width<<","<<height<<"mip levels : "<<mipLevels<<",image : "<<image<<std::endl;
         } 
         void Image::createSampler(VkSamplerAddressMode wrapU, VkSamplerAddressMode wrapV, unsigned int mipLevels, bool smooth, bool unormalized) {
