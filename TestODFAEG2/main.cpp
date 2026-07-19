@@ -43,6 +43,10 @@ import odfaeg.core.string;
 import odfaeg.core.utilities;
 import odfaeg.graphic.mesh;
 import odfaeg.core.delegate;
+import odfaeg.graphic.renderGraph;
+import odfaeg.graphic.componentManager;
+import odfaeg.graphic.iComponent;
+import odfaeg.graphic.renderTexture;
 using namespace odfaeg::entity;
 using namespace odfaeg::window;
 using namespace odfaeg::graphic;
@@ -120,6 +124,15 @@ int main() {
 	window.addGameObject(&cube3Mesh);
 	window.addGameObject(&cube4Mesh);
 	window.addGameObject(&cube5Mesh);
+	RenderTexture sceneColorTexture(ctx.getDevice());
+	sceneColorTexture.create(window.getSize().x(), window.getSize().y());
+	RenderGraph renderGraph;
+	renderGraph.addLinkedListPass(sceneColorTexture, 0, "*", window.getId());
+	ComponentManager componentManager;
+	std::vector<IComponent*> components = renderGraph.getComponents();
+	for (unsigned int i = 0; i < components.size(); i++) {
+		componentManager.addComponent(components[i]);
+	}
 	//window.addGameObject(bistroExterior);	
 		//std::cout<<"i : "<<i<<std::endl;
 	
@@ -140,6 +153,7 @@ int main() {
 			if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED) {
 				window.close();
 			}
+			componentManager.update(window.getId(), event);
 		}
 		window.clear();		
 		window.setTypesToRender("*", window.getCurrentFrame());

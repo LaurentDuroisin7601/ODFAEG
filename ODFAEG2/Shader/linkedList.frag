@@ -35,17 +35,17 @@ layout (push_constant) uniform PushConstant {
     layout (offset=136) uint maxNodes;
     layout (offset=140) int currentImageIndex;
 } pc;
-layout(set = 0, binding = 1, r32ui) uniform coherent uimage2D headPointers[MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 2) buffer MaterialDataSSBO {
+layout(set = 0, binding = 2, r32ui) uniform coherent uimage2D headPointers[MAX_FRAMES_IN_FLIGHT];
+layout (std430, set = 0, binding = 3) buffer MaterialDataSSBO {
     MaterialData materialData[];
 } materialDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
-layout(std430, set = 0, binding = 3) buffer LinkedLists {
+layout(std430, set = 0, binding = 4) buffer LinkedLists {
   NodeType nodes[];
 } linkedListData[MAX_FRAMES_IN_FLIGHT];
-layout(std430, set = 0, binding = 4) buffer CounterSSBO {
+layout(std430, set = 0, binding = 5) buffer CounterSSBO {
   uint count;
 } countData[MAX_FRAMES_IN_FLIGHT];
-layout(set = 0, binding = 5) uniform sampler2D diffuseTextures[MAX_TEXTURES];
+layout(set = 0, binding = 6) uniform sampler2D diffuseTextures[MAX_TEXTURES];
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in vec3 normal;

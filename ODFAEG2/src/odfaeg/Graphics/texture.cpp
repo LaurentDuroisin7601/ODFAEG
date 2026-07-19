@@ -560,7 +560,7 @@ namespace odfaeg {
                 VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
             );
         }
-        bool Texture::hasStencilComponent(VkFormat format) {
+        bool Texture::hasStencilComponent(VkFormat format) {                                
             return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
         } 
         void Texture::toShaderReadOnlyOptimal(unsigned int currentFrame, VkCommandBuffer cmd) {
@@ -584,8 +584,11 @@ namespace odfaeg {
             barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barrier.image = image.getHandle();
-            VkImageAspectFlags aspectMask = image.getImageAspectFlags(); 
-            if (hasStencilComponent(image.getFormat())) {
+            VkImageAspectFlags aspectMask = image.getImageAspectFlags();
+            if (hasStencilComponent(image.getFormat())) {  
+                /*if (image.getFormat() == VK_FORMAT_R32_UINT) {
+                    system("PAUSE");
+                }*/              
                 aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
             }
             barrier.subresourceRange.aspectMask = aspectMask;           

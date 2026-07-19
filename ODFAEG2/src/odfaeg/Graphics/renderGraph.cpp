@@ -1,14 +1,14 @@
 module;
 #include <string>
 #include <vulkan/vulkan.hpp>
+#include <map>
 module odfaeg.graphic.renderGraph;
-import odfaeg.graphic.linkedListRenderer;
-import odfaeg.graphic.shadowRenderer;
 namespace odfaeg {
     namespace graphic {
         void RenderGraph::addLinkedListPass(RenderTarget& output, unsigned int layer, std::string typesToRender, unsigned int windowId) {
             LinkedListRenderer* llr = new LinkedListRenderer(output, layer, typesToRender, windowId);
             renderers.insert(std::make_pair(layer, llr));
+            inputShadowRT = nullptr;
         }
         void RenderGraph::addShadowPass(RenderTarget& output, RenderTexture& input,  unsigned int layer, std::string typesToRender, unsigned int windowId) {
             llSMTransitionPoint = layer;
@@ -32,16 +32,18 @@ namespace odfaeg {
             std::map<unsigned int, IRenderer*>::iterator it;
             for (it = renderers.begin(); it != renderers.end(); it++) {
                 it->second->clear();
-                if (it->first == llSMTransitionPoint) {
+                if (inputShadowRT != nullptr && it->first == llSMTransitionPoint) {
                     inputShadowRT->beginRecordCommandBuffer();
                     Texture::transitionImageLayout(inputShadowRT->getTexture().getImage(inputShadowRT->getImageIndex()), inputShadowRT->getCommandPool().getHandle(inputShadowRT->getCurrentFrame()), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL);
                     inputShadowRT->submit(true);
                 }
                 it->second->draw();
             }
-            inputShadowRT->beginRecordCommandBuffer();
-            Texture::transitionImageLayout(inputShadowRT->getTexture().getImage(inputShadowRT->getImageIndex()), inputShadowRT->getCommandPool().getHandle(inputShadowRT->getCurrentFrame()), VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);   
-            inputShadowRT->submit(true);         
+            if (inputShadowRT != nullptr) {
+                inputShadowRT->beginRecordCommandBuffer();
+                Texture::transitionImageLayout(inputShadowRT->getTexture().getImage(inputShadowRT->getImageIndex()), inputShadowRT->getCommandPool().getHandle(inputShadowRT->getCurrentFrame()), VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);   
+                inputShadowRT->submit(true);
+            }         
         }
     }
 }
