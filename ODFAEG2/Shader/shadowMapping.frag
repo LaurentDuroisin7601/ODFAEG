@@ -4,6 +4,7 @@
 #define MAX_TEXTURES 1024
 #define NB_PRIMITIVE_TYPES 6
 #define MAX_FRAMES_IN_FLIGHT 2
+#define NB_SWAPCHAIN_IMAGES 3
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in vec3 normal;
@@ -11,8 +12,14 @@ layout(location = 3) flat in int v_DrawID;
 layout(location = 4) flat in int primitiveType;
 layout(location = 5) flat in int currentFrame;
 layout(location = 6) in vec3 fragPos;
+layout(location = 7) in vec4 clipPos;
 layout(location = 0) out vec4 frag_color;
 #define NB_CASCADES 4
+struct NodeType {
+    vec4 color;
+    float depth;
+    uint next;
+};
 struct LightSpaceMatrix {
     mat4 lightSpaceMatrices[NB_CASCADES+1];
 };
@@ -24,50 +31,36 @@ struct PointLight {
     vec3 lightPos;
     float far_plane;
 };
-struct MaterialData {
-    vec2 uvScale;
-    vec2 uvOffset;
-    uint diffuseTextureIndex;
-    uint specularTextureIndex;
-    uint normalTextureIndex;
-    uint metalnessTextureIndex;
-    uint roughnessTextureIndex;
-    uint aoTextureIndex;
-    uint emissiveTextureIndex;
-    uint materialType;
-    uint materialSet;
-    uint nbVertices;
-    uint nbIndexes;
-    int instanceGroupId;
-    uint vertsInstanceSet;
-    uint materialId;
-    uint nbBuffers;
-    uint padding;
-};
 layout (push_constant) uniform PushConstant { 
     layout(offset=144) uint view;     
     layout(offset=208) uint nbDirLights;
     layout(offset=212) uint nbPointLights; 
+    layout(offset=216) uint imageIndex;
 } pc;
-layout (std430, set = 0, binding = 1) buffer MaterialDataSSBO {
-    MaterialData materialData[];
-} materialDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 2) buffer LightSpaceMatricesSSBO {
+layout (std430, set = 0, binding = 1) buffer LightSpaceMatricesSSBO {
     LightSpaceMatrix lightSpaceMatrices[];
 } lightSpaceMatricesData[MAX_FRAMES_IN_FLIGHT];
-layout (std140, set = 0, binding = 3) uniform cascadePlaneDistanceSSBO {
+layout (std140, set = 0, binding = 2) uniform cascadePlaneDistanceSSBO {
     float cascadePlaneDistances[NB_CASCADES+1];
     int cascadeCount;   // number of
 } cascadePlaneDistanceData[MAX_FRAMES_IN_FLIGHT];
-layout(set = 0, binding = 4) buffer DirLightSSBO {
+layout(set = 0, binding = 3) buffer DirLightSSBO {
     DirLight dirLights[];
 } dirLightData[MAX_FRAMES_IN_FLIGHT];
-layout(set = 0, binding = 5) buffer PointLightSSBO {
+layout(set = 0, binding = 4) buffer PointLightSSBO {
     PointLight pointLights[];
 } pointLightData[MAX_FRAMES_IN_FLIGHT];
-layout(set = 0, binding = 6) uniform sampler2DArray shadowMap;
-layout(set = 0, binding = 7) uniform samplerCube depthMap;
-layout(set = 0, binding = 8) uniform sampler2D diffuseTextures[MAX_TEXTURES];
+layout(set = 0, binding = 5) uniform sampler2DArray shadowMap;
+layout(set = 0, binding = 6) uniform samplerCube depthMap;
+layout(set = 0, binding = 7) uniform sampler2D sceneColorTextures[NB_SWAPCHAIN_IMAGES];
+layout(set = 0, binding = 8, r32ui) uniform coherent uimage2D headPointersDir[MAX_FRAMES_IN_FLIGHT*NB_CASCADES+1];
+layout(set = 0, binding = 9) buffer LinkedListDirBufferSSBO {
+    NodeType nodes[];
+} linkedListDirData[MAX_FRAMES_IN_FLIGHT*NB_CASCADES+1];
+layout(set = 0, binding = 10, r32ui) uniform coherent uimage2D headPointersPoint[MAX_FRAMES_IN_FLIGHT*6];
+layout(set = 0, binding = 11) buffer LinkedListPointBufferSSBO {
+    NodeType nodes[];
+} linkedListPointData[MAX_FRAMES_IN_FLIGHT*6];
 float shadowCalculationDir(vec3 fragPosWorldSpace)
 {
     // select cascade layer 
@@ -140,6 +133,30 @@ float shadowCalculationPoint(vec3 fragPos)
         //debugPrintfEXT("Frag to light %v3f", fragToLight);
         // use the light to fragment vector to sample from the depth map    
         float closestDepth = texture(depthMap, fragToLight).r;
+        vec3 ad = abs(fragToLight);
+        int face; 
+        vec3 d =  fragToLight;      
+        if (ad.x >= ad.y && ad.x >= ad.z)
+            face = d.x > 0 ? 0 : 1; // +X / -X
+        else if (ad.y >= ad.x && ad.y >= ad.z)
+            face = d.y > 0 ? 2 : 3; // +Y / -Y
+        else
+            face = d.z > 0 ? 4 : 5; // +Z / -Z
+        vec2 uv;
+        if (face == 0) {
+            uv = vec2(-d.z, -d.y) / abs(d.x);
+        } else if (face == 1) {
+            uv = vec2(d.z, -d.y) / abs(d.x);
+        } else if (face == 2) {
+            uv = vec2(d.x, d.z) / abs(d.y);
+        } else if (face == 3) {
+            uv = vec2(d.x, -d.z) / abs(d.y);
+        } else if (face == 4) {
+            uv = vec2(d.x, -d.y) / abs(d.z);
+        } else {
+            uv = vec2(-d.x, -d.y) / abs(d.z);
+        }
+        uv = uv * 0.5 + 0.5;
         //debugPrintfEXT("cosest depth : %f",closestDepth);
         // it is currently in linear range between [0,1]. Re-transform back to original value
         closestDepth *= pointLightData[currentFrame].pointLights[l].far_plane;
@@ -159,12 +176,11 @@ float shadowCalculationPoint(vec3 fragPos)
     return shadow;
 }  
 void main()
-{
-    MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[v_DrawID];
+{    
     //debugPrintfEXT("draw");
-    vec4 diffuse = fragColor;
-    if (mat.diffuseTextureIndex > 0)
-        diffuse *= texture(diffuseTextures[mat.diffuseTextureIndex-1], fragTexCoord);
+    vec3 ndc = clipPos.xyz / clipPos.w;
+    vec2 uv = ndc.xy * 0.5 + 0.5;
+    vec4 sceneColor = texture(sceneColorTextures[pc.imageIndex], uv);
     vec3 normal = normalize(normal);
     // calculate shadow
     float shadowDir = shadowCalculationDir(fragPos);
@@ -172,5 +188,5 @@ void main()
     float shadow = max(shadowDir, shadowPoint);
     /*if (shadowDir > 0 || shadowPoint > 0)
         debugPrintfEXT("shadow dir %f", shadow);*/   
-    frag_color = vec4(vec3(diffuse) * (1 - shadow), diffuse.a);
+    frag_color = vec4(vec3(sceneColor) * (1 - shadow), sceneColor.a);
 }

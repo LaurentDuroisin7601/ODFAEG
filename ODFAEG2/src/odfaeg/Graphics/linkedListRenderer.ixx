@@ -35,7 +35,7 @@ namespace odfaeg {
             void drawNextFrame();
             void draw();
             unsigned int getLayer();
-            bool isRendererReady();
+            bool isRendererReady();            
         private :
             VertexBuffer fullScreenQuad;
             std::string typesToRenderExpression;

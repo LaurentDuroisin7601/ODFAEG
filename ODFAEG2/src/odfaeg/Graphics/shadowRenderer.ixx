@@ -12,6 +12,7 @@ import odfaeg.graphic.renderTarget;
 import odfaeg.math.matrix;
 import odfaeg.math.vec;
 import odfaeg.graphic.renderTexture;
+import odfaeg.graphic.image;
 import odfaeg.graphic.shader;
 import odfaeg.graphic.pipeline;
 import odfaeg.graphic.descriptor;
@@ -39,10 +40,15 @@ namespace odfaeg {
                math::Matrix4f view; 
                unsigned int nbDirLights;
                unsigned int nbPointLights;
+               unsigned int imageIndex;
+               unsigned int maxNodes;
             }; 
             struct ShadowPassCSMVertPC {
                 int primitiveType;
                 int currentFrame;
+            };  
+            struct ShadowPassCSMFragPC {                
+                unsigned int maxNodes;
             };  
             struct ShadowPassPLVertPC {
                 math::Matrix4f lightProjMatrix;
@@ -54,6 +60,7 @@ namespace odfaeg {
                 math::Vec3f lightPos;
                 float pad;                
                 float far_plane;
+                unsigned int maxNodes;
             };
             struct DirLight {               
                 alignas(16) math::Vec3f dir; 
@@ -69,7 +76,7 @@ namespace odfaeg {
             struct ViewPLMatrix {
                 math::Matrix4f viewsPLMatrices[6];
             };
-            ShadowRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, bool usethread=true);
+            ShadowRenderer(RenderTarget& parentRenderer, RenderTexture& sceneColorTexture, unsigned int layer, std::string typesToRenderExpression, bool usethread=true);
             void createCommandPools();
             void createDescriptorsAndPipelines();
             void updateDescriptorSets();
@@ -88,9 +95,9 @@ namespace odfaeg {
             std::array<math::Vec3f, 8> getFrustrumCornersWordlSpace(math::Matrix4f projView);
             std::vector<LightSpaceMatrix>  fLightSpaceMatrices;
             RenderTarget& parentRenderer;
+            RenderTexture& sceneColorTexture;
             RenderTexture shadowMapPL;
-            RenderTexture shadowMap;
-            
+            RenderTexture shadowMap;            
             Shader shadowPassCSMShader, shadowPassPLShader, shadowMappingShader;            
             
             CommandPool shadowPassCommandPool, shadowPassPLCommandPool, shadowMappingCommandPool;            
@@ -113,9 +120,16 @@ namespace odfaeg {
             ShadowMappingVertPC shadowMappingVertPC;
             ShadowMappingFragPC shadowMappingFragPC;
             ShadowPassCSMVertPC shadowPassCSMVertPC;
+            ShadowPassCSMFragPC shadowPassCSMFragPC;
             ShadowPassPLVertPC shadowPassPLVertPC;
             ShadowPassPLFragPC shadowPassPLFragPC;
             std::vector<ViewPLMatrix> lightViewsPLMatrices;
+            std::deque<Buffer> linkedListDirBuffer;
+            std::deque<Image> headPtrsDirStorageImage;
+            std::deque<Buffer> nodeCounterDirBuffer;
+            std::deque<Buffer> linkedListPointBuffer;
+            std::deque<Image> headPtrsPointStorageImage;
+            std::deque<Buffer> nodeCounterPointBuffer;
             CommandPool commandPool;
             std::vector<DirLight> dirLights;
             std::vector<PointLight> pointLights; 

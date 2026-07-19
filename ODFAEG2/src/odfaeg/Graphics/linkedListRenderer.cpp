@@ -26,7 +26,8 @@ namespace odfaeg {
         quadLinkedListShader(GPUContext::instance().getDevice()),
         linkedListCmdPool(GPUContext::instance().getDevice()),
         quadLinkedListCommandPool(GPUContext::instance().getDevice()),
-        parentRenderer(parentRenderer), commandPool(GPUContext::instance().getDevice()) {        
+        parentRenderer(parentRenderer), commandPool(GPUContext::instance().getDevice())
+        {        
             rendererReady.store(false);
             unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int);
             math::Vector2u size = parentRenderer.getSize();
@@ -331,6 +332,6 @@ namespace odfaeg {
         }
         unsigned int LinkedListRenderer::getLayer() {
             return layer;
-        }
+        }        
     }
 }

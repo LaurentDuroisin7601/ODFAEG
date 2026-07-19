@@ -27,6 +27,7 @@ layout(location = 3) flat out int v_DrawID;
 layout(location = 4) flat out int primitiveType;
 layout(location = 5) flat out int currentFrame;
 layout(location = 6) out vec3 fragPos;
+layout(location = 7) out vec4 clipPos; 
 layout (push_constant) uniform PushConstant {
     mat4 projMatrix;
     mat4 viewMatrix;
@@ -41,7 +42,7 @@ void main() {
     //debugPrintfEXT("Vertex shader ok!");
     gl_PointSize = 2.0f;
     mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[gl_InstanceIndex].modelMatrix;
-    gl_Position =  pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(inPosition, 1);    
+    gl_Position =  pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(inPosition, 1); 
     fragColor = inColor;
     fragTexCoord = inTexCoord;
     normal = transpose(inverse(mat3(modelMatrix))) * normals;
