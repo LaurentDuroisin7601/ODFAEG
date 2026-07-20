@@ -41,8 +41,7 @@ namespace odfaeg {
                math::Matrix4f view; 
                unsigned int nbDirLights;
                unsigned int nbPointLights;
-               unsigned int imageIndex;
-               unsigned int maxNodes;
+               unsigned int imageIndex;               
             }; 
             struct ShadowPassCSMVertPC {
                 int primitiveType;

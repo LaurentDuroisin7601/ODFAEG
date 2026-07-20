@@ -598,11 +598,11 @@ namespace odfaeg {
             shadowMap.getDepthStencilTexture().getImage(0).setLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
             shadowMapPL.getDepthStencilTexture().getImage(0).setLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
             for (unsigned int i = 0; i <  sceneColorTexture.getTexture().getNbBuffers(); i++) {
-                sceneColorTexture.getTexture().getImage(0).setLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                sceneColorTexture.getTexture().getImage(i).setLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
             }
             shadowMappingDescriptorSet.updateImageInfos(7, sceneColorTexture.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);            
             for (unsigned int i = 0; i <  sceneColorTexture.getTexture().getNbBuffers(); i++) {
-                sceneColorTexture.getTexture().getImage(0).setLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                sceneColorTexture.getTexture().getImage(i).setLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
             }
             shadowMappingDescriptorSet.updateImageInfos(8, headPtrsDirStorageImage, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
             shadowMappingDescriptorSet.updateBufferInfos(9, linkedListDirBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -822,7 +822,8 @@ namespace odfaeg {
                     shadowMappingVertPC.currentFrame = parentRenderer.getCurrentFrame();  
                     shadowMappingFragPC.view = parentRenderer.getCamera().getViewMatrix().getMatrix();
                     shadowMappingFragPC.nbDirLights = dirLights.size();  
-                    shadowMappingFragPC.nbPointLights = pointLights.size();                         
+                    shadowMappingFragPC.nbPointLights = pointLights.size();
+                    shadowMappingFragPC.imageIndex = sceneColorTexture.getImageIndex();                         
                     //std::cout << "sizeof(ViewProjMatPC) = " << sizeof(ViewProjMatPC) << std::endl;
                     for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
                         shadowMappingVertPC.primitiveType = i;
