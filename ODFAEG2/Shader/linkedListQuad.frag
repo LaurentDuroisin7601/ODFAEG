@@ -41,7 +41,7 @@ void main() {
   vec4 color = vec4(0, 0, 0, 0);
   for( int i = 0; i < count; i++)
   {
-    debugPrintfEXT("color");
+    //debugPrintfEXT("color");
     /*color.rgb = frags[i].color.rgb * frags[i].color.a + color.rgb * (1 - frags[i].color.a);
     color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);*/
     color = mix (color, frags[i].color, frags[i].color.a);

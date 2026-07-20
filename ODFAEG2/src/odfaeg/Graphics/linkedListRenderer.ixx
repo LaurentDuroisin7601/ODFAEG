@@ -28,6 +28,12 @@ namespace odfaeg {
                 unsigned int maxNodes;
                 int currentImageIndex;
             };
+            struct ViewProjMatPC {
+				math::Matrix4f projMatrix;
+				math::Matrix4f viewMatrix;
+				int primitiveType;
+				int currentFrame;
+			};
             LinkedListRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
             void createCommandPools();
             void createDescriptorsAndPipelines();
@@ -58,6 +64,7 @@ namespace odfaeg {
             std::atomic<bool> stop= {};
             std::atomic<bool> rendererReady;            
             LinkedListPC linkedListPC;
+            ViewProjMatPC viewProjMatPC;
             bool needToUpdateDescriptorSets;
             CommandPool commandPool;
         };

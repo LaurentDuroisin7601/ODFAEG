@@ -115,7 +115,7 @@ namespace odfaeg {
                 vkResetFences(device.getDevice(), 1, &imagesInFlight[imageIndex]);
             }*/
             //std::cout<<"clear : "<<getCurrentFrame()<<std::endl;
-            std::cout<<"current frame : "<<currentFrame<<std::endl;
+            //std::cout<<"current frame : "<<currentFrame<<std::endl;
             VkResult result = vkAcquireNextImageKHR(device.getDevice(), swapchain.getHandle(), UINT64_MAX, imageAvailableSemaphores[currentFrame].getHandle(), inFlightFences[currentFrame].getHandle(), &imageIndex);
             if (result == VK_ERROR_OUT_OF_DATE_KHR) {
                 framebufferResized = false;

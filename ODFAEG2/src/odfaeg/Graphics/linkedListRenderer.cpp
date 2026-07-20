@@ -115,11 +115,11 @@ namespace odfaeg {
             std::vector<VkPushConstantRange> pushConstants;
             VkPushConstantRange vsPushConstant;
             vsPushConstant.offset = 0;
-            vsPushConstant.size = sizeof(RenderTarget::ViewProjMatPC);
+            vsPushConstant.size = sizeof(ViewProjMatPC);
             vsPushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
             pushConstants.push_back(vsPushConstant);
             VkPushConstantRange fsPushConstant;
-            fsPushConstant.offset = sizeof(RenderTarget::ViewProjMatPC);
+            fsPushConstant.offset = sizeof(ViewProjMatPC);
             fsPushConstant.size = sizeof(LinkedListPC);
             fsPushConstant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
             pushConstants.push_back(fsPushConstant);
@@ -258,7 +258,12 @@ namespace odfaeg {
                         vkCmdBindPipeline(linkedListCmdPool.getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), linkedListShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getHandle());
                         //std::cout<<"pipeline bound"<<std::endl;
                         vkCmdBindDescriptorSets(linkedListCmdPool.getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), linkedListShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
-                        vkCmdPushConstants(linkedListCmdPool.getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), linkedListShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(RenderTarget::ViewProjMatPC), sizeof(LinkedListPC), &linkedListPC);
+                        viewProjMatPC.projMatrix = parentRenderer.getCamera().getProjMatrix().getMatrix().transpose();
+                        viewProjMatPC.viewMatrix = parentRenderer.getCamera().getViewMatrix().getMatrix().transpose();
+                        viewProjMatPC.currentFrame = parentRenderer.getCurrentFrame();
+                        viewProjMatPC.primitiveType = i; 
+                        vkCmdPushConstants(linkedListCmdPool.getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), linkedListShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ViewProjMatPC), &viewProjMatPC);
+                        vkCmdPushConstants(linkedListCmdPool.getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), linkedListShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(ViewProjMatPC), sizeof(LinkedListPC), &linkedListPC);
                         parentRenderer.draw(linkedListCmdPool, static_cast<entity::PrimitiveType>(i), states);
                     }
                     linkedListCmdPool.endRecordCommandBuffer(parentRenderer.getCurrentFrame());
@@ -318,7 +323,7 @@ namespace odfaeg {
                 bool useDepthTest = parentRenderer.useDepthTest();
                 bool useStencilTest = parentRenderer.useStencilTest();
                 parentRenderer.setDepthStencil(false, false);                
-                parentRenderer.applyComputeGraphicsBarrier();
+                //parentRenderer.applyComputeGraphicsBarrier();
                 //std::cout<<"commands : !"<<parentRenderer.getCurrentFrame()<<" registered!"<<std::endl;
                 parentRenderer.beginRendering(true);
                 vkCmdExecuteCommands(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &linkedListCmdPool.getHandle(parentRenderer.getCurrentFrame()));
