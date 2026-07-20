@@ -588,8 +588,8 @@ namespace odfaeg {
 				}
 				totalMeshlets = meshletDatas.size();
 				totalSubMeshes = subMeshesDatas.size();
-				std::cout<<"total sub meshes"<<totalSubMeshes<<std::endl;
-				system("PAUSE");
+				/*std::cout<<"total sub meshes"<<totalSubMeshes<<std::endl;
+				system("PAUSE");*/
 				for (unsigned int i = 0; i < 1; i++) {
 					for (unsigned int j = 0; j < NB_PRIMITIVE_TYPES; j++) {
 						//std::cout<<"update vertices"<<std::endl;
