@@ -36,7 +36,7 @@ namespace odfaeg {
             maxNodes = 20 * size.x() * size.y();
             Device::QueueFamilyIndices queueFamilyIndices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice());
             commandPool.create(queueFamilyIndices.graphicsFamily.value());
-            commandPool.createCommandBuffers(true, 1);
+            commandPool.createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT);
             commandPool.beginRecordCommandBuffer(0);
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 headPtrsStorageImage.emplace_back(GPUContext::instance().getDevice());
