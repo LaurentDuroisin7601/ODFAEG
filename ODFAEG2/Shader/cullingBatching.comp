@@ -258,7 +258,7 @@ void main() {
                         //debugPrintfEXT("model data matrix : %v4f\n%v4f\n%v4f\n%v4f", modelData.modelMatrix[0], modelData.modelMatrix[1], modelData.modelMatrix[2], modelData.modelMatrix[3]);
                         //debugPrintfEXT("object data offset : %i",objectDataOffset);
                         outputModelData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceBase] = modelData;
-                        debugPrintfEXT("offset model : %i", instanceBase);
+                        //debugPrintfEXT("offset model : %i", instanceBase);
                         MaterialData material = inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId];
                         material.materialId = materialId;
                         //debugPrintfEXT("culling shader draw id : %i, material id : %i", indirectElementsDrawCommandOffset, materialId);

@@ -51,7 +51,7 @@ layout (std430, set = 0, binding = 1) buffer SubMeshDataSSBO {
     SubMesh subMesh[];
 } subMeshData[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
 void main() {
-    //debugPrintfEXT("Vertex shader ok!");
+    debugPrintfEXT("primitive type : %i, current frame : %i", pc.primitiveType, pc.currentFrame);
     gl_PointSize = 2.0f;
     SubMesh subMesh = subMeshData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMesh[gl_DrawID];
     mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[gl_InstanceIndex].modelMatrix;

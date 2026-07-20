@@ -633,7 +633,7 @@ namespace odfaeg {
 					//std::cout<<"submeshes buffer : "<<staggingObjects[i].getHandle()<<std::endl;
 				}
 				for (unsigned int i = 0; i < 1; i++) {
-					//std::cout<<"copy model datas"<<std::endl;
+					//std::cout<<"copy model datas : "<<modelDatas.size()<<std::endl;
 					staggingModelDatas[i].create(modelDatas.size() * sizeof(ModelData), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 					staggingModelDatas[i].update(modelDatas.data(), modelDatas.size() * sizeof(ModelData));
 					this->modelDatas[i].create(modelDatas.size() * sizeof(ModelData), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
@@ -655,7 +655,8 @@ namespace odfaeg {
 					for (unsigned int k = 0; k < NB_PRIMITIVE_TYPES; k++) {
 						//std::cout<<"update : "<<j<<","<<k<<std::endl;
 						outputObjectDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-						outputModelDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);;
+						outputModelDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+						//std::cout<<"output model data : "<<outputModelDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 						outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(MaterialData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 						outputMeshes[j * NB_PRIMITIVE_TYPES + k].create(sizeof(entity::SubMesh) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);						
 						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
@@ -1216,7 +1217,8 @@ namespace odfaeg {
 				//std::cout<<"range output model datas : "<<outputModelDatas[0].getRange()<<std::endl;
 				//std::cout<<"object data"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(8, offsetInOutputModelData, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				//std::cout<<"range output objects datas : "<<outputObjectDatas[0].getRange()<<std::endl;
+				/*std::cout<<"range output model datas : "<<outputModelDatas[0].getRange()<<std::endl;
+				system("PAUSE");*/
 				//std::cout<<"offset in output vertex"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(9, offsetInOutputMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"offset in output index"<<std::endl;

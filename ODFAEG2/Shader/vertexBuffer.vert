@@ -31,8 +31,8 @@ struct VertexBufferData {
     vec2 uvOffset;
     int textureIndex;
     int nbBuffers;    
-    int currentFrame;
-	int currentImageIndex;
+    uint currentFrame;
+	uint currentImageIndex;
 };
 void main() {
          //debugPrintfEXT("Proj matrix : 0:%v4f\n1:%v4f\n2:%v4f\n3:%v4f",pc.projMatrix[0], pc.projMatrix[1], pc.projMatrix[2], pc.projMatrix[3]);

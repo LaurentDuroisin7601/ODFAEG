@@ -165,10 +165,10 @@ namespace odfaeg {
         void LinkedListRenderer::updateDescriptorSets() {
             bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
             DescriptorSet& linkedListSet = GPUContext::instance().getDescriptorSets(linkedListShader, (hasDiffuseTexture) ? 7 : 6, 1)[0];
-            linkedListSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-            linkedListSet.updateBufferInfos(1, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MESHES), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            linkedListSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            linkedListSet.updateBufferInfos(1, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MESHES+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             linkedListSet.updateImageInfos(2, headPtrsStorageImage, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
-            linkedListSet.updateBufferInfos(3, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            linkedListSet.updateBufferInfos(3, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             linkedListSet.updateBufferInfos(4, linkedListBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             linkedListSet.updateBufferInfos(5, nodeCounterBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             if (hasDiffuseTexture) {
@@ -261,7 +261,9 @@ namespace odfaeg {
                         viewProjMatPC.projMatrix = parentRenderer.getCamera().getProjMatrix().getMatrix().transpose();
                         viewProjMatPC.viewMatrix = parentRenderer.getCamera().getViewMatrix().getMatrix().transpose();
                         viewProjMatPC.currentFrame = parentRenderer.getCurrentFrame();
-                        viewProjMatPC.primitiveType = i; 
+                        viewProjMatPC.primitiveType = i;
+                        /*std::cout<<"current frame : "<<viewProjMatPC.currentFrame<<std::endl;
+                        system("PAUSE");*/
                         vkCmdPushConstants(linkedListCmdPool.getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), linkedListShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ViewProjMatPC), &viewProjMatPC);
                         vkCmdPushConstants(linkedListCmdPool.getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), linkedListShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(ViewProjMatPC), sizeof(LinkedListPC), &linkedListPC);
                         parentRenderer.draw(linkedListCmdPool, static_cast<entity::PrimitiveType>(i), states);

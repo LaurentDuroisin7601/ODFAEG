@@ -33,7 +33,8 @@ namespace odfaeg {
         }
         void RenderGraph::render() {
             std::map<unsigned int, IRenderer*>::iterator it;
-            inputShadowRT->clear();
+            
+            //inputShadowRT->clear();
             for (it = renderers.begin(); it != renderers.end(); it++) {
                 //std::cout<<"clear"<<std::endl;
                 

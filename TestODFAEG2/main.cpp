@@ -128,7 +128,7 @@ int main() {
 	sceneColorTexture.create(window.getSize().x(), window.getSize().y());
 	sceneColorTexture.setCamera(camera);
 	RenderGraph renderGraph;
-	//renderGraph.addLinkedListPass(sceneColorTexture, 0, "*", window.getId());
+	renderGraph.addLinkedListPass(sceneColorTexture, 0, "*", window.getId());
 	ComponentManager componentManager;
 	std::vector<IComponent*> components = renderGraph.getComponents();
 	for (unsigned int i = 0; i < components.size(); i++) {
@@ -158,16 +158,18 @@ int main() {
 		
 		/*window.setTypesToRender("*", window.getCurrentFrame());
 		window.applyCullingAndBatching();*/
+		window.clear();
 		sceneColorTexture.clear(Color::Red);
 		/*sceneColorTexture.beginRendering();
 		sceneColorTexture.endRendering();*/
+		
+		renderGraph.render();
 		sceneColorTexture.submit(true);
 		sceneColorTexture.display();
-		//renderGraph.render();
-		window.clear();
+		
 		RectangleShape rect(ctx.getDevice(), Vec3f(800, 600, 0));
 		rect.move(Vec3f(-400, -300, 0));
-		rect.setFillColor(Color::Red);
+		//rect.setFillColor(Color::Red);
 		rect.setTexture(&sceneColorTexture.getTexture());
 		rect.setTextureRect(IntRect(0, 0, 1, 1));		
 		window.draw(rect);
