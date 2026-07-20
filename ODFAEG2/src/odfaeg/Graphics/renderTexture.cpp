@@ -328,7 +328,7 @@ namespace odfaeg {
                 if (vkQueueSubmit(device.getQueue(indices.graphicsFamily.value(), queueIndex), 1, &submitInfo, (fenceToSubmit == nullptr) ? inFlightFences[currentFrame].getHandle() : fenceToSubmit) != VK_SUCCESS) {
                     throw std::runtime_error("�chec de l'envoi d'un graphic command buffer! ");
                 }
-                std::cout<<"wait on fence : "<<inFlightFences[currentFrame].getHandle()<<std::endl;
+                //std::cout<<"wait on fence : "<<inFlightFences[currentFrame].getHandle()<<std::endl;
                 VkResult r2 = vkWaitForFences(device.getDevice(), 1, (fenceToSubmit == nullptr) ? &inFlightFences[currentFrame].getHandle() : &fenceToSubmit, VK_TRUE, UINT64_MAX);
                 if (r2 == -4)
                     printf("wait for fence result : %d\n", r2);
