@@ -298,7 +298,9 @@ namespace odfaeg {
                             signalValues.push_back(0);
                         }
                     }
-                    getTexture().update(getCommandPool().getHandle(currentFrame), m_textures[0], imageIndex);
+                    if (!isDepthOnly()) {
+                        getTexture().update(getCommandPool().getHandle(currentFrame), m_textures[0], imageIndex);
+                    }
                     /*VkImageMemoryBarrier barrier{};
                     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                     barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;

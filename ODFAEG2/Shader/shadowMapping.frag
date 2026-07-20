@@ -52,7 +52,7 @@ layout(set = 0, binding = 4) buffer PointLightSSBO {
 } pointLightData[MAX_FRAMES_IN_FLIGHT];
 layout(set = 0, binding = 5) uniform sampler2DArray shadowMap;
 layout(set = 0, binding = 6) uniform samplerCube depthMap;
-layout(set = 0, binding = 7) uniform sampler2D sceneColorTextures[NB_SWAPCHAIN_IMAGES];
+layout(set = 0, binding = 7) uniform sampler2D sceneColorTextures;
 layout(set = 0, binding = 8, r32ui) uniform coherent uimage2D headPointersDir[MAX_FRAMES_IN_FLIGHT*(NB_CASCADES+1)];
 layout(set = 0, binding = 9) buffer LinkedListDirBufferSSBO {
     NodeType nodes[];
@@ -180,7 +180,7 @@ void main()
     //debugPrintfEXT("draw");    
     vec2 uv = gl_FragCoord.xy / pc.resolution;
     //debugPrintfEXT("uv %v2f, resolution %v2i", uv, pc.resolution);
-    vec4 sceneColor = texture(sceneColorTextures[pc.imageIndex], uv);
+    vec4 sceneColor = texture(sceneColorTextures, uv);
     /*if (sceneColor.r != 0 || sceneColor.r != 0 || sceneColor.b != 0)
         debugPrintfEXT("scene color %v4f", sceneColor);*/
     vec3 normal = normalize(normal);

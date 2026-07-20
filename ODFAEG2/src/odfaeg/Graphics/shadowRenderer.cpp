@@ -383,7 +383,7 @@ namespace odfaeg {
             shadowMappingLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
             shadowMappingLayout.updateLayout(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
             shadowMappingLayout.updateLayout(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
-            shadowMappingLayout.updateLayout(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, RenderTexture::NB_SWAPCHAIN_IMAGES, VK_SHADER_STAGE_FRAGMENT_BIT);
+            shadowMappingLayout.updateLayout(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
             shadowMappingLayout.updateLayout(8, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT*(NB_CASCADES+1), VK_SHADER_STAGE_FRAGMENT_BIT);
             shadowMappingLayout.updateLayout(9, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*(NB_CASCADES+1), VK_SHADER_STAGE_FRAGMENT_BIT);
             shadowMappingLayout.updateLayout(10, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT*6, VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -430,7 +430,7 @@ namespace odfaeg {
             shadowMappingPool.updatePoolSize(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT);
             shadowMappingPool.updatePoolSize(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             shadowMappingPool.updatePoolSize(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
-            shadowMappingPool.updatePoolSize(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, RenderTexture::NB_SWAPCHAIN_IMAGES);
+            shadowMappingPool.updatePoolSize(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             shadowMappingPool.updatePoolSize(8, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT*(NB_CASCADES+1));
             shadowMappingPool.updatePoolSize(9, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*(NB_CASCADES+1));
             shadowMappingPool.updatePoolSize(10, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT*6);

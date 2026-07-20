@@ -63,7 +63,7 @@ int main() {
 	Camera camera(800, 600, 80, 1, 1000);
 	//camera.setUp(Vec3f(0.f, -1.f, 0.f));
 	camera.move(0.f, 0.f, 5.f);
-	//window.setCamera(camera);
+	window.setCamera(camera);
 	ResourceManager<Texture, TextureNames> textureManager;
 	ResourceManager<Texture, std::string> modelTextureManager;
 	ModelLoader modelLoader(GPUContext::instance().getDevice(), modelTextureManager);
@@ -140,13 +140,13 @@ int main() {
 	//std::cout<<"ok"<<std::endl;
 	Clock clock;
 	unsigned int fps = 0;
-	/*renderGraph.addShadowPass(window, sceneColorTexture, 1, "*", window.getId());
+	renderGraph.addShadowPass(window, sceneColorTexture, 1, "*", window.getId());
 	ShadowRenderer::DirLight dirLight;
 	dirLight.dir = Vec3f(20, 50, 20);
 	renderGraph.addDirectionnalLight<ShadowRenderer>(1, dirLight);
 	ShadowRenderer::PointLight pointLight;
 	pointLight.pos = Vec3f(0, 0, 0);
-	renderGraph.addPonctualLight<ShadowRenderer>(1, pointLight);*/	
+	renderGraph.addPonctualLight<ShadowRenderer>(1, pointLight);	
 	while (window.isOpen()) {
 		odfaeg::window::IEvent event;
 		while (window.pollEvent(event)) {
@@ -164,15 +164,15 @@ int main() {
 		sceneColorTexture.endRendering();*/
 		
 		renderGraph.render();
-		sceneColorTexture.submit(true);
-		sceneColorTexture.display();
+		/*sceneColorTexture.submit(true);
+		sceneColorTexture.display();*/
 		
-		RectangleShape rect(ctx.getDevice(), Vec3f(800, 600, 0));
+		/*RectangleShape rect(ctx.getDevice(), Vec3f(800, 600, 0));
 		rect.move(Vec3f(-400, -300, 0));
 		//rect.setFillColor(Color::Red);
 		rect.setTexture(&sceneColorTexture.getTexture());
 		rect.setTextureRect(IntRect(0, 0, 1, 1));		
-		window.draw(rect);
+		window.draw(rect);*/
 		//sceneColorTexture.submit(true);		
 		/*window.setTypesToRender("*", window.getCurrentFrame());
 		//window.applyCullingAndBatching();
