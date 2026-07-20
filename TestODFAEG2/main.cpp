@@ -156,17 +156,16 @@ int main() {
 			componentManager.update(window.getId(), event);
 		}
 		window.clear();
-		sceneColorTexture.clear();
+		//sceneColorTexture.clear();
 		renderGraph.render();
-		sceneColorTexture.submit(true);		
+		//sceneColorTexture.submit(true);		
 		/*window.setTypesToRender("*", window.getCurrentFrame());
 		//window.applyCullingAndBatching();
 		window.draw(Triangles);*/
 		/*shadowRenderer.clear();
 		//shadowRenderer.drawNextFrame();
 		shadowRenderer.draw();*/
-		window.submit(true);
-		sceneColorTexture.display();
+		window.submit(true);		
 		window.display();
 		fps++;
 		if (clock.getElapsedTime() >= seconds(1.f)) {

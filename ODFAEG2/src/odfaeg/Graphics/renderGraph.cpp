@@ -33,26 +33,17 @@ namespace odfaeg {
         }
         void RenderGraph::render() {
             std::map<unsigned int, IRenderer*>::iterator it;
+            inputShadowRT->clear();
             for (it = renderers.begin(); it != renderers.end(); it++) {
                 //std::cout<<"clear"<<std::endl;
                 
                 //std::cout<<"cleared"<<std::endl;
-                if (inputShadowRT != nullptr && it->first == llSMTransitionPoint) {
-                    //std::cout<<"transition : "<<it->first<<std::endl;
-                    Texture::transitionImageLayout(inputShadowRT->getTexture().getImage(inputShadowRT->getImageIndex()), inputShadowRT->getCommandPool().getHandle(inputShadowRT->getCurrentFrame()), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-                    inputShadowRT->submit();
-                }
                 //std::cout<<"draw : "<<it->first<<std::endl;
                 it->second->clear();
                 //std::cout<<"draw"<<std::endl;
                 it->second->draw();
                 //std::cout<<"drawed"<<std::endl;
-            }
-            if (inputShadowRT != nullptr) {
-                inputShadowRT->beginRecordCommandBuffer();
-                Texture::transitionImageLayout(inputShadowRT->getTexture().getImage(inputShadowRT->getImageIndex()), inputShadowRT->getCommandPool().getHandle(inputShadowRT->getCurrentFrame()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);   
-                //inputShadowRT->submit(true);
-            }         
+            }   
         }
     }
 }
