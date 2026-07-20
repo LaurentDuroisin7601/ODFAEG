@@ -42,7 +42,7 @@ layout (push_constant) uniform PushConstant {
 layout (std430, set = 0, binding = 2) buffer MaterialDataSSBO {
     MaterialData materialData[];
 } materialDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
-layout (set = 0, binding = 3, r32ui) uniform coherent uimage2D headPointers[MAX_FRAMES_IN_FLIGHT*NB_CASCADES+1];
+layout (set = 0, binding = 3, r32ui) uniform coherent uimage2D headPointers[MAX_FRAMES_IN_FLIGHT*(NB_CASCADES+1)];
 layout (std430, set = 0, binding = 4) buffer nodeCountSSBO {
     uint count;
 } countData[MAX_FRAMES_IN_FLIGHT*(NB_CASCADES+1)];

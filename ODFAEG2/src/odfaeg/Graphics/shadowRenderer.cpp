@@ -346,8 +346,7 @@ namespace odfaeg {
             vertexPCRange.size = sizeof(ShadowPassPLVertPC);                        
             pushConstants.push_back(vertexPCRange);            
             fragmentPCRange.offset = sizeof(ShadowPassPLVertPC);
-            fragmentPCRange.size = sizeof(ShadowPassPLFragPC);
-            fragmentPCRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+            fragmentPCRange.size = sizeof(ShadowPassPLFragPC);            
             pushConstants.push_back(fragmentPCRange);
             //std::cout<<"create pipelines"<<std::endl;
             //shadowPassCSMPipeline.resize(NB_PRIMITIVE_TYPES);
@@ -723,6 +722,7 @@ namespace odfaeg {
                             vkCmdBindPipeline(shadowPassCommandPool.getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
                             //std::cout<<"registered bind pipeline"<<std::endl;
                             vkCmdPushConstants(shadowPassCommandPool.getHandle(renderFrame), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ShadowPassCSMVertPC), &shadowPassCSMVertPC);
+                            vkCmdPushConstants(shadowPassCommandPool.getHandle(renderFrame), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(ShadowPassCSMVertPC), sizeof(ShadowPassCSMFragPC), &shadowPassCSMFragPC);
                             //std::cout<<"registed bind push constants"<<std::endl;
                             vkCmdBindDescriptorSets(shadowPassCommandPool.getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), offsetLightSpaceMats.size(), offsetLightSpaceMats.data());
                             //std::cout<<"registered bind decriptor sets"<<std::endl;

@@ -63,11 +63,12 @@ void main()
     }
     uint nodeIdx = atomicAdd(countData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].count, 1);
     if (nodeIdx < pc.maxNodes) {
+         //debugPrintfEXT("index %i, max node %i", nodeIdx, pc.maxNodes);
          uint prevHead = imageAtomicExchange(headPointers[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame], ivec2(gl_FragCoord.xy), nodeIdx);
          linkedListData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].nodes[nodeIdx].color = diffuse;
          linkedListData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].nodes[nodeIdx].depth = gl_FragCoord.z;
          linkedListData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].nodes[nodeIdx].next = prevHead;
-    }  
+    } 
     // get distance between fragment and light source
     float lightDistance = length(fragPos.xyz - pc.lightPos);    
     // map to [0;1] range by dividing by far_plane

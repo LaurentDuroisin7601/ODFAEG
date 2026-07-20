@@ -48,7 +48,7 @@ namespace odfaeg {
                 int currentFrame;
             };  
             struct ShadowPassCSMFragPC {                
-                unsigned int maxNodes;
+                int maxNodes;
             };  
             struct ShadowPassPLVertPC {
                 math::Matrix4f lightProjMatrix;
@@ -57,10 +57,9 @@ namespace odfaeg {
                 int _pad[2];
             };
             struct ShadowPassPLFragPC {  
-                math::Vec3f lightPos;
-                float pad;                
+                alignas(16) math::Vec3f lightPos;              
                 float far_plane;
-                unsigned int maxNodes;
+                int maxNodes;
             };
             struct DirLight {               
                 alignas(16) math::Vec3f dir; 
@@ -134,7 +133,7 @@ namespace odfaeg {
             std::vector<DirLight> dirLights;
             std::vector<PointLight> pointLights; 
             std::vector<float> shadowCascadeLevels;
-            inline static const unsigned int SHADOW_MAP_SIZE = 2048;             
+            inline static const unsigned int SHADOW_MAP_SIZE = 1024;             
             inline static const unsigned int SHADOW_MAP_WIDTH = 1024;
             inline static const unsigned int SHADOW_MAP_HEIGHT = 1024;                                                
         };
