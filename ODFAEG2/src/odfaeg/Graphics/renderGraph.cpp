@@ -6,10 +6,12 @@ module;
 module odfaeg.graphic.renderGraph;
 namespace odfaeg {
     namespace graphic {
+        RenderGraph::RenderGraph() {
+            inputShadowRT = nullptr;
+        }
         void RenderGraph::addLinkedListPass(RenderTarget& output, unsigned int layer, std::string typesToRender, unsigned int windowId) {
             LinkedListRenderer* llr = new LinkedListRenderer(output, layer, typesToRender, windowId);
-            renderers.insert(std::make_pair(layer, llr));
-            inputShadowRT = nullptr;
+            renderers.insert(std::make_pair(layer, llr));            
         }
         void RenderGraph::addShadowPass(RenderTarget& output, RenderTexture& input,  unsigned int layer, std::string typesToRender, unsigned int windowId) {
             llSMTransitionPoint = layer;
@@ -33,13 +35,13 @@ namespace odfaeg {
             std::map<unsigned int, IRenderer*>::iterator it;
             for (it = renderers.begin(); it != renderers.end(); it++) {
                 //std::cout<<"clear"<<std::endl;
-                it->second->clear();
+                
                 //std::cout<<"cleared"<<std::endl;
                 if (inputShadowRT != nullptr && it->first == llSMTransitionPoint) {
-                    inputShadowRT->beginRecordCommandBuffer();
                     Texture::transitionImageLayout(inputShadowRT->getTexture().getImage(inputShadowRT->getImageIndex()), inputShadowRT->getCommandPool().getHandle(inputShadowRT->getCurrentFrame()), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL);
                     inputShadowRT->submit(true);
                 }
+                it->second->clear();
                 //std::cout<<"draw"<<std::endl;
                 it->second->draw();
                 //std::cout<<"drawed"<<std::endl;

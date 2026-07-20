@@ -17,7 +17,7 @@ namespace odfaeg {
             device.createInstance();
             device.pickupPhysicalDevice(VK_NULL_HANDLE);
             device.createLogicalDevice(VK_NULL_HANDLE);
-            viewMask = (1 << depth) - 1;
+            viewMask = (depth == 1) ? 0 : (1 << depth) - 1;
             if (!depthOnly) {              
                 
                 for (unsigned int i = 0; i < 1; i++) {
@@ -388,8 +388,9 @@ namespace odfaeg {
             };
             renderingInfo.pDepthAttachment = &depthAttachmentInfo;
             renderingInfo.layerCount = getDepthStencilTexture().getLayerCount();
+            VkRenderingAttachmentInfo colorAttachmentInfo;
             if (!depthOnly) {
-                VkRenderingAttachmentInfo colorAttachmentInfo = {
+                colorAttachmentInfo = {
                     .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
                     .imageView = m_textures[0].getImage(imageIndex).getImageView().getHandle(),
                     .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
@@ -397,6 +398,7 @@ namespace odfaeg {
                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                     .clearValue = {.color = {0.0f, 0.0f, 0.0f, 1.0f}}
                 };
+                renderingInfo.colorAttachmentCount = 1;
                 renderingInfo.pColorAttachments = &colorAttachmentInfo;
             } 
             if (viewMask != 0) {

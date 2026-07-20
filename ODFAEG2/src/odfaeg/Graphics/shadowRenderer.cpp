@@ -101,7 +101,7 @@ namespace odfaeg {
             }          
             //shadowMap.setCamera(parentRenderer.getCamera());
             //shadowMapPL.setCamera(parentRenderer.getCamera());
-            createDescriptorsAndPipelines();
+            
             createCommandPools();
             unsigned int maxNodesDir = 20 * SHADOW_MAP_WIDTH * SHADOW_MAP_HEIGHT;
             shadowPassCSMFragPC.maxNodes = maxNodesDir;
@@ -143,7 +143,7 @@ namespace odfaeg {
                 throw std::runtime_error("�chec de l'envoi d'un command buffer!");
             }
             vkDeviceWaitIdle(GPUContext::instance().getDevice().getDevice());
-            
+            createDescriptorsAndPipelines();
             window::Command rendererReadyCmd(core::FastDelegate<bool>(&ShadowRenderer::isRendererReady, this), core::FastDelegate<void>(&ShadowRenderer::drawNextFrame, this));
             getEventListener().connect("RendererReady",rendererReadyCmd); 
             if (useThread) {
@@ -157,8 +157,7 @@ namespace odfaeg {
             needToUpdateDescriptorSets = true;
             needToUpdateDirLightsMatrices = needToUpdatePointLightsMatrices = false;
             stop.store(false);
-            rendererReady.store(true);
-            
+            rendererReady.store(true);            
         }          
         void ShadowRenderer::addDirectionnalLight(DirLight dirLight) {
             dirLights.push_back(dirLight);
@@ -614,18 +613,18 @@ namespace odfaeg {
             subresRange.levelCount = 1;
             subresRange.layerCount = 1;
             for (unsigned int i = 0; i < NB_CASCADES+1; i++) {
-                vkCmdClearColorImage(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), headPtrsDirStorageImage[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
-                vkCmdFillBuffer(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), nodeCounterDirBuffer[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), 0, sizeof(uint32_t), 0u);
+                vkCmdClearColorImage(shadowMap.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), headPtrsDirStorageImage[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+                vkCmdFillBuffer(shadowMap.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), nodeCounterDirBuffer[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), 0, sizeof(uint32_t), 0u);
             }
+            shadowMapPL.clear(); 
             for (unsigned int i = 0; i < 6; i++) {
-                vkCmdClearColorImage(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), headPtrsPointStorageImage[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
-                vkCmdFillBuffer(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), nodeCounterPointBuffer[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), 0, sizeof(uint32_t), 0u);
+                vkCmdClearColorImage(shadowMapPL.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), headPtrsPointStorageImage[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+                vkCmdFillBuffer(shadowMapPL.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), nodeCounterPointBuffer[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), 0, sizeof(uint32_t), 0u);
             }
             parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
             parentRenderer.applyCullingAndBatching();
             shadowMap.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
-            shadowMap.applyCullingAndBatching();
-            shadowMapPL.clear();
+            shadowMap.applyCullingAndBatching();            
             shadowMapPL.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
             shadowMapPL.applyCullingAndBatching();
             
