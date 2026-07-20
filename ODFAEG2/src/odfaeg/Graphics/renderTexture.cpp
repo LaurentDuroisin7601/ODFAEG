@@ -13,31 +13,30 @@ namespace odfaeg {
             imageFormat = VK_FORMAT_R8G8B8A8_UNORM;
         }
         bool RenderTexture::create(unsigned int width, unsigned int height, unsigned int depth, bool layered, bool depthOnly) {
-            //std::cout<<"create!"<<std::endl;
-            
-            
+            //std::cout<<"create!"<<std::endl; 
             device.createInstance();
             device.pickupPhysicalDevice(VK_NULL_HANDLE);
             device.createLogicalDevice(VK_NULL_HANDLE);
             viewMask = (1 << depth) - 1;
-            if (!depthOnly) {
-                Texture texture(device, RT_MAX_FRAMES_IN_FLIGHT);
-                m_textures.reserve(1);
-                for (unsigned int i = 0; i < m_textures.size(); i++) {
-                    m_textures[i] = std::move(texture);
-                    m_textures[i].create(width, height, depth, false, true);
+            if (!depthOnly) {              
+                
+                for (unsigned int i = 0; i < 1; i++) {
+                    std::cout<<"create texture"<<std::endl;
+                    m_textures.emplace_back(device, NB_SWAPCHAIN_IMAGES);
+                    //std::cout<<"images : "<<m_textures.back().getImages().size()<<std::endl;
+                    m_textures.back().create(width, height, depth, 1, false, true);
                 }
             }
+            //std::cout<<"images : "<<m_textures.back().getImages().size()<<std::endl;
             m_size[0] = width;
             m_size[1] = height;
-            this->depthOnly = depthOnly;
-            this->viewMask = viewMask;
+            this->depthOnly = depthOnly;           
             //if (useDepthTest() || useDepthTest() || depthOnly) {
                       
                 getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, depth, layered);
             //}
-            createRenderPass();
-            createFramebuffers();
+            /*createRenderPass();
+            createFramebuffers();*/
             createSyncObjects();
 
 
@@ -52,12 +51,10 @@ namespace odfaeg {
             device.createInstance();
             device.pickupPhysicalDevice(VK_NULL_HANDLE);
             device.createLogicalDevice(VK_NULL_HANDLE);
-            if (!depthOnly) {
-                Texture texture(device);
-                m_textures.reserve(1);
-                for (unsigned int i = 0; i < m_textures.size(); i++) {
-                    m_textures[i] = std::move(texture);
-                    m_textures[i].createCubeMap(size, layered, true);
+            if (!depthOnly) {                
+                for (unsigned int i = 0; i < 1; i++) {
+                    m_textures.emplace_back(device, NB_SWAPCHAIN_IMAGES);
+                    m_textures.back().createCubeMap(size, layered, true);
                 }  
             }
             m_size[0] = size;
@@ -111,7 +108,7 @@ namespace odfaeg {
         RenderPass& RenderTexture::getRenderPass(unsigned int renderPassId) {
             return renderPasses[renderPassId];
         }
-        std::vector<Texture>& RenderTexture::getTextures() {
+        std::deque<Texture>& RenderTexture::getTextures() {
             return m_textures;
         }
         void RenderTexture::createFramebuffers() {
@@ -179,6 +176,9 @@ namespace odfaeg {
             firstSubmit = true;
             beginRecordCommandBuffer();
             if (!isDepthOnly()) {
+                /*std::cout<<"texture size : "<<m_textures.size()<<std::endl;
+                std::cout<<"nb images : "<<m_textures[0].getImages().size()<<std::endl;
+                system("PAUSE");*/
                 VkClearColorValue clearValue = { clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f };
 
                 VkImageSubresourceRange imageRange = {
@@ -199,7 +199,7 @@ namespace odfaeg {
                     .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .image = m_textures[0].getImages()[imageIndex].getHandle(),
+                    .image = m_textures[0].getImage(imageIndex).getHandle(),
                     .subresourceRange = imageRange
                 };
                 VkImageMemoryBarrier clearToPresentBarrier{
@@ -211,11 +211,11 @@ namespace odfaeg {
                     .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .image = m_textures[0].getImages()[imageIndex].getHandle(),
+                    .image = m_textures[0].getImage(imageIndex).getHandle(),
                     .subresourceRange = imageRange
                 };
                 vkCmdPipelineBarrier(getCommandPool().getHandle(currentFrame), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentToClearBarrier);
-                vkCmdClearColorImage(getCommandPool().getHandle(currentFrame), m_textures[0].getImages()[imageIndex].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearValue, 1, &imageRange);
+                vkCmdClearColorImage(getCommandPool().getHandle(currentFrame), m_textures[0].getImage(imageIndex).getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearValue, 1, &imageRange);
                 vkCmdPipelineBarrier(getCommandPool().getHandle(currentFrame), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToPresentBarrier);
             }
             VkClearDepthStencilValue clearDepthStencilValue = {
@@ -328,7 +328,7 @@ namespace odfaeg {
                 if (vkQueueSubmit(device.getQueue(indices.graphicsFamily.value(), queueIndex), 1, &submitInfo, (fenceToSubmit == nullptr) ? inFlightFences[currentFrame].getHandle() : fenceToSubmit) != VK_SUCCESS) {
                     throw std::runtime_error("�chec de l'envoi d'un graphic command buffer! ");
                 }
-                //std::cout<<"wait on fence : "<<inFlightFences[currentFrame].getHandle()<<std::endl;
+                std::cout<<"wait on fence : "<<inFlightFences[currentFrame].getHandle()<<std::endl;
                 VkResult r2 = vkWaitForFences(device.getDevice(), 1, (fenceToSubmit == nullptr) ? &inFlightFences[currentFrame].getHandle() : &fenceToSubmit, VK_TRUE, UINT64_MAX);
                 if (r2 == -4)
                     printf("wait for fence result : %d\n", r2);
@@ -392,7 +392,7 @@ namespace odfaeg {
                 VkRenderingAttachmentInfo colorAttachmentInfo = {
                     .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
                     .imageView = m_textures[0].getImage(imageIndex).getImageView().getHandle(),
-                    .imageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                    .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                     .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                     .clearValue = {.color = {0.0f, 0.0f, 0.0f, 1.0f}}

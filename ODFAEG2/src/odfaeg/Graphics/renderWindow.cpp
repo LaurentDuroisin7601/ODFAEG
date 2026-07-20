@@ -17,12 +17,17 @@ namespace odfaeg {
             //std::cout<<"instance in render window : "<<this->device.getInstance().getInstance()<<std::endl;
             //this->device.getInstance().setInstance(VK_NULL_HANDLE);
             // Don't call the base class constructor because it contains virtual function calls
-
+            viewMask = 0;
+            currentFrame = 0;
+            imageIndex = 0;
             create(mode, title, style);
         }
         ////////////////////////////////////////////////////////////
         RenderWindow::RenderWindow(window::WindowHandle handle, Device& device, bool useDepth, bool useStencil) : RenderTarget(device, useDepth, useStencil), device(device), swapchain(device)
         {
+            viewMask = 0;
+            currentFrame = 0;
+            imageIndex = 0;
             // Don't call the base class constructor because it contains virtual function calls
             create(handle);
         }
@@ -73,20 +78,17 @@ namespace odfaeg {
             }
         }
         void RenderWindow::createSyncObjects() {
-            imageAvailableSemaphores.reserve(MAX_FRAMES_IN_FLIGHT);
-            inFlightFences.reserve(MAX_FRAMES_IN_FLIGHT);
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 imageAvailableSemaphores.emplace_back(device);
                 imageAvailableSemaphores.back().create();
                 inFlightFences.emplace_back(device);
                 inFlightFences.back().create();
-            }
-            renderFinishedSemaphores.reserve(swapchain.getSwapchainImages().size());
+            }            
             for (size_t i = 0; i < swapchain.getSwapchainImages().size(); i++) {
                 renderFinishedSemaphores.emplace_back(device);
                 renderFinishedSemaphores.back().create();
             }
-            imagesInFlight.resize(swapchain.getSwapchainImages().size(), VK_NULL_HANDLE);
+            //imagesInFlight.resize(swapchain.getSwapchainImages().size(), VK_NULL_HANDLE);
         }
         uint32_t RenderWindow::getCurrentFrame() {
             return currentFrame;
@@ -113,7 +115,7 @@ namespace odfaeg {
                 vkResetFences(device.getDevice(), 1, &imagesInFlight[imageIndex]);
             }*/
             //std::cout<<"clear : "<<getCurrentFrame()<<std::endl;
-            
+            std::cout<<"current frame : "<<currentFrame<<std::endl;
             VkResult result = vkAcquireNextImageKHR(device.getDevice(), swapchain.getHandle(), UINT64_MAX, imageAvailableSemaphores[currentFrame].getHandle(), inFlightFences[currentFrame].getHandle(), &imageIndex);
             if (result == VK_ERROR_OUT_OF_DATE_KHR) {
                 framebufferResized = false;
@@ -385,8 +387,7 @@ namespace odfaeg {
         void RenderWindow::onCreate()
         {
             // Just initialize the render target part
-            //std::cout<<"create instance!"<<std::endl;
-            viewMask = 0;
+            //std::cout<<"create instance!"<<std::endl;            
             device.createInstance();
             //std::cout<<"create surface : "<<device.getInstance().getInstance()<<std::endl;
             createSurface();
@@ -409,8 +410,7 @@ namespace odfaeg {
             createSyncObjects();
             //std::cout<<"initialize rt"<<std::endl;
             RenderTarget::initialize();
-            currentFrame = 0;
-            imageIndex = 0;
+            
             //std::cout<<"window created!"<<std::endl;
         }
 

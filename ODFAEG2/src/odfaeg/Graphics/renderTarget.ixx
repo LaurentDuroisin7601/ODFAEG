@@ -234,7 +234,7 @@ namespace odfaeg {
 			Texture& getDepthStencilTexture();
 			void applyComputeGraphicsBarrier();
 			void applyComputeGraphicsBarrier(VertexBuffer& vertexBuffer);
-			unsigned int getId();
+			int getId();
 			static unsigned int getNbRenderTarget();
 			protected:
 				void initialize();

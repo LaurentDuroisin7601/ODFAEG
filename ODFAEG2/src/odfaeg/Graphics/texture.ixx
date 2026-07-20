@@ -64,7 +64,7 @@ namespace odfaeg {
             bool isRepeated() const;
             unsigned int getId() const;
 			void setId(unsigned int id);
-			std::vector<Image>& getImages();
+			std::deque<Image>& getImages();
             Image& getImage(unsigned int currentFrame=0);
             VkFormat& getFormat();
             math::Vector2u getSize();
@@ -73,7 +73,7 @@ namespace odfaeg {
         private :
             unsigned int texType, mipLevels;
             Device& device;
-            std::vector<Image> images;
+            std::deque<Image> images;
             ImageLoader imageLoader;
             entity::IntRect  m_area;
             math::Vector2u m_size;                     

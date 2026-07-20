@@ -29,6 +29,7 @@ namespace odfaeg {
         parentRenderer(parentRenderer), commandPool(GPUContext::instance().getDevice())
         {        
             rendererReady.store(false);
+            stop.store(false);
             unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int);
             math::Vector2u size = parentRenderer.getSize();
             //std::cout<<"size : "<<size.x()<<","<<size.y()<<std::endl;
@@ -181,6 +182,7 @@ namespace odfaeg {
             linkedListQuadSet.updateDescriptorSet();
         }
         void LinkedListRenderer::clear() {
+            
             VkClearColorValue clearColor;
             clearColor.uint32[0] = 0xffffffff;
             VkImageSubresourceRange subresRange = {};
@@ -198,6 +200,7 @@ namespace odfaeg {
             parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
             parentRenderer.applyCullingAndBatching();
             registerFramesJob[parentRenderer.getCurrentFrame()].store(true);
+            //std::cout<<"cleared"<<std::endl;
             cv.notify_one();
         }
         void LinkedListRenderer::drawNextFrame() {
@@ -271,6 +274,7 @@ namespace odfaeg {
                     inheritanceRenderingInfo.colorAttachmentCount = 1;
                     inheritanceRenderingInfo.pColorAttachmentFormats = &parentRenderer.getImageFormat(),
                     inheritanceRenderingInfo.depthAttachmentFormat = parentRenderer.getDepthStencilTexture().getFormat();    // VK_FORMAT_D32_SFLOAT, etc.                    
+                    inheritanceRenderingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
                     VkCommandBufferInheritanceInfo inheritanceInfo{};
                     inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
                     inheritanceInfo.pNext = &inheritanceRenderingInfo;
@@ -316,7 +320,7 @@ namespace odfaeg {
                 parentRenderer.setDepthStencil(false, false);                
                 parentRenderer.applyComputeGraphicsBarrier();
                 //std::cout<<"commands : !"<<parentRenderer.getCurrentFrame()<<" registered!"<<std::endl;
-                parentRenderer.beginRendering();
+                parentRenderer.beginRendering(true);
                 vkCmdExecuteCommands(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &linkedListCmdPool.getHandle(parentRenderer.getCurrentFrame()));
                 parentRenderer.endRendering();
                 VkMemoryBarrier memoryBarrier{};
@@ -325,7 +329,7 @@ namespace odfaeg {
                 memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                 memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                 vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                parentRenderer.beginRendering();
+                parentRenderer.beginRendering(true);
                 vkCmdExecuteCommands(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &quadLinkedListCommandPool.getHandle(parentRenderer.getCurrentFrame()));
                 parentRenderer.endRendering();
                 parentRenderer.setDepthStencil(useDepthTest, useStencilTest);

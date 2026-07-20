@@ -44,7 +44,7 @@ namespace odfaeg {
 			registeredRenderTargets.push_back(this);			
 			//std::cout<<"id : "<<id<<std::endl;
 		}
-		unsigned int RenderTarget::getId() {
+		int RenderTarget::getId() {
 			return id;
 		}
 		unsigned int RenderTarget::getNbRenderTarget() {

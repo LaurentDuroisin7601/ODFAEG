@@ -2,6 +2,7 @@ module;
 #include <vulkan/vulkan.hpp>
 #include <cstdint>
 #include <odfaeg/Window/windowHandle.hpp>
+#include <deque>
 export module odfaeg.graphic.renderWindow;
 import odfaeg.window.window;
 import odfaeg.window.windowStyle;
@@ -93,13 +94,13 @@ namespace odfaeg {
             VkSurfaceKHR surface;
             Device& device;
             Swapchain swapchain;            
-            std::vector<Semaphore> imageAvailableSemaphores;
-            std::vector<Semaphore> renderFinishedSemaphores;
-            std::vector<Fence> inFlightFences;
+            std::deque<Semaphore> imageAvailableSemaphores;
+            std::deque<Semaphore> renderFinishedSemaphores;
+            std::deque<Fence> inFlightFences;
 			std::vector<VkFence> imagesInFlight;
             std::vector<RenderPass> renderPasses;
             std::vector<std::vector<FrameBuffer>> frameBuffers;
-            std::uint32_t currentFrame;
+            std::uint32_t currentFrame=0;
             bool framebufferResized = false;
             std::uint32_t viewMask;            
         };			

@@ -127,7 +127,7 @@ int main() {
 	RenderTexture sceneColorTexture(ctx.getDevice());
 	sceneColorTexture.create(window.getSize().x(), window.getSize().y());
 	RenderGraph renderGraph;
-	renderGraph.addLinkedListPass(sceneColorTexture, 0, "*", window.getId());
+	renderGraph.addLinkedListPass(window, 0, "*", window.getId());
 	ComponentManager componentManager;
 	std::vector<IComponent*> components = renderGraph.getComponents();
 	for (unsigned int i = 0; i < components.size(); i++) {
@@ -140,6 +140,7 @@ int main() {
 	Clock clock;
 	unsigned int fps = 0;
 	//std::cout<<"widnow adr = "<<&window<<std::endl;	
+	//LinkedListRenderer linkedList(window, 0, "*");
 	/*ShadowRenderer shadowRenderer(window, 0, "*");
 	ShadowRenderer::DirLight dirLight;
 	dirLight.dir = Vec3f(20, 50, 20);
@@ -155,10 +156,17 @@ int main() {
 			}
 			componentManager.update(window.getId(), event);
 		}
-		window.clear();		
-		window.setTypesToRender("*", window.getCurrentFrame());
+		window.clear();
+		
+		//sceneColorTexture.clear();
+		//std::cout<<"render"<<std::endl;
+		renderGraph.render();
+		//std::cout<<"render finished"<<std::endl;*/
+		/*sceneColorTexture.submit(true);	
+		sceneColorTexture.display();*/
+		/*window.setTypesToRender("*", window.getCurrentFrame());
 		//window.applyCullingAndBatching();
-		window.draw(Triangles);
+		window.draw(Triangles);*/
 		/*shadowRenderer.clear();
 		//shadowRenderer.drawNextFrame();
 		shadowRenderer.draw();*/

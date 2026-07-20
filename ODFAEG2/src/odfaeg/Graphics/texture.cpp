@@ -25,7 +25,7 @@ namespace
 namespace odfaeg {
 	namespace graphic {
         Texture::Texture(Device& device, unsigned int nbBuffers) : device(device), texType(0), nbBuffers(nbBuffers), m_Smooth(false), m_Repeated(false), m_size(0u, 0u), commandPool(device), id(0), unormalized(false), isFBOTexture(false) {
-            images.reserve(nbBuffers);            
+                    
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 images.emplace_back(device);
             }
@@ -140,6 +140,9 @@ namespace odfaeg {
             layerCount = (layered) ? texDepth : 1;
             //std::cout<<"create format : "<<m_format<<std::endl;
             id = getUniqueId();
+            if (FBOAttachment) {
+                m_format = VK_FORMAT_R8G8B8A8_UNORM;
+            }
             bool isCompressed =
                 m_format == VK_FORMAT_BC1_RGBA_UNORM_BLOCK ||
                 m_format == VK_FORMAT_BC1_RGBA_SRGB_BLOCK ||
@@ -205,15 +208,20 @@ namespace odfaeg {
             createCommandBuffers();
             imageAspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             for (unsigned int i = 0; i < nbBuffers; i++) {
-                images[i].create(texWidth, texHeight, (layered) ? 1 : texDepth, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                    VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
+                if (FBOAttachment) {
+                    //std::cout<<"create image : "<<i<<std::endl;
+                    images[i].create(texWidth, texHeight, (layered) ? 1 : texDepth, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+                        VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
+                } else {
+                    images[i].create(texWidth, texHeight, (layered) ? 1 : texDepth, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                        VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
+                }
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, mipLevels, (layered) ? texDepth : 1);
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
-                if (FBOAttachment) {
-                    m_format = VK_FORMAT_R8G8B8A8_UNORM;
+                if (FBOAttachment) {                    
                     commandPool.beginRecordCommandBuffer(i);
                     transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-                    commandPool.beginRecordCommandBuffer(i);                   
+                    commandPool.endRecordCommandBuffer(i);                   
                 }
                 
             }            
@@ -227,7 +235,7 @@ namespace odfaeg {
                     throw std::runtime_error("�chec de l'envoi d'un command buffer!");
                 }
                 vkDeviceWaitIdle(device.getDevice());
-                GPUContext::instance().getSharedTextures(0).push_back(std::move(*this));
+                //GPUContext::instance().getSharedTextures(0).push_back(std::move(*this));
             }
             //std::cout<<"image created!"<<std::endl;
             isFBOTexture = FBOAttachment;
@@ -933,6 +941,7 @@ namespace odfaeg {
             return id;
         }        
         Image& Texture::getImage(unsigned int currentFrame) {
+            //std::cout<<"image size : "<<images.size()<<std::endl;
             return images[currentFrame];
         }        
         VkFormat& Texture::getFormat() {
@@ -944,7 +953,7 @@ namespace odfaeg {
             }*/
             return m_size;
         }
-	    std::vector<Image>& Texture::getImages() {
+	    std::deque<Image>& Texture::getImages() {
             return images;
         }
 	}

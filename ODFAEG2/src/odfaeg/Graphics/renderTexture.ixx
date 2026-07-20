@@ -1,5 +1,7 @@
 module;
 #include <vulkan/vulkan.hpp>
+#include <vector>
+#include <deque>
 export module odfaeg.graphic.renderTexture;
 import odfaeg.graphic.device;
 import odfaeg.graphic.image;
@@ -44,7 +46,7 @@ namespace odfaeg {
             VkFormat& getImageFormat();
             std::uint32_t& getViewMask();
             bool isDepthOnly();
-            std::vector<Texture>& getTextures();
+            std::deque<Texture>& getTextures();
             std::vector<Semaphore>& getSemaphores();
             std::uint32_t getSwapchainImagesCount();
             ~RenderTexture();
@@ -55,7 +57,7 @@ namespace odfaeg {
             std::vector<std::vector<FrameBuffer>> frameBuffers;
             std::vector<RenderPass> renderPasses;
             Device& device;
-            std::vector<Texture> m_textures;
+            std::deque<Texture> m_textures;
             uint32_t currentFrame, imageIndex;            
             std::vector<Fence> inFlightFences;
             std::vector<Semaphore> imageAvailableSemaphores;
