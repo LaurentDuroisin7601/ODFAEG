@@ -323,7 +323,7 @@ namespace odfaeg {
                 bool useDepthTest = parentRenderer.useDepthTest();
                 bool useStencilTest = parentRenderer.useStencilTest();
                 parentRenderer.setDepthStencil(false, false);                
-                //parentRenderer.applyComputeGraphicsBarrier();
+                parentRenderer.applyComputeGraphicsBarrier();
                 //std::cout<<"commands : !"<<parentRenderer.getCurrentFrame()<<" registered!"<<std::endl;
                 parentRenderer.beginRendering(true);
                 vkCmdExecuteCommands(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &linkedListCmdPool.getHandle(parentRenderer.getCurrentFrame()));
