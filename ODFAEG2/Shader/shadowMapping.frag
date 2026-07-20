@@ -53,10 +53,10 @@ layout(set = 0, binding = 4) buffer PointLightSSBO {
 layout(set = 0, binding = 5) uniform sampler2DArray shadowMap;
 layout(set = 0, binding = 6) uniform samplerCube depthMap;
 layout(set = 0, binding = 7) uniform sampler2D sceneColorTextures[NB_SWAPCHAIN_IMAGES];
-layout(set = 0, binding = 8, r32ui) uniform coherent uimage2D headPointersDir[MAX_FRAMES_IN_FLIGHT*NB_CASCADES+1];
+layout(set = 0, binding = 8, r32ui) uniform coherent uimage2D headPointersDir[MAX_FRAMES_IN_FLIGHT*(NB_CASCADES+1)];
 layout(set = 0, binding = 9) buffer LinkedListDirBufferSSBO {
     NodeType nodes[];
-} linkedListDirData[MAX_FRAMES_IN_FLIGHT*NB_CASCADES+1];
+} linkedListDirData[MAX_FRAMES_IN_FLIGHT*(NB_CASCADES+1)];
 layout(set = 0, binding = 10, r32ui) uniform coherent uimage2D headPointersPoint[MAX_FRAMES_IN_FLIGHT*6];
 layout(set = 0, binding = 11) buffer LinkedListPointBufferSSBO {
     NodeType nodes[];

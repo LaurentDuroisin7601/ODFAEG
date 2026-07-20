@@ -218,7 +218,7 @@ namespace odfaeg {
 					materialDatas.back().create(sizeof(Material), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 			}
-			
+			//std::cout<<"size : "<<gameObjects.size()<<std::endl;
 			if (gameObjects.size() == 0) {
 				/*std::cout<<"nb game objects : "<<gameObjects.size()<<std::endl;
 				int i;
@@ -244,12 +244,16 @@ namespace odfaeg {
 					outputMaterialDatas.back().create(sizeof(Material), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 			} else {
-				/*std::cout<<"reallocate output buffers "<<std::endl;
+				unsigned int totalSubMeshes=0;
+				for (unsigned int i = 0; i < gameObjects.size(); i++) {
+					totalSubMeshes += gameObjects[i]->getGameObject()->getSubMeshes().size();
+				}
+				/*std::cout<<"reallocate output buffers "<<totalSubMeshes<<std::endl;
 				int i;
 				std::cin>>i;*/
 				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 					outputMeshes.emplace_back(device);
-					outputMeshes.back().create(sizeof(entity::SubMesh)*totalMeshlets, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+					outputMeshes.back().create(sizeof(entity::SubMesh)*totalSubMeshes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 				for (unsigned int i = 0; i < 1; i++) {
 					inputMeshlets.emplace_back(device);
@@ -584,7 +588,8 @@ namespace odfaeg {
 				}
 				totalMeshlets = meshletDatas.size();
 				totalSubMeshes = subMeshesDatas.size();
-				//system("PAUSE");
+				std::cout<<"total sub meshes"<<totalSubMeshes<<std::endl;
+				system("PAUSE");
 				for (unsigned int i = 0; i < 1; i++) {
 					for (unsigned int j = 0; j < NB_PRIMITIVE_TYPES; j++) {
 						//std::cout<<"update vertices"<<std::endl;

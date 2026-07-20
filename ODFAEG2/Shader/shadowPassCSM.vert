@@ -30,7 +30,7 @@ layout (push_constant) uniform PushConstant {
 layout (std430, set = 0, binding = 0) buffer ModelDataSSBO {
     ModelData modelData[];
 } modelDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
-layout (std140, set = 0, binding = 2) buffer LightMatricesSSBO {
+layout (std140, set = 0, binding = 1) buffer LightMatricesSSBO {
     LightSpaceMatrix lightSpaceMat;   
 } lightMatsData[MAX_FRAMES_IN_FLIGHT];
 void main() {

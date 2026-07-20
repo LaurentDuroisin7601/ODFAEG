@@ -41,7 +41,7 @@ struct MaterialData {
     uint nbBuffers;
     uint padding;
 };
-layout (std430, set = 0, binding = 1) buffer MaterialDataSSBO {
+layout (std430, set = 0, binding = 2) buffer MaterialDataSSBO {
     MaterialData materialData[];
 } materialDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
 layout (set = 0, binding = 3, r32ui) uniform coherent uimage2D headPointers[MAX_FRAMES_IN_FLIGHT*6];

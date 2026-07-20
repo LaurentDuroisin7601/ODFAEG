@@ -139,13 +139,13 @@ int main() {
 	//std::cout<<"ok"<<std::endl;
 	Clock clock;
 	unsigned int fps = 0;
-	/*renderGraph.addShadowPass(window, sceneColorTexture, 1, "*", window.getId());
+	renderGraph.addShadowPass(window, sceneColorTexture, 1, "*", window.getId());
 	ShadowRenderer::DirLight dirLight;
 	dirLight.dir = Vec3f(20, 50, 20);
 	renderGraph.addDirectionnalLight<ShadowRenderer>(1, dirLight);
 	ShadowRenderer::PointLight pointLight;
 	pointLight.pos = Vec3f(0, 0, 0);
-	renderGraph.addPonctualLight<ShadowRenderer>(1, pointLight);*/
+	renderGraph.addPonctualLight<ShadowRenderer>(1, pointLight);
 	while (window.isOpen()) {
 		odfaeg::window::IEvent event;
 		while (window.pollEvent(event)) {
