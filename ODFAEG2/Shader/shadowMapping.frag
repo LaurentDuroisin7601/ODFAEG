@@ -12,7 +12,6 @@ layout(location = 3) flat in int v_DrawID;
 layout(location = 4) flat in int primitiveType;
 layout(location = 5) flat in int currentFrame;
 layout(location = 6) in vec3 fragPos;
-layout(location = 7) in vec4 clipPos;
 layout(location = 0) out vec4 frag_color;
 #define NB_CASCADES 4
 struct NodeType {
@@ -35,7 +34,8 @@ layout (push_constant) uniform PushConstant {
     layout(offset=144) uint view;     
     layout(offset=208) uint nbDirLights;
     layout(offset=212) uint nbPointLights; 
-    layout(offset=216) uint imageIndex;
+    layout(offset=216) uint imageIndex;  
+    layout(offset=224) ivec2 resolution;  
 } pc;
 layout (std430, set = 0, binding = 1) buffer LightSpaceMatricesSSBO {
     LightSpaceMatrix lightSpaceMatrices[];
@@ -177,10 +177,9 @@ float shadowCalculationPoint(vec3 fragPos)
 }  
 void main()
 {    
-    //debugPrintfEXT("draw");
-    vec3 ndc = clipPos.xyz / clipPos.w;
-    vec2 uv = ndc.xy * 0.5 + 0.5;
-    //debugPrintfEXT("uv %v2f", uv);
+    //debugPrintfEXT("draw");    
+    vec2 uv = gl_FragCoord.xy / pc.resolution;
+    debugPrintfEXT("resolution %v2i", pc.resolution);
     vec4 sceneColor = texture(sceneColorTextures[pc.imageIndex], uv);
     /*if (sceneColor.r != 0 || sceneColor.r != 0 || sceneColor.b != 0)
         debugPrintfEXT("scene color %v4f", sceneColor);*/

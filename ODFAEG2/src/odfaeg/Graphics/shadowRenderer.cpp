@@ -47,7 +47,8 @@ namespace odfaeg {
         threadPool(6),
         useThread(useThread)
         {
-            rendererReady.store(false);    
+            rendererReady.store(false); 
+            shadowMappingFragPC.resolution = math::Vector2i(parentRenderer.getSize().x(), parentRenderer.getSize().y());   
             //shadowMapPL.createCubeMap(std::max(parentRenderer.getSize().x(), parentRenderer.getSize().y()), true, false);              
             //std::cout<<"pl created"<<std::endl;
             //std::cout<<"addess : "<<&parentRenderer<<std::endl;
@@ -876,18 +877,47 @@ namespace odfaeg {
                 //std::cout<<"shadow map drawn"<<std::endl;
                                           
                 parentRenderer.applyComputeGraphicsBarrier();
-                VkMemoryBarrier memoryBarrier{};
+                 VkMemoryBarrier memoryBarrier{};
                 memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                 memoryBarrier.pNext = VK_NULL_HANDLE;
                 memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                 memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;  
                 vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                
+                for (unsigned int i = 0; i < RenderTexture::NB_SWAPCHAIN_IMAGES; i++) {
+                   
+                    VkImageMemoryBarrier barrier{};
+                    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                    barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+                    barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+                    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+                    barrier.image = sceneColorTexture.getTexture().getImage(i).getHandle();
+                    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    barrier.subresourceRange.baseMipLevel = 0;
+                    barrier.subresourceRange.levelCount = 1;
+                    barrier.subresourceRange.baseArrayLayer = 0;
+                    barrier.subresourceRange.layerCount = 1;
+
+                    vkCmdPipelineBarrier(
+                        parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()),
+                        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,   // écrit dans la texture
+                        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,           // va la lire
+                        0,
+                        0, nullptr,
+                        0, nullptr,
+                        1, &barrier
+                    );
+                }
                 Texture::transitionImageLayout(shadowMap.getDepthStencilTexture().getImage(0), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 0, 1, NB_CASCADES+1);      
                 Texture::transitionImageLayout(shadowMapPL.getDepthStencilTexture().getImage(0), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 0, 1, 6);
-                for (unsigned int i = 0; i < RenderTexture::NB_SWAPCHAIN_IMAGES; i++) {
+                /*for (unsigned int i = 0; i < RenderTexture::NB_SWAPCHAIN_IMAGES; i++) {
                     Texture::transitionImageLayout(sceneColorTexture.getTexture().getImage(i), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-                }
+                }*/
                 parentRenderer.beginRendering(true);
                 vkCmdExecuteCommands(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &shadowMappingCommandPool.getHandle(parentRenderer.getCurrentFrame()));
                 parentRenderer.endRendering(); 
