@@ -1211,7 +1211,7 @@ namespace odfaeg {
 				//std::cout<<"range output indexes : "<<outputVertexDatas[3].getIndexBuffer(0).getRange()<<std::endl;
 				//std::cout<<"model data"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(7, outputMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				std::cout<<"id : "<<id<<",range output model datas : "<<outputModelDatas[0].getRange()<<std::endl;
+				//std::cout<<"id : "<<id<<",range output model datas : "<<outputModelDatas[0].getRange()<<std::endl;
 				//std::cout<<"object data"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(8, offsetInOutputModelData, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				/*std::cout<<"range output model datas : "<<outputModelDatas[0].getRange()<<std::endl;

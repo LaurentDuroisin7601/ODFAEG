@@ -588,7 +588,7 @@ namespace odfaeg {
             //shadowMappingCSMSets[0][0]->setNbBindings((hasDiffuseTexture) ? 6 : 5);
             shadowMap.getDepthStencilTexture().getImage(0).setLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL);
             shadowMapPL.getDepthStencilTexture().getImage(0).setLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL);
-            std::cout<<"output model range : "<<GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS)[3].getRange()<<std::endl;
+            //std::cout<<"output model range : "<<GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS)[3].getRange()<<std::endl;
             shadowMappingDescriptorSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowMappingDescriptorSet.updateBufferInfos(1, lightSpaceMatricesBufferFinal, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowMappingDescriptorSet.updateBufferInfos(2, cascadePlaneDistancesBuffer, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
