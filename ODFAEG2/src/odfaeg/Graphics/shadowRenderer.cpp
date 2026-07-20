@@ -872,7 +872,7 @@ namespace odfaeg {
                 shadowMapPL.submit(true);
                 shadowMapPL.display();
                 sceneColorTexture.submit(true);
-                sceneColorTexture.display();
+                
                 //std::cout<<"shadow map drawn"<<std::endl;
                                           
                 parentRenderer.applyComputeGraphicsBarrier();
@@ -895,7 +895,8 @@ namespace odfaeg {
                 Texture::transitionImageLayout(shadowMapPL.getDepthStencilTexture().getImage(0), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 0, 0, 1, 6);   
                 for (unsigned int i = 0; i < RenderTexture::NB_SWAPCHAIN_IMAGES; i++) {
                     Texture::transitionImageLayout(sceneColorTexture.getTexture().getImage(i), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL); 
-                } 
+                }           
+                sceneColorTexture.display();
             }
             //std::cout<<"drawn"<<std::endl;
         }
