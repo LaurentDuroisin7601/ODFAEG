@@ -50,6 +50,8 @@ namespace odfaeg
 
             // Assign the new texture
             m_texture = texture;
+            /*std::cout<<"texture id : "<<m_texture->getId()<<std::endl;
+			system("PAUSE");*/
         }
 
 

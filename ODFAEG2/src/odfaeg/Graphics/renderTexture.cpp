@@ -3,6 +3,7 @@ module;
 #include <iostream>
 //import odfaeg.graphic.renderTexture;
 module odfaeg.graphic.renderTexture;
+import odfaeg.graphic.gpuContext;
 namespace odfaeg {
 	namespace graphic {
         RenderTexture::RenderTexture(Device& device, bool useDepthTest, bool useStencilTest) : RenderTarget(device, useDepthTest, useStencilTest), device(device),enableDepthTest(useDepthTest), enableStencilTest(useStencilTest) {
@@ -97,7 +98,9 @@ namespace odfaeg {
             return currentFrame;
         }
 	    Texture& RenderTexture::getTexture(unsigned int attachmentPoint) {
-            return m_textures[attachmentPoint];
+            /*std::cout<<"id : "<<m_textures[attachmentPoint].getId()<<","<<GPUContext::instance().getSharedTextures(0)[m_textures[attachmentPoint].getId()-1].getId()<<std::endl;
+            system("PAUSE");*/
+            return GPUContext::instance().getSharedTextures(0)[m_textures[attachmentPoint].getId()-1];
         }
         math::Vector2u RenderTexture::getSize() const {
             return m_size;
@@ -176,6 +179,8 @@ namespace odfaeg {
             firstSubmit = true;
             beginRecordCommandBuffer();
             if (!isDepthOnly()) {
+                /*std::cout<<"clear"<<std::endl;
+                system("PAUSE");*/
                 /*std::cout<<"texture size : "<<m_textures.size()<<std::endl;
                 std::cout<<"nb images : "<<m_textures[0].getImages().size()<<std::endl;
                 system("PAUSE");*/
@@ -265,7 +270,7 @@ namespace odfaeg {
         uint32_t RenderTexture::getImageIndex() {
             return imageIndex;
         }        
-        void RenderTexture::display() {
+        void RenderTexture::display() {            
             currentFrame = (currentFrame + 1) % RT_MAX_FRAMES_IN_FLIGHT;
             imageIndex = (imageIndex + 1) % NB_SWAPCHAIN_IMAGES;
         }        
@@ -274,7 +279,7 @@ namespace odfaeg {
             std::vector<uint64_t> signalValues,
             std::vector<uint64_t> waitValues, std::vector<VkFence> fences, unsigned int queueIndex, bool resetFence, bool resetFences, VkFence fenceToSubmit) {
             if (getCommandPool().getHandles().size() > 0) {
-                getCommandPool().endRecordCommandBuffer(currentFrame);
+                
                 if (firstSubmit) {
                     if (waitValues.size() == 0 && waitSemaphores.size() > 0) {
                         for (unsigned int i = 0; i < waitSemaphores.size(); i++) {
@@ -293,10 +298,39 @@ namespace odfaeg {
                             signalValues.push_back(0);
                         }
                     }
+                    getTexture().update(getCommandPool().getHandle(currentFrame), m_textures[0], imageIndex);
+                    /*VkImageMemoryBarrier barrier{};
+                    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                    barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+                    barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+                    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+                    barrier.image = getTexture().getImage(0).getHandle();
+                    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    barrier.subresourceRange.baseMipLevel = 0;
+                    barrier.subresourceRange.levelCount = 1;
+                    barrier.subresourceRange.baseArrayLayer = 0;
+                    barrier.subresourceRange.layerCount = 1;
+
+                    vkCmdPipelineBarrier(
+                        getCommandPool().getHandle(currentFrame),
+                        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,   // écrit dans la texture
+                        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,           // va la lire
+                        0,
+                        0, nullptr,
+                        0, nullptr,
+                        1, &barrier
+                    );*/
                     /*signalSemaphores.push_back(imageAvailableSemaphores[0].getHandle());                    
                     signalValues.push_back(imageAvailableSemaphores[0].getValue()+1);                
                     imageAvailableSemaphores[0].incrementValue();*/
                 }
+                getCommandPool().endRecordCommandBuffer(currentFrame);
                 VkSubmitInfo submitInfo{};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
                 VkTimelineSemaphoreSubmitInfo timelineInfo{};

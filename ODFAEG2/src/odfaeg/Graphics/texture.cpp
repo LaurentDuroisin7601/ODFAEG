@@ -34,6 +34,7 @@ namespace odfaeg {
             wrapV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
             mipLevels = 1;
             layerCount = 1;
+            texType = 0;
         }
 	    void Texture::setSize(math::Vector2u size) {
             m_size = size;
@@ -46,10 +47,11 @@ namespace odfaeg {
             commandPool.create(indices.graphicsFamily.value());
             commandPool.createCommandBuffers(true, nbBuffers);
         }
-	    void Texture::copyFrom(Texture& texture) {
-            nbBuffers = texture.nbBuffers;
+	    void Texture::copyFrom(Texture& texture) {            
             m_format = texture.m_format;
             id = texture.id;
+            /*std::cout<<"FBO texture id : "<<texture.id<<std::endl;
+            system("PAUSE");*/
             unormalized = texture.unormalized;
             m_size = texture.m_size;
             imageAspectMask = texture.imageAspectMask;
@@ -64,6 +66,7 @@ namespace odfaeg {
         }
 	    void Texture::copyFrom(CommandPool& commandPool, Texture& texture) {
             nbBuffers = texture.nbBuffers;
+            isFBOTexture = texture.isFBOTexture;
             m_format = texture.m_format;
             id = texture.id;
             unormalized = texture.unormalized;
@@ -139,10 +142,11 @@ namespace odfaeg {
             this->mipLevels = mipLevels;
             layerCount = (layered) ? texDepth : 1;
             //std::cout<<"create format : "<<m_format<<std::endl;
-            id = getUniqueId();
+            //id = getUniqueId();
+            isFBOTexture = FBOAttachment;
             if (FBOAttachment) {
                 m_format = VK_FORMAT_R8G8B8A8_UNORM;
-            }
+            } 
             bool isCompressed =
                 m_format == VK_FORMAT_BC1_RGBA_UNORM_BLOCK ||
                 m_format == VK_FORMAT_BC1_RGBA_SRGB_BLOCK ||
@@ -209,10 +213,11 @@ namespace odfaeg {
             imageAspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 if (FBOAttachment) {
-                    //std::cout<<"create image : "<<i<<std::endl;
+                    //std::cout<<"create fbo image : "<<i<<"id : "<<id<<std::endl;
                     images[i].create(texWidth, texHeight, (layered) ? 1 : texDepth, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
                         VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
                 } else {
+                    //std::cout<<"create image : "<<i<<","<<id<<std::endl;
                     images[i].create(texWidth, texHeight, (layered) ? 1 : texDepth, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                         VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
                 }
@@ -220,11 +225,10 @@ namespace odfaeg {
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
                 if (FBOAttachment) {                    
                     commandPool.beginRecordCommandBuffer(i);
-                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-                    commandPool.endRecordCommandBuffer(i);                   
-                }
-                
-            }            
+                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);    
+                    commandPool.endRecordCommandBuffer(i);                                                                     
+                }                
+            }  
             if (FBOAttachment) {
                 VkSubmitInfo submitInfo{};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -235,10 +239,19 @@ namespace odfaeg {
                     throw std::runtime_error("�chec de l'envoi d'un command buffer!");
                 }
                 vkDeviceWaitIdle(device.getDevice());
+            } 
+            if (FBOAttachment) {
+                auto& vec = GPUContext::instance().getSharedTextures(texType);
+                id = vec.size()+1;
+                //std::cout<<"FBO texture id : "<<id<<std::endl;                
+                //vec.push_back(std::move(*this));
+                vec.emplace_back(device);
+                vec.back().copyFrom(*this);
+                //std::cout<<"FBO texture id : "<<vec.back().getId()<<std::endl;
                 //GPUContext::instance().getSharedTextures(0).push_back(std::move(*this));
             }
             //std::cout<<"image created!"<<std::endl;
-            isFBOTexture = FBOAttachment;
+            
             return true;
         }
         bool Texture::createDepthTexture(uint32_t texWidth, uint32_t texHeight, uint32_t texDepth, bool layered) {
@@ -622,6 +635,12 @@ namespace odfaeg {
 
                 sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
                 destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            } else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
+                barrier.srcAccessMask = 0;
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+                sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+                destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
             }
             else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
                 barrier.srcAccessMask = 0;
@@ -640,6 +659,13 @@ namespace odfaeg {
             else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
                 barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
                 barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+                sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+                destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+            }
+            else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                barrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
 
                 sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
                 destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
@@ -713,14 +739,17 @@ namespace odfaeg {
         }
         math::Vector2u Texture::getSize() const {
             return m_size;
-        }
+        }        
         void Texture::update(Texture& texture) {
             update(texture, 0, 0);
 
         }
+        void Texture::update(VkCommandBuffer& commandBuffer, Texture& texture, unsigned int imageIndex) {
+            update(commandBuffer, texture, 0, 0, imageIndex);
+        }
         void Texture::updateCubeMap(Texture& texture) {
             updateCubeMap(texture, 0, 0);
-        }
+        }        
         void Texture::update(Texture& texture, unsigned int x, unsigned int y) {
 
             /*VkImageBlit2 blitRegion{ .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr };
@@ -793,7 +822,8 @@ namespace odfaeg {
             copyRegion.extent.depth  = 1;
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 commandPool.beginRecordCommandBuffer(i);
-                texture.transitionImageLayout(texture.images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+                VkImageLayout currentLayout = texture.images[i].getLayout();                
+                texture.transitionImageLayout(texture.images[i], commandPool.getHandle(i), currentLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
                 transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
                 vkCmdCopyImage(
                     commandPool.getHandle(i),
@@ -802,7 +832,7 @@ namespace odfaeg {
                     1,
                     &copyRegion
                 );
-                texture.transitionImageLayout(texture.images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                texture.transitionImageLayout(texture.images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,currentLayout);
                 transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
                 commandPool.endRecordCommandBuffer(i);
             }
@@ -815,6 +845,93 @@ namespace odfaeg {
                 throw std::runtime_error("�chec de l'envoi d'un command buffer!");
             }
             vkDeviceWaitIdle(device.getDevice());
+        }
+        void Texture::update(VkCommandBuffer& commandBuffer, Texture& texture, unsigned int x, unsigned int y, unsigned int imageIndex) {
+
+            /*VkImageBlit2 blitRegion{ .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr };
+
+            blitRegion.srcOffsets[0].x = 0;
+            blitRegion.srcOffsets[0].y = 0;
+            blitRegion.srcOffsets[0].z = 0;
+            blitRegion.srcOffsets[1].x = texture.m_size.x();
+            blitRegion.srcOffsets[1].y = texture.m_size.y();
+            blitRegion.srcOffsets[1].z = 1;
+
+            blitRegion.dstOffsets[0].x = x;
+            blitRegion.dstOffsets[0].y = y;
+            blitRegion.dstOffsets[0].z = 0;
+            blitRegion.dstOffsets[1].x = x + texture.m_size.x();
+            blitRegion.dstOffsets[1].y = y + texture.m_size.y();
+            blitRegion.dstOffsets[1].z = 1;
+
+            blitRegion.srcSubresource.aspectMask = imageAspectMask;
+            blitRegion.srcSubresource.baseArrayLayer = 0;
+            blitRegion.srcSubresource.layerCount = 1;
+            blitRegion.srcSubresource.mipLevel = 0;
+
+            blitRegion.dstSubresource.aspectMask = imageAspectMask;
+            blitRegion.dstSubresource.baseArrayLayer = 0;
+            blitRegion.dstSubresource.layerCount = 1;
+            blitRegion.dstSubresource.mipLevel = 0;
+            for (unsigned int i = 0; i < nbBuffers; i++) {
+                VkBlitImageInfo2 blitInfo{ .sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2, .pNext = nullptr };
+                blitInfo.dstImage = images[i].getHandle();
+                blitInfo.dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+                blitInfo.srcImage = texture.images[i].getHandle();
+                blitInfo.srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+                blitInfo.filter = VK_FILTER_LINEAR;
+                blitInfo.regionCount = 1;
+                blitInfo.pRegions = &blitRegion;
+                commandPool.beginRecordCommandBuffer(i);
+                texture.transitionImageLayout(i, commandPool.getHandle(i), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+                transitionImageLayout(i, commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                vkCmdBlitImage2(commandPool.getHandle(i), &blitInfo);
+                texture.transitionImageLayout(i, commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                transitionImageLayout(i, commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                commandPool.endRecordCommandBuffer(i);
+            }            
+            VkSubmitInfo submitInfo{};
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = commandPool.getHandles().size();
+            submitInfo.pCommandBuffers = commandPool.getHandles().data();
+            Device::QueueFamilyIndices indices = device.findQueueFamilies(device.getPhysicalDevice(), VK_NULL_HANDLE);
+            if (vkQueueSubmit(device.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+                throw std::runtime_error("�chec de l'envoi d'un command buffer!");
+            }
+            vkDeviceWaitIdle(device.getDevice());*/
+            VkImageCopy copyRegion{};
+
+            copyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            copyRegion.srcSubresource.mipLevel = 0;
+            copyRegion.srcSubresource.baseArrayLayer = 0;
+            copyRegion.srcSubresource.layerCount = 1;
+            copyRegion.srcOffset = {0, 0, 0};
+
+            copyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            copyRegion.dstSubresource.mipLevel = 0;
+            copyRegion.dstSubresource.baseArrayLayer = 0;
+            copyRegion.dstSubresource.layerCount = 1;
+            copyRegion.dstOffset = {0, 0, 0};
+
+            copyRegion.extent.width  = texture.m_size.x();
+            copyRegion.extent.height = texture.m_size.y();
+            copyRegion.extent.depth  = 1;
+            for (unsigned int i = 0; i < nbBuffers; i++) {
+                VkImageLayout currentLayout = texture.images[imageIndex].getLayout();                
+                texture.transitionImageLayout(texture.images[imageIndex], commandBuffer, currentLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+                transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                //std::cout<<"copy"<<std::endl;
+                vkCmdCopyImage(
+                    commandBuffer,
+                    texture.images[imageIndex].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                    images[i].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                    1,
+                    &copyRegion
+                );
+                texture.transitionImageLayout(texture.images[imageIndex], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,currentLayout);
+                transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                
+            }
         }
 	    void Texture::update(CommandPool& commandPool, Texture& texture, unsigned int x, unsigned int y, size_t mipLevel) {
 
@@ -845,7 +962,7 @@ namespace odfaeg {
                     1,
                     &copyRegion
                 );
-                texture.transitionImageLayout(texture.images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevel, 0, 1, 1);
+                texture.transitionImageLayout(texture.images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, mipLevel, 0, 1, 1);
                 transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevel, 0, 1, 1);
             }
         }

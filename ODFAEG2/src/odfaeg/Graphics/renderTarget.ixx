@@ -158,10 +158,10 @@ namespace odfaeg {
 			struct VertexBufferPC {
 			    math::Matrix4f projMatrix;
                 math::Matrix4f viewMatrix;
-                math::Matrix4f modelMatrix;
-                int textureIndex;
+                math::Matrix4f modelMatrix;                
                 math::Vec2f uvScale;
                 math::Vec2f uvOffset;
+				int textureIndex;
                 int nbBuffers;
 				int currentFrame;
 				int currentImageIndex;

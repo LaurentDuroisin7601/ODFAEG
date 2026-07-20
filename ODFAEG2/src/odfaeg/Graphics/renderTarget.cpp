@@ -40,9 +40,10 @@ namespace odfaeg {
 		outputMaterialDatas(GPUContext::instance().getSharedBuffers(OUTPUT_MATERIALS+registeredRenderTargets.size()*NB_BUFFERS))		
 		{
 			
-			id = registeredRenderTargets.size();			
+			id = registeredRenderTargets.size();
+			//std::cout<<"id : "<<id<<",output model id : "<<OUTPUT_MODELS+registeredRenderTargets.size()*NB_BUFFERS<<std::endl;			
 			registeredRenderTargets.push_back(this);			
-			//std::cout<<"id : "<<id<<std::endl;
+			
 		}
 		int RenderTarget::getId() {
 			return id;
@@ -97,7 +98,7 @@ namespace odfaeg {
 			//std::cout<<"initialize"<<std::endl;
 			//std::cout<<"size : "<<getSize().x()<<','<<getSize().y()<<std::endl;
 			//std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
-			m_defaultCamera = Camera(getSize().x(),getSize().y(), -getSize().y() - 200, getSize().y() + 200);
+			m_defaultCamera = Camera(getSize().x(),getSize().y(), -1, 1);
 			//m_defaultCamera.setViewport(physic::BoundingBox(0, 0, -getSize().y() - 200, getSize().x(), getSize().y(), getSize().y() + 200));
 			
 			//std::cout<<"default camera : "<<m_defaultCamera.getSize()<<','<<m_defaultCamera.getViewport().getPosition()<<','<<m_defaultCamera.getViewport().getSize()<<std::endl;
@@ -377,7 +378,7 @@ namespace odfaeg {
 			//std::cout<<"create descriptors and pipelines"<<std::endl;
 			createDescriptorAndPipelines();
 			createSynchPrimitives();
-			needToUpdateDescriptorSets = false;
+			needToUpdateDescriptorSets = true;
 			needToUpdateBuffers = true;
 			depthTestEnabled = stencilTestEnabled = false;
 			//std::cout<<"initialized"<<std::endl;
@@ -809,9 +810,8 @@ namespace odfaeg {
 					}
 				}
 				//std::cout<<"descriptor and pipelines created default render target"<<std::endl;
-				DescriptorSetLayout& vertexBufferLayout = GPUContext::instance().getDescriptorSetLayout(vertexBufferShader, 2, true);
-				vertexBufferLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
-				vertexBufferLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES/**MAX_FRAMES_IN_FLIGHT*/, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+				DescriptorSetLayout& vertexBufferLayout = GPUContext::instance().getDescriptorSetLayout(vertexBufferShader, 1, true);				
+				vertexBufferLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES/**MAX_FRAMES_IN_FLIGHT*/, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
 					VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
 				pushConstants.clear();
 				pushConstant.offset = 0;
@@ -875,9 +875,8 @@ namespace odfaeg {
 				DescriptorPool& emissiveDefaultRenderingPool = GPUContext::instance().getDescriptorPool(defaultRenderingShader, 1, 6);
 				emissiveDefaultRenderingPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
 				emissiveDefaultRenderingPool.update();
-				DescriptorPool& vertexBufferPool = GPUContext::instance().getDescriptorPool(vertexBufferShader, 2);
-				vertexBufferPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2);
-				vertexBufferPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES*MAX_FRAMES_IN_FLIGHT);
+				DescriptorPool& vertexBufferPool = GPUContext::instance().getDescriptorPool(vertexBufferShader, 1);				
+				vertexBufferPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
 				vertexBufferPool.update();
 				//std::cout<<"descriptor pool : "<<resetBuffersPool.getHandle()<<std::endl;
 				DescriptorSet::allocate(resetBuffersPool, resetBuffersLayout, GPUContext::instance().getDescriptorSets(resetBuffersShader, 7, 1));
@@ -892,7 +891,7 @@ namespace odfaeg {
 				DescriptorSet::allocate(aoDefaultRenderingPool, aoDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 5), MAX_TEXTURES);
 				DescriptorSet::allocate(emissiveDefaultRenderingPool, emissiveDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 6), MAX_TEXTURES);
 				//std::cout<<"descriptor pool : "<<vertexBufferPool.getHandle()<<std::endl;
-				DescriptorSet::allocate(vertexBufferPool, vertexBufferLayout, GPUContext::instance().getDescriptorSets(vertexBufferShader, 2,2), MAX_TEXTURES);
+				DescriptorSet::allocate(vertexBufferPool, vertexBufferLayout, GPUContext::instance().getDescriptorSets(vertexBufferShader, 1,1), MAX_TEXTURES);
 				//std::cout<<"descriptor set vertex buffer allocated"<<std::endl;
 			} else {
 				std::vector<VkPipelineRenderingCreateInfo> renderingCreateInfos = {};		
@@ -979,10 +978,10 @@ namespace odfaeg {
 					}
 				}
 				//std::cout<<"descriptor and pipelines created default render target"<<std::endl;
-				DescriptorSetLayout& vertexBufferLayout = GPUContext::instance().getDescriptorSetLayout(vertexBufferShader, 2, true);
-				vertexBufferLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
-				vertexBufferLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES/**MAX_FRAMES_IN_FLIGHT*/, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+				DescriptorSetLayout& vertexBufferLayout = GPUContext::instance().getDescriptorSetLayout(vertexBufferShader, 1, true);
+				vertexBufferLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES/**MAX_FRAMES_IN_FLIGHT*/, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
 					VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
+				vertexBufferLayout.update();
 				pushConstants.clear();
 				pushConstant.offset = 0;
 				pushConstant.size = sizeof(VertexBufferPC);
@@ -1038,9 +1037,8 @@ namespace odfaeg {
 				DescriptorPool& emissiveDefaultRenderingPool = GPUContext::instance().getDescriptorPool(defaultRenderingShader, 1, 6);
 				emissiveDefaultRenderingPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
 				emissiveDefaultRenderingPool.update();
-				DescriptorPool& vertexBufferPool = GPUContext::instance().getDescriptorPool(vertexBufferShader, 2);
-				vertexBufferPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 2);
-				vertexBufferPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES*MAX_FRAMES_IN_FLIGHT);
+				DescriptorPool& vertexBufferPool = GPUContext::instance().getDescriptorPool(vertexBufferShader, 1);
+				vertexBufferPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
 				vertexBufferPool.update();
 				//std::cout<<"descriptor pool : "<<resetBuffersPool.getHandle()<<std::endl;
 				DescriptorSet::allocate(resetBuffersPool, resetBuffersLayout, GPUContext::instance().getDescriptorSets(resetBuffersShader, 7, 1));
@@ -1055,7 +1053,7 @@ namespace odfaeg {
 				DescriptorSet::allocate(aoDefaultRenderingPool, aoDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 5), MAX_TEXTURES);
 				DescriptorSet::allocate(emissiveDefaultRenderingPool, emissiveDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 6), MAX_TEXTURES);
 				//std::cout<<"descriptor pool : "<<vertexBufferPool.getHandle()<<std::endl;
-				DescriptorSet::allocate(vertexBufferPool, vertexBufferLayout, GPUContext::instance().getDescriptorSets(vertexBufferShader, 2,2), MAX_TEXTURES);
+				DescriptorSet::allocate(vertexBufferPool, vertexBufferLayout, GPUContext::instance().getDescriptorSets(vertexBufferShader, 1,1), MAX_TEXTURES);
 				//std::cout<<"descriptor set vertex buffer allocated"<<std::endl;
 			}
 		}
@@ -1170,11 +1168,13 @@ namespace odfaeg {
 					emissiveDefaultRenderingSet.updateDescriptorSet();
 				}
 				//std::cout<<"update descriptor sets : "<<vertexBufferDatas[0].getRange()<<","<<vertexBufferDatas[1].getRange()<<std::endl;
-				DescriptorSet& vertexBufferSet = GPUContext::instance().getDescriptorSets(vertexBufferShader, (hasDiffuseTextures) ? 2 : 1, 2)[getCurrentFrame()];
-				vertexBufferSet.updateBufferInfos(0, vertexBufferDatas[getCurrentFrame()], VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				if (hasDiffuseTextures)
-					vertexBufferSet.updateImageInfos(1, GPUContext::instance().getSharedTextures(0), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-				vertexBufferSet.updateDescriptorSet();
+				
+				
+				if (hasDiffuseTextures) {
+					DescriptorSet& vertexBufferSet = GPUContext::instance().getDescriptorSets(vertexBufferShader, 1, 1)[0];
+					vertexBufferSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(0), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					vertexBufferSet.updateDescriptorSet();
+				}				
 				/*std::cout<<"update descriptor sets"<<std::endl;
 				system("PAUSE");*/
 			} else {
@@ -1280,11 +1280,11 @@ namespace odfaeg {
 					emissiveDefaultRenderingSet.updateDescriptorSet();
 				}
 				//std::cout<<"update descriptor sets : "<<vertexBufferDatas[0].getRange()<<","<<vertexBufferDatas[1].getRange()<<std::endl;
-				DescriptorSet& vertexBufferSet = GPUContext::instance().getDescriptorSets(vertexBufferShader, (hasDiffuseTextures) ? 2 : 1, 2)[getCurrentFrame()];
-				vertexBufferSet.updateBufferInfos(0, vertexBufferDatas[getCurrentFrame()], VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				if (hasDiffuseTextures)
-					vertexBufferSet.updateImageInfos(1, GPUContext::instance().getSharedTextures(0), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-				vertexBufferSet.updateDescriptorSet();
+				if (hasDiffuseTextures) {
+					DescriptorSet& vertexBufferSet = GPUContext::instance().getDescriptorSets(vertexBufferShader, 1, 1)[0];
+					vertexBufferSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(0), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					vertexBufferSet.updateDescriptorSet();
+				}	
 			}
 			//std::cout<<"set updated"<<std::endl;
 		}
@@ -1468,7 +1468,7 @@ namespace odfaeg {
 			}
 		}
 		void RenderTarget::draw(VertexBuffer& vb, RenderStates states) {
-			///std::cout<<"update vb"<<std::endl;
+			//std::cout<<"update vb"<<std::endl;
 			//std::cout<<"updated vb"<<std::endl;
 			//std::cout<<"render target : "<<this<<std::endl;
 			//std::cout<<"comamnd buffer : "<<commandPool.getHandle(getCurrentFrame())<<std::endl;
@@ -1490,6 +1490,7 @@ namespace odfaeg {
 			} else {
 				depthStencilInfoId = DepthStencilType::DEPTHSTENCIL;
 			}
+			//std::cout<<"pirmitive type : "<<vb.getPrimitiveType()<<std::endl;
 			vkCmdBindPipeline(commandPool.getHandle(getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(vb.getPrimitiveType(), *shader, states.blendMode, depthStencilInfoId).getHandle());
 			//std::cout<<"pipeline bound"<<std::endl;
 
@@ -1505,10 +1506,12 @@ namespace odfaeg {
 			vertexBufferData.uvOffset = math::Vec2f(0.f, 0.f);
 			vertexBufferData.nbBuffers = (states.texture != nullptr) ? states.texture->getNbBuffers() : 0;
 			vertexBufferData.drawableId = cpuVertexBufferDatas.size();*/
-			vertexBufferPc.projMatrix = m_camera.getProjMatrix().getMatrix();
-			vertexBufferPc.viewMatrix = m_camera.getViewMatrix().getMatrix();
-			vertexBufferPc.modelMatrix = states.transform.getMatrix();
-
+			vertexBufferPc.projMatrix = m_camera.getProjMatrix().getMatrix().transpose();
+			/*std::cout<<"proj mat : "<<vertexBufferPc.projMatrix<<std::endl;
+            system("PAUSE");*/         
+			vertexBufferPc.viewMatrix = m_camera.getViewMatrix().getMatrix().transpose();
+			vertexBufferPc.modelMatrix = states.transform.getMatrix().transpose();
+			
 			vertexBufferPc.textureIndex = (states.texture == nullptr) ? 0 : states.texture->getId();
 			vertexBufferPc.uvScale = (states.texture != nullptr) ? math::Vec2f(1.f / states.texture->getSize().x(), 1.f / states.texture->getSize().y()) : math::Vec2f(0.f, 0.f);
 			vertexBufferPc.uvOffset = math::Vec2f(0.f, 0.f);
@@ -1528,6 +1531,7 @@ namespace odfaeg {
 			staggingVertexBufferDatas[getCurrentFrame()].update(cpuVertexBufferDatas[getCurrentFrame()].data(), sizeof(VertexBufferData) * cpuVertexBufferDatas[getCurrentFrame()].size());
 			Buffer::copyBuffer(staggingVertexBufferDatas[getCurrentFrame()], vertexBufferDatas[getCurrentFrame()], sizeof(VertexBufferData) * cpuVertexBufferDatas[getCurrentFrame()].size(), commandPool.getHandle(getCurrentFrame()));*/
 			if (needToUpdateDescriptorSets) {
+				std::cout<<"update descriptor sets"<<std::endl;
 				updateDescriporSets();
 				needToUpdateDescriptorSets = false;
 			}
@@ -1592,7 +1596,7 @@ namespace odfaeg {
 			vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(vb.getPrimitiveType(), *shader, states.blendMode, depthStencilInfoId).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(VertexBufferPC), &vertexBufferPc);
 			std::vector<VkDescriptorSet> shaderDescriptorSets;
 			for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(*shader).size(); i++) {
-				shaderDescriptorSets.push_back(GPUContext::instance().getDescriptorSets(*shader)[i][getCurrentFrame()].getHandle());
+				shaderDescriptorSets.push_back(GPUContext::instance().getDescriptorSets(*shader)[i][0].getHandle());
 			}
 			vkCmdBindDescriptorSets(commandPool.getHandle(getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(vb.getPrimitiveType(), *shader, states.blendMode, depthStencilInfoId).getLayout(), 0, shaderDescriptorSets.size(), shaderDescriptorSets.data(), 0, nullptr);
 			applyViewportAndScissor(commandPool.getHandle(getCurrentFrame()));

@@ -588,6 +588,7 @@ namespace odfaeg {
             //shadowMappingCSMSets[0][0]->setNbBindings((hasDiffuseTexture) ? 6 : 5);
             shadowMap.getDepthStencilTexture().getImage(0).setLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL);
             shadowMapPL.getDepthStencilTexture().getImage(0).setLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL);
+            //std::cout<<"id : "<<parentRenderer.getId()<<",output window model id : "<<RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS<<std::endl;
             shadowMappingDescriptorSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowMappingDescriptorSet.updateBufferInfos(1, lightSpaceMatricesBufferFinal, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowMappingDescriptorSet.updateBufferInfos(2, cascadePlaneDistancesBuffer, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
@@ -597,13 +598,13 @@ namespace odfaeg {
             shadowMappingDescriptorSet.updateImageInfos(6, shadowMapPL.getDepthStencilTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             shadowMap.getDepthStencilTexture().getImage(0).setLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
             shadowMapPL.getDepthStencilTexture().getImage(0).setLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-            for (unsigned int i = 0; i <  sceneColorTexture.getTexture().getNbBuffers(); i++) {
+            /*for (unsigned int i = 0; i <  sceneColorTexture.getTexture().getNbBuffers(); i++) {
                 sceneColorTexture.getTexture().getImage(i).setLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-            }
+            }*/
             shadowMappingDescriptorSet.updateImageInfos(7, sceneColorTexture.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);            
-            for (unsigned int i = 0; i <  sceneColorTexture.getTexture().getNbBuffers(); i++) {
+            /*for (unsigned int i = 0; i <  sceneColorTexture.getTexture().getNbBuffers(); i++) {
                 sceneColorTexture.getTexture().getImage(i).setLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-            }
+            }*/
             shadowMappingDescriptorSet.updateImageInfos(8, headPtrsDirStorageImage, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
             shadowMappingDescriptorSet.updateBufferInfos(9, linkedListDirBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowMappingDescriptorSet.updateImageInfos(10, headPtrsDirStorageImage, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
@@ -627,12 +628,12 @@ namespace odfaeg {
                 vkCmdClearColorImage(shadowMapPL.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), headPtrsPointStorageImage[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
                 vkCmdFillBuffer(shadowMapPL.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), nodeCounterPointBuffer[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), 0, sizeof(uint32_t), 0u);
             }
-            parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
+            /*parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
             parentRenderer.applyCullingAndBatching();
             shadowMap.setTypesToRender(typesToRenderExpression, shadowMap.getCurrentFrame());
             shadowMap.applyCullingAndBatching();            
             shadowMapPL.setTypesToRender(typesToRenderExpression, shadowMapPL.getCurrentFrame());
-            shadowMapPL.applyCullingAndBatching();
+            shadowMapPL.applyCullingAndBatching();*/
             
             //std::cout<<"cleared  :"<<parentRenderer.getCurrentFrame()<<std::endl;
             registerFramesJob[parentRenderer.getCurrentFrame()].store(true);
@@ -877,13 +878,13 @@ namespace odfaeg {
                 //std::cout<<"shadow map drawn"<<std::endl;
                                           
                 parentRenderer.applyComputeGraphicsBarrier();
-                 VkMemoryBarrier memoryBarrier{};
+                VkMemoryBarrier memoryBarrier{};
                 memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                 memoryBarrier.pNext = VK_NULL_HANDLE;
                 memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                 memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;  
                 vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                for (unsigned int i = 0; i < RenderTexture::NB_SWAPCHAIN_IMAGES; i++) {
+                /*for (unsigned int i = 0; i < RenderTexture::NB_SWAPCHAIN_IMAGES; i++) {
                    
                     VkImageMemoryBarrier barrier{};
                     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -912,7 +913,7 @@ namespace odfaeg {
                         0, nullptr,
                         1, &barrier
                     );
-                }
+                }*/
                 Texture::transitionImageLayout(shadowMap.getDepthStencilTexture().getImage(0), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 0, 1, NB_CASCADES+1);      
                 Texture::transitionImageLayout(shadowMapPL.getDepthStencilTexture().getImage(0), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 0, 1, 6);
                 /*for (unsigned int i = 0; i < RenderTexture::NB_SWAPCHAIN_IMAGES; i++) {
@@ -923,9 +924,9 @@ namespace odfaeg {
                 parentRenderer.endRendering(); 
                 Texture::transitionImageLayout(shadowMap.getDepthStencilTexture().getImage(0), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 0, 0, 1, NB_CASCADES+1);     
                 Texture::transitionImageLayout(shadowMapPL.getDepthStencilTexture().getImage(0), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 0, 0, 1, 6);   
-                for (unsigned int i = 0; i < RenderTexture::NB_SWAPCHAIN_IMAGES; i++) {
+                /*for (unsigned int i = 0; i < RenderTexture::NB_SWAPCHAIN_IMAGES; i++) {
                     Texture::transitionImageLayout(sceneColorTexture.getTexture().getImage(i), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL); 
-                }           
+                }*/           
                 sceneColorTexture.display();
             }
             //std::cout<<"drawn"<<std::endl;

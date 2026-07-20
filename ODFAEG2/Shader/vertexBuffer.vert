@@ -18,8 +18,8 @@ layout (push_constant) uniform PushConstant {
     mat4 modelMatrix;
     vec2 uvScale;
     vec2 uvOffset;
-    int nbBuffers;
     int textureIndex;
+    int nbBuffers;    
     int currentFrame;
     int currentImageIndex;
 } pc;
@@ -29,19 +29,20 @@ struct VertexBufferData {
     mat4 modelMatrix;
     vec2 uvScale;
     vec2 uvOffset;
-    int nbBuffers;
     int textureIndex;
+    int nbBuffers;    
+    int currentFrame;
+	int currentImageIndex;
 };
-layout (std430, set = 0, binding = 0) buffer VertexBufferDataSSBO {
-     VertexBufferData vertexBufferDatas[];
-} vertexBuffer;
 void main() {
-
+         //debugPrintfEXT("Proj matrix : 0:%v4f\n1:%v4f\n2:%v4f\n3:%v4f",pc.projMatrix[0], pc.projMatrix[1], pc.projMatrix[2], pc.projMatrix[3]);
+        //debugPrintfEXT("View matrix : 0:%v4f\n1:%v4f\n2:%v4f\n3:%v4f",pc.viewMatrix[0], pc.viewMatrix[1], pc.viewMatrix[2], pc.viewMatrix[3]);
+        //debugPrintfEXT("Model matrix : 0:%v4f\n1:%v4f\n2:%v4f\n3:%v4f",pc.modelMatrix[0], pc.modelMatrix[1], pc.modelMatrix[2], pc.modelMatrix[3]);
+        //debugPrintfEXT("in position %v3f, out position %v4f", inPosition, gl_Position);
         gl_PointSize = 2.0f;
-        gl_Position =  transpose(pc.projMatrix) * transpose(pc.viewMatrix) * transpose(pc.modelMatrix) * vec4(inPosition, 1);
-        // debugPrintfEXT("position : %v4f", gl_Position);
+        gl_Position =  pc.projMatrix * pc.viewMatrix * pc.modelMatrix * vec4(inPosition, 1);
         fragColor = inColor;
         fragTexCoord = inTexCoord /** pc.uvScale + pc.uvOffset*/;
         normal = mat3(transpose(inverse(pc.modelMatrix))) * normals;
-        outTextureID = (pc.textureIndex==0) ? 0 : pc.textureIndex*pc.nbBuffers+min(pc.currentImageIndex, pc.nbBuffers-1);
+        outTextureID = pc.textureIndex;
 }

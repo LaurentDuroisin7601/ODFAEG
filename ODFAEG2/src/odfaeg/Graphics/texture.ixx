@@ -52,8 +52,10 @@ namespace odfaeg {
             static void transitionImageLayout(Image& image, VkCommandBuffer cmd, VkImageLayout oldLayout, VkImageLayout newLayout, unsigned int mipLevel=0, unsigned int baseLayer = 0, unsigned int nbLevels = 1, unsigned int nbLayers=1);
             math::Vector2u getSize() const;
             void update(Texture& texture);
+            void update(VkCommandBuffer& commandBuffer, Texture& texture, unsigned int imageIndex);
             void updateCubeMap(Texture& texture);
             void update(Texture& texture, unsigned int x, unsigned int y);
+            void update(VkCommandBuffer& commandBuffer, Texture& texture, unsigned int x, unsigned int y, unsigned int imageIndex);
             void update(CommandPool& commandPool, Texture& texture, unsigned int x, unsigned int y, size_t mipLevel = 0);
             void updateCubeMap(Texture& texture, unsigned int x, unsigned int y);
             void setSmooth(bool smooth);

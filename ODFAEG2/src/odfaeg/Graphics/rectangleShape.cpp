@@ -40,10 +40,10 @@ namespace odfaeg {
             switch (index)
             {
             default:
-            case 0: return math::Vec3f(0.f, 0.f, 0.f);
-            case 1: return math::Vec3f(m_size.x(), 0.f, 0.F);
-            case 2: return math::Vec3f(m_size.x(), m_size.y(), 0.f);
-            case 3: return math::Vec3f(0.f, m_size.y(), 0.f);
+            case 0: return math::Vec3f(0.f, 0.f, m_size.z());
+            case 1: return math::Vec3f(m_size.x(), 0.f, m_size.z());
+            case 2: return math::Vec3f(m_size.x(), m_size.y(), m_size.z());
+            case 3: return math::Vec3f(0.f, m_size.y(), m_size.z());
             }
         }
     }

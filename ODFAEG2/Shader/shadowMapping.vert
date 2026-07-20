@@ -42,6 +42,10 @@ void main() {
     gl_PointSize = 2.0f;
     mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[gl_InstanceIndex].modelMatrix;
     gl_Position =  pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(inPosition, 1); 
+    //debugPrintfEXT("Proj matrix : 0:%v4f\n1:%v4f\n2:%v4f\n3:%v4f",pc.projMatrix[0], pc.projMatrix[1], pc.projMatrix[2], pc.projMatrix[3]);
+    //debugPrintfEXT("View matrix : 0:%v4f\n1:%v4f\n2:%v4f\n3:%v4f",pc.viewMatrix[0], pc.viewMatrix[1], pc.viewMatrix[2], pc.viewMatrix[3]);
+    //debugPrintfEXT("Model matrix : 0:%v4f\n1:%v4f\n2:%v4f\n3:%v4f",modelMatrix[0], modelMatrix[1], modelMatrix[2], modelMatrix[3]);
+    //debugPrintfEXT("in position %v3f, out position %v4f", inPosition, gl_Position);
     fragColor = inColor;
     fragTexCoord = inTexCoord;
     normal = transpose(inverse(mat3(modelMatrix))) * normals;

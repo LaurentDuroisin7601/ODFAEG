@@ -179,7 +179,7 @@ void main()
 {    
     //debugPrintfEXT("draw");    
     vec2 uv = gl_FragCoord.xy / pc.resolution;
-    debugPrintfEXT("resolution %v2i", pc.resolution);
+    //debugPrintfEXT("uv %v2f, resolution %v2i", uv, pc.resolution);
     vec4 sceneColor = texture(sceneColorTextures[pc.imageIndex], uv);
     /*if (sceneColor.r != 0 || sceneColor.r != 0 || sceneColor.b != 0)
         debugPrintfEXT("scene color %v4f", sceneColor);*/
@@ -190,5 +190,5 @@ void main()
     float shadow = max(shadowDir, shadowPoint);
     /*if (shadowDir > 0 || shadowPoint > 0)
         debugPrintfEXT("shadow dir %f", shadow);*/   
-    frag_color = sceneColor;/*vec4(vec3(sceneColor) * (1 - shadow), sceneColor.a);*/
+    frag_color = /*vec4(1, 0, 0, 1);*/vec4(vec3(sceneColor) * (1 - shadow), sceneColor.a);
 }

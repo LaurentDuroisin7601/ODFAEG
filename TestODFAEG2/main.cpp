@@ -63,7 +63,7 @@ int main() {
 	Camera camera(800, 600, 80, 1, 1000);
 	//camera.setUp(Vec3f(0.f, -1.f, 0.f));
 	camera.move(0.f, 0.f, 5.f);
-	window.setCamera(camera);
+	//window.setCamera(camera);
 	ResourceManager<Texture, TextureNames> textureManager;
 	ResourceManager<Texture, std::string> modelTextureManager;
 	ModelLoader modelLoader(GPUContext::instance().getDevice(), modelTextureManager);
@@ -128,7 +128,7 @@ int main() {
 	sceneColorTexture.create(window.getSize().x(), window.getSize().y());
 	sceneColorTexture.setCamera(camera);
 	RenderGraph renderGraph;
-	renderGraph.addLinkedListPass(sceneColorTexture, 0, "*", window.getId());
+	//renderGraph.addLinkedListPass(sceneColorTexture, 0, "*", window.getId());
 	ComponentManager componentManager;
 	std::vector<IComponent*> components = renderGraph.getComponents();
 	for (unsigned int i = 0; i < components.size(); i++) {
@@ -140,24 +140,37 @@ int main() {
 	//std::cout<<"ok"<<std::endl;
 	Clock clock;
 	unsigned int fps = 0;
-	renderGraph.addShadowPass(window, sceneColorTexture, 1, "*", window.getId());
+	/*renderGraph.addShadowPass(window, sceneColorTexture, 1, "*", window.getId());
 	ShadowRenderer::DirLight dirLight;
 	dirLight.dir = Vec3f(20, 50, 20);
 	renderGraph.addDirectionnalLight<ShadowRenderer>(1, dirLight);
 	ShadowRenderer::PointLight pointLight;
 	pointLight.pos = Vec3f(0, 0, 0);
-	renderGraph.addPonctualLight<ShadowRenderer>(1, pointLight);
+	renderGraph.addPonctualLight<ShadowRenderer>(1, pointLight);*/	
 	while (window.isOpen()) {
 		odfaeg::window::IEvent event;
 		while (window.pollEvent(event)) {
 			if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED) {
 				window.close();
 			}
-			componentManager.update(window.getId(), event);
+			//componentManager.update(window.getId(), event);
 		}
+		
+		/*window.setTypesToRender("*", window.getCurrentFrame());
+		window.applyCullingAndBatching();*/
+		sceneColorTexture.clear(Color::Red);
+		/*sceneColorTexture.beginRendering();
+		sceneColorTexture.endRendering();*/
+		sceneColorTexture.submit(true);
+		sceneColorTexture.display();
+		//renderGraph.render();
 		window.clear();
-		//sceneColorTexture.clear();
-		renderGraph.render();
+		RectangleShape rect(ctx.getDevice(), Vec3f(800, 600, 0));
+		rect.move(Vec3f(-400, -300, 0));
+		rect.setFillColor(Color::Red);
+		rect.setTexture(&sceneColorTexture.getTexture());
+		rect.setTextureRect(IntRect(0, 0, 1, 1));		
+		window.draw(rect);
 		//sceneColorTexture.submit(true);		
 		/*window.setTypesToRender("*", window.getCurrentFrame());
 		//window.applyCullingAndBatching();
@@ -166,7 +179,7 @@ int main() {
 		//shadowRenderer.drawNextFrame();
 		shadowRenderer.draw();*/
 		window.submit(true);		
-		window.display();
+		window.display();		
 		fps++;
 		if (clock.getElapsedTime() >= seconds(1.f)) {
 			std::cout<<"FPS : "<<fps<<std::endl;
