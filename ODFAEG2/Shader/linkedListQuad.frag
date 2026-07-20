@@ -45,6 +45,8 @@ void main() {
     /*color.rgb = frags[i].color.rgb * frags[i].color.a + color.rgb * (1 - frags[i].color.a);
     color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);*/
     color = mix (color, frags[i].color, frags[i].color.a);
-  }  
+  } 
+  /*if (color.r != 0 || color.g != 0 || color.b != 0) 
+    debugPrintfEXT("color : %v4f", color);*/
   fcolor = color;
 }

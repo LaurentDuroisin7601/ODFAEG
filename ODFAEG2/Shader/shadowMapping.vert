@@ -43,6 +43,7 @@ void main() {
     gl_PointSize = 2.0f;
     mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[gl_InstanceIndex].modelMatrix;
     gl_Position =  pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(inPosition, 1); 
+    clipPos = pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(inPosition, 1); 
     fragColor = inColor;
     fragTexCoord = inTexCoord;
     normal = transpose(inverse(mat3(modelMatrix))) * normals;

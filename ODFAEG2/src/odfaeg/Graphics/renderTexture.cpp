@@ -21,7 +21,7 @@ namespace odfaeg {
             if (!depthOnly) {              
                 
                 for (unsigned int i = 0; i < 1; i++) {
-                    std::cout<<"create texture"<<std::endl;
+                    //std::cout<<"create texture"<<std::endl;
                     m_textures.emplace_back(device, NB_SWAPCHAIN_IMAGES);
                     //std::cout<<"images : "<<m_textures.back().getImages().size()<<std::endl;
                     m_textures.back().create(width, height, depth, 1, false, true);

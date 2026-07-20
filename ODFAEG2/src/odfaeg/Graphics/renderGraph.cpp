@@ -38,10 +38,11 @@ namespace odfaeg {
                 
                 //std::cout<<"cleared"<<std::endl;
                 if (inputShadowRT != nullptr && it->first == llSMTransitionPoint) {
-                    std::cout<<"transition : "<<it->first<<std::endl;
+                    //std::cout<<"transition : "<<it->first<<std::endl;
                     Texture::transitionImageLayout(inputShadowRT->getTexture().getImage(inputShadowRT->getImageIndex()), inputShadowRT->getCommandPool().getHandle(inputShadowRT->getCurrentFrame()), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-                    inputShadowRT->submit(true);
+                    inputShadowRT->submit();
                 }
+                //std::cout<<"draw : "<<it->first<<std::endl;
                 it->second->clear();
                 //std::cout<<"draw"<<std::endl;
                 it->second->draw();

@@ -180,7 +180,10 @@ void main()
     //debugPrintfEXT("draw");
     vec3 ndc = clipPos.xyz / clipPos.w;
     vec2 uv = ndc.xy * 0.5 + 0.5;
+    //debugPrintfEXT("uv %v2f", uv);
     vec4 sceneColor = texture(sceneColorTextures[pc.imageIndex], uv);
+    /*if (sceneColor.r != 0 || sceneColor.r != 0 || sceneColor.b != 0)
+        debugPrintfEXT("scene color %v4f", sceneColor);*/
     vec3 normal = normalize(normal);
     // calculate shadow
     float shadowDir = shadowCalculationDir(fragPos);
@@ -188,5 +191,5 @@ void main()
     float shadow = max(shadowDir, shadowPoint);
     /*if (shadowDir > 0 || shadowPoint > 0)
         debugPrintfEXT("shadow dir %f", shadow);*/   
-    frag_color = vec4(vec3(sceneColor) * (1 - shadow), sceneColor.a);
+    frag_color = sceneColor;/*vec4(vec3(sceneColor) * (1 - shadow), sceneColor.a);*/
 }

@@ -126,6 +126,7 @@ int main() {
 	window.addGameObject(&cube5Mesh);
 	RenderTexture sceneColorTexture(ctx.getDevice());
 	sceneColorTexture.create(window.getSize().x(), window.getSize().y());
+	sceneColorTexture.setCamera(camera);
 	RenderGraph renderGraph;
 	renderGraph.addLinkedListPass(sceneColorTexture, 0, "*", window.getId());
 	ComponentManager componentManager;
@@ -157,8 +158,7 @@ int main() {
 		window.clear();
 		sceneColorTexture.clear();
 		renderGraph.render();
-		sceneColorTexture.submit(true);
-		sceneColorTexture.display();
+		sceneColorTexture.submit(true);		
 		/*window.setTypesToRender("*", window.getCurrentFrame());
 		//window.applyCullingAndBatching();
 		window.draw(Triangles);*/
@@ -166,6 +166,7 @@ int main() {
 		//shadowRenderer.drawNextFrame();
 		shadowRenderer.draw();*/
 		window.submit(true);
+		sceneColorTexture.display();
 		window.display();
 		fps++;
 		if (clock.getElapsedTime() >= seconds(1.f)) {
