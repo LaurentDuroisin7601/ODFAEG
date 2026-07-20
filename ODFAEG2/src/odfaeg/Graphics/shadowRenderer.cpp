@@ -561,7 +561,7 @@ namespace odfaeg {
             bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
             DescriptorSet& shadowPassDescriptorSet = GPUContext::instance().getDescriptorSets(shadowPassCSMShader, (hasDiffuseTexture) ? 7 : 6, 1)[0];
             //std::cout<<"size : "<<shadowPassCSMSets.size()<<","<<shadowPassCSMSets[0].size()<<std::endl;
-            //std::cout<<"id 2 : "<<(RenderTarget::OUTPUT_MODELS+shadowMap.getId()*RenderTarget::NB_BUFFERS)<<std::endl;
+            //std::cout<<"output model range : "<<GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+shadowMap.getId()*RenderTarget::NB_BUFFERS)[3].getRange()<<std::endl;
             shadowPassDescriptorSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+shadowMap.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowPassDescriptorSet.updateBufferInfos(1, lightSpaceMatricesBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC);
             shadowPassDescriptorSet.updateBufferInfos(2, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS+shadowMap.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -588,7 +588,7 @@ namespace odfaeg {
             //shadowMappingCSMSets[0][0]->setNbBindings((hasDiffuseTexture) ? 6 : 5);
             shadowMap.getDepthStencilTexture().getImage(0).setLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL);
             shadowMapPL.getDepthStencilTexture().getImage(0).setLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL);
-            //std::cout<<"id : "<<parentRenderer.getId()<<",output window model id : "<<RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS<<std::endl;
+            std::cout<<"output model range : "<<GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS)[3].getRange()<<std::endl;
             shadowMappingDescriptorSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowMappingDescriptorSet.updateBufferInfos(1, lightSpaceMatricesBufferFinal, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowMappingDescriptorSet.updateBufferInfos(2, cascadePlaneDistancesBuffer, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
@@ -628,12 +628,12 @@ namespace odfaeg {
                 vkCmdClearColorImage(shadowMapPL.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), headPtrsPointStorageImage[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
                 vkCmdFillBuffer(shadowMapPL.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), nodeCounterPointBuffer[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), 0, sizeof(uint32_t), 0u);
             }
-            /*parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
+            parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
             parentRenderer.applyCullingAndBatching();
             shadowMap.setTypesToRender(typesToRenderExpression, shadowMap.getCurrentFrame());
             shadowMap.applyCullingAndBatching();            
             shadowMapPL.setTypesToRender(typesToRenderExpression, shadowMapPL.getCurrentFrame());
-            shadowMapPL.applyCullingAndBatching();*/
+            shadowMapPL.applyCullingAndBatching();
             
             //std::cout<<"cleared  :"<<parentRenderer.getCurrentFrame()<<std::endl;
             registerFramesJob[parentRenderer.getCurrentFrame()].store(true);

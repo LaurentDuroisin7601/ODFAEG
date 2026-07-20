@@ -284,7 +284,7 @@ namespace odfaeg {
 			inline static const unsigned int MAX_VERTS = 255u;
 			inline static const unsigned int MAX_PRIMS = 85u;
 			inline static unsigned int totalMeshlets = 0;
-			inline static unsigned int totalSubMeshes = 0;
+			unsigned int totalSubMeshes = 0;
 			inline static bool needToUpdateBuffers = false;
 			Camera m_defaultCamera, m_camera;
 			std::vector<Mesh*>& gameObjects;

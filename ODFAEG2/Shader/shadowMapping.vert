@@ -31,14 +31,13 @@ layout (push_constant) uniform PushConstant {
     mat4 projMatrix;
     mat4 viewMatrix;
     int primitiveType;
-    int currentFrame;
-    int pad[2];
+    int currentFrame;    
 } pc;
 layout (std430, set = 0, binding = 0) buffer ModelDataSSBO {
     ModelData modelData[];
 } modelDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
 void main() {
-    //debugPrintfEXT("Vertex shader ok!");
+    //debugPrintfEXT("currentFrame : %i, primitive type : %i, instance id : %i", pc.currentFrame, pc.primitiveType, gl_InstanceIndex);
     gl_PointSize = 2.0f;
     mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[gl_InstanceIndex].modelMatrix;
     gl_Position =  pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(inPosition, 1); 

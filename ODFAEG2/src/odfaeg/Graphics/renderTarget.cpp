@@ -220,7 +220,7 @@ namespace odfaeg {
 				}
 			}
 			//std::cout<<"size : "<<gameObjects.size()<<std::endl;
-			if (gameObjects.size() == 0) {
+			//if (gameObjects.size() == 0) {
 				/*std::cout<<"nb game objects : "<<gameObjects.size()<<std::endl;
 				int i;
 				std::cin>>i;*/
@@ -244,14 +244,11 @@ namespace odfaeg {
 					outputMaterialDatas.emplace_back(device);
 					outputMaterialDatas.back().create(sizeof(Material), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
-			} else {
+			/*} else {
 				unsigned int totalSubMeshes=0;
 				for (unsigned int i = 0; i < gameObjects.size(); i++) {
 					totalSubMeshes += gameObjects[i]->getGameObject()->getSubMeshes().size();
-				}
-				/*std::cout<<"reallocate output buffers "<<totalSubMeshes<<std::endl;
-				int i;
-				std::cin>>i;*/
+				}				
 				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 					outputMeshes.emplace_back(device);
 					outputMeshes.back().create(sizeof(entity::SubMesh)*totalSubMeshes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
@@ -272,7 +269,7 @@ namespace odfaeg {
 					outputMaterialDatas.emplace_back(device);
 					outputMaterialDatas.back().create(sizeof(Material)*totalSubMeshes, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
-			}
+			}*/
 			for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 				outputElementsDrawIndirectCommand.emplace_back(device);
 				outputElementsDrawIndirectCommand.back().create(sizeof(DrawElementsIndirectCommand)*MAX_DRAW_INDIRECT_COMMANDS, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
@@ -588,7 +585,6 @@ namespace odfaeg {
 					}									
 				}
 				totalMeshlets = meshletDatas.size();
-				totalSubMeshes = subMeshesDatas.size();
 				/*std::cout<<"total sub meshes"<<totalSubMeshes<<std::endl;
 				system("PAUSE");*/
 				for (unsigned int i = 0; i < 1; i++) {
@@ -650,20 +646,6 @@ namespace odfaeg {
 						}
 					}
 				}
-				
-				for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
-					for (unsigned int k = 0; k < NB_PRIMITIVE_TYPES; k++) {
-						//std::cout<<"update : "<<j<<","<<k<<std::endl;
-						outputObjectDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-						outputModelDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-						//std::cout<<"output model data : "<<outputModelDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
-						outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(MaterialData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-						outputMeshes[j * NB_PRIMITIVE_TYPES + k].create(sizeof(entity::SubMesh) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);						
-						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
-						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
-					}
-				}
-				
 				//std::cout<<"buffers updated"<<std::endl;
 				needToUpdateBuffers = false;
 				commandPool.endRecordCommandBuffer(getCurrentFrame());
@@ -696,6 +678,21 @@ namespace odfaeg {
 				BoneAnimUpdater::instance(cv, mtx).setBuffersReady(true);
 				BoneAnimUpdater::instance(cv, mtx).cv3.notify_all();
 				
+			}
+			if (currentSubmeshesOffset > totalSubMeshes) {
+				for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
+					for (unsigned int k = 0; k < NB_PRIMITIVE_TYPES; k++) {
+						//std::cout<<"update : "<<j<<","<<k<<std::endl;
+						outputObjectDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+						outputModelDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+						//std::cout<<"output model data : "<<outputModelDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
+						outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(MaterialData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+						outputMeshes[j * NB_PRIMITIVE_TYPES + k].create(sizeof(entity::SubMesh) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);						
+						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
+						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
+					}
+				}
+				totalSubMeshes = currentSubmeshesOffset;
 			}	
 		}
 		void RenderTarget::setTypesToRender(std::string expression, unsigned int currentFrame) {
@@ -1086,7 +1083,7 @@ namespace odfaeg {
 				cullingBatchingSet.updateBufferInfos(2, subMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range  submeshes : "<<subMeshes[0].getRange()<<std::endl;
 				cullingBatchingSet.updateBufferInfos(3, modelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				//std::cout<<"range model datas : "<<modelDatas[0].getRange()<<std::endl;
+				//std::cout<<"id : "<<id<<",range model datas : "<<modelDatas[0].getRange()<<std::endl;
 				cullingBatchingSet.updateBufferInfos(4, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range material datas  : "<<materialDatas[0].getRange()<<std::endl;
 				//std::cout<<"update output vertics"<<std::endl;
@@ -1204,7 +1201,7 @@ namespace odfaeg {
 				cullingBatchingSet.updateBufferInfos(2, subMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range  submeshes : "<<subMeshes[0].getRange()<<std::endl;
 				cullingBatchingSet.updateBufferInfos(3, modelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				//std::cout<<"range model datas : "<<modelDatas[0].getRange()<<std::endl;
+				//std::cout<<"id : "<<id<<",range model datas : "<<modelDatas[0].getRange()<<std::endl;
 				cullingBatchingSet.updateBufferInfos(4, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range material datas  : "<<materialDatas[0].getRange()<<std::endl;
 				//std::cout<<"update output vertics"<<std::endl;
@@ -1214,7 +1211,7 @@ namespace odfaeg {
 				//std::cout<<"range output indexes : "<<outputVertexDatas[3].getIndexBuffer(0).getRange()<<std::endl;
 				//std::cout<<"model data"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(7, outputMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				//std::cout<<"range output model datas : "<<outputModelDatas[0].getRange()<<std::endl;
+				std::cout<<"id : "<<id<<",range output model datas : "<<outputModelDatas[0].getRange()<<std::endl;
 				//std::cout<<"object data"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(8, offsetInOutputModelData, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				/*std::cout<<"range output model datas : "<<outputModelDatas[0].getRange()<<std::endl;
