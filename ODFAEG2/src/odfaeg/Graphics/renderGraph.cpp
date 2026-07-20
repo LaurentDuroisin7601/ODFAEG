@@ -38,7 +38,7 @@ namespace odfaeg {
                 
                 //std::cout<<"cleared"<<std::endl;
                 if (inputShadowRT != nullptr && it->first == llSMTransitionPoint) {
-                    Texture::transitionImageLayout(inputShadowRT->getTexture().getImage(inputShadowRT->getImageIndex()), inputShadowRT->getCommandPool().getHandle(inputShadowRT->getCurrentFrame()), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL);
+                    Texture::transitionImageLayout(inputShadowRT->getTexture().getImage(inputShadowRT->getImageIndex()), inputShadowRT->getCommandPool().getHandle(inputShadowRT->getCurrentFrame()), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
                     inputShadowRT->submit(true);
                 }
                 it->second->clear();
@@ -48,7 +48,7 @@ namespace odfaeg {
             }
             if (inputShadowRT != nullptr) {
                 inputShadowRT->beginRecordCommandBuffer();
-                Texture::transitionImageLayout(inputShadowRT->getTexture().getImage(inputShadowRT->getImageIndex()), inputShadowRT->getCommandPool().getHandle(inputShadowRT->getCurrentFrame()), VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);   
+                Texture::transitionImageLayout(inputShadowRT->getTexture().getImage(inputShadowRT->getImageIndex()), inputShadowRT->getCommandPool().getHandle(inputShadowRT->getCurrentFrame()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);   
                 //inputShadowRT->submit(true);
             }         
         }

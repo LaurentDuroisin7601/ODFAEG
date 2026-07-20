@@ -666,6 +666,7 @@ namespace odfaeg {
 
             }
             else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+                std::cout<<"to read only optimal"<<std::endl;
                 barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                 barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
                 sourceStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
