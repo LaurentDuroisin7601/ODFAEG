@@ -14,7 +14,7 @@ import odfaeg.graphic.texture;
 namespace odfaeg {
     namespace graphic {
         export class RenderGraph {
-            public :
+            public :                     
             RenderGraph();
             void addLinkedListPass(RenderTarget& output, unsigned int layer, std::string typesToRender, unsigned int windowId=-1);
             void addShadowPass(RenderTarget& output, RenderTexture& input,  unsigned int layer, std::string typesToRender, unsigned int windowId=-1);

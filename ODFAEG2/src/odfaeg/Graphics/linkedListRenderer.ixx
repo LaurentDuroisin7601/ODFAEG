@@ -23,7 +23,7 @@ import odfaeg.window.listener;
 namespace odfaeg {
     namespace graphic {
         export class LinkedListRenderer : public IRenderer {
-        public :
+        public :           
             struct LinkedListPC {
                 unsigned int maxNodes;
                 int currentImageIndex;
@@ -48,8 +48,8 @@ namespace odfaeg {
             VertexBuffer fullScreenQuad;
             std::string typesToRenderExpression;
             std::deque<Buffer> nodeCounterBuffer;
-            std::deque<Buffer> linkedListBuffer;
-            std::deque<Image> headPtrsStorageImage;
+            std::deque<Buffer>& linkedListBuffer;
+            std::deque<Image>& headPtrsStorageImage;
             Shader linkedListShader, quadLinkedListShader;
             CommandPool linkedListCmdPool, quadLinkedListCommandPool;
             core::ThreadPool threadPool;

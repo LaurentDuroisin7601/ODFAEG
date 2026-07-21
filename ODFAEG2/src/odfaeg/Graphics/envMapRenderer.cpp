@@ -44,6 +44,7 @@ namespace odfaeg {
             envMap.getCamera().setViewport(physic::BoundingBox(0, 0, parentRenderer.getCamera().getViewport().getPosition().z(), ENV_MAP_SIZE, ENV_MAP_SIZE, parentRenderer.getCamera().getViewport().getSize().z()));
             createCommandPools();
             maxNodes = 20 * ENV_MAP_SIZE * ENV_MAP_SIZE;
+            envMapFragPC.maxNodes = maxNodes;
             unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int);
             commandPool.beginRecordCommandBuffer(0);            
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT*6; i++) {
@@ -361,7 +362,9 @@ namespace odfaeg {
                             vkCmdBindPipeline(envMapCmdPools[cmp].getHandle(envMap.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
                             //std::cout<<"pipeline bound"<<std::endl;
                             vkCmdBindDescriptorSets(envMapCmdPools[cmp].getHandle(envMap.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), offsetEnvViewMatrices.size(), offsetEnvViewMatrices.data());
-                            vkCmdPushConstants(envMapCmdPools[cmp].getHandle(envMap.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ReflRefrFragPC), &reflRefrFragPC);
+                            vkCmdPushConstants(envMapCmdPools[cmp].getHandle(envMap.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(EnvMapVertPC), &envMapVertPC);
+                            vkCmdPushConstants(envMapCmdPools[cmp].getHandle(envMap.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(EnvMapFragPC), &envMapFragPC);
+
                             parentRenderer.draw(envMapCmdPools[cmp], static_cast<entity::PrimitiveType>(i), states);
                         }
                         envMapCmdPools[cmp].endRecordCommandBuffer(envMap.getCurrentFrame());                        

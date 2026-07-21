@@ -26,7 +26,9 @@ namespace odfaeg {
         quadLinkedListShader(GPUContext::instance().getDevice()),
         linkedListCmdPool(GPUContext::instance().getDevice()),
         quadLinkedListCommandPool(GPUContext::instance().getDevice()),
-        parentRenderer(parentRenderer), commandPool(GPUContext::instance().getDevice())
+        parentRenderer(parentRenderer), commandPool(GPUContext::instance().getDevice()),
+        linkedListBuffer(GPUContext::instance().getSharedBuffers(RenderTarget::LINKED_LISTS+parentRenderer.getId()*RenderTarget::NB_BUFFERS)),
+        headPtrsStorageImage(GPUContext::instance().getSharedImage(parentRenderer.getId()))
         {        
             rendererReady.store(false);
             stop.store(false);

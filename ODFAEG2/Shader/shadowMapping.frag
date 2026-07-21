@@ -187,6 +187,8 @@ void main()
     // calculate shadow
     float shadowDir = shadowCalculationDir(fragPos);
     float shadowPoint = shadowCalculationPoint(fragPos);
+    /*if (shadowPoint > 0)
+        debugPrintfEXT("Shadow point : %f", shadowPoint);*/
     float shadow = max(shadowDir, shadowPoint);
     /*if (shadowDir > 0 || shadowPoint > 0)
         debugPrintfEXT("shadow dir %f", shadow);*/   
