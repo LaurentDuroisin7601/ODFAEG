@@ -116,6 +116,7 @@ int main() {
 	Camera camera(800, 600, 80, 1, 1000);
 	//camera.setUp(Vec3f(0.f, -1.f, 0.f));
 	camera.move(0.f, 0.f, 5.f);
+	Camera imGUICamera = window.getCamera();
 	window.setCamera(camera);
 	ResourceManager<Texture, TextureNames> textureManager;
 	ResourceManager<Texture, std::string> modelTextureManager;
@@ -199,7 +200,8 @@ int main() {
 	renderGraph.addDirectionnalLight<ShadowRenderer>(1, dirLight);
 	ShadowRenderer::PointLight pointLight;
 	pointLight.pos = Vec3f(0, 0, 0);
-	renderGraph.addPonctualLight<ShadowRenderer>(1, pointLight);	
+	renderGraph.addPonctualLight<ShadowRenderer>(1, pointLight);
+	std::string s;	
 	while (window.isOpen()) {
 		odfaeg::window::IEvent event;
 		while (window.pollEvent(event)) {
@@ -211,7 +213,9 @@ int main() {
 		
 		/*window.setTypesToRender("*", window.getCurrentFrame());
 		window.applyCullingAndBatching();*/
+		window.setDepthStencil(true, false);
 		window.clear();
+		window.setCamera(camera);
 		sceneColorTexture.clear(Color::Red);
 		/*sceneColorTexture.beginRendering();
 		sceneColorTexture.endRendering();*/
@@ -233,14 +237,31 @@ int main() {
 		/*shadowRenderer.clear();
 		//shadowRenderer.drawNextFrame();
 		shadowRenderer.draw();*/
+	 	window.submit();
+		window.beginRecordCommandBuffer();
+		window.setCamera(imGUICamera);
+		window.setDepthStencil(false, false);
+		ImGui_ImplVulkan_NewFrame();
+        ImGui::NewFrame();
+        ImGui::Begin("ODFAEG Debug");
+		ImGui::TextUnformatted(s.c_str());
+        ImGui::End();
+		ImGui::Render();
+        window.beginRenderPass();
+        ImDrawData* draw_data = ImGui::GetDrawData();
+        ImGui_ImplVulkan_RenderDrawData(draw_data, window.getCommandPool().getHandle(window.getCurrentFrame()));
+        window.endRenderPass();
+		ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
 		window.submit(true);		
 		window.display();		
-		fps++;
+		fps++;		
 		if (clock.getElapsedTime() >= seconds(1.f)) {
-			std::cout<<"FPS : "<<fps<<std::endl;
+			//std::cout<<"FPS : "<<fps<<std::endl;
+			s = "FPS : " + std::to_string(fps);
 			fps = 0;
 			clock.restart();
-		}
+		}        
 	}
 	return 0;
 }

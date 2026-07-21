@@ -64,14 +64,14 @@ namespace odfaeg {
                 renderPasses.reserve(2);
             }
             renderPasses.emplace_back(device);
-            renderPasses[0].create(swapchain.getSwapchainImageFormat(), VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+            renderPasses[0].create(swapchain.getSwapchainImageFormat(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
             if (useDepthTest() || useStencilTest()) {
                 //std::cout<<"create depth texture!"<<std::endl;
                 renderPasses.emplace_back(device);
                 renderPasses.emplace_back(device);
                 renderPasses[1].create(getDepthStencilTexture().getFormat());
-                renderPasses[2].create(swapchain.getSwapchainImageFormat(), getDepthStencilTexture().getFormat(), VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);                
+                renderPasses[2].create(swapchain.getSwapchainImageFormat(), getDepthStencilTexture().getFormat(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);                
             } else {
                 renderPasses.emplace_back(device);
                 renderPasses[1].create(getDepthStencilTexture().getFormat());
