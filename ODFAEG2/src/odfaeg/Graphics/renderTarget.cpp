@@ -649,7 +649,7 @@ namespace odfaeg {
 				//std::cout<<"buffers updated"<<std::endl;
 				needToUpdateBuffers = false;
 				commandPool.endRecordCommandBuffer(getCurrentFrame());
-				std::unique_lock lock(mtx);	
+				/*std::unique_lock lock(mtx);	
 					//std::cout<<"wait!"<<std::endl;				
 				cv.wait(lock, [this]{return ParticleSystemUpdater::instance(cv, mtx).isSubmitReady() && MorphAnimUpdater::instance(cv, mtx).isSubmitReady() && BoneAnimUpdater::instance(cv, mtx).isSubmitReady();});
 				std::vector<VkFence> fences;
@@ -659,6 +659,9 @@ namespace odfaeg {
 				}
 				//std::cout<<"wait for fences!"<<std::endl;
 				vkWaitForFences(device.getDevice(), fences.size(),fences.data(), VK_TRUE, UINT64_MAX);
+				
+				
+				//vkResetFences(device.getDevice(), fences.size(),fences.data());*/
 				VkSubmitInfo submitInfo{};
 				submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 				submitInfo.commandBufferCount = 1;
@@ -670,10 +673,13 @@ namespace odfaeg {
 				cv.wait(lock, [this]{return ParticleSystemUpdater::instance(cv, mtx).isSubmitReady() && MorphAnimUpdater::instance(cv, mtx).isSubmitReady() && BoneAnimUpdater::instance(cv, mtx).isSubmitReady();});*/
 				
 				//std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
+				/*std::cout << "update buffers main thread " << std::this_thread::get_id()
+                << " calling vkQueueSubmit" << std::endl;*/
 				if (vkQueueSubmit(GPUContext::instance().getDevice().getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
 					throw std::runtime_error("Echec de l'envoi d'un command buffer!");
 				}
 				vkDeviceWaitIdle(device.getDevice());
+				//system("PAUSE");				
 				commandPool.beginRecordCommandBuffer(getCurrentFrame());
 				//vertices.clear();
 				needToUpdateDescriptorSets = true;
@@ -1540,7 +1546,7 @@ namespace odfaeg {
 			staggingVertexBufferDatas[getCurrentFrame()].update(cpuVertexBufferDatas[getCurrentFrame()].data(), sizeof(VertexBufferData) * cpuVertexBufferDatas[getCurrentFrame()].size());
 			Buffer::copyBuffer(staggingVertexBufferDatas[getCurrentFrame()], vertexBufferDatas[getCurrentFrame()], sizeof(VertexBufferData) * cpuVertexBufferDatas[getCurrentFrame()].size(), commandPool.getHandle(getCurrentFrame()));*/
 			if (needToUpdateDescriptorSets) {
-				std::cout<<"update descriptor sets"<<std::endl;
+				//std::cout<<"update descriptor sets"<<std::endl;
 				updateDescriporSets();
 				needToUpdateDescriptorSets = false;
 			}
@@ -1914,7 +1920,7 @@ namespace odfaeg {
 			cullingBatchingPc.viewMatrix = viewProjInfos.viewMatrix;*/
 			//std::cout<<"view matrix"<<viewProjInfos.viewMatrix<<std::endl<<"projMatrix : "<<viewProjInfos.projMatrix<<std::endl;
 			m_camera = camera;
-			ParticleSystemUpdater::instance(cv, mtx).setCamera(camera);
+			//ParticleSystemUpdater::instance(cv, mtx).setCamera(camera);
 			needToUpdateDescriptorSets = true;
 		}
 		Camera& RenderTarget::getCamera() {

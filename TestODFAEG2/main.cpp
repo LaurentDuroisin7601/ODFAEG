@@ -60,7 +60,7 @@ enum TextureNames {
 int main() {	
 	GPUContext& ctx = GPUContext::instance();
 	//String string("Test my game");	
-	RenderWindow window(VideoMode(800, 600), "Test my game", ctx.getDevice(), odfaeg::window::Style::Default, true);
+	RenderWindow window(VideoMode(800, 600), "Test my game", ctx.getDevice(), odfaeg::window::Style::Default/*, true*/);
 	IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -189,7 +189,7 @@ int main() {
 		componentManager.addComponent(components[i]);
 	}
 	//window.addGameObject(bistroExterior);	
-		//std::cout<<"i : "<<i<<std::endl;
+		//std::cout<<"i : "<<i<<std::endl;*/
 	
 	//std::cout<<"ok"<<std::endl;
 	Clock clock;
@@ -217,26 +217,13 @@ int main() {
 		window.clear();
 		window.setCamera(camera);
 		sceneColorTexture.clear(Color::Red);
-		/*sceneColorTexture.beginRendering();
-		sceneColorTexture.endRendering();*/
-		
 		renderGraph.render();
-		/*sceneColorTexture.submit(true);
-		sceneColorTexture.display();*/
 		
-		/*RectangleShape rect(ctx.getDevice(), Vec3f(800, 600, 0));
-		rect.move(Vec3f(-400, -300, 0));
-		//rect.setFillColor(Color::Red);
-		rect.setTexture(&sceneColorTexture.getTexture());
-		rect.setTextureRect(IntRect(0, 0, 1, 1));		
-		window.draw(rect);*/
+		
+		
 		//sceneColorTexture.submit(true);		
-		/*window.setTypesToRender("*", window.getCurrentFrame());
-		//window.applyCullingAndBatching();
-		window.draw(Triangles);*/
-		/*shadowRenderer.clear();
-		//shadowRenderer.drawNextFrame();
-		shadowRenderer.draw();*/
+		
+		
 	 	window.submit();
 		window.beginRecordCommandBuffer();
 		window.setCamera(imGUICamera);
@@ -261,7 +248,7 @@ int main() {
 			s = "FPS : " + std::to_string(fps);
 			fps = 0;
 			clock.restart();
-		}        
+		}     
 	}
 	return 0;
 }

@@ -405,8 +405,10 @@ namespace odfaeg {
                 /*submitInfo.signalSemaphoreCount = 1;
                 submitInfo.pSignalSemaphores = &GPUContext::instance().getSharedSemaphore(0)[0].getHandle();
                 GPUContext::instance().getSharedSemaphore(0)[0].incrementValue();*/
+                /*std::cout << "particle system thread " << std::this_thread::get_id()
+                << " calling vkQueueSubmit" << std::endl;*/
                 Device::QueueFamilyIndices indices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice());
-                if (vkQueueSubmit(GPUContext::instance().getDevice().getQueue(indices.graphicsFamily.value(), 2), 1, &submitInfo, GPUContext::instance().getSharedFence(0)[0].getHandle()) != VK_SUCCESS) {
+                if (vkQueueSubmit(GPUContext::instance().getDevice().getQueue(indices.graphicsFamily.value(), 1), 1, &submitInfo, GPUContext::instance().getSharedFence(0)[0].getHandle()) != VK_SUCCESS) {
                     throw std::runtime_error("Echec de l'envoi d'un command buffer!");
                 }
                 //
