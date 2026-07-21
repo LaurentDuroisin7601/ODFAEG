@@ -649,15 +649,25 @@ namespace odfaeg {
 				//std::cout<<"buffers updated"<<std::endl;
 				needToUpdateBuffers = false;
 				commandPool.endRecordCommandBuffer(getCurrentFrame());
+				std::unique_lock lock(mtx);	
+					//std::cout<<"wait!"<<std::endl;				
+				cv.wait(lock, [this]{return ParticleSystemUpdater::instance(cv, mtx).isSubmitReady() && MorphAnimUpdater::instance(cv, mtx).isSubmitReady() && BoneAnimUpdater::instance(cv, mtx).isSubmitReady();});
+				std::vector<VkFence> fences;
+				for (unsigned int i = 0; i < 3; i++) {
+					//std::cout<<"fence : "<<GPUContext::instance().getSharedFence(i)[0].getHandle()<<std::endl;
+					fences.push_back(GPUContext::instance().getSharedFence(i)[0].getHandle());
+				}
+				//std::cout<<"wait for fences!"<<std::endl;
+				vkWaitForFences(device.getDevice(), fences.size(),fences.data(), VK_TRUE, UINT64_MAX);
 				VkSubmitInfo submitInfo{};
 				submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 				submitInfo.commandBufferCount = 1;
 				submitInfo.pCommandBuffers = &commandPool.getHandle(getCurrentFrame());
 				Device::QueueFamilyIndices indices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice());
 				
-				std::unique_lock lock(mtx);	
+				/*std::unique_lock lock(mtx);	
 					//std::cout<<"wait!"<<std::endl;				
-				cv.wait(lock, [this]{return ParticleSystemUpdater::instance(cv, mtx).isSubmitReady() && MorphAnimUpdater::instance(cv, mtx).isSubmitReady() && BoneAnimUpdater::instance(cv, mtx).isSubmitReady();});
+				cv.wait(lock, [this]{return ParticleSystemUpdater::instance(cv, mtx).isSubmitReady() && MorphAnimUpdater::instance(cv, mtx).isSubmitReady() && BoneAnimUpdater::instance(cv, mtx).isSubmitReady();});*/
 				
 				//std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
 				if (vkQueueSubmit(GPUContext::instance().getDevice().getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
