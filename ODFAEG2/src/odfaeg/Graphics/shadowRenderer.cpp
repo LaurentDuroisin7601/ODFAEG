@@ -375,7 +375,7 @@ namespace odfaeg {
             fragmentPCRange.offset = sizeof(ShadowMappingVertPC);
             fragmentPCRange.size = sizeof(ShadowMappingFragPC);            
             pushConstants.push_back(fragmentPCRange);
-            DescriptorSetLayout& shadowMappingLayout = GPUContext::instance().getDescriptorSetLayout(shadowMappingShader, 12);
+            DescriptorSetLayout& shadowMappingLayout = GPUContext::instance().getDescriptorSetLayout(shadowMappingShader, 14);
             shadowMappingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_VERTEX_BIT);            
             shadowMappingLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
             shadowMappingLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -388,6 +388,8 @@ namespace odfaeg {
             shadowMappingLayout.updateLayout(9, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*(NB_CASCADES+1), VK_SHADER_STAGE_FRAGMENT_BIT);
             shadowMappingLayout.updateLayout(10, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT*6, VK_SHADER_STAGE_FRAGMENT_BIT);
             shadowMappingLayout.updateLayout(11, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*6, VK_SHADER_STAGE_FRAGMENT_BIT);
+            shadowMappingLayout.updateLayout(12, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
+            shadowMappingLayout.updateLayout(13, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
             shadowMappingLayout.update();            
             blendMode.updateIds();           
             for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {                
@@ -422,7 +424,7 @@ namespace odfaeg {
             shadowPassPLPool.updatePoolSize(5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,MAX_FRAMES_IN_FLIGHT*6);
             shadowPassPLPool.updatePoolSize(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,MAX_TEXTURES);
             shadowPassPLPool.update();
-            DescriptorPool& shadowMappingPool = GPUContext::instance().getDescriptorPool(shadowMappingShader, 12);
+            DescriptorPool& shadowMappingPool = GPUContext::instance().getDescriptorPool(shadowMappingShader, 14);
             shadowMappingPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES);
             shadowMappingPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT);
             shadowMappingPool.updatePoolSize(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT);            
@@ -435,6 +437,8 @@ namespace odfaeg {
             shadowMappingPool.updatePoolSize(9, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*(NB_CASCADES+1));
             shadowMappingPool.updatePoolSize(10, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT*6);
             shadowMappingPool.updatePoolSize(11, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*6);
+            shadowMappingPool.updatePoolSize(12, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT);
+            shadowMappingPool.updatePoolSize(13, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT);
             shadowMappingPool.update();
             /*shadowPassCSMSets.resize(1);
             shadowPassCSMSets[0].emplace_back(std::make_unique<DescriptorSet>(GPUContext::instance().getDevice()));
@@ -443,7 +447,7 @@ namespace odfaeg {
             DescriptorSet::allocate(shadowPassPLPool, shadowPassPLLayout, GPUContext::instance().getDescriptorSets(shadowPassPLShader, 7, 1), MAX_TEXTURES);
             /*shadowMappingCSMSets.resize(1);
             shadowMappingCSMSets[0].emplace_back(std::make_unique<DescriptorSet>(GPUContext::instance().getDevice()));*/            
-            DescriptorSet::allocate(shadowMappingPool, shadowMappingLayout, GPUContext::instance().getDescriptorSets(shadowMappingShader, 12, 1));
+            DescriptorSet::allocate(shadowMappingPool, shadowMappingLayout, GPUContext::instance().getDescriptorSets(shadowMappingShader, 14, 1));
         }
         std::array<math::Vec3f, 8> ShadowRenderer::getFrustrumCornersWordlSpace(math::Matrix4f projView) {
             std::array<math::Vec3f, 8> frustrumCorners = {
@@ -584,7 +588,7 @@ namespace odfaeg {
             }
             shadowPassPLDescriptorSet.updateDescriptorSet();
             
-            DescriptorSet& shadowMappingDescriptorSet = GPUContext::instance().getDescriptorSets(shadowMappingShader, 12, 1)[0];
+            DescriptorSet& shadowMappingDescriptorSet = GPUContext::instance().getDescriptorSets(shadowMappingShader, 14, 1)[0];
             //shadowMappingCSMSets[0][0]->setNbBindings((hasDiffuseTexture) ? 6 : 5);
             shadowMap.getDepthStencilTexture().getImage(0).setLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL);
             shadowMapPL.getDepthStencilTexture().getImage(0).setLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL);
@@ -595,7 +599,7 @@ namespace odfaeg {
             shadowMappingDescriptorSet.updateBufferInfos(3, dirLightsBufferFinal, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowMappingDescriptorSet.updateBufferInfos(4, pointLightsBufferFinal, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowMappingDescriptorSet.updateImageInfos(5, shadowMap.getDepthStencilTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-            shadowMappingDescriptorSet.updateImageInfos(6, shadowMapPL.getDepthStencilTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            shadowMappingDescriptorSet.updateImageInfos(6, shadowMapPL.getDepthStencilTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);           
             shadowMap.getDepthStencilTexture().getImage(0).setLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
             shadowMapPL.getDepthStencilTexture().getImage(0).setLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
             /*for (unsigned int i = 0; i <  sceneColorTexture.getTexture().getNbBuffers(); i++) {
@@ -609,7 +613,10 @@ namespace odfaeg {
             shadowMappingDescriptorSet.updateBufferInfos(9, linkedListDirBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowMappingDescriptorSet.updateImageInfos(10, headPtrsDirStorageImage, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
             shadowMappingDescriptorSet.updateBufferInfos(11, linkedListDirBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            shadowMappingDescriptorSet.updateImageInfos(12, GPUContext::instance().getSharedImage(sceneColorTexture.getId()), VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+            shadowMappingDescriptorSet.updateBufferInfos(13, GPUContext::instance().getSharedBuffers(RenderTarget::LINKED_LISTS+sceneColorTexture.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowMappingDescriptorSet.updateDescriptorSet();
+            //std::cout<<"descriptor sets updated"<<std::endl;
         }
         void ShadowRenderer::clear() {
             shadowMap.clear();

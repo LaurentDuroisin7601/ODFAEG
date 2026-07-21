@@ -61,6 +61,10 @@ layout(set = 0, binding = 10, r32ui) uniform coherent uimage2D headPointersPoint
 layout(set = 0, binding = 11) buffer LinkedListPointBufferSSBO {
     NodeType nodes[];
 } linkedListPointData[MAX_FRAMES_IN_FLIGHT*6];
+layout(set = 0, binding = 12, r32ui) uniform coherent uimage2D sceneHeadPointers[MAX_FRAMES_IN_FLIGHT];
+layout(set = 0, binding = 13) buffer LinkedListCameraBufferSSBO {
+    NodeType nodes[];
+} sceneLinkedListData[MAX_FRAMES_IN_FLIGHT];
 float shadowCalculationDir(vec3 fragPosWorldSpace)
 {
     // select cascade layer 
