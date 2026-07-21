@@ -18,8 +18,8 @@
 			"binaryDir": "out/build/release",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Release",
-				"CMAKE_C_COMPILER": "C:/msys64/mingw64/bin/clang.exe",
-				"CMAKE_CXX_COMPILER": "C:/msys64/mingw64/bin/clang++.exe",
+				"CMAKE_C_COMPILER": "clang",
+				"CMAKE_CXX_COMPILER": "clang++",
 				"CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS": "C:/Program Files/LLVM/bin/clang-scan-deps.exe",
 				"CMAKE_TOOLCHAIN_FILE": "cmake/toolchains/msys2-clang.cmake"
 			}

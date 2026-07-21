@@ -1,5 +1,5 @@
 {
-	"version": 5,	
+	"version": 5,
 	"configurePresets": [
 		{
 			"name": "windows-msvc",
@@ -17,11 +17,21 @@
 			"generator": "Ninja",
 			"binaryDir": "out/build/release",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug",
-				"CMAKE_C_COMPILER": "C:/msys64/mingw64/bin/clang.exe",
-				"CMAKE_CXX_COMPILER": "C:/msys64/mingw64/bin/clang++.exe",
+				"CMAKE_BUILD_TYPE": "Release",
+				"CMAKE_C_COMPILER": "clang",
+				"CMAKE_CXX_COMPILER": "clang++",
 				"CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS": "C:/msys64/mingw64/bin/clang-scan-deps.exe",
 				"CMAKE_TOOLCHAIN_FILE": "cmake/toolchains/msys2-clang.cmake"
+			}
+		},
+		{
+			"name": "clang-windows",
+			"generator": "Ninja",
+			"binaryDir": "out/build/clang/release",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release",
+				"CMAKE_C_COMPILER": "clang-cl",
+				"CMAKE_CXX_COMPILER": "clang-cl"
 			}
 		},
 		{

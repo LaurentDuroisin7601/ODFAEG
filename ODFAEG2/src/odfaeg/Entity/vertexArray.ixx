@@ -1,5 +1,6 @@
 module;
 #include <vector>
+#include <cstdint>
 export module odfaeg.entity.vertexArray;
 import odfaeg.entity.vertex;
 import odfaeg.entity.primitiveType;

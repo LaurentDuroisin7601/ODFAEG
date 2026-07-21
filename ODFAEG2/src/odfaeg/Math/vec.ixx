@@ -2,7 +2,7 @@ module;
 #include <iostream>
 #include <array>
 #include <cmath>
-#define PI 3.1415926535897932;
+//#define PI 3.1415926535897932;
 export module odfaeg.math.vec;
 /**
   *\namespace odfaeg
@@ -26,6 +26,7 @@ export namespace odfaeg {
         template<typename T, unsigned int N>
         class VecN {
         public:
+            static inline double PI = 3.1415926535897932;
             /*static const VecN<T, N> xAxis;
             static const VecN<T, N> yAxis;
             static const VecN<T, N> zAxis;*/

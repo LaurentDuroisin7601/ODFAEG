@@ -137,7 +137,7 @@ pkg_check_modules(SHADERC REQUIRED shaderc)
 pkg_check_modules(ASSIMP REQUIRED assimp)
 #find_package(Vulkan REQUIRED)
 target_include_directories(odfaeg-window-mod PRIVATE ${VULKAN_INCLUDE_DIRS})
-target_link_libraries(odfaeg-graphics-mod PUBLIC odfaeg-window-mod odfaeg-physics-mod odfaeg-entity-mod odfaeg-entity-mod odfaeg-math-mod odfaeg-core-mod PUBLIC ${VULKAN_LIBRARIES})
+target_link_libraries(odfaeg-graphics-mod PUBLIC odfaeg-window-mod odfaeg-entity-mod odfaeg-physics-mod odfaeg-math-mod odfaeg-core-mod PUBLIC ${VULKAN_LIBRARIES})
 
 #find_package(assimp CONFIG REQUIRED)
 #find_package(freetype CONFIG REQUIRED)

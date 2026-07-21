@@ -16,7 +16,6 @@ import odfaeg.entity.color;
 import odfaeg.graphic.vertexBuffer;
 import odfaeg.entity.primitiveType;
 import odfaeg.graphic.vertex;
-import odfaeg.math.vec;
 import odfaeg.entity.tile;
 import odfaeg.graphic.renderTarget;
 import odfaeg.entity.rect;
@@ -49,18 +48,19 @@ import odfaeg.graphic.renderGraph;
 import odfaeg.graphic.componentManager;
 import odfaeg.graphic.iComponent;
 import odfaeg.graphic.renderTexture;
+using namespace odfaeg::core;
 using namespace odfaeg::entity;
 using namespace odfaeg::window;
 using namespace odfaeg::graphic;
 using namespace odfaeg::math;
-using namespace odfaeg::core;
+
 enum TextureNames {
 	WOOD
 };
 int main() {	
 	GPUContext& ctx = GPUContext::instance();
 	//String string("Test my game");	
-	RenderWindow window(VideoMode(800, 600), "Test my game", ctx.getDevice(), odfaeg::window::Style::Default/*, true*/);
+	RenderWindow window(VideoMode(800, 600), "Test my game", ctx.getDevice(), odfaeg::window::Style::Default, true);
 	IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -121,11 +121,12 @@ int main() {
 	ResourceManager<Texture, TextureNames> textureManager;
 	ResourceManager<Texture, std::string> modelTextureManager;
 	ModelLoader modelLoader(GPUContext::instance().getDevice(), modelTextureManager);
-	//GameObject* bistroExterior = modelLoader.loadModel("Bistro_v5_2/BistroExterior.fbx");
+	Mesh* bistroExterior = modelLoader.loadModel("Bistro_v5_2/BistroExterior.fbx");
+	std::cout<<"test"<<std::endl;
 	//Mesh* bistroExterior = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
 	//GameObject* bistroExterior = modelLoader.loadModel(/*"CubeTest/cube_test.glb"*//**/"carGLTF/scene.gltf"/*"Bistro_v5_2/BistroExterior.fbx"*/);
 	//bistroExterior->setRotation(45, Vec3f(0, 1, 0));
-	std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
+	/*std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
 	textureManager.fromFileWithAlias("tilesets/wood.png", WOOD, args);
 	Texture* texWood = textureManager.getResourceByAlias(WOOD);
 	texWood->setSamplerAddressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT);	
@@ -187,20 +188,20 @@ int main() {
 	std::vector<IComponent*> components = renderGraph.getComponents();
 	for (unsigned int i = 0; i < components.size(); i++) {
 		componentManager.addComponent(components[i]);
-	}
-	//window.addGameObject(bistroExterior);	
+	}*/
+	window.addGameObject(bistroExterior);	
 		//std::cout<<"i : "<<i<<std::endl;*/
 	
 	//std::cout<<"ok"<<std::endl;
 	Clock clock;
 	unsigned int fps = 0;
-	renderGraph.addShadowPass(window, sceneColorTexture, 1, "*", window.getId());
+	/*renderGraph.addShadowPass(window, sceneColorTexture, 1, "*", window.getId());
 	ShadowRenderer::DirLight dirLight;
 	dirLight.dir = Vec3f(20, 50, 20);
 	renderGraph.addDirectionnalLight<ShadowRenderer>(1, dirLight);
 	ShadowRenderer::PointLight pointLight;
 	pointLight.pos = Vec3f(0, 0, 0);
-	renderGraph.addPonctualLight<ShadowRenderer>(1, pointLight);
+	renderGraph.addPonctualLight<ShadowRenderer>(1, pointLight);*/
 	std::string s;	
 	while (window.isOpen()) {
 		odfaeg::window::IEvent event;
@@ -216,8 +217,9 @@ int main() {
 		window.setDepthStencil(true, false);
 		window.clear();
 		window.setCamera(camera);
-		sceneColorTexture.clear(Color::Red);
-		renderGraph.render();
+		window.draw(Triangles);
+		/*sceneColorTexture.clear(Color::Red);
+		renderGraph.render();*/
 		
 		
 		
@@ -250,5 +252,6 @@ int main() {
 			clock.restart();
 		}     
 	}
+	vkDestroyDescriptorPool(ctx.getDevice().getDevice(), &imguiDescriptorPool);
 	return 0;
 }
