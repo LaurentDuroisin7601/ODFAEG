@@ -31,32 +31,19 @@ export namespace odfaeg {
             *   \param IR alias type of the resource manager.
             */
             template <typename R, typename IR>
-            void addResourceManager(ResourceManager<R, IR>& baseRM, const I& name) {
-                std::unique_lock<std::recursive_mutex> locker(getGlobalMutex());
-                typename std::map<I, std::shared_ptr<ResourceManagerBase>>::iterator it = resourceManagers.find(name);
-                if (it != resourceManagers.end())
-                    throw std::runtime_error("Identifiant already used!");
-                std::shared_ptr<ResourceManagerBase> rmi = baseRM.clone();
-                resourceManagers.insert(std::make_pair(name, rmi));
-            }
+            void addResourceManager(ResourceManager<R, IR>& baseRM, const I& name);
             /** \fn resourceManager (std::string name)
             *   \brief get a resource manager of the cache.
             *   \return the resource manager related to the given alias,
             *   throw an error if there's no resource manager associated to this alias.
             */
             template <typename R, typename IR>
-            ResourceManager<R, IR>& resourceManager(const I& name) {
-                std::unique_lock<std::recursive_mutex> locker(getGlobalMutex());
-                typename std::map<I, std::unique_ptr<ResourceManagerBase>>::iterator it = resourceManagers.find(name);
-                if (it == resourceManagers.end())
-                    throw std::runtime_error("Resource manager not found!");
-                using DynamicType = ResourceManager<R, IR>*;
-                return *static_cast<DynamicType> (it->second.get());
-            }
+            ResourceManager<R, IR>& resourceManager(const I& name);
         private:
             std::map<I, std::shared_ptr<ResourceManagerBase>> resourceManagers; /**> holds the resources managers and the ids.*/
 
         };
     }
 }
-
+module : private;
+#include "resourceCache.inl"

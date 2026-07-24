@@ -1,15 +1,20 @@
 module;
+#include <filesystem>
+#include <chrono>
 #include <vector>
 #include <string>
 #include <fstream>
 #include <iostream>
 #include <odfaeg/config.hpp>
+#include <clang-c/Index.h>
 #if defined (ODFAEG_SYSTEM_LINUX)
 #include <dlfcn.h>
 #else if defined (ODFAEG_SYSTEM_WINDOWS)
 #include <windows.h>
 #endif
 export module odfaeg.core.runtimeCompiler;
+import odfaeg.core.utilities;
+import odfaeg.core.reflexibility;
 export namespace odfaeg {
     namespace core {
         /**
@@ -32,8 +37,8 @@ export namespace odfaeg {
             * \fn void compile()
             * \brief compile code of the c++ files.
             */
-            void compile();
-            void makeExec();
+            void buildSharedLib();
+            void buildExec();
             void exec();
             std::string getErrors();
             /**
@@ -125,6 +130,12 @@ export namespace odfaeg {
             void setOutputDir(std::string outputDir);
             std::vector<std::string> getIncludeDirs();
             private :
+            bool isFileModified(std::string file);
+            static void inclusionVisitor(CXFile included_file,
+                      CXSourceLocation* inclusion_stack,
+                      unsigned include_len,
+                      CXClientData client_data);
+            std::vector<std::string> checkModifiedFiles();
             #if defined (ODFAEG_SYSTEM_LINUX)
             FILE* flib;
             #else if defined (ODFAEG_SYSTEM_WINDOWS)
@@ -140,8 +151,11 @@ export namespace odfaeg {
             std::vector<std::string> libraries; /**> the library files.*/
             std::vector<std::string> macros; /**> the macro definition.*/
             std::vector<std::string> options; /**> the compiler options.*/
-            std::vector<std::string> functions; /**the functions to export to the shared lib*/
+            std::vector<std::string> functions; /**the functions to export to the shared lib*/ 
+            std::vector<std::string> fCacheLines;           
         };
     }
 }
+module : private;
+#include "runtime_compiler.inl"
 

@@ -40,24 +40,16 @@ export namespace odfaeg {
             *  \brief pass a c++ ouptut buffer to the archive.
             *  \param std::ostream& buffer : the output buffer.
             */
-            OTextArchive(std::ostream& buffer) : buffer(buffer) {
-                nbSerialized = 0;
-            }
+            OTextArchive(std::ostream& buffer);
             /** \fn bool isInputArchive()
             *   \brief check if the archive is an input archive.
             *   \return false because it's an output archive.
             */
-            bool isInputArchive() {
-                return false;
-            }
+            bool isInputArchive();
             /** \fn void clear()
             *   \brief clear the output stream buffer and the registered pointer adresses.
             */
-            void clear() {
-                buffer.clear();
-                adresses.clear();
-                nbSerialized = 0;
-            }
+            void clear();
             //Fundamentals.
             /**
             * \fn void operator(T& data, D...)
@@ -66,11 +58,7 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T>
-            void operator() (T& data) requires IsFundamental<T> {
-                ////////std::cout<<"write fundamental : "<<data<<std::endl;
-                buffer << data << std::endl;
-                nbSerialized++;
-            }
+            void operator() (T& data) requires IsFundamental<T>;
             //Fundamentals.
             /**
             * \fn void operator(std::reference_wrapper<T> data, D...)
@@ -79,29 +67,7 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T>
-            void operator() (std::reference_wrapper<T> ref) requires IsFundamental<T> {
-                T& data = ref.get();
-                //We need to get the type name (because object and first object member's variable have the same address) and the address of the data to write.
-                std::ostringstream oss;
-                oss << typeid(data).name() << "*" << reinterpret_cast<unsigned long long int>(&data);
-                //We check if the address of the data is already registered in the archive.
-                std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
-                if (it != adresses.end()) {
-                    //If the address of the data is already registered, we just write the address of the data to the buffer.
-                    ////////std::cout<<"write ref to fundamental type : "<<it->second<<std::endl;
-                    buffer << it->second << std::endl;
-                }
-                else {
-                    //If the address of the data is not registered, we register it's address and we write the data's value.
-                    std::pair<std::string, long long int> newAddress(oss.str(), nbSerialized);
-                    adresses.insert(newAddress);
-                    buffer << newAddress.second << std::endl;
-                    ////////std::cout<<"write ref to fundamental type : "<<it->second<<std::endl;
-                    buffer << data << std::endl;
-                    ////////std::cout<<"write ref to fundamental type : "<<data<<std::endl;
-                    nbSerialized++;
-                }
-            }
+            void operator() (std::reference_wrapper<T> ref) requires IsFundamental<T>;
             /**
             * \fn void operator(T* data, D...)
             * \brief write pointer to a fundamental type into the archive.
@@ -109,94 +75,25 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T>
-            void operator() (T* data) requires IsFundamental<T> {
-                if (data != nullptr) {
-                    std::ostringstream oss;
-                    oss << typeid(*data).name() << "*" << reinterpret_cast<unsigned long long int>(data);
-                    std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
-                    if (it != adresses.end()) {
-                        ////////std::cout<<"id : "<<it->second<<std::endl;
-                        buffer << it->second << std::endl;
-                        ////////std::cout<<"write pointer to a fundamental type id : "<<it->second<<std::endl;
-                    }
-                    else {
-                        std::pair<std::string, long long int> newAddress(oss.str(), nbSerialized);
-                        adresses.insert(newAddress);
-                        buffer << newAddress.second << std::endl;
-                        ////////std::cout<<"write pointer to a fundamental type id : "<<newAddress.second<<std::endl;
-                        buffer << (*data) << std::endl;
-                        ////////std::cout<<"fundamental data : "<<(*data)<<std::endl;
-                        nbSerialized++;
-                    }
-                }
-                else {
-                    long long int id = -1;
-                    buffer << id << std::endl;
-                }
-            }
+            void operator() (T* data) requires IsFundamental<T>;
             /** \fn void operator() (E& data, D...)
             *   \brief write an enum value to the archive.
             *   \param E& data : the data to write.
             */
             template <typename E>
-            void operator() (E& data) requires IsEnum<E> {
-                buffer << data << std::endl;
-                ////////std::cout<<"write enum : "<<data<<std::endl;
-                nbSerialized++;
-            }
+            void operator() (E& data) requires IsEnum<E>;
             /** \fn void operator() (E& data, D...)
             *   \brief write an enum value to the archive.
             *   \param std::reference_wrapper<E> ref : the reference to the data to write.
             */
             template <typename E>
-            void operator() (std::reference_wrapper<E> ref) requires IsEnum<E>{
-                E& data = ref.get();
-                std::ostringstream oss;
-                oss << typeid(data).name() << "*" << reinterpret_cast<unsigned long long int>(&data);
-                std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
-                if (it != adresses.end()) {
-                    buffer << it->second << std::endl;
-                    ////////std::cout<<"write ref to enum : "<<it->second<<std::endl;
-                }
-                else {
-                    std::pair<std::string, long long int> newAddress(oss.str(), nbSerialized);
-                    adresses.insert(newAddress);
-                    buffer << newAddress.second << std::endl;
-                    ////////std::cout<<"write ref to enum : "<<newAddress.second<<std::endl;
-                    buffer << data << std::endl;
-                    ////////std::cout<<"write ref to enum : "<<data<<std::endl;
-                    nbSerialized++;
-                }
-            }
+            void operator() (std::reference_wrapper<E> ref) requires IsEnum<E>;
             /** \fn void operator() (E& data, D...)
             *   \brief write an enum value to the archive.
             *   \param E* data : pointer to the data to write.
             */
             template <typename E>
-            void operator() (E* data) requires IsEnum<E> {
-                if (data != nullptr) {
-                    std::ostringstream oss;
-                    oss << typeid(*data).name() << "*" << reinterpret_cast<unsigned long long int>(data);
-                    std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
-                    if (it != adresses.end()) {
-                        buffer << it->second << std::endl;
-                        ////////std::cout<<"write pointer to enum : "<<it->second<<std::endl;
-                    }
-                    else {
-                        std::pair<std::string, long long int> newAddress(oss.str(), nbSerialized);
-                        adresses.insert(newAddress);
-                        buffer << newAddress.second << std::endl;
-                        ////////std::cout<<"write pointer to enum : "<<newAddress.second<<std::endl;
-                        buffer << (*data) << std::endl;
-                        ////////std::cout<<"data : "<<*data<<std::endl;
-                        nbSerialized++;
-                    }
-                }
-                else {
-                    long long int id = -1;
-                    buffer << id << std::endl;
-                }
-            }
+            void operator() (E* data) requires IsEnum<E>;
             //std::string.
             /**
             *\fn void operator(T& data, D...)
@@ -205,16 +102,7 @@ export namespace odfaeg {
             *\param D... : used fo SFINAE.
             */
             template <typename T>
-            void operator() (T & data) requires IsString<T> {
-                std::size_t str_size = data.length();
-                buffer << str_size << std::endl;
-                ////////std::cout<<"write string : "<<str_size<<std::endl;
-                const char* datas = data.c_str();
-                nbSerialized++;
-                for (unsigned int i = 0; i < str_size; i++) {
-                    (*this)(datas[i]);
-                }
-            }
+            void operator() (T & data) requires IsString<T>;
             /**
             *\fn void operator(T& data, D...)
             *\brief write an std::string into the archive.
@@ -222,30 +110,7 @@ export namespace odfaeg {
             *\param D... : used fo SFINAE.
             */
             template <typename T>
-            void operator() (std::reference_wrapper<T> ref) requires IsString<T> {
-                T& data = ref.get();
-                std::ostringstream oss;
-                oss << typeid(data).name() << "*" << reinterpret_cast<unsigned long long int>(&data);
-                std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
-                if (it != adresses.end()) {
-                    buffer << it->second << std::endl;
-                    ////////std::cout<<"write ref to string : "<<it->second<<std::endl;
-                }
-                else {
-                    std::pair<std::string, long long int> newAddress(oss.str(), nbSerialized);
-                    adresses.insert(newAddress);
-                    buffer << newAddress.second << std::endl;
-                    ////////std::cout<<"write ref to enum : "<<newAddress.second<<std::endl;
-                    std::size_t str_size = data.length();
-                    buffer << str_size << std::endl;
-                    ////////std::cout<<"write ref to enum : "<<str_size<<std::endl;
-                    const char* datas = data.c_str();
-                    nbSerialized++;
-                    for (unsigned int i = 0; i < str_size; i++) {
-                        (*this)(datas[i]);
-                    }
-                }
-            }
+            void operator() (std::reference_wrapper<T> ref) requires IsString<T>;
             /**
             *\fn void operator(T* data, D...)
             *\brief The pointer to the std::string to write.
@@ -253,34 +118,7 @@ export namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <typename T>
-            void operator() (T* data) requires IsString<T> {
-                if (data != nullptr) {
-                    std::ostringstream oss;
-                    oss << typeid(*data).name() << "*" << reinterpret_cast<unsigned long long int>(data);
-                    std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
-                    if (it != adresses.end()) {
-                        buffer << it->second << std::endl;
-                        ////////std::cout<<"write pointer to string id : "<<it->second<<std::endl;
-                    }
-                    else {
-                        std::pair<std::string, long long int> newAddress(oss.str(), nbSerialized);
-                        adresses.insert(newAddress);
-                        buffer << newAddress.second << std::endl;
-                        ////////std::cout<<"write pointer to string id : "<<newAddress.second<<std::endl;
-                        std::size_t str_size = data->length();
-                        buffer << str_size << std::endl;
-                        ////////std::cout<<"str size : "<<str_size<<std::endl;
-                        const char* datas = data->c_str();
-                        nbSerialized++;
-                        for (unsigned int i = 0; i < str_size; i++)
-                            (*this)(datas[i]);
-                    }
-                }
-                else {
-                    long long int id = -1;
-                    buffer << id << std::endl;
-                }
-            }
+            void operator() (T* data) requires IsString<T>;
             //Static objects.
             /**
             *\fn void operator(O& data, D...)
@@ -289,11 +127,7 @@ export namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <class O>
-            void operator() (O& object) requires (!IsFundamental<O>) && (!IsDynamicObject<O>) {
-                ////////std::cout<<"write static object : "<<std::endl;
-                nbSerialized++;
-                object.vtserialize(*this);
-            }
+            void operator() (O& object) requires (!IsFundamental<O>) && (!IsDynamicObject<O>);
             //Static objects.
            /**
            *\fn void operator(O& data, D...)
@@ -302,24 +136,7 @@ export namespace odfaeg {
            *\param D... : used for SFINAE.
            */
             template <class O>
-            void operator() (std::reference_wrapper<O> ref) requires (!IsDynamicObject<O>) {
-                O& object = ref.get();
-                std::ostringstream oss;
-                oss << typeid(object).name() << "*" << reinterpret_cast<unsigned long long int>(&object);
-                std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
-                if (it != adresses.end()) {
-                    buffer << it->second << std::endl;
-                    ////////std::cout<<"write ref to static object : "<<it->second<<std::endl;
-                }
-                else {
-                    std::pair<std::string, long long int> newAddress(oss.str(), nbSerialized);
-                    adresses.insert(newAddress);
-                    buffer << newAddress.second << std::endl;
-                    ////////std::cout<<"write ref to static object : "<<newAddress.second<<std::endl;
-                    nbSerialized++;
-                    object.vtserialize(*this);
-                }
-            }
+            void operator() (std::reference_wrapper<O> ref) requires (!IsDynamicObject<O>);
             /**
             *\fn void operator(O* data, D...)
             *\brief register a static object onto the archive.
@@ -327,30 +144,7 @@ export namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <class O>
-            void operator() (O* object) requires (!IsDynamicObject<O>) {
-                if (object != nullptr) {
-                    std::ostringstream oss;
-                    oss << typeid(*object).name() << "*" << reinterpret_cast<unsigned long long int>(object);
-                    std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
-                    if (it != adresses.end()) {
-                        buffer << it->second << std::endl;
-                        ////////std::cout<<"write pointer static object : "<<it->second<<std::endl;
-                    }
-                    else {
-                        std::pair<std::string, long long int> newAddress(oss.str(), nbSerialized);
-                        adresses.insert(newAddress);
-                        buffer << newAddress.second << std::endl;
-                        ////////std::cout<<"write pointer static object : "<<newAddress.second<<std::endl;
-                        nbSerialized++;
-                        object->vtserialize(*this);
-                    }
-                }
-                else {
-                    ////////std::cout<<"write null static object"<<std::endl;
-                    long long int id = -1;
-                    buffer << id << std::endl;
-                }
-            }
+            void operator() (O* object) requires (!IsDynamicObject<O>);
             //Dynamic objects.
             /**
             *\fn void operator(O& data, D...)
@@ -359,20 +153,7 @@ export namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <class O>
-            void operator() (O& object) requires IsDynamicObject<O> {
-                nbSerialized++;
-                ////////std::cout<<"write dynamic object"<<std::endl;
-                //If the type at compile time is the same than the type at runtime.
-                if (typeid(decltype(object)).name() == typeid(object).name()) {
-                    //call the virtual template serialize function from the class.
-                    object.vtserialize(*this);
-                }
-                else {
-                    //the object is polymorphic so we need to register the object type at runtime and call the virtual template serialize function from the derived class.
-                    object.key.register_object(&object);
-                    object.key.serialize_object("serialize", "OTextArchive", *this);
-                }
-            }
+            void operator() (O& object) requires IsDynamicObject<O>;
             /**
             *\fn void operator(O& data, D...)
             *\brief register a dynamic object onto the archive.
@@ -380,30 +161,7 @@ export namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <class O>
-            void operator() (std::reference_wrapper<O> ref) requires IsDynamicObject<O> {
-                O& object = ref.get();
-                std::ostringstream oss;
-                oss << typeid(object).name() << "*" << reinterpret_cast<unsigned long long int>(&object);
-                std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
-                if (it != adresses.end()) {
-                    buffer << it->second << std::endl;
-                    ////////std::cout<<"write ref to dynamic object : "<<it->second<<std::endl;
-                }
-                else {
-                    std::pair<std::string, long long int> newAddress(oss.str(), nbSerialized);
-                    adresses.insert(newAddress);
-                    buffer << newAddress.second << std::endl;
-                    ////////std::cout<<"write ref to dynamic object : "<<newAddress.second<<std::endl;
-                    nbSerialized++;
-                    if (typeid(decltype(object)).name() == typeid(object).name()) {
-                        object.vtserialize(*this);
-                    }
-                    else {
-                        object.key.register_object(&object);
-                        object.key.serialize_object("serialize", "OTextArchive", *this);
-                    }
-                }
-            }
+            void operator() (std::reference_wrapper<O> ref) requires IsDynamicObject<O>;
             /**
             *\fn void operator(O& data, D...)
             *\brief register pointer to a dynamic object onto the archive.
@@ -411,43 +169,7 @@ export namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <class O>
-            void operator() (O* object) requires IsDynamicObject<O> {
-                if (object != nullptr) {
-                    std::ostringstream oss;
-                    oss << typeid(*object).name() << "*" << reinterpret_cast<unsigned long long int>(object);
-                    std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
-                    if (it != adresses.end()) {
-                        buffer << it->second << std::endl;
-                        ////////std::cout<<"write dynamic object : "<<it->second<<std::endl;
-                    }
-                    else {
-                        std::pair<std::string, long long int> newAddress(oss.str(), nbSerialized);
-                        adresses.insert(newAddress);
-                        buffer << newAddress.second << std::endl;
-                        ////////std::cout<<"write dynamic object : "<<newAddress.second<<std::endl;
-                        std::string typeName = "BaseType";
-                        if (typeid(decltype(*object)).name() == typeid(*object).name()) {
-                            buffer << typeName << std::endl;
-                            ////////std::cout<<"type name : "<<typeName<<std::endl;
-                            nbSerialized++;
-                            object->vtserialize(*this);
-                        }
-                        else {
-                            object->key.register_object(object);
-                            typeName = object->key.getTypeName();
-                            buffer << typeName << std::endl;
-                            ////////std::cout<<"type name : "<<typeName<<std::endl;
-                            nbSerialized++;
-                            object->key.serialize_object("serialize", "OTextArchive", *this);
-                        }
-                    }
-                }
-                else {
-                    ////////std::cout<<"serialize null dynamic object"<<std::endl;
-                    long long int id = -1;
-                    buffer << id << std::endl;
-                }
-            }
+            void operator() (O* object) requires IsDynamicObject<O>;
             //std::vectors.
             /**
             *\fn void operator(std::vector<O>&, D...)
@@ -456,12 +178,7 @@ export namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <class O>
-            void operator() (std::vector<O>& data) {
-                std::size_t size = data.size();
-                buffer << size << std::endl;
-                for (unsigned int i = 0; i < data.size(); i++)
-                    (*this)(data[i]);
-            }
+            void operator() (std::vector<O>& data);
             /**
             *\fn void operator(std::unique_ptr<T>&, D...)
             *\brief register a std::unique_ptr onto the archive.
@@ -469,9 +186,7 @@ export namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <class T>
-            void operator() (std::unique_ptr<T>& ptr) {
-                (*this)(ptr.get());
-            }
+            void operator() (std::unique_ptr<T>& ptr);
             /**
             *\fn void operator(std::pair<T1, T2>&, D...)
             *\brief register an std::pair onto the archive.
@@ -479,10 +194,7 @@ export namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <class T1, class T2>
-            void operator() (std::pair<T1, T2>& pair) {
-                (*this)(pair.first);
-                (*this)(pair.second);
-            }
+            void operator() (std::pair<T1, T2>& pair);
             /**
             *\fn void operator(std::map<T1, T2>&, D...)
             *\brief register an std::map onto the archive.
@@ -490,14 +202,7 @@ export namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <class T1, class T2>
-            void operator() (std::map<T1, T2>& map) {
-                std::size_t size = map.size();
-                buffer << size << std::endl;
-                typename std::map<T1, T2>::iterator it;
-                for (it = map.begin(); it != map.end(); it++) {
-                    (*this)(*it);
-                }
-            }
+            void operator() (std::map<T1, T2>& map);
         private:
             std::ostream& buffer; /**< the output buffer containing the datas.*/
             std::map<std::string, long long int> adresses; /**< an std::map used to store the adresses and the id of the serialized pointers.*/
@@ -520,34 +225,24 @@ export namespace odfaeg {
             *\brief pass the input stream to the input test archive.
             *\param std::istream& buffer : the input buffer where to read the datas.
             */
-            ITextArchive(std::istream& buffer) : buffer(buffer) {
-                nbDeserialized = 0;
-            }
+            ITextArchive(std::istream& buffer);
             /**
             * \fn bool isAtEndOfInputStream()
             * \brief check if all the data has been extracted from the archive.
             * \return if all the data has been extracted from the archive.
             */
-            bool isAtEndOfInputStream() {
-                return buffer.eof();
-            }
+            bool isAtEndOfInputStream();
             /**
             *\fn bool isInputArchive()
             * \brief check if the archive is an input archive.
             * \return true because this is an input archive.
             */
-            bool isInputArchive() {
-                return true;
-            }
+            bool isInputArchive();
             /**
             * \fn void clear()
             * \brief clear the input stream buffer, and registered addresses.
             */
-            void clear() {
-                buffer.clear();
-                adresses.clear();
-                nbDeserialized = 0;
-            }
+            void clear();
             //Fundamentals.
             /**
             * \fn void operator(T& data, D...)
@@ -556,14 +251,7 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T>
-            void operator() (T& data) requires IsFundamental<T> {
-
-                nbDeserialized++;
-                buffer >> data;
-                ////////std::cout<<"read fundamental : "<<data<<std::endl;
-                char space;
-                buffer.get(space);
-            }
+            void operator() (T& data) requires IsFundamental<T>;
             //Fundamentals.
             /**
             * \fn void operator(T& data, D...)
@@ -572,31 +260,7 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T>
-            void operator() (std::reference_wrapper<T> ref) requires IsFundamental<T> {
-                T& data = ref.get();
-                long long int id;
-                buffer >> id;
-                ////////std::cout<<"read reference to fundamental, id : "<<id<<std::endl;
-                char space;
-                buffer.get(space);
-                std::map<long long int, std::string>::iterator it = adresses.find(id);
-                if (it != adresses.end()) {
-                    std::istringstream iss(it->second);
-                    std::vector<std::string> parts = split(iss.str(), "*");
-                    data = *reinterpret_cast<T*> (conversionStringULong(parts[1]));
-                }
-                else {
-                    std::ostringstream oss;
-                    oss << typeid(data).name() << "*" << reinterpret_cast<unsigned long long int>(&data);
-                    std::pair<long long int, std::string> newAddress(id, oss.str());
-                    adresses.insert(newAddress);
-                    nbDeserialized++;
-                    buffer >> data;
-                    ////////std::cout<<"data : "<<data<<std::endl;
-                    char space;
-                    buffer.get(space);
-                }
-            }
+            void operator() (std::reference_wrapper<T> ref) requires IsFundamental<T>;
             /**
             * \fn void operator(T& data, D...)
             * \brief read a char from the archive. (we need to read unformatted input here to also read special chars like \n, spaces, etc...)
@@ -604,14 +268,7 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
 
-            void operator() (char& data) {
-                nbDeserialized++;
-                ////////std::cout<<"read char : "<<data<<std::endl;
-                buffer.get(data);
-                ////////std::cout<<"data"<<std::endl;
-                char space;
-                buffer.get(space);
-            }
+            void operator() (char& data);
             /**
             * \fn void operator(T& data, D...)
             * \brief read a char from the archive. (we need to read unformatted input here to also read special chars like \n, spaces, etc...)
@@ -619,31 +276,7 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
 
-            void operator() (std::reference_wrapper<char> ref) {
-                char& data = ref.get();
-                long long int id;
-                buffer >> id;
-                ////////std::cout<<"read reference to char : "<<id<<std::endl;
-                char space;
-                buffer.get(space);
-                std::map<long long int, std::string>::iterator it = adresses.find(id);
-                if (it != adresses.end()) {
-                    std::istringstream iss(it->second);
-                    std::vector<std::string> parts = split(iss.str(), "*");
-                    data = *reinterpret_cast<char*> (conversionStringULong(parts[1]));
-                }
-                else {
-                    std::ostringstream oss;
-                    oss << typeid(data).name() << "*" << reinterpret_cast<unsigned long long int>(&data);
-                    std::pair<long long int, std::string> newAddress(id, oss.str());
-                    adresses.insert(newAddress);
-                    nbDeserialized++;
-                    buffer.get(data);
-                    ////////std::cout<<"data : "<<data<<std::endl;
-                    char space;
-                    buffer.get(space);
-                }
-            }
+            void operator() (std::reference_wrapper<char> ref);
             /**
             * \fn void operator(T& data, D...)
             * \brief read an unsigned char from the archive. (we need to read unformatted input here to also read special chars like \n, spaces, etc...)
@@ -651,13 +284,7 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
 
-            void operator() (unsigned char& data) {
-                nbDeserialized++;
-                buffer.get((char&)data);
-                ////////std::cout<<"read unsigned char : "<<data<<std::endl;
-                char space;
-                buffer.get(space);
-            }
+            void operator() (unsigned char& data);
             /**
             * \fn void operator(T& data, D...)
             * \brief read an unsigned char from the archive. (we need to read unformatted input here to also read special chars like \n, spaces, etc...)
@@ -665,31 +292,7 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
 
-            void operator() (std::reference_wrapper<unsigned char> ref) {
-                unsigned char& data = ref.get();
-                long long int id;
-                buffer >> id;
-                ////////std::cout<<"read reference to unsigned char : "<<id<<std::endl;
-                char space;
-                buffer.get(space);
-                std::map<long long int, std::string>::iterator it = adresses.find(id);
-                if (it != adresses.end()) {
-                    std::istringstream iss(it->second);
-                    std::vector<std::string> parts = split(iss.str(), "*");
-                    data = *reinterpret_cast<unsigned char*> (conversionStringULong(parts[1]));
-                }
-                else {
-                    std::ostringstream oss;
-                    oss << typeid(data).name() << "*" << reinterpret_cast<unsigned long long int>(&data);
-                    std::pair<long long int, std::string> newAddress(id, oss.str());
-                    adresses.insert(newAddress);
-                    nbDeserialized++;
-                    buffer.get((char&)data);
-                    ////////std::cout<<"data : "<<data<<std::endl;
-                    char space;
-                    buffer.get(space);
-                }
-            }
+            void operator() (std::reference_wrapper<unsigned char> ref);
             /**
             * \fn void operator(T& data, D...)
             * \brief read a pointer to a fundamental type from the archive.
@@ -697,35 +300,7 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T>
-            void operator() (T*& data) requires IsFundamental<T> {
-                long long int id;
-                buffer >> id;
-                char space;
-                buffer.get(space);
-                ////////std::cout<<"read pointer to fundamental id : "<<id<<std::endl;
-                if (id != -1) {
-                    std::map<long long int, std::string>::iterator it = adresses.find(id);
-                    if (it != adresses.end()) {
-                        std::istringstream iss(it->second);
-                        std::vector<std::string> parts = split(iss.str(), "*");
-                        data = reinterpret_cast<T*> (conversionStringULong(parts[1]));
-                    }
-                    else {
-                        data = new T();
-                        std::ostringstream oss;
-                        oss << typeid(*data).name() << "*" << reinterpret_cast<unsigned long long int>(data);
-                        std::pair<long long int, std::string> newAddress(id, oss.str());
-                        adresses.insert(newAddress);
-                        nbDeserialized++;
-                        buffer >> (*data);
-                        ////////std::cout<<"fundamental data : "<<(*data)<<std::endl;
-                        char space;
-                        buffer.get(space);
-                    }
-                } else {
-                    data = nullptr;
-                }
-            }
+            void operator() (T*& data) requires IsFundamental<T>;
             /**
            * \fn void operator(T& data, D...)
            * \brief read a pointer to a fundamental type from the archive.
@@ -733,153 +308,30 @@ export namespace odfaeg {
            * \param D... used for SFINAE.
            */
             
-            void operator() (char*& data) {
-                long long int id;
-                buffer >> id;
-                char space;
-                buffer.get(space);
-                ////////std::cout<<"read pointer to char : "<<id<<std::endl;
-                if (id != -1) {
-                    std::map<long long int, std::string>::iterator it = adresses.find(id);
-                    if (it != adresses.end()) {
-                        std::istringstream iss(it->second);
-                        std::vector<std::string> parts = split(iss.str(), "*");
-                        data = reinterpret_cast<char*> (conversionStringULong(parts[1]));
-                    }
-                    else {
-                        data = new char();
-                        std::ostringstream oss;
-                        oss << typeid(*data).name() << "*" << reinterpret_cast<unsigned long long int>(data);
-                        std::pair<long long int, std::string> newAddress(id, oss.str());
-                        adresses.insert(newAddress);
-                        nbDeserialized++;
-                        buffer >> (*data);
-                        char space;
-                        buffer.get(space);
-                        ////////std::cout<<"char data : "<<(*data)<<std::endl;
-                    }
-                }
-                else {
-                    data = nullptr;
-                }
-            }
+            void operator() (char*& data);
             /**
            * \fn void operator(T& data, D...)
            * \brief read a pointer to a fundamental type from the archive.
            * \param T& the data to read.
            * \param D... used for SFINAE.
            */
-            void operator() (unsigned char*& data) {
-                long long int id;
-                buffer >> id;
-                char space;
-                buffer.get(space);
-                ////////std::cout<<"read pointer to unsigned char id : "<<id<<std::endl;
-                if (id != -1) {
-                    std::map<long long int, std::string>::iterator it = adresses.find(id);
-                    if (it != adresses.end()) {
-                        std::istringstream iss(it->second);
-                        std::vector<std::string> parts = split(iss.str(), "*");
-                        data = reinterpret_cast<unsigned char*> (conversionStringULong(parts[1]));
-                    }
-                    else {
-                        data = new unsigned char();
-                        std::ostringstream oss;
-                        oss << typeid(*data).name() << "*" << reinterpret_cast<unsigned long long int>(data);
-                        std::pair<long long int, std::string> newAddress(id, oss.str());
-                        adresses.insert(newAddress);
-                        nbDeserialized++;
-                        buffer >> ((char&)*data);
-                        char space;
-                        buffer.get(space);
-                        ////////std::cout<<"unsigned char data"<<(*data)<<std::endl;
-                    }
-                }
-                else {
-                    data = nullptr;
-                }
-            }
+            void operator() (unsigned char*& data);
             /**
             * \fn void operator()(E& data, D...)
             * \brief read an enum value from the archive.
             * \param E& the data the read.
             */
             template <typename E>
-            void operator()(E& data) requires IsEnum<E> {
-                int eVal;
-                buffer >> eVal;
-                data = static_cast<E>(eVal);
-                ////////std::cout<<"read enum : "<<data<<std::endl;
-                char space;
-                buffer.get(space);
-                nbDeserialized++;
-            }
+            void operator()(E& data) requires IsEnum<E>;
             /**
             * \fn void operator()(E& data, D...)
             * \brief read an enum value from the archive.
             * \param std::reference_wrapper<E> the reference to the data the read.
             */
             template <typename E>
-            void operator()(std::reference_wrapper<E> ref) requires IsEnum<E> {
-                E& data = ref.get();
-                long long int id;
-                buffer >> id;
-                ////////std::cout<<"read reference to enum id : "<<id<<std::endl;
-                char space;
-                buffer.get(space);
-                std::map<long long int, std::string>::iterator it = adresses.find(id);
-                if (it != adresses.end()) {
-                    std::istringstream iss(it->second);
-                    std::vector<std::string> parts = split(iss.str(), "*");
-                    data = *reinterpret_cast<E*> (conversionStringULong(parts[1]));
-                }
-                else {
-                    int eVal;
-                    buffer >> eVal;
-                    ////////std::cout<<"val : "<<eVal<<std::endl;
-                    data = static_cast<E>(eVal);
-                    char space;
-                    buffer.get(space);
-                    std::ostringstream oss;
-                    oss << typeid(data).name() << "*" << reinterpret_cast<unsigned long long int>(data);
-                    std::pair<long long int, std::string> newAddress(id, oss.str());
-                    adresses.insert(newAddress);
-                    nbDeserialized++;
-                }
-            }
+            void operator()(std::reference_wrapper<E> ref) requires IsEnum<E>;
             template <typename E>
-            void operator() (E*& data) requires IsEnum<E> {
-                long long int id;
-                buffer >> id;
-                ////////std::cout<<"read pointer to enum id : "<<id<<std::endl;
-                char space;
-                buffer.get(space);
-                if (id != -1) {
-                    std::map<long long int, std::string>::iterator it = adresses.find(id);
-                    if (it != adresses.end()) {
-                        std::istringstream iss(it->second);
-                        std::vector<std::string> parts = split(iss.str(), "*");
-                        data = reinterpret_cast<E*> (conversionStringULong(parts[1]));
-                    }
-                    else {
-                        data = new E();
-                        int eVal;
-                        buffer >> eVal;
-                        ////////std::cout<<"e val : "<<eVal<<std::endl;
-                        *data = static_cast<E>(eVal);
-                        char space;
-                        buffer.get(space);
-                        std::ostringstream oss;
-                        oss << typeid(*data).name() << "*" << reinterpret_cast<unsigned long long int>(data);
-                        std::pair<long long int, std::string> newAddress(id, oss.str());
-                        adresses.insert(newAddress);
-                        nbDeserialized++;
-                    }
-                }
-                else {
-                    data = nullptr;
-                }
-            }
+            void operator() (E*& data) requires IsEnum<E>;
             //std::string.
             /**
             * \fn void operator(T& data, D...)
@@ -888,38 +340,7 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T>
-            void operator() (T& data) requires IsString<T> {
-                /*long long int id;
-                buffer>>id;
-                char space;
-                buffer.get(space);
-                ////////std::cout<<"id : "<<id<<std::endl;
-                std::map<long long int, std::string>::iterator it = adresses.find(id);
-                if (it != adresses.end()) {
-                    std::istringstream iss(it->second);
-                    std::vector<std::string> parts = split(iss.str(), "*");
-                    data = *reinterpret_cast<T*> (conversionStringULong(parts[1]));
-                } else {*/
-                std::size_t str_size;
-                buffer >> str_size;
-                ////////std::cout<<"read string, size : "<<str_size<<std::endl;
-                if (str_size > 0) {
-                    char space;
-                    buffer.get(space);
-                    ////////std::cout<<"str size : "<<str_size<<std::endl;
-                    char* datas = new char[str_size];
-                    nbDeserialized++;
-                    for (unsigned int i = 0; i < str_size; i++) {
-                        (*this)(datas[i]);
-                    }
-                    data = std::string(datas, str_size);
-                }
-                /*std::ostringstream oss;
-                oss<<typeid(data).name()<<"*"<<reinterpret_cast<unsigned long long int>(&data);
-                std::pair<long long int, std::string> newAddress (id, oss.str());
-                adresses.insert(newAddress);*/
-                //}
-            }
+            void operator() (T& data) requires IsString<T>;
             /**
            * \fn void operator(T& data, D...)
            * \brief read an std::string from the archive.
@@ -927,40 +348,7 @@ export namespace odfaeg {
            * \param D... used for SFINAE.
            */
             template <typename T>
-            void operator() (std::reference_wrapper<T> ref) requires IsString<T> {
-                T& data = ref.get();
-                long long int id;
-                buffer >> id;
-                char space;
-                buffer.get(space);
-                ////////std::cout<<"read reference to std::string id : "<<id<<std::endl;
-                std::map<long long int, std::string>::iterator it = adresses.find(id);
-                if (it != adresses.end()) {
-                    std::istringstream iss(it->second);
-                    std::vector<std::string> parts = split(iss.str(), "*");
-                    data = *reinterpret_cast<T*> (conversionStringULong(parts[1]));
-                }
-                else {
-                    std::size_t str_size;
-                    buffer >> str_size;
-                    ////////std::cout<<"str size : "<<str_size<<std::endl;
-                    if (str_size > 0) {
-                        char space;
-                        buffer.get(space);
-                        ////////std::cout<<"str size : "<<str_size<<std::endl;
-                        char* datas = new char[str_size];
-                        nbDeserialized++;
-                        for (unsigned int i = 0; i < str_size; i++) {
-                            (*this)(datas[i]);
-                        }
-                        data = std::string(datas, str_size);
-                    }
-                    std::ostringstream oss;
-                    oss << typeid(data).name() << "*" << reinterpret_cast<unsigned long long int>(&data);
-                    std::pair<long long int, std::string> newAddress(id, oss.str());
-                    adresses.insert(newAddress);
-                }
-            }
+            void operator() (std::reference_wrapper<T> ref) requires IsString<T>;
             /**
             * \fn void operator(T& data, D...)
             * \brief read a pointer to an std::string from the archive.
@@ -968,43 +356,7 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T>
-            void operator() (T*& data) requires IsString<T> {
-                long long int id;
-                buffer >> id;
-                char space;
-                buffer.get(space);
-                ////////std::cout<<"read pointer to std::string id : "<<id<<std::endl;
-                if (id != -1) {
-                    std::map<long long int, std::string>::iterator it = adresses.find(id);
-                    if (it != adresses.end()) {
-                        std::istringstream iss(it->second);
-                        std::vector<std::string> parts = split(iss.str(), "*");
-                        data = reinterpret_cast<T*> (conversionStringULong(parts[1]));
-                    }
-                    else {
-                        std::size_t str_size;
-                        buffer >> str_size;
-                        ////////std::cout<<"str size : "<<str_size<<std::endl;
-                        if (str_size > 0) {
-                            char space;
-                            buffer.get(space);
-                            ////////std::cout<<"str size : "<<str_size<<std::endl;
-                            char* datas = new char[str_size];
-                            nbDeserialized++;
-                            for (unsigned int i = 0; i < str_size; i++)
-                                (*this)(datas[i]);
-                            data = new std::string(datas, str_size);
-                            std::ostringstream oss;
-                            oss << typeid(*data).name() << "*" << reinterpret_cast<unsigned long long int>(data);
-                            std::pair<long long int, std::string> newAddress(id, oss.str());
-                            adresses.insert(newAddress);
-                        }
-                    }
-                }
-                else {
-                    data = nullptr;
-                }
-            }
+            void operator() (T*& data) requires IsString<T>;
             //Static objects.
             /**
             * \fn void operator(O& data, D...)
@@ -1013,27 +365,7 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <class O>
-            void operator() (O& object) requires (!IsDynamicObject<O>) {
-                /*long long int id;
-                buffer>>id;
-                char space;
-                buffer.get(space);
-                ////////std::cout<<"id : "<<id<<std::endl;
-                std::map<long long int, std::string>::iterator it = adresses.find(id);
-                if (it != adresses.end()) {
-                    std::istringstream iss(it->second);
-                    std::vector<std::string> parts = split(iss.str(), "*");
-                    object = *reinterpret_cast<O*> (conversionStringULong(parts[1]));
-                } else {
-                    std::ostringstream oss;
-                    oss<<typeid(object).name()<<"*"<<reinterpret_cast<unsigned long long int>(&object);
-                    std::pair<long long int, std::string> newAddress (id, oss.str());
-                    adresses.insert(newAddress);*/
-                    ////////std::cout<<"read static object"<<std::endl;
-                nbDeserialized++;
-                object.vtserialize(*this);
-                //}
-            }
+            void operator() (O& object) requires (!IsDynamicObject<O>);
             /**
             * \fn void operator(O& data, D...)
             * \brief read a static object from the archive.
@@ -1041,28 +373,7 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <class O>
-            void operator() (std::reference_wrapper<O> ref) requires (!IsDynamicObject<O>) {
-                O& object = ref.get();
-                long long int id;
-                buffer >> id;
-                char space;
-                buffer.get(space);
-                ////////std::cout<<"read reference to a static object id : "<<id<<std::endl;
-                std::map<long long int, std::string>::iterator it = adresses.find(id);
-                if (it != adresses.end()) {
-                    std::istringstream iss(it->second);
-                    std::vector<std::string> parts = split(iss.str(), "*");
-                    object = *reinterpret_cast<O*> (conversionStringULong(parts[1]));
-                }
-                else {
-                    std::ostringstream oss;
-                    oss << typeid(object).name() << "*" << reinterpret_cast<unsigned long long int>(&object);
-                    std::pair<long long int, std::string> newAddress(id, oss.str());
-                    adresses.insert(newAddress);
-                    nbDeserialized++;
-                    object.vtserialize(*this);
-                }
-            }
+            void operator() (std::reference_wrapper<O> ref) requires (!IsDynamicObject<O>);
             /**
             * \fn void operator(O& data, D...)
             * \brief read a pointer to a static object from the archive.
@@ -1070,33 +381,7 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <class O>
-            void operator() (O*& object) requires (!IsDynamicObject<O>) {
-                long long int id;
-                buffer >> id;
-                ////////std::cout<<"read pointer to static object id : "<<id<<std::endl;
-                char space;
-                buffer.get(space);
-                if (id != -1) {
-                    std::map<long long int, std::string>::iterator it = adresses.find(id);
-                    if (it != adresses.end()) {
-                        std::istringstream iss(it->second);
-                        std::vector<std::string> parts = split(iss.str(), "*");
-                        object = reinterpret_cast<O*> (conversionStringULong(parts[1]));
-                    }
-                    else {
-                        object = new O();
-                        std::ostringstream oss;
-                        oss << typeid(*object).name() << "*" << reinterpret_cast<unsigned long long int>(object);
-                        std::pair<long long int, std::string> newAddress(id, oss.str());
-                        adresses.insert(newAddress);
-                        nbDeserialized++;
-                        object->vtserialize(*this);
-                    }
-                }
-                else {
-                    object = nullptr;
-                }
-            }
+            void operator() (O*& object) requires (!IsDynamicObject<O>);
             //Dynamic objects.
             /**
             * \fn void operator(O* data, D...)
@@ -1105,33 +390,7 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <class O>
-            void operator() (O& object) requires IsDynamicObject<O> {
-                /*long long int id;
-                buffer>>id;
-                char space;
-                buffer.get(space);
-                ////////std::cout<<"id : "<<id<<std::endl;
-                std::map<long long int, std::string>::iterator it = adresses.find(id);
-                if (it != adresses.end()) {
-                    std::istringstream iss(it->second);
-                    std::vector<std::string> parts = split(iss.str(), "*");
-                    object = *reinterpret_cast<O*> (conversionStringULong(parts[1]));
-                } else {
-                    std::ostringstream oss;
-                    oss<<typeid(object).name()<<"*"<<reinterpret_cast<unsigned long long int>(&object);
-                    std::pair<long long int, std::string> newAddress (id, oss.str());
-                    adresses.insert(newAddress);*/
-                    ////////std::cout<<"read dynamic object : "<<std::endl;
-                nbDeserialized++;
-                if (typeid(decltype(object)) == typeid(object)) {
-                    object.vtserialize(*this);
-                }
-                else {
-                    object.key.register_object(&object);
-                    object.key.serialize_object("serialize", "ITextArchive", *this);
-                }
-                //}
-            }
+            void operator() (O& object) requires IsDynamicObject<O>;
             /**
             * \fn void operator(O* data, D...)
             * \brief read a dynamic object from the archive.
@@ -1139,34 +398,7 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <class O>
-            void operator() (std::reference_wrapper<O> ref) requires IsDynamicObject<O> {
-                O& object = ref.get();
-                long long int id;
-                buffer >> id;
-                ////////std::cout<<"read reference to dynamic object id : "<<id<<std::endl;
-                char space;
-                buffer.get(space);
-                std::map<long long int, std::string>::iterator it = adresses.find(id);
-                if (it != adresses.end()) {
-                    std::istringstream iss(it->second);
-                    std::vector<std::string> parts = split(iss.str(), "*");
-                    object = *reinterpret_cast<O*> (conversionStringULong(parts[1]));
-                }
-                else {
-                    std::ostringstream oss;
-                    oss << typeid(object).name() << "*" << reinterpret_cast<unsigned long long int>(&object);
-                    std::pair<long long int, std::string> newAddress(id, oss.str());
-                    adresses.insert(newAddress);
-                    nbDeserialized++;
-                    if (typeid(decltype(object)) == typeid(object)) {
-                        object.vtserialize(*this);
-                    }
-                    else {
-                        object.key.register_object(&object);
-                        object.key.serialize_object("serialize", "ITextArchive", *this);
-                    }
-                }
-            }
+            void operator() (std::reference_wrapper<O> ref) requires IsDynamicObject<O>;
             /**
             * \fn void operator(O* data, D...)
             * \brief read a pointer to a non abstract dynamic object from the archive.
@@ -1174,47 +406,7 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <class O>
-            void operator() (O*& object) requires (IsDynamicObject<O> && !IsAbstractClass<O>) {
-                long long int id;
-                buffer >> id;
-                char space;
-                buffer.get(space);
-                ////////std::cout<<"read pointer to a dynamic object id : "<<id<<std::endl;
-                if (id != -1) {
-                    std::map<long long int, std::string>::iterator it = adresses.find(id);
-                    if (it != adresses.end()) {
-                        std::istringstream iss(it->second);
-                        std::vector<std::string> parts = split(iss.str(), "*");
-                        object = reinterpret_cast<O*> (conversionStringULong(parts[1]));
-                    }
-                    else {
-                        std::string typeName;
-                        getline(buffer, typeName);
-                        if (typeName == "BaseType") {
-                            object = new O();
-                            std::ostringstream oss;
-                            oss << typeid(*object).name() << "*" << reinterpret_cast<unsigned long long int>(object);
-                            std::pair<long long int, std::string> newAddress(id, oss.str());
-                            adresses.insert(newAddress);
-                            nbDeserialized++;
-                            object->vtserialize(*this);
-                        }
-                        else {
-                            object = static_cast<O*>(O::allocate(typeName));
-                            std::ostringstream oss;
-                            oss << typeid(*object).name() << "*" << reinterpret_cast<unsigned long long int>(object);
-                            std::pair<long long int, std::string> newAddress(id, oss.str());
-                            adresses.insert(newAddress);
-                            nbDeserialized++;
-                            object->key.register_object(object);
-                            object->key.serialize_object("serialize", "ITextArchive", *this);
-                        }
-                    }
-                }
-                else {
-                    object = nullptr;
-                }
-            }
+            void operator() (O*& object) requires (IsDynamicObject<O> && !IsAbstractClass<O>);
             /**
             * \fn void operator(O* data, D...)
             * \brief read a pointer to an abstract dynamic object from the archive.
@@ -1222,36 +414,7 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <class O>
-            void operator() (O*& object) requires (IsDynamicObject<O> && IsAbstractClass<O>) {
-                long long int id;
-                buffer >> id;
-                char space;
-                buffer.get(space);
-                ////////std::cout<<"read pointer to an abstract dynamic object id : "<<id<<std::endl;
-                if (id != -1) {
-                    std::map<long long int, std::string>::iterator it = adresses.find(id);
-                    if (it != adresses.end()) {
-                        std::istringstream iss(it->second);
-                        std::vector<std::string> parts = split(iss.str(), "*");
-                        object = reinterpret_cast<O*> (conversionStringULong(parts[1]));
-                    }
-                    else {
-                        std::string typeName;
-                        getline(buffer, typeName);
-                        object = static_cast<O*>(O::allocate(typeName));
-                        std::ostringstream oss;
-                        oss << typeid(*object).name() << "*" << reinterpret_cast<unsigned long long int>(object);
-                        std::pair<long long int, std::string> newAddress(id, oss.str());
-                        adresses.insert(newAddress);
-                        nbDeserialized++;
-                        object->key.register_object(object);
-                        object->key.serialize_object("serialize", "ITextArchive", *this);
-                    }
-                }
-                else {
-                    object = nullptr;
-                }
-            }
+            void operator() (O*& object) requires (IsDynamicObject<O> && IsAbstractClass<O>);
             /**
             * \fn void operator(O* data, D...)
             * \brief read a list of objects from the archive.
@@ -1259,61 +422,28 @@ export namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <class O>
-            void operator() (std::vector<O>& objects) {
-                std::size_t size;
-                buffer >> size;
-                char space;
-                buffer.get(space);
-                ////////std::cout<<"vector size : "<<size<<std::endl;
-                for (unsigned int i = 0; i < size; i++) {
-                    O object;
-                    (*this)(object);
-                    objects.push_back(std::move(object));
-                }
-            }
+            void operator() (std::vector<O>& objects);
             /**
             * \fn void operator() (std::unique_ptr<T>& ptr)
             * \brief read an std::unique_ptr from the archive.
             * \param std::unique_ptr<T>& the ptr to read.
             */
             template <class T>
-            void operator() (std::unique_ptr<T>& ptr) {
-                T* tmp;
-                (*this)(tmp);
-                if (tmp != nullptr)
-                    ptr.reset(tmp);
-            }
+            void operator() (std::unique_ptr<T>& ptr);
             /**
             * \fn void operator() (std::pair<T1, T2>& ptr)
             * \brief read an std::pair from the archive.
             * \param std::pair<T1, T2>& the std::pair to read.
             */
             template <class T1, class T2>
-            void operator()(std::pair<T1, T2>& pair) {
-                T1 type1;
-                T2 type2;
-                (*this)(type1);
-                (*this)(type2);
-                pair = std::make_pair(type1, type2);
-            }
+            void operator()(std::pair<T1, T2>& pair);
             /**
             * \fn void operator() (std::map<T1, T2>& ptr)
             * \brief read an std::map<T1, T2> from the archive.
             * \param std::map<T1, T2>& the std::pair to read.
             */
             template <class T1, class T2>
-            void operator()(std::map<T1, T2>& map) {
-                std::size_t size;
-                buffer >> size;
-                char space;
-                buffer.get(space);
-                ////////std::cout<<"map size : "<<size<<std::endl;
-                for (unsigned int i = 0; i < size; i++) {
-                    std::pair<T1, T2> pair;
-                    (*this)(pair);
-                    map.insert(pair);
-                }
-            }
+            void operator()(std::map<T1, T2>& map);
         private:
             std::istream& buffer; /**< the buffer where to read the data.*/
             std::map<long long int, std::string> adresses; /**< an std::map used to store ids and adresses of readed pointers.*/
@@ -1321,4 +451,6 @@ export namespace odfaeg {
         };
     }
 }
+module : private;
+#include "archive.inl"
 
