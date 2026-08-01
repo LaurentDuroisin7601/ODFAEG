@@ -38,9 +38,7 @@ export namespace odfaeg {
             *  \return B* : a pointer to the base type.
             */
             template <typename D, class... Args>
-            B* allocate(D* d, Args&&... args) {
-                return new D(std::forward<Args>(args)...);
-            }
+            B* allocate(D* d, Args&&... args);
         };
         /**\class BaseFactory
         *  \brief This class register types of derived objects
@@ -61,12 +59,7 @@ export namespace odfaeg {
             * \param a callback function to an allocator, to return a pointer of the base class which point
             * to the derived object.
             */
-            static void register_type(std::string typeName, FastDelegate<B*> allocatorDelegate) {
-                typename std::map<std::string, FastDelegate<B*>>::iterator it = types.find(typeName);
-                if (it == types.end()) {
-                    types[typeName] = allocatorDelegate;
-                }
-            }
+            static void register_type(std::string typeName, FastDelegate<B*> allocatorDelegate);
             /** \fn void register_function(std::string typeName, std::string funcName, std::string funcArgs, FastDelegate<void> delegate)
             *   \brief register a member function of a class type into the factory.
             *   \param std::string typeName : the type name of the class containing the member function to register.
@@ -74,13 +67,7 @@ export namespace odfaeg {
             *   \param std::string funcArgs : the name of the types of the member function's argument list to register.
             *   \param FastDelegate<void> delegate : a callback function of the registered member function. (only funcions returing void can be registered!)
             */
-            static void register_function(std::string typeName, std::string funcName, std::string funcArgs, FastDelegate<void> delegate) {
-                typename std::map<std::string, FastDelegate<void>>::iterator it = functions.find(typeName + funcName + funcArgs);
-                if (it == functions.end()) {
-                    
-                    functions[typeName + funcName + funcArgs] = delegate;
-                }
-            }
+            static void register_function(std::string typeName, std::string funcName, std::string funcArgs, FastDelegate<void> delegate);
             /** \fn void callFunction(std::string typeName, std::string funcName, std:string fincArgs, A&&... args)
             *   \brief call a registered function of the factory, throw an error if the function isn't registered.
             *   \param std::string typeName : the type name of the class containing the member function.
@@ -89,17 +76,7 @@ export namespace odfaeg {
             *   \param A&& args.... : the value of the arguments to pass to the callback's member function. (object + arguments)
             */
             template <typename... A>
-            static void callFunction(std::string typeName, std::string funcName, std::string funcArgs, A&&... args) {
-                typename std::map<std::string, FastDelegate<void>>::iterator it = functions.find(typeName + funcName + funcArgs);
-                
-                if (it != functions.end()) {
-                    it->second.bind(std::forward<A>(args)...);
-                    (it->second)();
-                }
-                else {
-                    throw std::runtime_error("Unregistred function exception!");
-                }
-            }
+            static void callFunction(std::string typeName, std::string funcName, std::string funcArgs, A&&... args);
             /** \fn B* create (std::string typeName)
             *   \brief return a pointer of the base class of an object which point to an object of a derived type.
             * this function call a callback function to an allocator function to allocate the object.
@@ -107,23 +84,12 @@ export namespace odfaeg {
             *   \return B* a pointer of a base class which'll point to the allocated object.
             */
             template <class... Args>
-            static B* create(std::string typeName, Args&&... args) {
-                typename std::map<std::string, FastDelegate<B*>>::iterator it = types.find(typeName);
-                if (it != types.end()) {                    
-                    return (it->second)();
-                }
-                throw std::runtime_error("Unregistred type exception!" + typeName);
-            }
+            static B* create(std::string typeName, Args&&... args);
             /** \fn std::string getTypeName (B* type)
             *   \brief return the type name of a base object.
             *   \param B* type : a pointer to the type to check the dynamic type name.
             *   \return the dynamic type name of the passed object*/
-            static std::string getTypeName(B* type) {
-                typename std::map<std::string, FastDelegate<B*>>::iterator it = types.find(typeid(*type).name());
-                if (it != types.end())
-                    return it->first;
-                return "";
-            }
+            static std::string getTypeName(B* type);
         private:
             static std::map<std::string, FastDelegate<B*>> types; /**> An std::map which store the typeName and a callback's function to an allocator of the registered types*/
             static std::map<std::string, FastDelegate<void>> functions; /**> An std::map which store the signature and a callback's function to the registered member's functions.*/

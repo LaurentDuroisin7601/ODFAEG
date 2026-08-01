@@ -76,8 +76,15 @@ namespace odfaeg {
 				int id;
 				int lodLevel;
 				int objectId;
+				int clusterOffset;
+				int clusterCount;				
+			};
+			struct Cluser {
+				AABB globalBounds;
 				int meshletOffset;
-				int meshletCount;				
+				int meshletCount;
+				int id;
+				int lodLevel;
 			};
 			struct Meshlet {
 				unsigned int vertexOffset;
