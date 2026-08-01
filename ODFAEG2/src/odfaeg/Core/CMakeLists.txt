@@ -13,11 +13,11 @@ target_sources(odfaeg-core
         				
 )
 if(ODFAEG_USE_MODULES)
-    	file(GLOB_RECURSE MODULES_INTERFACE CONFIGURE_DEPENDS "${SRCROOT}/*.ixx")
-    	# Target interne (modules)
-   	 add_library(odfaeg-core-mod STATIC)
-    	target_compile_features(odfaeg-core-mod PUBLIC cxx_std_20)
-   	 target_include_directories(odfaeg-core-mod PRIVATE external/boost)
+    file(GLOB_RECURSE MODULES_INTERFACE CONFIGURE_DEPENDS "${SRCROOT}/*.ixx")
+    # Target interne (modules)
+   	add_library(odfaeg-core-mod STATIC)
+    target_compile_features(odfaeg-core-mod PUBLIC cxx_std_20)
+   	target_include_directories(odfaeg-core-mod PRIVATE external/boost)
 	target_include_directories(odfaeg-core-mod PRIVATE ${PROJECT_SOURCE_DIR}/include)
 	target_sources(odfaeg-core-mod
     		PUBLIC
@@ -51,19 +51,19 @@ else()
 	target_include_directories(odfaeg-core PRIVATE ${PROJECT_SOURCE_DIR}/include)
 	target_include_directories(odfaeg-core PRIVATE "C:/Program Files/LLVM/include")
 	target_sources(odfaeg-core PRIVATE ${SRC} ${HEADERS_COMMON} ${HEADERS_SRC} ${ODFAEG_INL})
-		# Installer la lib statique
-    	install(
-			TARGETS odfaeg-core
-			EXPORT odfaeg-targets
-			ARCHIVE DESTINATION lib
-			FILE_SET HEADERS DESTINATION include/odfaeg/Core
-		)
-    	# Installer les headers publics
-    	install(
-        	DIRECTORY ${SRCROOT}/
-        	DESTINATION include/odfaeg/Core
-        	FILES_MATCHING PATTERN "*.hpp" PATTERN "*.inl"
-    	)
+	# Installer la lib statique
+	install(
+		TARGETS odfaeg-core
+		EXPORT odfaeg-targets
+		ARCHIVE DESTINATION lib
+		FILE_SET HEADERS DESTINATION include/odfaeg/Core
+	)
+	# Installer les headers publics
+	install(
+		DIRECTORY ${SRCROOT}/
+		DESTINATION include/odfaeg/Core
+		FILES_MATCHING PATTERN "*.hpp" PATTERN "*.inl"
+	)
 endif()
 
 

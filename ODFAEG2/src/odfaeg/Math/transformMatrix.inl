@@ -1,11 +1,3 @@
-module;
-#include <exception>
-#include <iostream>
-//import odfaeg.entity.transformMatrix;
-module odfaeg.math.transformMatrix;
-import odfaeg.math.vec;
-import odfaeg.math.maths;
-import odfaeg.math.matrix;
 namespace odfaeg {
     namespace math {
         TransformMatrix::TransformMatrix() {

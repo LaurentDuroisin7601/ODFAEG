@@ -1,18 +1,16 @@
-module;
 #include <limits.h>
 #include  <array>
 #include  <vector>
 #include  <cmath>
-export module odfaeg.math.computer;
-import odfaeg.math.vec;
-import odfaeg.math.matrix;
-import odfaeg.math.plane;
-import odfaeg.math.maths;
+#include "vec.hpp"
+#include "matrix.hpp"
+#include "plane.hpp"
+#include "maths.hpp"
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
   */
-export namespace odfaeg {
+namespace odfaeg {
    namespace math {
         /**
           * \file computer.h
@@ -68,5 +66,4 @@ export namespace odfaeg {
         };
     }
 }
-module : private;
 #include "computer.inl"
