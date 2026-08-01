@@ -269,5 +269,3 @@ namespace odfaeg {
         };
     }
 }
-module : private;
-#include "triangle.inl"

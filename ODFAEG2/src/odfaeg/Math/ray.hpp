@@ -1,12 +1,10 @@
-module;
-export module odfaeg.math.ray;
-import odfaeg.math.vec;
-import odfaeg.math.matrix;
+#include "vec.hpp"
+#include "matrix.hpp"
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
   */
-export namespace odfaeg {
+namespace odfaeg {
     namespace math {
         /**
         * \file ray.h
@@ -39,5 +37,4 @@ export namespace odfaeg {
         };
     }
 }
-module : private;
 #include "ray.inl"
