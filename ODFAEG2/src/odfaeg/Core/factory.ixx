@@ -100,4 +100,6 @@ export namespace odfaeg {
         std::map<std::string, FastDelegate<void>> BaseFactory<B>::functions = std::map<std::string, FastDelegate<void>>();
     }
 }
+module : private;
+#include "factory.inl"
 

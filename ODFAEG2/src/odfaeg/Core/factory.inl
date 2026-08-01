@@ -26,7 +26,7 @@ namespace odfaeg {
         }  
         template <typename B>
         template <typename... A>
-        void callFunction(std::string typeName, std::string funcName, std::string funcArgs, A&&... args) {
+        void BaseFactory<B>::callFunction(std::string typeName, std::string funcName, std::string funcArgs, A&&... args) {
             typename std::map<std::string, FastDelegate<void>>::iterator it = functions.find(typeName + funcName + funcArgs);
             
             if (it != functions.end()) {
