@@ -79,7 +79,7 @@ namespace odfaeg {
 				int clusterOffset;
 				int clusterCount;				
 			};
-			struct Cluser {
+			struct Cluster {
 				AABB globalBounds;
 				int meshletOffset;
 				int meshletCount;
@@ -92,12 +92,9 @@ namespace odfaeg {
 				unsigned int nbVertices;
 				unsigned int nbIndexes;
 				unsigned int minVertex;
-				unsigned int maxVertex;				
-			};
-			struct TriangleBatch {
-				unsigned int minVertex;
 				unsigned int maxVertex;
-			};
+				unsigned int clusterId;								
+			};			
 			struct ModelData {
 				math::Matrix4f modelMatrix;
 				math::Matrix4f shadowProjMatrix;
@@ -245,7 +242,7 @@ namespace odfaeg {
 			static unsigned int getNbRenderTarget();
 			protected:
 				void initialize();
-			private :	
+			private :				
 			void createSynchPrimitives();
 			void applyViewportAndScissor(VkCommandBuffer cmd);
 			ViewProjMatPC viewProjInfos;
@@ -258,6 +255,7 @@ namespace odfaeg {
 			std::deque<Buffer>& subMeshes;
 			std::deque<Buffer>& staggingSubMeshes;
 			std::deque<Buffer> staggingMeshlets;
+			std::deque<Buffer> staggingClusters;
 			std::deque<Buffer>& staggingLODLevel;
 			std::deque<Buffer>& lodLevel;
 			std::deque<VertexBuffer>& vertices;
@@ -275,6 +273,7 @@ namespace odfaeg {
 			std::deque<Buffer> outputElementsDrawIndirectCommand;
 			std::deque<Buffer> outputTaskDatas;
 			std::deque<Buffer> inputMeshlets;
+			std::deque<Buffer> inputClusters;
 			std::deque<Buffer> offsetInOutputModelData;
 			std::deque<Buffer> offsetInOutputObjectData;
 			std::deque<Buffer> offsetInOutputMaterialData;
@@ -290,13 +289,16 @@ namespace odfaeg {
 			VertexBufferPC vertexBufferPc;			
 			inline static const unsigned int MAX_VERTS = 255u;
 			inline static const unsigned int MAX_PRIMS = 85u;
-			inline static unsigned int totalMeshlets = 0;
+			unsigned int totalMeshlets = 0;
+			unsigned int totalClusters = 0;
 			unsigned int totalSubMeshes = 0;
 			inline static bool needToUpdateBuffers = false;
 			Camera m_defaultCamera, m_camera;
 			std::vector<Mesh*>& gameObjects;
 			inline static unsigned int currentSubmeshesOffset = 0;
 			inline static unsigned int currentModelDataOffset = 0;
+			inline static unsigned int currentMeshletsOffset = 0;
+			inline static unsigned int currentClustersOffset = 0;
 			inline static std::array<unsigned int, NB_PRIMITIVE_TYPES> currentVertexOffset = {};
 			inline static std::array<unsigned int, NB_PRIMITIVE_TYPES> currentIndexOffset = {};
 			inline static const unsigned int MAX_DRAW_INDIRECT_COMMANDS = 10000, MAX_TASKS = 10000;
