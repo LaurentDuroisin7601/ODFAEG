@@ -1,6 +1,6 @@
 namespace odfaeg {
     namespace core {
-        static const Time zero;  
+         const Time Time::zero = Time();  
         Time::Time() {
             time = std::chrono::time_point<std::chrono::high_resolution_clock, std::chrono::duration<float>>{};
         }
@@ -94,7 +94,7 @@ namespace odfaeg {
             left = milliseconds(left.asMilliseconds() % real);
             return left;
         }
-        const Time Time::zero = Time();
+       
         /**
         * \file clock.hpp
         * \class Clock

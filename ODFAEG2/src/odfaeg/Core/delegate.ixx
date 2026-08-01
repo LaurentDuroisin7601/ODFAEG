@@ -65,24 +65,13 @@ export namespace odfaeg {
         };
         template<class T, typename LateParamsT, bool isCopiable>
         struct Ref : IRefVal<T, LateParamsT, true> {            
-            Ref(const std::reference_wrapper<T>& r)
-                : ref(r)
-            {
-            }
+            Ref(const std::reference_wrapper<T>& r);
             
-            T& bind(void* params) {
-                return ref.get();
-            }
+            T& bind(void* params);
             
-            T& get()
-            {
-                return ref.get();
-            }
+            T& get();
             
-            std::unique_ptr<IRefVal<T, LateParamsT, true>> clone()
-            {
-                return std::make_unique<Ref>(*this);
-            }
+            std::unique_ptr<IRefVal<T, LateParamsT, true>> clone();
         private:
             std::reference_wrapper<T> ref; /**> the std::reference_wrapper which warp the reference.*/
         };
@@ -99,62 +88,30 @@ export namespace odfaeg {
         };
         template<class T, class LateParamsT>
         struct Val<T, LateParamsT, true> : IRefVal<T, LateParamsT, true> {
-            Val(const T& t)
-                : val(t)
-            {
-            }
-            T& bind(void* params) {
-                return val;
-            }
+            Val(const T& t);
+            T& bind(void* params);
             
-            T& get()
-            {
-                return val;
-            }
-            std::unique_ptr<IRefVal<T, LateParamsT, true>> clone()
-            {
-                return std::make_unique<Val>(*this);
-            }
+            T& get();
+            std::unique_ptr<IRefVal<T, LateParamsT, true>> clone();
         private:
             T val; /**> T val : keep the value of the wrapper.*/
         };
         template<class T, class LateParamsT>
         struct Val<T, LateParamsT, false> : IRefVal<T, LateParamsT, false> {
-            Val(const T& t)
-                : val(t)
-            {
-            }            
+            Val(const T& t);
             
-            std::unique_ptr<IRefVal<T, LateParamsT, true>> clone()
-            {
-                return std::make_unique<Val>(*this);
-            }
+            //std::unique_ptr<IRefVal<T, LateParamsT, true>> clone();
 
-            Val(T&& t)
-                : val(std::move(t))
-            {
-            }
+            Val(T&& t);
 
-            Val(Val&& v) : val(std::move(v.val)) {
-            }
-            Val& operator=(Val&& v) {
-                val = std::move(v.val);
-                return *this;
-            }
+            Val(Val&& v);
+            Val& operator=(Val&& v);
 
-            T&& bind(void* params) {
-                return std::move(val);
-            }
+            T&& bind(void* params);
 
-            T&& get()
-            {
-                return std::move(val);
-            }
+            T&& get();
 
-            std::unique_ptr<IRefVal<T, LateParamsT, false>> transfer()
-            {
-                return std::make_unique<Val>(std::move(*this));
-            }
+            std::unique_ptr<IRefVal<T, LateParamsT, false>> transfer();
         private:            
             T val; /**> T val : keep the value of the wrapper.*/
         };
@@ -204,46 +161,22 @@ export namespace odfaeg {
         template<size_t I, class T, class LateParamsT>
         struct Placeholder<I, T, LateParamsT, true> : IRefVal<T, LateParamsT, true>
         {            
-            std::unique_ptr<IRefVal<T, LateParamsT, true>> clone()
-            {
-                return std::make_unique<Placeholder>(*this);
-            }
+            std::unique_ptr<IRefVal<T, LateParamsT, true>> clone();
             
-            T& bind(void* params) {
-                //We cast from void* to the placeholders's holder type.
-                LateParamsT& paramsT = *static_cast<LateParamsT*>(params);
-                //We cast from base type to the derived type to extract the placeholder's value.
-                return static_cast<Parameter<I, T>&>(paramsT).value;
-            }
+            T& bind(void* params);
             
-            T& get()
-            {
-
-            }
+            T& get();
         };
         template<size_t I, class T, class LateParamsT>
         struct Placeholder<I, T, LateParamsT, false> : IRefVal<T, LateParamsT, false>
         {            
-            Placeholder(Placeholder&& ph) {}
+            Placeholder(Placeholder&& ph);
             
-            Placeholder& operator=(Placeholder&& ph) {
-                return *this;
-            }            
-            std::unique_ptr<IRefVal<T, LateParamsT, false>> transfer()
-            {
-                return std::make_unique<Placeholder>(std::move(*this));
-            }
+            Placeholder& operator=(Placeholder&& ph);
+            std::unique_ptr<IRefVal<T, LateParamsT, false>> transfer();
             
-            T&& bind(void* params) {
-                //We cast from void* to the placeholders's holder type.
-                LateParamsT& paramsT = *static_cast<LateParamsT*>(params);
-                //We cast from base type to the derived type to extract the placeholder's value.
-                return std::move(static_cast<Parameter<I, T>&>(paramsT).value);
-            }
-            T&& get()
-            {
-
-            }
+            T&& bind(void* params);
+            T&& get();
         };
         /**
         *  \file  fastDelegate.h
@@ -261,37 +194,16 @@ export namespace odfaeg {
         struct RefVal<T, LateParamsT, true> {
             RefVal() = default;
             
-            RefVal(const T& t)
-                : rv(std::make_unique<Val<T, LateParamsT, true>>(t))
-            {
-            }
+            RefVal(const T& t);
             
-            RefVal(const std::reference_wrapper<T>& r)
-                : rv(std::make_unique<Ref<T, LateParamsT, true>>(r))
-            {
-            }
+            RefVal(const std::reference_wrapper<T>& r);
             template<size_t I>
-            RefVal(ph<I, T>&&) //we need to use a different placeholder class here to pass the palceholders's holder type for the static_cast.
-                : rv(std::make_unique<Placeholder<I, T, LateParamsT, true>>())
-            {
-            }
+            RefVal(ph<I, T>&&);
             
-            RefVal(const RefVal& rhs)
-            {
-                rv = rhs.rv->clone();
-            }
-            RefVal& operator=(const RefVal& rhs)
-            {
-                rv = rhs.rv->clone(); return *this;
-            }
-            T& bind(void* params) {
-                return rv->bind(params);
-            }
-            
-            T& get()
-            {
-                return rv->get();
-            }
+            RefVal(const RefVal& rhs);
+            RefVal& operator=(const RefVal& rhs);
+            T& bind(void* params);            
+            T& get();
         private:
             std::unique_ptr<IRefVal<T, LateParamsT, true>> rv; /**> a pointer to the generic wrapper interface.*/
         };
@@ -299,30 +211,13 @@ export namespace odfaeg {
         struct RefVal<T, LateParamsT, false> {
             RefVal() = default;
             
-            RefVal(T&& t)
-                : rv(std::make_unique<Val<T, LateParamsT, false>>(std::move(t)))
-            {
-            }
+            RefVal(T&& t);
             template<size_t I>
-            RefVal(ph<I, T>&&) //we need to use a different placeholder class here to pass the palceholders's holder type for the static_cast.
-                : rv(std::make_unique<Placeholder<I, T, LateParamsT, false>>())
-            {
-            }
-            RefVal(RefVal&& rhs)
-            {
-                rv = rhs.rv->transfer();
-            }
-            RefVal& operator=(RefVal&& rhs)
-            {
-                rv = rhs.rv->transfer(); return *this;
-            }
-            T&& bind(void* params) {
-                return std::move(rv->bind(params));
-            }
-            T&& get()
-            {
-                return std::move(rv->get());
-            }
+            RefVal(ph<I, T>&&);
+            RefVal(RefVal&& rhs);
+            RefVal& operator=(RefVal&& rhs);
+            T&& bind(void* params);
+            T&& get();
         private:
 
             /** \fn RefVal& operator= (const RefVal& rhs)
@@ -495,41 +390,23 @@ export namespace odfaeg {
         };
         template<class R, class C, class... ArgT>
         struct DynamicWrapper<true, R, C, ArgT...> {            
-            DynamicWrapper(R(C::* pf)(ArgT...)) : pfunc(pf) {}
+            DynamicWrapper(R(C::* pf)(ArgT...));
             template<class O, class... ArgU>
-            R operator()(O* o, ArgU&&... arg) const
-            {
-                (o->*pfunc)(std::forward<ArgU>(arg)...);
-            }
+            R operator()(O* o, ArgU&&... arg) const;
             template<class O, class... ArgU>
-            R operator()(O o, ArgU&&... arg) const
-            {
-                (o.*pfunc)(std::forward<ArgU>(arg)...);
-            }
+            R operator()(O o, ArgU&&... arg) const;
         private:
             R(C::* pfunc)(ArgT...); /**> a pointer to a member's function.*/
         };
         template<class R, class C, class... ArgT>
         struct DynamicWrapper<false, R, C, ArgT...> {            
-            DynamicWrapper(R(C::* pf)(ArgT...)) : pfunc(pf) {}
+            DynamicWrapper(R(C::* pf)(ArgT...));
 
             
             template<class O, class... ArgU>
-            R operator()(O* o, ArgU&&... arg) const
-            {
-
-                if (dynamic_cast<C*>(o))
-                    return (dynamic_cast<C*>(o)->*pfunc)(std::forward<ArgU>(arg)...);
-                throw std::runtime_error(std::string("Invalid cast : types + ") + typeid(C).name() + " et " + typeid(O).name()+" are nor polymorphic!");
-            }            
+            R operator()(O* o, ArgU&&... arg) const;
             template<class O, class... ArgU>
-            R operator()(O& o, ArgU&&... arg) const
-            {
-
-                if (dynamic_cast<C&>(o))
-                    return (dynamic_cast<C&>(o).*pfunc)(std::forward<ArgU>(arg)...);
-                throw std::runtime_error(std::string("Invalid cast : types + ") + typeid(C).name() + " et " + typeid(O).name()+ " are nor polymorphic!");
-            }
+            R operator()(O& o, ArgU&&... arg) const;
         private:
             R(C::* pfunc)(ArgT...);
         };
@@ -558,10 +435,7 @@ export namespace odfaeg {
         public:
             template<class F>
             DynamicFunction(F&& f)
-                requires (!std::is_same_v<std::decay_t<F>, DynamicFunction<R(ArgT...)>>)
-            : Base(std::forward<F>(f))
-            {
-            }
+                requires (!std::is_same_v<std::decay_t<F>, DynamicFunction<R(ArgT...)>>);
             /**> we use the operator() of the base class.*/
             using Base::operator();
         };
@@ -571,10 +445,7 @@ export namespace odfaeg {
         {
             using Base = std::function<R(ArgT...)>;
             template<class... ArgU>
-            DynamicFunction(R(C::* pf)(ArgU...))
-                : Base(DynamicWrapper<std::is_same<C, ToStore_t<std::remove_reference_t<std::tuple_element_t<0, std::tuple<ArgT...>>>>>::value, R, C, ArgU...>(pf))
-            {
-            }
+            DynamicFunction(R(C::* pf)(ArgU...));
             /**> we use the operator() of the base class.*/
             using Base::operator();
         };
@@ -622,27 +493,11 @@ export namespace odfaeg {
             Delegate& operator=(const Delegate&) {}
         };
         template<class Tuple>
-        Tuple copyOrMoveTuple(Tuple& src)
-        {
-            Tuple dst;
-            copyOrMoveTupleImpl(src, dst, std::make_index_sequence<std::tuple_size<Tuple>::value>{});
-            return dst;
-        }
+        Tuple copyOrMoveTuple(Tuple& src);
         template<class Stored, class LateParamsT, bool Copiable>
-        void copyOrMove(RefVal<Stored, LateParamsT, Copiable>& s, RefVal<Stored, LateParamsT, Copiable>& d)
-        {
-            if constexpr (Copiable) {
-                d = s; // copie normale
-            }
-            else {
-                d = RefVal<Stored, LateParamsT, false>(s.get()); // move-out
-            }
-        }
+        void copyOrMove(RefVal<Stored, LateParamsT, Copiable>& s, RefVal<Stored, LateParamsT, Copiable>& d);
         template<class Tuple, std::size_t ...I>
-        void copyOrMoveTupleImpl(Tuple& src, Tuple& dst, std::index_sequence<I...>)
-        {
-            (copyOrMove(std::get<I>(src), std::get<I>(dst)), ...);
-        }
+        void copyOrMoveTupleImpl(Tuple& src, Tuple& dst, std::index_sequence<I...>);
         /**
         *  \file  fastDelegate.h
         *  \class FastDelegateImpl
@@ -660,61 +515,27 @@ export namespace odfaeg {
         template<class R, class... ArgT>
         struct FastDelegateImpl : Delegate<R> {
             template<class F, class... ArgU>
-            FastDelegateImpl(F&& f, ArgU&&... arg)
-                : func(std::forward<F>(f))
-                , param(std::forward<ArgU>(arg)...)
-                , tmpParam(std::forward<ArgU>(arg)...)
-            {
-            }
-            std::unique_ptr<Delegate<R>> clone()
-            {
-                auto d = std::make_unique<FastDelegateImpl>(func);
-                d->param = copyOrMoveTuple(param);
-                d->tmpParam = copyOrMoveTuple(tmpParam);
-                return d;
-            }
+            FastDelegateImpl(F&& f, ArgU&&... arg);
+            std::unique_ptr<Delegate<R>> clone();
 
-            void bind(void* params) {
-                param = std::move(tmpParam);
-                bindParams(params);
-            }
+            void bind(void* params);
 
-            R operator()()
-            {
-                return call(std::make_index_sequence<sizeof...(ArgT)>());
-            }
+            R operator()();
 
             template<class... ArgU>
-            void setParams(ArgU&&... arg)
-            {
-                param = std::make_tuple(std::forward<ArgU>(arg)...);
-                tmpParam = std::make_tuple(std::forward<ArgU>(arg)...);
-            }
+            void setParams(ArgU&&... arg);
 
         private:
             template <std::size_t I=0>
-            void bindParams(void* params) requires IsLastRecursion<I, ArgT...> {
-                auto&& v = std::get<I>(param).bind(params);            // r�f�rence universelle
-                std::get<I>(param) = std::forward<std::tuple_element_t<I, std::tuple<extractTypeFromPh_t<ArgT>...>>>(v);     // copie si lvalue, move si rvalue
-            }
+            void bindParams(void* params) requires IsLastRecursion<I, ArgT...>;
 
             template <std::size_t I=0>
-            void bindParams(void* params) {
-                auto&& v = std::get<I>(param).bind(params);            // r�f�rence universelle
-                std::get<I>(param) = std::forward<std::tuple_element_t<I, std::tuple<extractTypeFromPh_t<ArgT>...>>>(v);     // copie si lvalue, move si rvalue
-
-                bindParams<I + 1>(params);
-            }
+            void bindParams(void* params);
 
             template <std::size_t I=0>
-            void bindParams(void* params) requires IsEmpty<ArgT...> {
-            }
-
+            void bindParams(void* params) requires IsEmpty<ArgT...>;
             template<std::size_t... I>
-            R call(std::index_sequence<I...>)
-            {
-                return func(std::get<I>(param).get()...);
-            }
+            R call(std::index_sequence<I...>);
             DynamicFunction<R(extractTypeFromPh_t<ArgT>...)> func; /**> a functor whith hold the pointer to a callback function.*/
             /**
             * We need to remove every types which are not placeholders, we also need to remove same placeholder's types,
@@ -746,66 +567,29 @@ export namespace odfaeg {
         template<class R>
         struct FastDelegate {            
             template<class F, class... Arg>
-            FastDelegate(F&& f, Arg... arg) :
-                delegate(new
-                    FastDelegateImpl<R, Arg...>
-                    (std::forward<F>(f), std::forward<Arg>(arg)...)
-                )
-            {
-
-            }
-            FastDelegate(FastDelegate& rhs)
-                : delegate(rhs.delegate->clone())
-            {
-            }
+            FastDelegate(F&& f, Arg... arg);
+            FastDelegate(FastDelegate& rhs);
             
-            FastDelegate(const FastDelegate& rhs)
-                : delegate(rhs.delegate->clone())
-            {
-            }
+            FastDelegate(const FastDelegate& rhs);
 
             
-            FastDelegate& operator=(const FastDelegate& rhs)
-            {
-                delegate = rhs.delegate->clone();
-                return *this;
-            }
+            FastDelegate& operator=(const FastDelegate& rhs);
             
             template <typename... Arg>
-            void bind(Arg&&... arg) {
-                void* params = bind_impl(std::index_sequence_for<Arg...>(), std::forward<Arg>(arg)...);
-                delegate->bind(params);
-                delete params;
-            }
+            void bind(Arg&&... arg);
             
             template<std::size_t... Ints, class... Args>
-            void* bind_impl(std::index_sequence<Ints...>, Args&&... args)
-            {
-                //Alias to the placeholders's holder's type, we expand the parameter's packs, so the first argument is the type of placeholder 0, and so on.
-                using params_t = LateParameters<ph<Ints, ToStore_t<Args>>...>;
-                void* params = new params_t{ std::forward<Args>(args)... };
-                return params;
-            }
+            void* bind_impl(std::index_sequence<Ints...>, Args&&... args);
             
-            R operator()()
-            {
-                if (delegate)
-                    return  (*delegate)();              
-            }
+            R operator()();
             
             template<class... Arg>
-            void setParams(Arg... arg)
-            {
-                using DynamicType =
-                    FastDelegateImpl<R, Arg...>*;
-                if (dynamic_cast<DynamicType>(delegate.get()))
-                    dynamic_cast<DynamicType>(delegate.get())->setParams(std::forward<Arg>(arg)...);
-                else
-                    throw std::runtime_error(std::string("Invalid cast : types + ") + typeid(DynamicType).name() + " et " + typied(*delegate.get()) + " are nor polymorphic!");
-            }
+            void setParams(Arg... arg);
         private:
             std::unique_ptr<Delegate<R>> delegate; /**> holds the pointer to the generic delegate.*/
         };        
         
     }
 }
+module : private;
+#include "delegate.inl"
