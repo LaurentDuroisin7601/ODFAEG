@@ -46,158 +46,48 @@ export namespace odfaeg {
             inline static std::mt19937 mrs = std::mt19937(static_cast<unsigned long>(std::time(nullptr)));
             inline static bool isSeedInitialized = false;
         public:
-            static void initSeed() {
-                if (!isSeedInitialized) {
-                    mrs = std::mt19937(static_cast<unsigned long>(std::time(nullptr)));
-                    isSeedInitialized = true;
-                }
-            }
-            static float random(float min, float max) {
+            static void initSeed();
+            static float random(float min, float max);
+            static unsigned long long int ullirandom(unsigned long long int min, unsigned long long int max);
 
-                std::uniform_real_distribution<float> distribution(min, max);
-                return distribution(mrs);
-            }
-            static unsigned long long int ullirandom(unsigned long long int min, unsigned long long int max) {
-
-                std::uniform_int_distribution<unsigned long long int> distribution(min, max);
-                return distribution(mrs);
-            }
-
-            static float acosinus(float value) {
-                float result;
-                if (-1.f < value) {
-                    if (value < 1.f)
-                        result = (float)acos(value);
-                    else
-                        result = 0.f;
-                }
-                else
-                    result = PI;
-                return (result < EPSILON && result > -EPSILON) ? 0 : result;
-            }
+            static float acosinus(float value);
             //Donne l'arc sinus d'une valeur.
-            static float asinus(float value) {
-                float result;
-                if (-1.f < value) {
-                    if (value < 1.f)
-                        result = (float)asin(value);
-                    else
-                        result = HALF_PI;
-                }
-                else
-                    result = -HALF_PI;
-                return (result < EPSILON && result > -EPSILON) ? 0 : result;
-            }
+            static float asinus(float value);
             //Donne l'arc tangeante d'une valeur.
-            static float atang(float value) {
-                float result = (float)atan(value);
-                return (result < EPSILON && result > -EPSILON) ? 0 : result;
-            }
+            static float atang(float value);
             //Donne le sinus d'un angle donn� en radian.
-            static float sinus(float value) {
-                float result, radians = value / TWO_PI;
-                if (abs(radians) > PI)
-                    radians -= TWO_PI;
-                if (abs(radians) > HALF_PI)
-                    radians = PI - radians;
-                if (abs(radians) <= PI / 4) {
-                    result = (float)sin(value);
-                }
-                else {
-                    result = (float)cos(PI / 2 - value);
-                }
-                return (result < EPSILON && result > -EPSILON) ? 0 : result;
-            }
+            static float sinus(float value);
             //Donne le cosinus d'un angle donn�e en radian.
-            static float cosinus(float value) {
-                float result = (float)sin(value + HALF_PI);
-                return (result < EPSILON && result > -EPSILON) ? 0 : result;
-            }
+            static float cosinus(float value);
             //Donne la tangeante d'un angle donn� en radians.
-            static float tang(float value) {
-                float result = (float)tan(value);
-                return (result < EPSILON && result > -EPSILON) ? 0 : result;
-            }
-            static float atang2(float value1, float value2) {
-                return (float)std::atan2(value1, value2);
-            }
+            static float tang(float value);
+            static float atang2(float value1, float value2);
             //Donne la valeur absolue d'un nombre.
-            static float abs(float value) {
-                if (value >= 0)
-                    return value;
-                return -value;
-            }
+            static float abs(float value);
             //Renvoie la racine carr�e d'un nombre.
-            static double sqrt(float value) {
-                return std::sqrt(value);
-            }
+            static double sqrt(float value);
             //Donne l'inverse de la racine carr�e d'un nombre.
-            static float inversSqrt(float value) {
-                return 1.f / sqrt(value);
-            }
+            static float inversSqrt(float value);
             //Donne le logarithme d'un nombre. (En base 10.)
-            static float log10(float value) {
-                return (float)log(value);
-            }
+            static float log10(float value);
             //Donne le logarithme d'un nombre en base base.
-            static float logn(float value, int base) {
-                return (float)(log(value) / log(base));
-            }
+            static float logn(float value, int base);
             //Donne le nombre � la puissance n.
-            static double power(float value, float exp) {
-                return (float)pow(value, exp);
-            }
+            static double power(float value, float exp);
             //Converti un angle en radian.
-            static float toRadians(float value) {
-                return value * DEG_TO_RAD;
-            }
+            static float toRadians(float value);
             //Convertis un angle en degrer.
-            static float toDegrees(float value) {
-                return value * RAD_TO_DEG;
-            }
+            static float toDegrees(float value);
             //Arrondis un nombre � la pr�cision p.
-            static float round(float value, int p) {
-                int mult = (int)pow(10, p + 1);
-                int numberToRound = (int)(value * mult);
-
-                int lastChiffer = numberToRound % 10;
-
-                if (numberToRound > 0) {
-                    if (lastChiffer >= 5)
-                        numberToRound += 10;
-                }
-                else {
-                    if (lastChiffer <= -5)
-                        numberToRound -= 10;
-                }
-
-                numberToRound = numberToRound - lastChiffer;
-                return numberToRound / mult;;
-            }
-            static int roundToInt(float value) {
-                int pe = value;
-                int pd = value - pe;
-                return value - pd;
-            }
+            static float round(float value, int p);
+            static int roundToInt(float value);
             //Renvoie l'exponetielle d'un nombre.
-            static float exp(float value) {
-                return (float)std::exp(value);
-            }
+            static float exp(float value);
             //Convertis des coordonn�e polaire en coordon�e cart�sinnes.
-            static Vec3f toCartesian(float teta, float phi) {
-                float rTemp = cosinus(phi);
-                float x = rTemp * cosinus(teta);
-                float y = rTemp * sinus(teta);
-                float z = sinus(phi);
-                return Vec3f(x, y, z);
-            }
-            static float clamp(float value, float min, float max) {
-                if (value < min)
-                    value = min;
-                if (value > max)
-                    value = max;
-                return value;
-            }        
+            static Vec3f toCartesian(float teta, float phi);
+            static float clamp(float value, float min, float max);
         };
     }
 }
+module : private;
+#include "maths.inl"
