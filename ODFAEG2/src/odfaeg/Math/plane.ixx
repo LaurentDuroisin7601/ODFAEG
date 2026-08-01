@@ -14,7 +14,7 @@ export namespace odfaeg {
             bool intersects(Ray& r, float& i);
             float computeDist(Vec3f point);
             Vec3f project(Vec3f point);
-            bool isParallelConf(Plane& plane;
+            bool isParallelConf(Plane& plane);
             bool isParallel(Plane& plane);
         private:
             float a, b, c, d;

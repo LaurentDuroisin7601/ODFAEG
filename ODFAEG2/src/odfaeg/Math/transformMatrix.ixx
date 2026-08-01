@@ -1,7 +1,9 @@
 module;
+#include <exception>
 export module odfaeg.math.transformMatrix;
 import odfaeg.math.vec;
 import odfaeg.math.matrix;
+import odfaeg.math.maths;
 namespace odfaeg {
   namespace math {
         export class TransformMatrix {
