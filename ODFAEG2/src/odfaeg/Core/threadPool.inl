@@ -46,7 +46,7 @@ namespace odfaeg {
             remaining.store(count, std::memory_order_relaxed);
         }
 
-        void jobDone() {
+        void JobFence::jobDone() {
             //std::cout<<"remaining : "<<remaining.load()<<std::endl;
             if (remaining.fetch_sub(1, std::memory_order_acq_rel) == 1) {
 
