@@ -823,16 +823,16 @@ namespace odfaeg {
 				pushConstants.push_back(pushConstant);
 				//std::cout<<"reset compute pipeline"<<std::endl;
 				GPUContext::instance().getComputePipeline(resetBuffersShader).createComputePipeline(resetBuffersShader, GPUContext::instance().getDescriptorSetLayout(resetBuffersShader), pushConstants);
-				DescriptorSetLayout& cullingBatchingLayout = GPUContext::instance().getDescriptorSetLayout(cullingBatchingShader, 17, false);
+				DescriptorSetLayout& cullingBatchingLayout = GPUContext::instance().getDescriptorSetLayout(cullingBatchingShader, 18, false);
 				cullingBatchingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_COMPUTE_BIT);
-				for (unsigned int i = 1; i < 4; i++) {
+				for (unsigned int i = 1; i < 5; i++) {
 					cullingBatchingLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT);
 				}
-				for (unsigned int i = 4; i < 15; i++) {
+				for (unsigned int i = 5; i < 16; i++) {
 					cullingBatchingLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_COMPUTE_BIT);
 				}			
-				cullingBatchingLayout.updateLayout(15, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_COMPUTE_BIT);
-				cullingBatchingLayout.updateLayout(16, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT);
+				cullingBatchingLayout.updateLayout(16, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_COMPUTE_BIT);
+				cullingBatchingLayout.updateLayout(17, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT);
 				cullingBatchingLayout.update();
 				//std::cout<<"create culling compute pipeline"<<std::endl;
 				GPUContext::instance().getComputePipeline(cullingBatchingShader).createComputePipeline(cullingBatchingShader, GPUContext::instance().getDescriptorSetLayout(cullingBatchingShader), pushConstants);
@@ -847,7 +847,7 @@ namespace odfaeg {
 				frag_push_constant.size = sizeof(IndexesPC);
 				frag_push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 				pushConstants.push_back(frag_push_constant);
-				DescriptorSetLayout& defaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader, 10, true);				
+				DescriptorSetLayout& defaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader, 11, true);				
 				for (unsigned int i = 0; i < 3; i++) {
 					defaultRenderingLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_TASK_BIT_EXT | VK_SHADER_STAGE_MESH_BIT_EXT);
 				}
@@ -857,9 +857,10 @@ namespace odfaeg {
 				}
 				for (unsigned int i = 6; i < 8; i++) {
 					defaultRenderingLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_MESH_BIT_EXT);
-				}				
-				defaultRenderingLayout.updateLayout(8, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);					
-				defaultRenderingLayout.updateLayout(9, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+				}
+				defaultRenderingLayout.updateLayout(8, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_MESH_BIT_EXT);											
+				defaultRenderingLayout.updateLayout(9, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);					
+				defaultRenderingLayout.updateLayout(10, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
 					VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
 				defaultRenderingLayout.update();
 				DescriptorSetLayout& specularDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader, 1, true, 1);
@@ -918,18 +919,18 @@ namespace odfaeg {
 					resetBuffersPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT);
 				}
 				resetBuffersPool.update();
-				DescriptorPool& cullingBatchingPool = GPUContext::instance().getDescriptorPool(cullingBatchingShader, 17);
+				DescriptorPool& cullingBatchingPool = GPUContext::instance().getDescriptorPool(cullingBatchingShader, 18);
 				cullingBatchingPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT);
-				for (unsigned int i = 1; i < 4; i++) {
+				for (unsigned int i = 1; i < 5; i++) {
 					cullingBatchingPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
 				}
-				for (unsigned int i = 4; i < 15; i++) {
+				for (unsigned int i = 5; i < 16; i++) {
 					cullingBatchingPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT);
 				}
-				cullingBatchingPool.updatePoolSize(15, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT);
-				cullingBatchingPool.updatePoolSize(16, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
+				cullingBatchingPool.updatePoolSize(16, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT);
+				cullingBatchingPool.updatePoolSize(17, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
 				cullingBatchingPool.update();
-				DescriptorPool& defaultRenderingPool = GPUContext::instance().getDescriptorPool(defaultRenderingShader, 10);
+				DescriptorPool& defaultRenderingPool = GPUContext::instance().getDescriptorPool(defaultRenderingShader, 11);
 				for (unsigned int i = 0; i < 4; i++) {
 					defaultRenderingPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT);
 				}
@@ -939,8 +940,9 @@ namespace odfaeg {
 				for (unsigned int i = 6; i < 8; i++) {
 					defaultRenderingPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
 				}
-				defaultRenderingPool.updatePoolSize(8, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT);
-				defaultRenderingPool.updatePoolSize(9, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
+				defaultRenderingPool.updatePoolSize(8, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
+				defaultRenderingPool.updatePoolSize(9, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT);
+				defaultRenderingPool.updatePoolSize(10, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
 				defaultRenderingPool.update();
 				DescriptorPool& specularDefaultRenderingPool = GPUContext::instance().getDescriptorPool(defaultRenderingShader, 1, 1);
 				specularDefaultRenderingPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
@@ -966,9 +968,9 @@ namespace odfaeg {
 				//std::cout<<"descriptor pool : "<<resetBuffersPool.getHandle()<<std::endl;
 				DescriptorSet::allocate(resetBuffersPool, resetBuffersLayout, GPUContext::instance().getDescriptorSets(resetBuffersShader, 7, 1));
 				//std::cout<<"descriptor pool : "<<cullingBatchingPool.getHandle()<<std::endl;
-				DescriptorSet::allocate(cullingBatchingPool, cullingBatchingLayout, GPUContext::instance().getDescriptorSets(cullingBatchingShader, 17, 1));
+				DescriptorSet::allocate(cullingBatchingPool, cullingBatchingLayout, GPUContext::instance().getDescriptorSets(cullingBatchingShader, 18, 1));
 				//std::cout<<"descriptor pool : "<<defaultRenderingPool.getHandle()<<std::endl;
-				DescriptorSet::allocate(defaultRenderingPool, defaultRenderingLayout, GPUContext::instance().getDescriptorSets(defaultRenderingShader, 10, 1), MAX_TEXTURES);
+				DescriptorSet::allocate(defaultRenderingPool, defaultRenderingLayout, GPUContext::instance().getDescriptorSets(defaultRenderingShader, 11, 1), MAX_TEXTURES);
 				DescriptorSet::allocate(specularDefaultRenderingPool, specularDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 1), MAX_TEXTURES);
 				DescriptorSet::allocate(normalDefaultRenderingPool, normalDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 2), MAX_TEXTURES);
 				DescriptorSet::allocate(metalnessDefaultRenderingPool, metalnessDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 3), MAX_TEXTURES);
@@ -1161,7 +1163,7 @@ namespace odfaeg {
 				resetBuffersSet.updateBufferInfos(6, instanceBase, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);				
 				//std::cout<<"update reset buffer set"<<std::endl;
 				resetBuffersSet.updateDescriptorSet();
-				DescriptorSet& cullingBatchingSet = GPUContext::instance().getDescriptorSets(cullingBatchingShader, 17, 1)[0];
+				DescriptorSet& cullingBatchingSet = GPUContext::instance().getDescriptorSets(cullingBatchingShader, 18, 1)[0];
 				//std::cout<<"update object types"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(0, objectTypes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"update objects"<<std::endl;
@@ -1169,38 +1171,39 @@ namespace odfaeg {
 				//std::cout<<"range objects : "<<objects[0].getRange()<<std::endl;
 				cullingBatchingSet.updateBufferInfos(2, subMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range  submeshes : "<<subMeshes[0].getRange()<<std::endl;
-				cullingBatchingSet.updateBufferInfos(3, modelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(3, inputClusters, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(4, modelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"id : "<<id<<",range model datas : "<<modelDatas[0].getRange()<<std::endl;
-				cullingBatchingSet.updateBufferInfos(4, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(5, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range material datas  : "<<materialDatas[0].getRange()<<std::endl;
 				//std::cout<<"update output vertics"<<std::endl;
-				cullingBatchingSet.updateBufferInfos(5, outputMaterialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(6, outputMaterialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range output vertices : "<<outputVertexDatas[3].getVertexBuffer(0).getRange()<<std::endl;
-				cullingBatchingSet.updateBufferInfos(6, outputModelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(7, outputModelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range output indexes : "<<outputVertexDatas[3].getIndexBuffer(0).getRange()<<std::endl;
 				//std::cout<<"model data"<<std::endl;
-				cullingBatchingSet.updateBufferInfos(7, outputMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(8, outputMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range output model datas : "<<outputModelDatas[0].getRange()<<std::endl;
 				//std::cout<<"object data"<<std::endl;
-				cullingBatchingSet.updateBufferInfos(8, offsetInOutputModelData, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(9, offsetInOutputModelData, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range output objects datas : "<<outputObjectDatas[0].getRange()<<std::endl;
 				//std::cout<<"offset in output vertex"<<std::endl;
-				cullingBatchingSet.updateBufferInfos(9, offsetInOutputMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(10, offsetInOutputMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"offset in output index"<<std::endl;
-				cullingBatchingSet.updateBufferInfos(10, taskCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(11, taskCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"offset in model data"<<std::endl;
-				cullingBatchingSet.updateBufferInfos(11, outputTaskDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(12, outputTaskDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"offset in output object data"<<std::endl;
-				cullingBatchingSet.updateBufferInfos(12, offsetInOutputTaskDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(13, offsetInOutputTaskDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"uniform buffer"<<std::endl;
-				cullingBatchingSet.updateBufferInfos(13, offsetInOutputMaterialData, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				cullingBatchingSet.updateBufferInfos(14, instanceBase, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				cullingBatchingSet.updateBufferInfos(15, ubo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-				cullingBatchingSet.updateBufferInfos(16, lodLevel, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(14, offsetInOutputMaterialData, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(15, instanceBase, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(16, ubo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+				cullingBatchingSet.updateBufferInfos(17, lodLevel, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"update culling ds"<<std::endl;
 				cullingBatchingSet.updateDescriptorSet();
 				bool hasDiffuseTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
-				DescriptorSet& defaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, (hasDiffuseTextures) ? 10 : 9, 1)[0];
+				DescriptorSet& defaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, (hasDiffuseTextures) ? 11 : 10, 1)[0];
 				defaultRenderingSet.updateBufferInfos(0, outputTaskDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(1, taskCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(2, outputMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -1208,11 +1211,12 @@ namespace odfaeg {
 				defaultRenderingSet.updateBufferInfos(4, true, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(5, false, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(6, lodLevel, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				defaultRenderingSet.updateBufferInfos(7, inputMeshlets, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);				
-				defaultRenderingSet.updateBufferInfos(8, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				defaultRenderingSet.updateBufferInfos(7, inputMeshlets, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);	
+				defaultRenderingSet.updateBufferInfos(8, inputClusters, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);			
+				defaultRenderingSet.updateBufferInfos(9, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				if (hasDiffuseTextures) {
 					//std::cout<<"textures : "<<Texture::getAllTextures().size()<<std::endl;
-					defaultRenderingSet.updateImageInfos(9, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					defaultRenderingSet.updateImageInfos(10, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 				}
 				defaultRenderingSet.updateDescriptorSet();
 				bool hasSpecularTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR).size() != 0;

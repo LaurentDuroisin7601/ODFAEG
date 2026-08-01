@@ -32,6 +32,7 @@ struct MeshDrawCommand {
 struct TaskData {
     MeshDrawCommand meshDrawCommand;
     uint baseInstance;
+    int clusterId;
 };
 layout(push_constant) uniform PushConstant {
     mat4 viewMatrix;
