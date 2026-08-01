@@ -158,6 +158,11 @@ namespace odfaeg {
 					staggingSubMeshes.emplace_back(device);
 				}
 			}
+			if (staggingClusters.empty()) {
+				for (unsigned int i = 0; i < 1; i++) {
+					staggingClusters.emplace_back(device);
+				}
+			}
 			if (staggingMeshlets.empty()) {
 				for (unsigned int i = 0; i < 1; i++) {
 					staggingMeshlets.emplace_back(device);
@@ -231,6 +236,10 @@ namespace odfaeg {
 				for (unsigned int i = 0; i < 1; i++) {
 					inputMeshlets.emplace_back(device);
 					inputMeshlets.back().create(sizeof(Meshlet), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+				}
+				for (unsigned int i = 0; i < 1; i++) {
+					inputClusters.emplace_back(device);
+					inputClusters.back().create(sizeof(Cluster), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 					outputObjectDatas.emplace_back(device);
@@ -668,6 +677,12 @@ namespace odfaeg {
 					Buffer::copyBuffer(staggingSubMeshes[i], subMeshes[i], subMeshesDatas.size() * sizeof(SubMeshData), commandPool.getHandle(getCurrentFrame()));
 					//std::cout<<"stagging submeshes buffer : "<<staggingObjects[i].getHandle()<<std::endl;
 					//std::cout<<"submeshes buffer : "<<staggingObjects[i].getHandle()<<std::endl;
+				}
+				for (unsigned int i = 0; i < 1; i++) {
+					staggingClusters[i].create(clusterDatas.size() * sizeof(Cluster), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+					staggingClusters[i].update(clusterDatas.data(), clusterDatas.size() * sizeof(Cluster));
+					inputClusters[i].create(clusterDatas.size() * sizeof(Cluster), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+					Buffer::copyBuffer(staggingClusters[i], inputClusters[i], clusterDatas.size() * sizeof(Cluster), commandPool.getHandle(getCurrentFrame()));
 				}
 				for (unsigned int i = 0; i < 1; i++) {
 					staggingMeshlets[i].create(meshletDatas.size() * sizeof(Meshlet), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
