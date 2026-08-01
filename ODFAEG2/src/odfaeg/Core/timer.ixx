@@ -22,79 +22,30 @@ export namespace odfaeg {
         class Timer {
         public:
             std::condition_variable cv;
-            Timer(bool usingThread=true) : isUsingThread(usingThread), interval(seconds(0.1f)) {
-                
-            }
-            void start() {
-                if (isUsingThread) {                    
-                    m_thread = std::thread(&Timer::tUpdate, this);
-                }
-            }
+            Timer(bool usingThread=true);
+            void start();
             /**
                 *  \fn setInterval(core::Time interval)
                 *  \brief set an interval of time.
                 *  \param core::Time interval : the time interval between two updates.
                 */
-            void setInterval(Time interval) {
-                this->interval = interval;
-            }
+            void setInterval(Time interval);
             /** \fn void run()
             *   \brief lock the mutex and updates the scene at each time interval.
             */
-            void update() {
-                ////////std::cout<<"update"<<std::endl;
-                /*Time elapsedTime = clock.getElapsedTime();
-                if (elapsedTime >= interval) {*/
-                    onUpdate();
-                    /*clock.restart();
-                }*/
-            }
-            void tUpdate() {
-                running.store(true);
-                while (running.load()) {
-                    ////////std::cout<<"update"<<std::endl;
-                    //Time elapsedTime = clock.getElapsedTime();
-                    //if (!isRunning()) {
-                        onUpdate();
-                        //clock.restart();
-                    //}
-                }
-            }
-            void stop() {
-                if (isUsingThread.load() && running.load()) {
-                    running.store(false);
-                    cv.notify_all();
-                    //std::cout<<"join"<<std::endl;
-                    if (m_thread.joinable()) {
-                        m_thread.join();
-                        //std::cout<<"joined"<<std::endl;
-                    }
-                }
-            }
+            void update();
+            void tUpdate();
+            void stop();
             /** \fn virtual void onUpdate() = 0;
             *   \brief the function to redefine when updating the scene.
             */
-            void setName(std::string name) {
-                this->name = name;
-            }
-            std::string getName() {
-                return name;
-            }            
-            ~Timer() {
-                stop();
-            }
-            Time getElapsedTime() {
-                return clock.getElapsedTime();
-            }
-            void restart() {
-            clock.restart();
-            }
-            bool isRunning() {
-                return running.load();
-            }
-            Time getInterval() {
-                return interval;
-            }
+            void setName(std::string name);
+            std::string getName();            
+            ~Timer();
+            Time getElapsedTime();
+            void restart();
+            bool isRunning();
+            Time getInterval();
         protected:
 			virtual void onUpdate() = 0;
         private:
@@ -106,3 +57,5 @@ export namespace odfaeg {
         };
     }
 }
+module : private;
+#include "timer.inl"
