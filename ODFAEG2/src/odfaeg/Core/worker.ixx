@@ -20,44 +20,14 @@ export namespace odfaeg {
         */
         class Worker {
         public:
-            Worker(bool usingThread) : isUsingThread(usingThread), m_needToUpdate(false) {
-                if (usingThread) {
-                    m_thread = std::thread(&Worker::tUpdate, this);
-                }
-            }
-            void needToUpdate() {
-                m_needToUpdate = true;
-                //std::cout<<"update : "<<m_needToUpdate<<std::endl;
-            }
-            void update() {
-                onUpdate();
-            }
-            void tUpdate() {
-                running = true;
-                while (running.load()) {
-                    //std::cout<<"update : "<<m_needToUpdate<<std::endl;
-                    if (m_needToUpdate.load()) {
-                        //std::cout<<"update : "<<std::endl;
-                        onUpdate();
-                        m_needToUpdate = false;
-                    }
-                }
-            }
-            void stop() {
-                if (isUsingThread && running.load()) {
-                    running = false;
-                    m_thread.join();
-                }
-            }
-            void setName(std::string name) {
-                this->name = name;
-            }
-            std::string getName() {
-                return name;
-            }
-            ~Worker() {
-                stop();
-            }
+            Worker(bool usingThread);
+            void needToUpdate();
+            void update();
+            void tUpdate();
+            void stop();
+            void setName(std::string name);
+            std::string getName();
+            ~Worker();
             virtual void onUpdate() = 0;            
             bool isUsingThread;
         private:
@@ -67,4 +37,6 @@ export namespace odfaeg {
         };
     }
 }
+module : private;
+#include "worker.inl"
 
