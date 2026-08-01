@@ -522,7 +522,8 @@ namespace odfaeg {
 								while (y < h) {
 									while (z < d) {
 										Cluster cluster;	
-										cluster.id = currentClustersOffset;		
+										cluster.id = currentClustersOffset;	
+										cluster.meshletOffset = 0;	
 										cluster.meshletCount = 0;
 										physic::BoundingBox bb(x, y, z, 50, 50, 50);
 										AABB clusterAABB;	
@@ -630,6 +631,15 @@ namespace odfaeg {
 					}									
 				}
 				std::sort(meshletDatas.begin(), meshletDatas.end(), [](Meshlet& m1, Meshlet& m2){ return m1.clusterId < m2.clusterId;});
+				unsigned int clusterMeshletOffset = 0;
+				unsigned int previousClusterId = 0;
+				for (unsigned int m = 0; m < meshletDatas.size(); m++) {	
+					if (meshletDatas[m].clusterId > previousClusterId) {							
+						clusterMeshletOffset += clusterDatas[meshletDatas[m].clusterId].meshletCount;
+						previousClusterId = meshletDatas[m].clusterId;					
+					}
+					clusterDatas[meshletDatas[m].clusterId].meshletOffset = previousClusterId;
+				}
 				totalMeshlets = meshletDatas.size();
 				/*std::cout<<"total sub meshes"<<totalSubMeshes<<std::endl;
 				system("PAUSE");*/
