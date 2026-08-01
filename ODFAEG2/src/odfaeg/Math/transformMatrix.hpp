@@ -1,5 +1,7 @@
 #include "vec.hpp"
 #include "matrix.hpp"
+#include "maths.hpp"
+#include <exception>
 namespace odfaeg {
   namespace math {
         class TransformMatrix {

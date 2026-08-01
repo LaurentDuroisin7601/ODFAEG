@@ -1,9 +1,7 @@
-module;
 #include <vector>
-export module odfaeg.physic.boundingBox;
-import odfaeg.math.vec;
-import odfaeg.math.transformMatrix;
-import odfaeg.math.computer;
+#include "../Math/vec.hpp"
+#include "../Math/transformMatrix.hpp"
+#include "../Math/computer.hpp"
 namespace odfaeg {    
     namespace physic {
         /**
@@ -121,5 +119,4 @@ namespace odfaeg {
         };
     }
 }
-module : private;
 #include "boundingBox.inl"
