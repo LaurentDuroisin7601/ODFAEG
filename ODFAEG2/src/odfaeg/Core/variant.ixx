@@ -13,11 +13,7 @@ export namespace odfaeg {
         class recursive_wrapper
         {
         public:
-            ~recursive_wrapper()
-            {
-                delete m_t;
-            }
-
+            ~recursive_wrapper();
             template
                 <
                 typename U,
@@ -25,10 +21,7 @@ export namespace odfaeg {
                 typename std::enable_if<std::is_convertible<U, T>::value, U>::type
                 >
                 recursive_wrapper(
-                    const U& u)
-                : m_t(new T(u))
-            {
-            }
+                    const U& u);
 
             template
                 <
@@ -36,62 +29,33 @@ export namespace odfaeg {
                 typename Dummy =
                 typename std::enable_if<std::is_convertible<U, T>::value, U>::type
                 >
-                recursive_wrapper(U&& u)
-                : m_t(new T(std::forward<U>(u))) {
-            }
+                recursive_wrapper(U&& u);
 
-            recursive_wrapper(const recursive_wrapper& rhs)
-                : m_t(new T(rhs.get())) {
-            }
+            recursive_wrapper(const recursive_wrapper& rhs);
 
-            recursive_wrapper(recursive_wrapper&& rhs)
-                : m_t(rhs.m_t)
-            {
-                rhs.m_t = nullptr;
-            }
+            recursive_wrapper(recursive_wrapper&& rhs);
 
             recursive_wrapper&
-                operator=(const recursive_wrapper& rhs)
-            {
-                assign(rhs.get());
-                return *this;
-            }
+                operator=(const recursive_wrapper& rhs);
 
             recursive_wrapper&
-                operator=(recursive_wrapper&& rhs)
-            {
-                delete m_t;
-                m_t = rhs.m_t;
-                rhs.m_t = nullptr;
-                return *this;
-            }
+                operator=(recursive_wrapper&& rhs);
 
             recursive_wrapper&
-                operator=(const T& t)
-            {
-                assign(t);
-                return *this;
-            }
+                operator=(const T& t);
 
             recursive_wrapper&
-                operator=(T&& t)
-            {
-                assign(std::move(t));
-                return *this;
-            }
+                operator=(T&& t);
 
-            T& get() { return *m_t; }
-            const T& get() const { return *m_t; }
+            T& get();
+            const T& get() const;
 
         private:
             T* m_t;
 
             template <typename U>
             void
-                assign(U&& u)
-            {
-                *m_t = std::forward<U>(u);
-            }
+                assign(U&& u);
         };
 
         struct true_ {};
@@ -101,24 +65,15 @@ export namespace odfaeg {
         {
             template <typename T, typename Internal>
             T&
-                get_value(T& t, const Internal&)
-            {
-                return t;
-            }
+                get_value(T& t, const Internal&);
 
             template <typename T>
             T&
-                get_value(recursive_wrapper<T>& t, const false_&)
-            {
-                return t.get();
-            }
+                get_value(recursive_wrapper<T>& t, const false_&);
 
             template <typename T>
             const T&
-                get_value(const recursive_wrapper<T>& t, const false_&)
-            {
-                return t.get();
-            }
+                get_value(const recursive_wrapper<T>& t, const false_&);
         }
 
         template
@@ -131,21 +86,7 @@ export namespace odfaeg {
             >
             typename Visitor::result_type
             visitor_caller(Internal&& internal,
-                Storage&& storage, Visitor&& visitor, Args&&... args)
-        {
-            typedef typename std::conditional
-                <
-                std::is_const<
-                typename std::remove_extent<
-                typename std::remove_reference<Storage>::type>::type
-                >::value,
-                const T,
-                T
-                >::type ConstType;
-
-            return visitor(detail::get_value(*reinterpret_cast<ConstType*>(storage),
-                internal), std::forward<Args>(args)...);
-        }
+                Storage&& storage, Visitor&& visitor, Args&&... args);
         template <typename First, typename... Types>
         class Variant
         {
@@ -169,28 +110,7 @@ export namespace odfaeg {
                         VoidPtrCV&& storage,
                         Visitor& visitor,
                         Args&&... args
-                        )
-                {
-                    typedef typename Visitor::result_type(*whichCaller)
-                        (Internal&&, VoidPtrCV&&, Visitor&&, Args&&...);
-
-                    static whichCaller callers[sizeof...(AllTypes)] =
-                    {
-                      &visitor_caller<Internal&&, AllTypes,
-                        VoidPtrCV&&, Visitor, Args&&...>...
-                    }
-                    ;
-
-                    assert(which >= 0 && which < sizeof...(AllTypes));
-
-                    return (*callers[which])
-                        (
-                            std::forward<Internal>(internal),
-                            std::forward<VoidPtrCV>(storage),
-                            std::forward<Visitor>(visitor),
-                            std::forward<Args>(args)...
-                            );
-                }
+                        );
             };
 
             template <typename T>
@@ -218,17 +138,11 @@ export namespace odfaeg {
             {
                 typedef void result_type;
 
-                constructor(Variant& self)
-                    : m_self(self)
-                {
-                }
+                constructor(Variant& self);
 
                 template <typename T>
                 void
-                    operator()(const T& rhs) const
-                {
-                    m_self.construct(rhs);
-                }
+                    operator()(const T& rhs) const;
 
             private:
                 Variant& m_self;
@@ -238,17 +152,11 @@ export namespace odfaeg {
             {
                 typedef void result_type;
 
-                move_constructor(Variant& self)
-                    : m_self(self)
-                {
-                }
+                move_constructor(Variant& self);
 
                 template <typename T>
                 void
-                    operator()(T& rhs) const
-                {
-                    m_self.construct(std::move(rhs));
-                }
+                    operator()(T& rhs) const;
 
             private:
                 Variant& m_self;
@@ -258,28 +166,11 @@ export namespace odfaeg {
             {
                 typedef void result_type;
 
-                assigner(Variant& self, int rhs_which)
-                    : m_self(self), m_rhs_which(rhs_which)
-                {
-                }
+                assigner(Variant& self, int rhs_which);
 
                 template <typename Rhs>
                 void
-                    operator()(const Rhs& rhs) const
-                {
-                    if (m_self.which() == m_rhs_which)
-                    {
-                        //the types are the same, so just assign into the lhs
-                        *reinterpret_cast<Rhs*>(m_self.address()) = rhs;
-                    }
-                    else
-                    {
-                        Rhs tmp(rhs);
-                        m_self.destroy(); //nothrow
-                        m_self.construct(std::move(tmp)); //nothrow (please)
-                    }
-                }
-
+                    operator()(const Rhs& rhs) const;
             private:
                 Variant& m_self;
                 int m_rhs_which;
@@ -289,27 +180,11 @@ export namespace odfaeg {
             {
                 typedef void result_type;
 
-                move_assigner(Variant& self, int rhs_which)
-                    : m_self(self), m_rhs_which(rhs_which)
-                {
-                }
+                move_assigner(Variant& self, int rhs_which);
 
                 template <typename Rhs>
                 void
-                    operator()(Rhs& rhs) const
-                {
-                    typedef typename std::remove_const<Rhs>::type RhsNoConst;
-                    if (m_self.which() == m_rhs_which)
-                    {
-                        //the types are the same, so just assign into the lhs
-                        *reinterpret_cast<RhsNoConst*>(m_self.address()) = std::move(rhs);
-                    }
-                    else
-                    {
-                        m_self.destroy(); //nothrow
-                        m_self.construct(std::move(rhs)); //nothrow (please)
-                    }
-                }
+                    operator()(Rhs& rhs) const;
 
             private:
                 Variant& m_self;
@@ -322,10 +197,7 @@ export namespace odfaeg {
 
                 template <typename T>
                 void
-                    operator()(T& t) const
-                {
-                    t.~T();
-                }
+                    operator()(T& t) const;
             };
 
             template <size_t Which, typename... MyTypes>
@@ -339,18 +211,10 @@ export namespace odfaeg {
                 using base::initialise;
 
                 static void
-                    initialise(Variant& v, Current&& current)
-                {
-                    v.construct(std::forward<Current>(current));
-                    v.indicate_which(Which);
-                }
+                    initialise(Variant& v, Current&& current);
 
                 static void
-                    initialise(Variant& v, const Current& current)
-                {
-                    v.construct(current);
-                    v.indicate_which(Which);
-                }
+                    initialise(Variant& v, const Current& current);
             };
 
             template <size_t Which>
@@ -362,18 +226,9 @@ export namespace odfaeg {
 
         public:
 
-            Variant()
-            {
-                //try to construct First
-                //if this fails then First is not default constructible
-                construct(First());
-                indicate_which(0);
-            }
+            Variant();
 
-            ~Variant()
-            {
-                destroy();
-            }
+            ~Variant();
 
             //enable_if disables this function if we are constructing with a Variant.
             //Unfortunately, this becomes Variant(Variant&) which is a better match
@@ -393,70 +248,23 @@ export namespace odfaeg {
                 T
                 >::type
                 >
-                Variant(T&& t)
-            {
-                static_assert(
-                    !std::is_same<Variant<First, Types...>&, T>::value,
-                    "why is Variant(T&&) instantiated with a Variant?");
+                Variant(T&& t);
 
-                //compile error here means that T is not unambiguously convertible to
-                //any of the types in (First, Types...)
-                initialiser<0, First, Types...>::initialise(*this, std::forward<T>(t));
-            }
+            Variant(const Variant& rhs);
 
-            Variant(const Variant& rhs)
-            {
-                constructor c(*this);
-                rhs.apply_visitor_internal(c);
-                indicate_which(rhs.which());
-            }
+            Variant(Variant&& rhs);
 
-            Variant(Variant&& rhs)
-            {
-                move_constructor mc(*this);
-                rhs.apply_visitor_internal(mc);
-                indicate_which(rhs.which());
-            }
+            Variant& operator=(const Variant& rhs);
 
-            Variant& operator=(const Variant& rhs)
-            {
-                if (this != &rhs)
-                {
-                    assigner a(*this, rhs.which());
-                    rhs.apply_visitor_internal(a);
-                    indicate_which(rhs.which());
-                }
-                return *this;
-            }
-
-            Variant& operator=(Variant&& rhs)
-            {
-                if (this != &rhs)
-                {
-                    move_assigner ma(*this, rhs.which());
-                    rhs.apply_visitor_internal(ma);
-                    indicate_which(rhs.which());
-                }
-                return *this;
-            }
-
-            int which() const { return m_which; }
+            Variant& operator=(Variant&& rhs);
+            int which() const;
 
             template <typename Internal, typename Visitor, typename... Args>
             typename Visitor::result_type
-                apply_visitor(Visitor& visitor, Args&&... args)
-            {
-                return do_visit<First, Types...>()(Internal(), m_which, m_storage,
-                    visitor, std::forward<Args>(args)...);
-            }
-
+                apply_visitor(Visitor& visitor, Args&&... args);
             template <typename Internal, typename Visitor, typename... Args>
             typename Visitor::result_type
-                apply_visitor(Visitor& visitor, Args&&... args) const
-            {
-                return do_visit<First, Types...>()(Internal(), m_which, m_storage,
-                    visitor, std::forward<Args>(args)...);
-            }
+                apply_visitor(Visitor& visitor, Args&&... args) const;
         private:
 
             //TODO implement with alignas when it is implemented in gcc
@@ -472,45 +280,30 @@ export namespace odfaeg {
 
             static std::function<void(void*)> m_handlers[1 + sizeof...(Types)];
 
-            inline void indicate_which(int which) { m_which = which; }
+            inline void indicate_which(int which) {
+                m_which = which;
+            }
 
-            void* address() { return m_storage; }
-            const void* address() const { return m_storage; }
+            void* address();
+            const void* address() const;
 
             template <typename Visitor>
             typename Visitor::result_type
-                apply_visitor_internal(Visitor& visitor)
-            {
-                return apply_visitor<true_, Visitor>(visitor);
-            }
+                apply_visitor_internal(Visitor& visitor);
 
             template <typename Visitor>
             typename Visitor::result_type
-                apply_visitor_internal(Visitor& visitor) const
-            {
-                return apply_visitor<true_, Visitor>(visitor);
-            }
+                apply_visitor_internal(Visitor& visitor) const;
 
-            void destroy()
-            {
-                destroyer d;
-                apply_visitor_internal(d);
-            }
+            void destroy();
 
             template <typename T>
             void
-                construct(T&& t)
-            {
-                typedef typename std::remove_reference<T>::type type;
-                new(m_storage) type(std::forward<T>(t));
-            }
+                construct(T&& t);
         };
         struct bad_get : public std::exception
         {
-            virtual const char* what() const throw()
-            {
-                return "bad_get";
-            }
+            virtual const char* what() const throw();
         };
 
         template <typename T>
@@ -519,81 +312,43 @@ export namespace odfaeg {
             typedef T* result_type;
 
             result_type
-                operator()(T& val) const
-            {
-                return &val;
-            }
+                operator()(T& val) const;
 
             template <typename U>
             result_type
-                operator()(const U& u) const
-            {
-                return nullptr;
-            }
+                operator()(const U& u) const;
         };
 
         template <typename Visitor, typename Visitable, typename... Args>
         typename Visitor::result_type
-            apply_visitor(Visitor& visitor, Visitable& visitable, Args&&... args)
-        {
-            return visitable.template apply_visitor<false_>
-                (visitor, std::forward<Args>(args)...);
-        }
-
+            apply_visitor(Visitor& visitor, Visitable& visitable, Args&&... args);
         template <typename Visitor, typename Visitable, typename... Args>
         typename Visitor::result_type
-            apply_visitor(const Visitor& visitor, Visitable& visitable, Args&&... args)
-        {
-            return visitable.template apply_visitor<false_>
-                (visitor, std::forward<Args>(args)...);
-        }
+            apply_visitor(const Visitor& visitor, Visitable& visitable, Args&&... args);
 
         template <typename T, typename First, typename... Types>
         T*
-            get(Variant<First, Types...>* var)
-        {
-            return apply_visitor(get_visitor<T>(), *var);
-        }
-
+            get(Variant<First, Types...>* var);
         template <typename T, typename First, typename... Types>
         const T*
-            get(const Variant<First, Types...>* var)
-        {
-            return apply_visitor(get_visitor<const T>(), *var);
-        }
-
+            get(const Variant<First, Types...>* var);
         template <typename T, typename First, typename... Types>
         T&
-            get(Variant<First, Types...>& var)
-        {
-            T* t = apply_visitor(get_visitor<T>(), var);
-            if (t == nullptr) { throw bad_get(); }
-
-            return *t;
-        }
-
+            get(Variant<First, Types...>& var);
         template <typename T, typename First, typename... Types>
         const T&
-            get(const Variant<First, Types...>& var)
-        {
-            const T* t = apply_visitor(get_visitor<const T>(), var);
-            if (t == nullptr) { throw bad_get(); }
-
-            return *t;
-        }
+            get(const Variant<First, Types...>& var);
         namespace details {
             template <typename Visitor, typename T>
             struct NaryVisitor {
                 using result_type = typename Visitor::result_type;
 
-                NaryVisitor(Visitor& visitor, T& t) : visitor(visitor), ref(t) {}
+                NaryVisitor(Visitor& visitor, T& t);
                 Visitor& visitor;
                 T& ref;
 
                 template <typename... Args>
-                auto operator()(Args&&... args) -> result_type {
-                    return visitor(ref, std::forward<Args>(args)...);
-                } // apply
+                auto operator()(Args&&... args) -> result_type;
             }; // struct NaryVisitor
             template <typename Visitor, typename Arg, typename... Vs>
             auto apply_nary_visitor_impl(
@@ -611,68 +366,33 @@ export namespace odfaeg {
             struct NaryApplier {
                 using result_type = typename Visitor::result_type;
 
-                NaryApplier(Visitor& visitor, Variant& variant) :
-                    visitor(visitor), variant(variant) {
-                }
+                NaryApplier(Visitor& visitor, Variant& variant);
 
                 Visitor& visitor;
                 Variant& variant;
 
                 template <typename T>
-                auto apply() -> result_type {
-                    return visitor(get<T>(variant));
-                }
+                auto apply() -> result_type;
 
                 template <typename T, typename V0, typename... Vs>
-                auto apply(V0&& v0, Vs&&... vs) -> result_type {
-                    NaryVisitor<Visitor, T> nary{
-                        visitor,
-                        get<T>(variant)
-                    };
-                    return apply_nary_visitor_impl(nary,
-                        std::forward<V0>(v0),
-                        std::forward<Vs>(vs)...);
-                }
+                auto apply(V0&& v0, Vs&&... vs) -> result_type;
             }; // struct NaryApplier
             template <typename Visitor, typename Arg, typename... Vs>
             auto apply_nary_visitor_impl(
                 Visitor& visitor, Arg& arg, Vs&&... vs
             )
-                -> typename Visitor::result_type
-            {
-                return visitor(arg);
-            }
+                -> typename Visitor::result_type;
             template <typename Visitor, typename T0, typename... Ts, typename... Vs>
             auto apply_nary_visitor_impl(
                 Visitor& visitor, Variant<T0, Ts...>& v0, Vs&&... vs
             )
-                -> typename Visitor::result_type
-            {
-                using result_type = typename Visitor::result_type;
-
-                using Variant = Variant<T0, Ts...>;
-                using Applier = details::NaryApplier<Visitor, Variant>;
-                using Member = result_type(Applier::*)(Vs&&...);
-
-                static Member const members[] = {
-                    (&Applier::template apply<T0, Vs...>),
-                    (&Applier::template apply<Ts, Vs...>)...
-                };
-
-                Member const m = members[v0.which()];
-                Applier a{ visitor, v0 };
-                return (a.*m)(std::forward<Vs>(vs)...);
-            } // apply_nary_visitor_impl
+                -> typename Visitor::result_type;
 
         } // namespace internal
 
         template <typename Visitor, typename... Variants>
         auto apply_nary_visitor(Visitor&& visitor, Variants&&... vs)
-            -> typename Visitor::result_type
-        {
-            return details::apply_nary_visitor_impl(visitor,
-                std::forward<Variants>(vs)...);
-        } // apply_nary_visitor
+            -> typename Visitor::result_type;
 
         template <typename R = void>
         struct Visitor {
@@ -680,3 +400,5 @@ export namespace odfaeg {
         };
     }
 }
+module : private;
+#include "variant.inl"
