@@ -10,7 +10,7 @@
 #include <vector>
 #include <cctype>
 #include <vulkan/vulkan.hpp>
-#include "color.hpp"
+#include "../Entity/color.hpp"
 #include "../Math/vec.hpp"
 #include "../Core/inputStream.hpp"
 #include "../Entity/rect.hpp"

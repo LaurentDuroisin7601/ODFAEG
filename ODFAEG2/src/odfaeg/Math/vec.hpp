@@ -1,3 +1,5 @@
+#ifndef ODFAEG_VEC_HPP
+#define ODFAEG_VEC_HPP
 #include <iostream>
 #include <array>
 #include <cmath>
@@ -249,7 +251,7 @@ namespace odfaeg {
     }
 }
 #include "vec.inl"
-
+#endif
 
 
 

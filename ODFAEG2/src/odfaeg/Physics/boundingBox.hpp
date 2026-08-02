@@ -16,7 +16,7 @@ namespace odfaeg {
           * The bounding box is aligned with the x and y axis.
           *
           */
-        export  class BoundingBox {
+        class BoundingBox {
         public:
             /** \fn BoundingBox()
             * \brief Default constructor (initialize a bounding retangle at position (0, 0) and with a size of (0, 0).

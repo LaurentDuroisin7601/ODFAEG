@@ -5,6 +5,8 @@
 #include <functional>
 #include <iostream>
 #include <ostream>
+#include "rect.hpp"
+#include "gameObject.hpp"
 namespace odfaeg {
     namespace entity {
         namespace
@@ -16,7 +18,7 @@ namespace odfaeg {
         } // namespa
         template <typename T>
         concept Universal = std::is_same_v<T, UniversalEmittor>;
-        export class ParticleSystem : public GameObject {
+        class ParticleSystem : public GameObject {
         public :
             typedef std::array<Vertex, 4>	Quad;
             ParticleSystem(math::Vec3f position, math::Vec3f size, math::Vec2f particleSize);           

@@ -7,6 +7,7 @@
 #include <clang-c/Index.h>
 #include <vector>
 #include <algorithm>
+#include "utilities.hpp"
 namespace odfaeg {
    namespace core {
         class Constructor {

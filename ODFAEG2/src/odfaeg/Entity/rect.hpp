@@ -1,6 +1,7 @@
 #ifndef ODFAEG_RECT_HPP
 #define ODFAEG_RECT_HPP
 #include <algorithm>
+#include "../Math/vec.hpp"
 namespace odfaeg {
     namespace entity {
         ////////////////////////////////////////////////////////////

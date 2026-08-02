@@ -1,9 +1,10 @@
 #include <vector>
 #include <algorithm>
 #include <functional>
+#include "videoModeImpl.hpp"
 namespace odfaeg {
     namespace window {
-        export class VideoMode
+        class VideoMode
         {
         public:
 
@@ -79,7 +80,7 @@ namespace odfaeg {
         /// \return True if modes are equal
         ///
         ////////////////////////////////////////////////////////////
-        export bool operator ==(const VideoMode& left, const VideoMode& right);
+        bool operator ==(const VideoMode& left, const VideoMode& right);
 
         ////////////////////////////////////////////////////////////
         /// \relates VideoMode
@@ -91,7 +92,7 @@ namespace odfaeg {
         /// \return True if modes are different
         ///
         ////////////////////////////////////////////////////////////
-        export bool operator !=(const VideoMode& left, const VideoMode& right);
+        bool operator !=(const VideoMode& left, const VideoMode& right);
 
         ////////////////////////////////////////////////////////////
         /// \relates VideoMode
@@ -103,7 +104,7 @@ namespace odfaeg {
         /// \return True if \a left is lesser than \a right
         ///
         ////////////////////////////////////////////////////////////
-        export bool operator <(const VideoMode& left, const VideoMode& right);
+        bool operator <(const VideoMode& left, const VideoMode& right);
 
         ////////////////////////////////////////////////////////////
         /// \relates VideoMode
@@ -115,7 +116,7 @@ namespace odfaeg {
         /// \return True if \a left is greater than \a right
         ///
         ////////////////////////////////////////////////////////////
-        export bool operator >(const VideoMode& left, const VideoMode& right);
+        bool operator >(const VideoMode& left, const VideoMode& right);
 
         ////////////////////////////////////////////////////////////
         /// \relates VideoMode
@@ -127,7 +128,7 @@ namespace odfaeg {
         /// \return True if \a left is lesser or equal than \a right
         ///
         ////////////////////////////////////////////////////////////
-        export bool operator <=(const VideoMode& left, const VideoMode& right);
+        bool operator <=(const VideoMode& left, const VideoMode& right);
 
         ////////////////////////////////////////////////////////////
         /// \relates VideoMode
@@ -139,7 +140,7 @@ namespace odfaeg {
         /// \return True if \a left is greater or equal than \a right
         ///
         ////////////////////////////////////////////////////////////
-        export bool operator >=(const VideoMode& left, const VideoMode& right);
+        bool operator >=(const VideoMode& left, const VideoMode& right);
 
 
 

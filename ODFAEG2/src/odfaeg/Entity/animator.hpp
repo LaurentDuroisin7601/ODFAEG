@@ -6,6 +6,7 @@
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include "gameObject.hpp"
 namespace odfaeg {
     namespace entity {
         class Animator : public GameObject {

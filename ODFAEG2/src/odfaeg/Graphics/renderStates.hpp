@@ -1,5 +1,5 @@
 #include "blendMode.hpp"
-#include "transformMatrix.hpp"
+#include "../Math/transformMatrix.hpp"
 #include "texture.hpp"
 #include "shader.hpp"
 namespace odfaeg {

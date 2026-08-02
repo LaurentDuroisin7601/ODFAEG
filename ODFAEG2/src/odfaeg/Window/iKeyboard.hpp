@@ -1,6 +1,16 @@
+#ifndef ODFAEG_IKEYBOARD_HPP
+#define ODFAEG_IKEYBOARD_HPP
+#include <odfaeg/config.hpp>
+#if defined(ODFAEG_SYSTEM_WINDOWS)
+#include "Windows/win32Keyboard.hpp"
+typedef odfaeg::window::Win32Keyboard KeyboardType;
+#else if defined(ODFAEG_SYSTEM_LINUX)
+#include "Linux/x11Keyboard.hpp"
+typedef odfaeg::window::X11Keyboard KeyboardType;
+#endif
 namespace odfaeg {
     namespace window {
-        export class IKeyboard {
+        class IKeyboard {
         public:
             ////////////////////////////////////////////////////////////
             /// \brief Key codes
@@ -126,3 +136,4 @@ namespace odfaeg {
     }
 }
 #include "iKeyboard.inl"
+#endif

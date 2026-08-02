@@ -1,3 +1,5 @@
+#ifndef ODFAEG_RAY_HPP
+#define ODFAEG_RAY_HPP
 #include "vec.hpp"
 #include "matrix.hpp"
 /**
@@ -38,3 +40,4 @@ namespace odfaeg {
     }
 }
 #include "ray.inl"
+#endif

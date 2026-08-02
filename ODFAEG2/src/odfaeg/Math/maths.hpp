@@ -1,3 +1,5 @@
+#ifndef ODFAEG_MATHS_HPP
+#define ODFAEG_MATHS_HPP
 #include <math.h>
 #include <random>
 #include <ctime>
@@ -88,3 +90,4 @@ namespace odfaeg {
     }
 }
 #include "maths.inl"
+#endif

@@ -11,6 +11,7 @@
 #include <mutex>
 #include <odfaeg/config.hpp>
 #include <algorithm>
+#include "utilities.hpp"
 /**
  *\namespace odfaeg
  * the namespace of the Opensource Development Framework Adapted for Every Games.

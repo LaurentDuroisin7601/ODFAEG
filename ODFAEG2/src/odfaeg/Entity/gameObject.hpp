@@ -5,6 +5,7 @@
 #include <map>
 #include <memory>
 #include <deque>
+#include "vertexArray.hpp"
 namespace odfaeg {
 	namespace entity {
         class SubMesh {

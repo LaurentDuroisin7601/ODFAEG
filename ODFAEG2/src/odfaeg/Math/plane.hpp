@@ -1,5 +1,6 @@
 #include "vec.hpp"
 #include "ray.hpp"
+#include "../Math/maths.hpp"
 namespace odfaeg {
     namespace math {
         class Plane {
@@ -11,7 +12,7 @@ namespace odfaeg {
             bool intersects(Ray& r, float& i);
             float computeDist(Vec3f point);
             Vec3f project(Vec3f point);
-            bool isParallelConf(Plane& plane;
+            bool isParallelConf(Plane& plane);
             bool isParallel(Plane& plane);
         private:
             float a, b, c, d;

@@ -102,27 +102,22 @@ namespace odfaeg {
         * \author Duroisin.L
         * \version 1.0
         * \date 1/02/2014
-        */
-        class Clock {
-        public:            
-            Clock::Clock() {
-                start = std::chrono::high_resolution_clock::now();
-            }
-            void Clock::restart() {
-                start = std::chrono::high_resolution_clock::now();
-            }
-            Time Clock::getElapsedTime() {
-                std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<float> elapsedSeconds = end - start;
+        */        
+        Clock::Clock() {
+            start = std::chrono::high_resolution_clock::now();
+        }
+        void Clock::restart() {
+            start = std::chrono::high_resolution_clock::now();
+        }
+        Time Clock::getElapsedTime() {
+            std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<float> elapsedSeconds = end - start;
 
 
-                Time elapsed;
-                elapsed.time = std::chrono::time_point<std::chrono::high_resolution_clock, std::chrono::duration<float>>(elapsedSeconds);
+            Time elapsed;
+            elapsed.time = std::chrono::time_point<std::chrono::high_resolution_clock, std::chrono::duration<float>>(elapsedSeconds);
 
-                return elapsed;
-            }
-        private:
-            std::chrono::high_resolution_clock::time_point start; /**> the high resolution clock.*/
-        };
+            return elapsed;
+        }        
     }
 }

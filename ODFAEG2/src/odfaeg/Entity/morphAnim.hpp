@@ -4,7 +4,7 @@
 #include <iostream>
 namespace odfaeg {
     namespace entity {
-        export class MorphAnim : public GameObject {
+        class MorphAnim : public GameObject {
             public :
             MorphAnim(math::Vec3f position, math::Vec3f size, unsigned int interpLevels=1);
             void addFrame(GameObject* frame);

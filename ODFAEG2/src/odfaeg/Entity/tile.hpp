@@ -1,5 +1,6 @@
 #ifndef ODFAEG_TILE_HPP
 #define ODFAEG_TILE_HPP
+#include "gameObject.hpp"
 #include <vector>
 /**
   *\namespace odfaeg

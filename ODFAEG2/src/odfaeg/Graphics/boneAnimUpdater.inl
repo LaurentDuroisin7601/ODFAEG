@@ -11,14 +11,12 @@ module;
 #include <glm/gtx/string_cast.hpp>
 #include <condition_variable>
 #include "vk_mem_alloc.h"
-//import odfaeg.graphic.boneAnimUpdater;
-module odfaeg.graphic.boneAnimUpdater;
-import odfaeg.graphic.gpuContext;
-import odfaeg.graphic.descriptor;
-import odfaeg.math.matrix;
-import odfaeg.graphic.device;
-import odfaeg.entity.vertex;
-import odfaeg.entity.primitiveType;
+#include "gpuContext.hpp"
+#include "descriptor.hpp"
+#include "../Math/matrix.hpp"
+#include "device.hpp"
+#include "../Entity/vertex.hpp"
+#include "../Entity/primitiveType.hpp"
 namespace odfaeg {
     namespace graphic {
         BoneAnimUpdater& BoneAnimUpdater::instance(std::condition_variable& cv, std::mutex& mtx) {
