@@ -534,7 +534,7 @@ namespace odfaeg {
             ShowWindow(m_handle, SW_SHOW);
 
             // Set "this" as the current fullscreen window
-            fullscreenWindow = this;
+            w32FullscreenWindow = this;
         }
 
 
@@ -542,10 +542,10 @@ namespace odfaeg {
         void Win32Window::cleanup()
         {
             // Restore the previous video mode (in case we were running in fullscreen)
-            if (fullscreenWindow == this)
+            if (w32FullscreenWindow == this)
             {
                 ChangeDisplaySettingsW(NULL, 0);
-                fullscreenWindow = NULL;
+                w32FullscreenWindow = NULL;
             }
 
             // Unhide the mouse cursor (in case it was hidden)

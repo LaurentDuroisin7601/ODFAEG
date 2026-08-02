@@ -10,6 +10,7 @@
 #include "../Physics/boundingBox.hpp"
 #include "commandPool.hpp"
 #include "../Core/nonCopyable.hpp"
+#include "gpuContext.hpp"
 namespace odfaeg {
     namespace graphic {
 

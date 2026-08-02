@@ -10,6 +10,7 @@ import odfaeg.graphic.buffer;
 import odfaeg.physic.boundingBox;
 import odfaeg.graphic.commandPool;
 import odfaeg.core.nonCopyable;
+import ofaeg.graphic.gpuContext;
 namespace odfaeg {
     namespace graphic {
 

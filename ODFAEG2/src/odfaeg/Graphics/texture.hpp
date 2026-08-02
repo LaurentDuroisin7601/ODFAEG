@@ -32,7 +32,7 @@ namespace
 }
 namespace odfaeg {
 	namespace graphic {
-		export class Texture : public core::NonCopyable {
+		class Texture : public core::NonCopyable {
 		public :
             struct MipInfo {
                 uint32_t width;

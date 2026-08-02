@@ -12,8 +12,7 @@
   * the namespace of the Opensource Development Framework Adapted for Every Games.
   */
 namespace odfaeg {
-    namespace window {
-        class Action;        
+    namespace window {               
         /**
           * \file action.h
           * \class Action
@@ -160,5 +159,5 @@ namespace odfaeg {
         };
     }
 }
-#include "action.inl"
+//#include "action.inl"
 #endif

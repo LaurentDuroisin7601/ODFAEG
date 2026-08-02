@@ -7,7 +7,7 @@
 #include "buffer.hpp"
 namespace odfaeg {
 	namespace graphic {
-        export  class ImageView : public core::NonCopyable {
+        class ImageView : public core::NonCopyable {
         public:
             ImageView(Device& device);
             ImageView(ImageView&& ImageView) noexcept ;
@@ -20,7 +20,7 @@ namespace odfaeg {
             Device& device;
             VkImageView imageView;
         };
-        export class Sampler : public core::NonCopyable {
+        class Sampler : public core::NonCopyable {
         public:
             Sampler(Device& device);
             Sampler(Sampler&& sampler) noexcept;
@@ -33,7 +33,7 @@ namespace odfaeg {
             Device& device;
             VkSampler sampler;
         };
-		export class Image : public core::NonCopyable {
+		class Image : public core::NonCopyable {
         public:
             Image(Device& device);
             Image(Image&& image) noexcept;
