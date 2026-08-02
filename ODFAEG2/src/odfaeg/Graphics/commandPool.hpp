@@ -1,4 +1,5 @@
-module;
+#ifndef ODFAEG_COMMANDPOOL_HPP
+#define ODFAEG_COMMANDPOOL_HPP
 #include <iostream>
 #include <ostream>
 #include <vulkan/vulkan.hpp>
@@ -32,3 +33,4 @@ namespace odfaeg {
 	}
 }
 #include "commandPool.inl"
+#endif

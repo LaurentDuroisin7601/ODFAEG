@@ -1,3 +1,5 @@
+#ifndef ODFAEG_WIN32WINDOW_HPP
+#define ODFAEG_WIN32WINDOW_HPP
 #include <windows.h>
 #include <dbt.h>
 #ifndef UNICODE
@@ -369,5 +371,5 @@ namespace odfaeg {
         };
     }
 }
-module : private;
 #include "win32Window.inl"
+#endif

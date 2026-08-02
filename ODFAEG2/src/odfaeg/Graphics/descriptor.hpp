@@ -1,3 +1,5 @@
+#ifndef ODFAEG_DESCRIPTOR_HPP
+#define ODFAEG_DESCRIPTOR_HPP
 #include <deque>
 #include <vulkan/vulkan.hpp>
 #include <vector>
@@ -74,3 +76,4 @@ namespace odfaeg {
 	}
 }
 #include "descriptor.inl"
+#endif

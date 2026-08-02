@@ -6,6 +6,7 @@
 #include <mutex>
 #include <stdexcept>
 #include <odfaeg/config.hpp>
+#include "resourceManager.hpp"
 /**
  *\namespace odfaeg
  * the namespace of the Opensource Development Framework Adapted for Every Games.

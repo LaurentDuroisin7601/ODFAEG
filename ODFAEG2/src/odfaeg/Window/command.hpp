@@ -1,3 +1,5 @@
+#ifndef ODFAEG_COMMAND_HPP
+#define ODFAEG_COMMAND_HPP
 #include <string>
 #include <memory>
 #include "../Core/delegate.hpp"
@@ -144,3 +146,4 @@ namespace odfaeg
     }
 }
 #include "command.inl"
+#endif

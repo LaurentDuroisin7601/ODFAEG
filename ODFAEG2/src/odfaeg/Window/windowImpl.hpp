@@ -1,3 +1,5 @@
+#ifndef ODFAEG_WINDOWIMPL_HPP
+#define ODFAEG_WINDOWIMPL_HPP
 #include <thread>
 #include <iostream>
 #include <cstdint>
@@ -268,3 +270,4 @@ namespace odfaeg {
     }
 }
 #include "windowImpl.inl"
+#endif

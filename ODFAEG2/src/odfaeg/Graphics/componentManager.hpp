@@ -1,3 +1,5 @@
+#ifndef ODFAEG_COMONENT_MANAGER_HPP
+#define ODFAEG_COMONENT_MANAGER_HPP
 #include <vector>
 #include <memory>
 #include "iComponent.hpp"
@@ -21,3 +23,4 @@ namespace odfaeg {
         };
     }
 }
+#endif

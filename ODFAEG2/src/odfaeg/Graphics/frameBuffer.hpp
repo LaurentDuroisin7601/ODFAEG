@@ -1,3 +1,5 @@
+#ifndef ODFAEG_FRAMEBUFFER_HPP
+#define ODFAEG_FRAMEBUFFER_HPP
 #include <vulkan/vulkan.hpp>
 #include <vector>
 #include "device.hpp"
@@ -23,3 +25,4 @@ namespace odfaeg {
 	}
 }
 #include "fence.hpp"
+#endif

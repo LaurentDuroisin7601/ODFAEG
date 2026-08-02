@@ -1,4 +1,5 @@
-module;
+#ifndef ODFAEG_FENCE_HPP
+#define ODFAEG_FENCE_HPP
 #include <vulkan/vulkan.hpp>
 #include <vector>
 namespace odfaeg{
@@ -19,3 +20,4 @@ namespace odfaeg{
 	}
 }
 #include "fence.inl"
+#endif

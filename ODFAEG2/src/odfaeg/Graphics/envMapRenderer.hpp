@@ -1,3 +1,5 @@
+#ifndef ODFAEG_ENVMAPRENDERER_HPP
+#define ODFAEG_ENVMAPRENDERER_HPP
 #include <mutex>
 #include <condition_variable>
 #include <string>
@@ -103,3 +105,4 @@ namespace odfaeg {
     }
 }
 #include "envMapRenderer.inl"
+#endif

@@ -1,3 +1,5 @@
+#ifndef ODFAEG_BLENDMODE_HPP
+#define ODFAEG_BLENDMODE_HPP
 #include <odfaeg/config.hpp>
 #include <vector>
 namespace odfaeg {
@@ -129,3 +131,4 @@ namespace odfaeg {
     }
 }
 #include "blendMode.inl"
+#endif

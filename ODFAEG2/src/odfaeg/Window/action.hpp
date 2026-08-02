@@ -1,4 +1,11 @@
-/**
+#ifndef ODFAEG_ACTION_HPP
+#define ODFAEG_ACTION_HPP
+#include <map>
+#include <functional>
+#include <memory>
+#include <vector>
+#include "command.hpp"
+/*
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
   */
@@ -151,3 +158,4 @@ namespace odfaeg {
     }
 }
 #include "action.inl"
+#endif

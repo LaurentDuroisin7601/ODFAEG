@@ -1,3 +1,5 @@
+#ifndef ODFAEG_DEVICE_HPP
+#define ODFAEG_DEVICE_HPP
 #include <vulkan/vulkan.hpp>
 #include <optional>
 #include <vector>
@@ -65,3 +67,4 @@ namespace odfaeg {
     }
 }
 #include "device.inl"
+#endif

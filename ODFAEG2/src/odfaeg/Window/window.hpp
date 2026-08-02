@@ -1,3 +1,5 @@
+#ifndef ODFAEG_WINDOW_HPP
+#define ODFAEG_WINDOW_HPP
 #include "../../../include/odfaeg/Window/windowHandle.hpp"
 #include <vulkan/vulkan.hpp>
 #include <iostream>
@@ -6,7 +8,7 @@ export module odfaeg.window.window;
 #include "../Core/string.hpp"
 #include "../Math/vec.hpp"
 #include "windowImpl.hpp"
-#include "cursor.hpp;
+#include "cursor.hpp"
 #include "videoMode.hpp"
 #include "iEvent.hpp"
 namespace odfaeg {
@@ -280,3 +282,4 @@ namespace odfaeg {
     }
 }
 #include "window.inl"
+#endif

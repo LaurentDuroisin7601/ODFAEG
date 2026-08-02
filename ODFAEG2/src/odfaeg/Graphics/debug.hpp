@@ -1,3 +1,5 @@
+#ifndef ODFAEG_DEBUG_HPP
+#define ODFAEG_DEBUG_HPP
 #include <vulkan/vulkan.hpp>
 #include <odfaeg/config.hpp>
 namespace odfaeg {
@@ -15,3 +17,4 @@ namespace odfaeg {
     }
 }
 #include "debug.inl"
+#endif

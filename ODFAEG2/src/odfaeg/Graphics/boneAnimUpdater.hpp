@@ -1,6 +1,5 @@
-//
-// Created by laurent on 09/06/2026
-module;
+#ifndef ODFAEG_BONEANIMUPDATER_HPP
+#define ODFAEG_BONEANIMUPDATER_HPP
 #include <vector>
 #include <vulkan/vulkan.h>
 #include <string>
@@ -76,3 +75,4 @@ namespace odfaeg {
     } // graphic
 } // odfaeg
 #include "boneAnimUpdater.inl"
+#endif

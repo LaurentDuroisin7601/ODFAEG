@@ -1,3 +1,5 @@
+#ifndef ODFAEG_IMOUSE_HPP
+#define ODFAEG_IMOUSE_HPP
 #include <odfaeg/config.hpp>
 #include "window.hpp"
 #include "../Math/vec.hpp"
@@ -36,3 +38,4 @@ namespace odfaeg {
     }
 }
 #include "iMouse.inl"
+#endif

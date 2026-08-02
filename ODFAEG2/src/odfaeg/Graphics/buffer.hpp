@@ -1,3 +1,5 @@
+#ifndef ODFAEG_BUFFER_HPP
+#define ODFAEG_BUFFER_HPP
 #include <iostream>
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.h>
@@ -33,3 +35,4 @@ namespace odfaeg {
 	}
 }
 #include "buffer.inl"
+#endif

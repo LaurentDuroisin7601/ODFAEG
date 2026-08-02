@@ -1,4 +1,5 @@
-module;
+#ifndef ODFAEG_CAMERA_HPP
+#define ODFAEG_CAMERA_HPP
 #include "projMatrix.hpp"
 #include "viewMatrix.hpp"
 #include "../Physics/boundingBox.hpp"
@@ -227,3 +228,4 @@ namespace odfaeg {
     }
 }
 #include "camera.inl"
+#endif
