@@ -1,3 +1,5 @@
+#ifndef ODFAEG_TRIANGLE_HPP
+#define ODFAEG_TRIANGLE_HPP
 #include <math.h>
 #include "plane.hpp"
 #include "vec.hpp"
@@ -19,3 +21,4 @@ namespace odfaeg {
     }
 }
 #include "triangle.inl"
+#endif

@@ -1,3 +1,5 @@
+#ifndef ODFAEG_MPLANE_HPP
+#define ODFAEG_MPLANE_HPP
 #include "vec.hpp"
 #include "ray.hpp"
 #include "../Math/maths.hpp"
@@ -22,3 +24,4 @@ namespace odfaeg {
     }
 }
 #include "plane.inl"
+#endif

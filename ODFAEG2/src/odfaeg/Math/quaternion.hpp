@@ -1,3 +1,5 @@
+#ifndef ODFAEG_QUATERNION_HPP
+#define ODFAEG_QUATERNION_HPP
 #include "matrix.hpp"
 #include "maths.hpp"
 namespace odfaeg {
@@ -17,3 +19,4 @@ namespace odfaeg {
     }
 }
 #include "quaternion.inl"
+#endif

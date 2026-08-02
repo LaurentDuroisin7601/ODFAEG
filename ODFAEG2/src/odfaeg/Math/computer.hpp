@@ -1,3 +1,5 @@
+#ifndef ODFAEG_COMPUTER_HPP
+#define ODFAEG_COMPUTER_HPP
 #include <limits.h>
 #include  <array>
 #include  <vector>
@@ -67,3 +69,4 @@ namespace odfaeg {
     }
 }
 #include "computer.inl"
+#endif

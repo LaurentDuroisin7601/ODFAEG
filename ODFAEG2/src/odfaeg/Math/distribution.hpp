@@ -1,3 +1,5 @@
+#ifndef ODFAEG_DISTRIBUTION_HPP
+#define ODFAEG_DISTRIBUTION_HPP
 namespace odfaeg
 {
     namespace math {
@@ -121,3 +123,4 @@ namespace odfaeg
         }
     }
 }
+#endif
