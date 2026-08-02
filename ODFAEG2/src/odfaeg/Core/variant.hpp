@@ -1,3 +1,5 @@
+#ifndef ODFAEG_VARIANT_HPP
+#define ODFAEG_VARIANT_HPP
 #include <cassert>
 #include <functional>
 #include <new>
@@ -398,3 +400,4 @@ namespace odfaeg {
     }
 }
 #include "variant.inl"
+#endif

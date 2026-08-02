@@ -4,7 +4,7 @@ module;
 #include <cstdint>
 #include "../../../include/odfaeg/Window/windowHandle.hpp"
 //import odfaeg.window.windowImpl;
-module odfaeg.window.windowImpl;
+export module odfaeg.window.windowImpl;
 import odfaeg.core.clock;
 import odfaeg.window.iEvent;
 import odfaeg.window.windowStyle;

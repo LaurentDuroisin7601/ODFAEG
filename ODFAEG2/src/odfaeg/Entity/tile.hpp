@@ -1,3 +1,5 @@
+#ifndef ODFAEG_TILE_HPP
+#define ODFAEG_TILE_HPP
 #include <vector>
 /**
   *\namespace odfaeg
@@ -71,3 +73,4 @@ namespace odfaeg {
     }
 }
 #include "tile.inl"
+#endif

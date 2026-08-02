@@ -1,3 +1,5 @@
+#ifndef ODFAEG_PARTICLESYSTEM_HPP
+#define ODFAEG_PARTICLESSYSTEM_HPP
 #include <cassert>
 #include <vector>
 #include <functional>
@@ -59,3 +61,4 @@ namespace odfaeg {
     }
 }
 #include "particleSystem.inl"
+#endif

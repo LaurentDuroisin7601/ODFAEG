@@ -3,7 +3,7 @@ module;
 #include <algorithm>
 #include <vector>
 export module odfaeg.window.win32VideoMode;
-import odfaeg.window.videoMode;
+//import odfaeg.window.videoMode;
 namespace odfaeg {
     namespace window {
         export class Win32VideoMode {

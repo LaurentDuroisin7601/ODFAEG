@@ -1,3 +1,5 @@
+#ifndef ODFAEG_NONCOPYABLE_HPP
+#define ODFAEG_NONCOPYABLE_HPP
 namespace odfaeg {
     namespace core {
         class NonCopyable
@@ -52,3 +54,4 @@ namespace odfaeg {
         };
     }
 } // namespace sf
+#endif

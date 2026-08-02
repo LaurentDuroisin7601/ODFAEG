@@ -1,3 +1,5 @@
+#ifndef ODFAEG_COLOR_HPP
+#define ODFAEG_COLOR_HPP
 #include <cstdint>
 #include <algorithm>
 namespace odfaeg {
@@ -191,3 +193,4 @@ namespace odfaeg {
 	}
 }
 #include "color.inl"
+#endif

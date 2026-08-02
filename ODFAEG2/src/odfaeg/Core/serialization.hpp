@@ -1,4 +1,5 @@
-module;
+#ifndef ODFAEG_SERIALIZATION_HPP
+#define ODFAEG_SERIALIZATION_HPP
 #include <iostream>
 #include <sstream>
 #include <typeinfo>
@@ -119,3 +120,4 @@ namespace odfaeg {
     }
 }
 #include "serialization.inl"
+#endif

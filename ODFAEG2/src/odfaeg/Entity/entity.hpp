@@ -1,3 +1,5 @@
+#ifndef ODFAEG_ENTITY_HPP
+#define ODFAEG_ENTITY_HPP
 #include <optional>
 #include <array>
 #include <vector>
@@ -200,3 +202,4 @@ namespace odfaeg {
         };   
     }
 }
+#endif

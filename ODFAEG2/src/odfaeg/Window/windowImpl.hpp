@@ -1,12 +1,10 @@
-
-module;
 #include <thread>
 #include <iostream>
 #include <cstdint>
 #include "../../../include/odfaeg/Window/windowHandle.hpp"
-#include "../Core/clock.hpp";
-#include "iEvent.hpp";
-#include "windowStyle.hpp";
+#include "../Core/clock.hpp"
+#include "iEvent.hpp"
+#include "windowStyle.hpp"
 #include "videoMode.hpp"
 #include "cursor.hpp"
 #include "../core/string.hpp"
@@ -16,7 +14,7 @@ module;
 #include "Windows/win32Window.hpp"
 typedef odfaeg::window::Win32Window WindowImplType;
 #else if defined(ODFAEG_SYSTEM_WINDOWS)
-#include "Windows/x11Window.hpp"
+#include "Linux/x11Window.hpp"
 typedef odfaeg::window::X11Window WindowImplType;
 #endif
 namespace
@@ -25,7 +23,7 @@ namespace
 }
 namespace odfaeg {
     namespace window {        
-        export class WindowImpl : public WindowImplType {
+        class WindowImpl : public WindowImplType {
         public:
             WindowImpl();
             ////////////////////////////////////////////////////////////

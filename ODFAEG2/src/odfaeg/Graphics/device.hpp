@@ -1,4 +1,3 @@
-module;
 #include <vulkan/vulkan.hpp>
 #include <optional>
 #include <vector>
@@ -65,4 +64,4 @@ namespace odfaeg {
         };
     }
 }
-#include "device.hpp"
+#include "device.inl"

@@ -1,8 +1,3 @@
-module;
-#include <cmath>
-#include <algorithm>
-//import odfaeg.graphic.viewportMatrix;
-module odfaeg.graphic.viewportMatrix;
 namespace odfaeg {
     namespace graphic {
         ViewportMatrix::ViewportMatrix() {

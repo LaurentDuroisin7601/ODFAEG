@@ -1,3 +1,5 @@
+#ifndef ODFAEG_TIMER_HPP
+#define ODFAEG_TIMER_HPP
 #include <thread>
 #include <iostream>
 #include <condition_variable>
@@ -56,3 +58,4 @@ namespace odfaeg {
     }
 }
 #include "timer.inl"
+#endif

@@ -1,5 +1,5 @@
 module;
-export module odfaeg.entity.impl;
+export module odfaeg.entity.enttImpl;
 import odfaeg.entity.entity;
 namespace odfaeg {
 	namespace entity {

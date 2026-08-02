@@ -1,3 +1,5 @@
+#ifndef ODFAEG_TRANSFORMABLE_HPP
+#define ODFAEG_TRANSFORMABLE_HPP
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -248,4 +250,4 @@ namespace odfaeg {
     }
 }
 #include "transformable.inl"
-
+#endif

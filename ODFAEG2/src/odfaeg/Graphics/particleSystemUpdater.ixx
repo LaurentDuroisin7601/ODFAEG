@@ -102,4 +102,4 @@ namespace odfaeg {
     }
 }
 module : private;
-#include "particleSystem.inl"
+#include "particleSystemUpdater.inl"

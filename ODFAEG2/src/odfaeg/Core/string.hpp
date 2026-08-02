@@ -1,4 +1,5 @@
-module;
+#ifndef ODFAEG_STRING_HPP
+#define ODFAEG_STRING_HPP
 #include <algorithm>
 #include <locale>
 #include <string>
@@ -220,3 +221,4 @@ namespace odfaeg {
     }
 }
 #include "string.inl"
+#endif

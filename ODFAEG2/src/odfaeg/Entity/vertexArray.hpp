@@ -1,3 +1,5 @@
+#ifndef ODFAEG_VERTEXARRAY_HPP
+#define ODFAEG_VERTEXARRAY_HPP
 #include <vector>
 #include <cstdint>
 #include "../Entity/vertex.hpp"
@@ -39,3 +41,4 @@ namespace odfaeg {
     }
 }
 #include "vertexArray.inl"
+#endif

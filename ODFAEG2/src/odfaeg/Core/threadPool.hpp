@@ -1,3 +1,5 @@
+#ifndef ODFAEG_THREADPOOL_HPP
+#define ODFAEG_THREADPOOL_HPP
 #include <thread>
 #include <functional>
 #include <condition_variable> 
@@ -32,3 +34,4 @@ namespace odfaeg {
     }
 }
 #include "threadPool.inl" 
+#endif

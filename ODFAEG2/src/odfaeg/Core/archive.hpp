@@ -1,3 +1,5 @@
+#ifndef ODFAEG_ARCHIVE_HPP
+#define ODFAEG_ARCHIVE_HPP 
 #include <vector>
 #include <map>
 #include <iostream>
@@ -449,4 +451,5 @@ namespace odfaeg {
     }
 }
 #include "archive.inl"
+#endif
 

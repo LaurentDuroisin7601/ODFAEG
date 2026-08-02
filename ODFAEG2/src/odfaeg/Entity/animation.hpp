@@ -8,7 +8,7 @@
 #include <iostream>
 #include <glm/glm.hpp>
 #include "bone.hpp"
-#include "../Math/matrix.hpp;
+#include "../Math/matrix.hpp"
 #include "gameObject.hpp"
 #include "../Math/vec.hpp"
 namespace odfaeg {

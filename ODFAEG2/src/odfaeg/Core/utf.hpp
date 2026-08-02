@@ -1,3 +1,5 @@
+#ifndef ODFAEG_UTF_HPP
+#define ODFAEG_UTF_HPP
 #include <algorithm>
 #include <locale>
 #include <string>
@@ -702,3 +704,4 @@ namespace odfaeg {
      }    
 }
 #include "utf.inl"
+#endif

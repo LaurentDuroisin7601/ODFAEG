@@ -1,3 +1,5 @@
+#ifndef ODFAEG_RECT_HPP
+#define ODFAEG_RECT_HPP
 #include <algorithm>
 namespace odfaeg {
     namespace entity {
@@ -129,3 +131,4 @@ namespace odfaeg {
     }
 }
 #include "rect.inl"
+#endif

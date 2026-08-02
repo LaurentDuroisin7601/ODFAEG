@@ -1,3 +1,5 @@
+#ifndef ODFAEG_RESOURCEMANAGER_HPP
+#define ODFAEG_RESOURCEMANAGER_HPP 
 #include <unordered_map>
 #include <unordered_set>
 #include <string>
@@ -166,6 +168,7 @@ namespace odfaeg
     }
 }
 #include "resourceManager.inl"
+#endif
 ////////////////
 /*export namespace odfaeg {
     namespace core {

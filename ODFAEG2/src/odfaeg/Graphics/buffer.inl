@@ -90,5 +90,3 @@ namespace odfaeg {
 		}
 	}
 }
-module : private;
-#include "buffer.inl"

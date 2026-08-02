@@ -1,3 +1,5 @@
+#ifndef ODFAEG_CLOCK_HPP
+#define ODFAEG_CLOCK_HPP
 #include <chrono>
 namespace odfaeg {
     namespace core {
@@ -72,3 +74,5 @@ namespace odfaeg {
         };
     }
 }
+#include "clock.inl"
+#endif

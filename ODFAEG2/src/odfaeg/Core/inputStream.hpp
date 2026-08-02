@@ -1,3 +1,5 @@
+#ifndef ODFAEG_INPUTSTREAM_HPP
+#define ODFAEG_INPUTSTREAM_HPP
 #include <cstdint>
 #include <cstdio>
 #include <string>
@@ -130,3 +132,4 @@ namespace odfaeg{
 	}
 }
 #include "inputStream.inl"
+#endif

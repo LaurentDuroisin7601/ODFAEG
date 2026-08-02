@@ -1,3 +1,5 @@
+#ifndef ODFAEG_CLASS_HPP
+#define ODFAEG_CLASS_HPP
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -120,4 +122,4 @@ namespace odfaeg {
     }
 }
 #include "class.inl"
-
+#endif

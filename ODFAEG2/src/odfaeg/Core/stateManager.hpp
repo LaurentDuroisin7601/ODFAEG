@@ -1,3 +1,5 @@
+#ifndef ODFAEG_STATEMANAGER_HPP
+#define ODFAEG_STATEMANAGER_HPP
 #include <string>
 #include <vector>
 #include <stdexcept>
@@ -172,3 +174,4 @@ namespace odfaeg {
     }
 }
 #include "stateManager.inl"
+#endif

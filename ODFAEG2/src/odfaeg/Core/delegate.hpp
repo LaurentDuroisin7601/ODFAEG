@@ -1,3 +1,5 @@
+#ifndef ODFAEG_DELEGATE_HPP
+#define ODFAEG_DELEGATE_HPP
 #include <tuple>
 #include <functional>
 #include <stdexcept>
@@ -589,3 +591,4 @@ namespace odfaeg {
     }
 }
 #include "delegate.inl"
+#endif

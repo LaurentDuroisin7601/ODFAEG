@@ -1,4 +1,5 @@
-module;
+#ifndef ODFAEG_RUNTIMECOMPILER_HPP
+#define ODFAEG_RUNTIMECOMPILER_HPP
 #include <filesystem>
 #include <chrono>
 #include <vector>
@@ -156,4 +157,4 @@ namespace odfaeg {
     }
 }
 #include "runtime_compiler.inl"
-
+#endif

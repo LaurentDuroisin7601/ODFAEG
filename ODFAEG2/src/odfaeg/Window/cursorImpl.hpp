@@ -3,7 +3,7 @@
 #include "iCursorType.hpp";
 #include "../Math/vec.hpp"
 #if defined(ODFAEG_SYSTEM_WINDOWS)
-#include "win32Cursor.hpp"
+#include "Windows/win32Cursor.hpp"
 typedef odfaeg::window::Win32Cursor CursorImplType;
 #elif defined(ODFAEG_SYSTEM_LINUX)
 #include "Linux/x11Cursor.hpp"

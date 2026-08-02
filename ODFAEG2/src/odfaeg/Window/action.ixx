@@ -8,7 +8,7 @@ export module odfaeg.window.action;
 import odfaeg.window.iEvent;
 import odfaeg.window.iKeyboard;
 import odfaeg.window.iMouse;
-import odfaeg.window.command;
+//import odfaeg.window.command;
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.

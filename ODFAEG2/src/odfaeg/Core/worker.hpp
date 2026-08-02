@@ -1,3 +1,5 @@
+#ifndef ODFAEG_WORKER_HPP
+#define ODFAEG_WORKER_HPP
 #include <condition_variable>
 #include  <thread>
 #include  <chrono>
@@ -35,4 +37,4 @@ namespace odfaeg {
     }
 }
 #include "worker.inl"
-
+#endif

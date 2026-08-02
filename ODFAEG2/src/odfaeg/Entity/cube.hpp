@@ -1,4 +1,9 @@
+#ifndef ODFAEG_CUBE_HPP
+#define ODFAEG_CUBE_HPP
 #include <string>
+#include "../Math/vec.hpp"
+#include "../Entity/rect.hpp"
+#include "../Entity/gameObject.hpp"
 namespace odfaeg {
     namespace entity {
         class Cube : public GameObject {
@@ -21,3 +26,4 @@ namespace odfaeg {
     }
 }
 #include "cube.inl"
+#endif

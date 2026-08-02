@@ -1,3 +1,5 @@
+#ifndef ODFAEG_METAPROG_HPP
+#define ODFAEG_METAPROG_HPP
 #include <type_traits>
 #include <tuple>
 namespace odfaeg {
@@ -493,3 +495,4 @@ namespace odfaeg {
         };
 	}
 }
+#endif

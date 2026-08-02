@@ -1,4 +1,6 @@
 //fichier fabrique.h
+#ifndef ODFAEG_FACTORY_HPP
+#define ODFAEG_FACTORY_HPP
 #include <map>
 #include <string>
 #include <stdexcept>
@@ -98,4 +100,4 @@ namespace odfaeg {
     }
 }
 #include "factory.inl"
-
+#endif

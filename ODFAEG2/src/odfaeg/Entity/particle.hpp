@@ -1,3 +1,5 @@
+#ifndef ODFAEG_PARTICLE_HPP
+#define ODFAEG_PARTICLE_HPP
 namespace odfaeg {
     namespace entity {
         struct alignas(16) Particle {
@@ -17,3 +19,4 @@ namespace odfaeg {
         };
     }
 }
+#endif

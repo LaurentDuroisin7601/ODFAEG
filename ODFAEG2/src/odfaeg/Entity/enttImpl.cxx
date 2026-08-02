@@ -5,7 +5,7 @@ module;
 #include <entt.hpp>
 #include <map>
 //import odfaeg.entity.impl;
-module odfaeg.entity.impl;
+module odfaeg.entity.enttImpl;
 namespace odfaeg {
 	namespace entity {
         class  EntityFactory {

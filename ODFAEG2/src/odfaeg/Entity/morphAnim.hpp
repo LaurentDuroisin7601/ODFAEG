@@ -1,3 +1,5 @@
+#ifndef ODFAEG_MORPHANIM_HPP
+#define ODFAEG_MORPHANIM_HPP
 #include <vector>
 #include <iostream>
 namespace odfaeg {
@@ -16,3 +18,4 @@ namespace odfaeg {
     }
 }
 #include "morphAnim.inl"
+#endif

@@ -1,11 +1,13 @@
 module;
 #include <vector>
 #include <cstdint>
+#include <meshoptimizer.h>
 export module odfaeg.entity.vertexArray;
 import odfaeg.entity.vertex;
 import odfaeg.entity.primitiveType;
 import odfaeg.math.transformMatrix;
 import odfaeg.physic.boundingBox;
+import odfaeg.math.vec;
 namespace odfaeg {
     namespace entity {
         export class VertexArray {

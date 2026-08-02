@@ -67,4 +67,4 @@ namespace odfaeg {
     }
 }
 module : private;
-#include "device.hpp"
+#include "device.inl"

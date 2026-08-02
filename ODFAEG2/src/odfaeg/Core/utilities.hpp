@@ -1,3 +1,15 @@
+#ifndef ODFAEG_UTILITIES_HPP
+#define ODFAEG_UTILITIES_HPP
+#include <string>
+#include <cstring>
+#include  <regex>
+#include  <vector>
+#include  <sstream>
+#include  <filesystem>
+#include <odfaeg/config.hpp>
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 namespace odfaeg {
     namespace core { 
         std::vector<std::string> split(const std::string& stringToBeSplitted, const std::string& delimeter);
@@ -19,3 +31,4 @@ namespace odfaeg {
     }
 }
 #include "utilities.inl"
+#endif

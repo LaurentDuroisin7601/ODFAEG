@@ -43,12 +43,11 @@
 #include <queue>
 #include <windows.h>
 #include <odfaeg/Window/windowHandle.hpp>
-export module odfaeg.window.win32Window;
 #include "../../Core/string.hpp"
 #include "../../Math/vec.hpp"
-#include "../iKeyboard.hpp;
-#include "../iMouse.hpp;
-#include "../iEvent.hpp;
+#include "../iKeyboard.hpp"
+#include "../iMouse.hpp"
+#include "../iEvent.hpp"
 #include "../windowStyle.hpp"
 #include "../videoMode.hpp"
 #include "win32Cursor.hpp"

@@ -1,3 +1,5 @@
+#ifndef ODFAEG_MODEL_HPP
+#define ODFAEG_MODEL_HPP
 #include <string>
 namespace odfaeg {
     namespace entity {
@@ -15,5 +17,6 @@ namespace odfaeg {
     }
 }//
 #include "model.inl"
+#endif
 // Created by laurent on 26/05/2026.
 //

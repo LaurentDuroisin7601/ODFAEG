@@ -1,3 +1,5 @@
+#ifndef ODFAEG_VERTEX_HPP
+#define ODFAEG_VERTEX_HPP
 #include <array>
 #include <iostream>
 #include <odfaeg/config.hpp>
@@ -120,3 +122,4 @@ namespace odfaeg {
     }
 }
 #include "vertex.inl"
+#endif

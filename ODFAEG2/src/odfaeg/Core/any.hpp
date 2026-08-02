@@ -1,3 +1,5 @@
+#ifndef ODFAEG_ANY_HPP
+#define ODFAEG_ANY_HPP
 #include <typeinfo>
 #include <stdexcept>
 #include <string>
@@ -45,3 +47,4 @@ namespace odfaeg {
 	}
 }
 #include "any.inl"
+#endif

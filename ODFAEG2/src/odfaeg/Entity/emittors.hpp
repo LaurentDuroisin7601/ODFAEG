@@ -1,3 +1,5 @@
+#ifndef ODFAEG_EMITTORS_HPP
+#define ODFAEG_EMITTORS_HPP
 #include <functional>
 #include <cstdint>
 namespace odfaeg {
@@ -31,3 +33,4 @@ namespace odfaeg {
         };
     }
 }
+#endif

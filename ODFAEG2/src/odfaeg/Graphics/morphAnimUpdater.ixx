@@ -91,4 +91,4 @@ namespace odfaeg {
     }
 }
 module : private;
-#include "morphAnim.hpp"
+#include "morphAnimUpdater.inl"

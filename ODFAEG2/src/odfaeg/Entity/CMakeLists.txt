@@ -17,7 +17,7 @@ if(ODFAEG_USE_MODULES)
     add_library(odfaeg-entity-mod STATIC)
     target_compile_features(odfaeg-entity-mod PUBLIC cxx_std_20)
     file(GLOB_RECURSE MODULES_INTERFACE CONFIGURE_DEPENDS "${SRCROOT}/*.ixx")
-    file(GLOB_RECURSE MODULES_IPMLEMENTATION CONFIGURE_DEPENDS "${SRCROOT}/*.cppm")
+    file(GLOB_RECURSE MODULES_IMPLEMENTATION CONFIGURE_DEPENDS "${SRCROOT}/*.cxx")
     target_sources(odfaeg-entity-mod
         PUBLIC
             FILE_SET cxx_modules TYPE CXX_MODULES
@@ -73,8 +73,9 @@ else()
     file(GLOB_RECURSE HEADERS_SRC CONFIGURE_DEPENDS "${SRCROOT}/*.hpp")
 	file(GLOB_RECURSE SRC CONFIGURE_DEPENDS "${SRCROOT}/*.cpp")
     target_sources(odfaeg-entity PRIVATE ${SRC} ${HEADERS_COMMON} ${HEADERS_SRC} ${ODFAEG_INL}) 
-    target_include_directories(odfaeg-entity-mod PRIVATE ${PROJECT_SOURCE_DIR}/external)
-    target_include_directories(odfaeg-entity-mod PRIVATE ${PROJECT_SOURCE_DIR}/external/meshoptimizer/src)
+    target_include_directories(odfaeg-entity PRIVATE ${PROJECT_SOURCE_DIR}/external)
+    target_include_directories(odfaeg-entity PRIVATE ${PROJECT_SOURCE_DIR}/external/entt)
+    target_include_directories(odfaeg-entity PRIVATE ${PROJECT_SOURCE_DIR}/external/meshoptimizer/src)
     file(GLOB_RECURSE MESH_OPTIMIZER_SRC CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/external/meshoptimizer/src/*.cpp")
     add_library(meshoptimizer STATIC
         ${MESH_OPTIMIZER_SRC}
@@ -98,6 +99,11 @@ else()
 		ARCHIVE DESTINATION lib
 		FILE_SET HEADERS DESTINATION include/odfaeg/Entity
 	)
+    install(
+        TARGETS meshoptimizer
+        EXPORT odfaeg-targets
+        ARCHIVE DESTINATION lib
+    )
 	# Installer les headers publics
 	install(
 		DIRECTORY ${SRCROOT}/

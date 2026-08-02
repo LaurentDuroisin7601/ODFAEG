@@ -1,3 +1,5 @@
+#ifndef ODFAEG_ENTTIMPL_HPP
+#define ODFAEG_ENTTIMPL_HPP
 #include "entity.hpp"
 namespace odfaeg {
 	namespace entity {
@@ -9,3 +11,4 @@ namespace odfaeg {
 		};
 	}
 }
+#endif

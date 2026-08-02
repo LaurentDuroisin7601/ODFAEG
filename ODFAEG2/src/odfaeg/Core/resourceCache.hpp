@@ -1,3 +1,5 @@
+#ifndef ODFAEG_RESOURCECACHE_HPP
+#define ODFAEG_RESOURCECACHE_HPP
 #include <string>
 #include <memory>
 #include <map>
@@ -42,3 +44,4 @@ namespace odfaeg {
     }
 }
 #include "resourceCache.inl"
+#endif

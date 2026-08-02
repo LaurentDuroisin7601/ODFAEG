@@ -2,9 +2,8 @@
 #include <cstdint>
 #include <cstring>
 #include <iostream>
-#include "win32Cursor.hpp"
-#include "iCursorType.hpp"
-#include "../Math/vec.hpp"
+#include "../iCursorType.hpp"
+#include "../../Math/vec.hpp"
 namespace odfaeg {
     namespace window {
         ////////////////////////////////////////////////////////////
@@ -157,3 +156,4 @@ namespace odfaeg {
         }
     }
 }
+#include "win32Cursor.inl"

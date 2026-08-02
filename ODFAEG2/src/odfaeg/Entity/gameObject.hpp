@@ -1,3 +1,5 @@
+#ifndef ODFAEG_GAMEOBJECT_HPP
+#define ODFAEG_GAMEOBJECT_HPP
 #include <algorithm>
 #include <iostream>
 #include <map>
@@ -216,3 +218,4 @@ namespace odfaeg {
 	}
 }
 #include "gameObject.inl"
+#endif

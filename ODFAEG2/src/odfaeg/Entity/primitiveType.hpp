@@ -1,3 +1,5 @@
+#ifndef ODFAEG_PRIMITIVETYPE_HPP
+#define ODFAEG_PRIMITIVETYPE_HPP
 namespace odfaeg {
 	namespace entity {
         enum PrimitiveType
@@ -11,3 +13,4 @@ namespace odfaeg {
         };
 	};
 }
+#endif

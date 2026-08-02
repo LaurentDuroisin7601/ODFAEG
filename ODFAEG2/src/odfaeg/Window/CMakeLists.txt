@@ -72,48 +72,48 @@ target_link_libraries(odfaeg-window PRIVATE
 )
 elseif(WIN32)
         if(ODFAEG_USE_MODULES)
-        add_library(odfaeg-window-mod STATIC)
-        target_sources(odfaeg-window-mod
-        PUBLIC
+                add_library(odfaeg-window-mod STATIC)
+                target_sources(odfaeg-window-mod
+                PUBLIC
                 FILE_SET cxx_modules TYPE CXX_MODULES                 
                 FILES         
-                ${SRCROOT}/iCursorType.ixx	
-                ${SRCROOT}/iEvent.ixx	
-                ${SRCROOT}/iKeyboard.ixx        
-                ${SRCROOT}/Windows/win32Keyboard.ixx        
-                ${SRCROOT}/windowStyle.ixx
-                ${SRCROOT}/videoMode.ixx
-                ${SRCROOT}/Windows/win32VideoMode.ixx
-                ${SRCROOT}/videoModeImpl.ixx	
-                ${SRCROOT}/Windows/win32Cursor.ixx
-                ${SRCROOT}/cursorImpl.ixx
-                ${SRCROOT}/cursor.ixx 
-                ${SRCROOT}/Windows/win32Mouse.ixx
-                ${SRCROOT}/Windows/win32Window.ixx
-                ${SRCROOT}/windowImpl.ixx
-                ${SRCROOT}/window.ixx	
-                ${SRCROOT}/iMouse.ixx
-                ${SRCROOT}/action.ixx
-                ${SRCROOT}/command.ixx
-                ${SRCROOT}/listener.ixx	
-        )
-        target_sources(odfaeg-window-mod
-        PRIVATE           
-                ${SRCROOT}/iKeyboard.inl
-                ${SRCROOT}/Windows/win32Keyboard.inl
-                ${SRCROOT}/videoMode.inl
-                ${SRCROOT}/Windows/win32VideoMode.inl
-                ${SRCROOT}/videoModeImpl.inl
-                ${SRCROOT}/Windows/win32Cursor.inl
-                ${SRCROOT}/cursorImpl.inl
-                ${SRCROOT}/cursor.inl
-                ${SRCROOT}/iMouse.inl
-                ${SRCROOT}/Windows/win32Mouse.inl
-                ${SRCROOT}/Windows/win32Window.inl
-                ${SRCROOT}/windowImpl.inl
-                ${SRCROOT}/window.inl
-                ${SRCROOT}/action.inl
-                ${SRCROOT}/command.inl
+                        ${SRCROOT}/iCursorType.ixx	
+                        ${SRCROOT}/iEvent.ixx	
+                        ${SRCROOT}/iKeyboard.ixx        
+                        ${SRCROOT}/Windows/win32Keyboard.ixx        
+                        ${SRCROOT}/windowStyle.ixx
+                        ${SRCROOT}/videoMode.ixx
+                        ${SRCROOT}/Windows/win32VideoMode.ixx
+                        ${SRCROOT}/videoModeImpl.ixx	
+                        ${SRCROOT}/Windows/win32Cursor.ixx
+                        ${SRCROOT}/cursorImpl.ixx
+                        ${SRCROOT}/cursor.ixx 
+                        ${SRCROOT}/Windows/win32Mouse.ixx
+                        ${SRCROOT}/Windows/win32Window.ixx
+                        ${SRCROOT}/windowImpl.ixx
+                        ${SRCROOT}/window.ixx	
+                        ${SRCROOT}/iMouse.ixx
+                        ${SRCROOT}/action.ixx
+                        ${SRCROOT}/command.ixx
+                        ${SRCROOT}/listener.ixx	
+                )
+                target_sources(odfaeg-window-mod
+                PRIVATE           
+                        ${SRCROOT}/iKeyboard.inl
+                        ${SRCROOT}/Windows/win32Keyboard.inl
+                        ${SRCROOT}/videoMode.inl
+                        ${SRCROOT}/Windows/win32VideoMode.inl
+                        ${SRCROOT}/videoModeImpl.inl
+                        ${SRCROOT}/Windows/win32Cursor.inl
+                        ${SRCROOT}/cursorImpl.inl
+                        ${SRCROOT}/cursor.inl
+                        ${SRCROOT}/iMouse.inl
+                        ${SRCROOT}/Windows/win32Mouse.inl
+                        ${SRCROOT}/Windows/win32Window.inl
+                        ${SRCROOT}/windowImpl.inl
+                        ${SRCROOT}/window.inl
+                        ${SRCROOT}/action.inl
+                        ${SRCROOT}/command.inl
                 )
                 target_sources(odfaeg-window-mod PRIVATE ${HEADERS_COMMON})
                 target_compile_features(odfaeg-window-mod PUBLIC cxx_std_20)
@@ -218,13 +218,13 @@ elseif(WIN32)
                         ${SRCROOT}/action.cpp
                         ${SRCROOT}/command.cpp
                 )
-                target_include_directories(odfaeg-window-mod
+                target_include_directories(odfaeg-window
                                 PUBLIC
                                 $<INSTALL_INTERFACE:include>
                                 $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
                 )
-                target_include_directories(odfaeg-window-mod PRIVATE ${PROJECT_SOURCE_DIR}/external)
-                target_include_directories(odfaeg-window-mod
+                target_include_directories(odfaeg-window PRIVATE ${PROJECT_SOURCE_DIR}/external)
+                target_include_directories(odfaeg-window
                 INTERFACE
                         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
                         $<BUILD_INTERFACE:${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include/>
@@ -237,7 +237,7 @@ elseif(WIN32)
                 target_include_directories(odfaeg-window PUBLIC ${VULKAN_INCLUDE_DIRS})
                 #link_directories(${VULKAN_LIBRARY_DIRS})
                 target_link_libraries(odfaeg-window PRIVATE ${VULKAN_LIBRAIRIES})
-                target_link_libraries(odfaeg-window-mod PUBLIC odfaeg-physics odfaeg-entity odfaeg-math odfaeg-core)
+                target_link_libraries(odfaeg-window PUBLIC odfaeg-physics odfaeg-entity odfaeg-math odfaeg-core)
         endif()
 endif()
 
