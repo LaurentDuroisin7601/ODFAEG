@@ -1,16 +1,14 @@
-module;
 #include <vulkan/vulkan.hpp>
 #include <string>
 #include <shaderc/shaderc.hpp>
 #include <iostream>
 #include <fstream>
 #include <odfaeg/config.hpp>
-export module odfaeg.graphic.shader;
-import odfaeg.core.inputStream;
-import odfaeg.graphic.device;
+#include "../core/inputStream.hpp"
+#include "device.hpp"
 namespace odfaeg{
 	namespace graphic {
-        export class  Shader {
+        class  Shader {
         public:
             enum ShaderType {
                 VERTEX_SHADER, COMPUTE_SHADER
@@ -188,5 +186,4 @@ namespace odfaeg{
         };
 	}
 }
-module : private;
 #include "shader.inl"

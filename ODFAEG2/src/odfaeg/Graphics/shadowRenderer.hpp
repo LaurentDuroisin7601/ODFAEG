@@ -1,4 +1,3 @@
-module;
 #include <string>
 #include <vector>
 #include <deque>
@@ -7,20 +6,19 @@ module;
 #include <atomic>
 #include <condition_variable>
 #include <memory>
-export module odfaeg.graphic.shadowRenderer;
-import odfaeg.graphic.iRenderer;
-import odfaeg.graphic.renderTarget;
-import odfaeg.math.matrix;
-import odfaeg.math.vec;
-import odfaeg.graphic.renderTexture;
-import odfaeg.graphic.image;
-import odfaeg.graphic.shader;
-import odfaeg.graphic.pipeline;
-import odfaeg.graphic.descriptor;
-import odfaeg.graphic.commandPool;
-import odfaeg.graphic.buffer;
-import odfaeg.core.threadPool;
-import odfaeg.window.listener;
+#include "iRenderer.hpp"
+#include "renderTarget.hpp"
+#include "../Math/matrix.hpp"
+#include "../Math/vec.hpp"
+#include "renderTexture.hpp"
+#include "image.hpp"
+#include "shader.hpp"
+#include "pipeline.hpp"
+#include "descriptor.hpp"
+#include "commandPool.hpp"
+#include "buffer.hpp"
+#include "threadPool.hpp"
+#include "../Window/listener.hpp"
 namespace odfaeg {
     namespace graphic {
         export class ShadowRenderer : public IRenderer {
@@ -141,6 +139,5 @@ namespace odfaeg {
         };
     }
 }
-module : private;
 #include "shadowRenderer.inl"
 

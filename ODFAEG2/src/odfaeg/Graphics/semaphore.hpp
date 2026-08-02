@@ -1,7 +1,5 @@
-module;
 #include <vulkan/vulkan.hpp>
-export module odfaeg.graphic.semaphore;
-import odfaeg.graphic.device;
+#include "device.hpp"
 namespace odfaeg {
 	namespace graphic {
 		export class Semaphore {
@@ -22,6 +20,5 @@ namespace odfaeg {
 		};
 	}
 }
-module : private;
 #include "semaphore.inl"
 

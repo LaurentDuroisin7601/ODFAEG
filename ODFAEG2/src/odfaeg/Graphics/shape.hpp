@@ -1,19 +1,18 @@
 module;
 #include <iostream>
 #include <odfaeg/config.hpp>
-export module odfaeg.graphic.shape;
-import odfaeg.graphic.renderTarget;
-import odfaeg.entity.transformable;
-import odfaeg.graphic.texture;
-import odfaeg.entity.rect;
-import odfaeg.entity.color;
-import odfaeg.math.vec;
-import odfaeg.physic.boundingBox;
-import odfaeg.graphic.device;
-import odfaeg.graphic.renderStates;
-import odfaeg.graphic.vertexBuffer;
-import odfaeg.math.maths;
-import odfaeg.entity.primitiveType;
+#include "renderTarget.hpp"
+#include "../Entity/transformable.hpp"
+#include "texture.hpp"
+#include "../Entity/rect.hpp"
+#include "../Entity/color.hpp"
+#include "../Math/vec.hpp"
+#include "../Physics/boundingBox.hpp"
+#include "device.hpp"
+#include "renderStates.hpp"
+#include "vertexBuffer.hpp"
+#include "../Math/maths.hpp"
+#include "../Entity/primitiveType.hpp"
 namespace
 {
     // Compute the normal of a segment
@@ -265,5 +264,4 @@ namespace odfaeg {
 		};
 	}
 }
-module : private;
 #include "shape.inl"
