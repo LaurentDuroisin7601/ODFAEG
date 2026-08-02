@@ -1,7 +1,5 @@
-module;
-export module odfaeg.graphic.viewMatrix;
-import odfaeg.math.matrix;
-import odfaeg.math.vec;
+#include "../Math/matrix.hpp"
+#include "../Math/vec.hpp;
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -60,5 +58,4 @@ namespace odfaeg {
         };
     }
 }
-module : private;
 #include "viewMatrix.inl"

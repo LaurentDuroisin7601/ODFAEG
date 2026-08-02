@@ -1,9 +1,7 @@
-module;
 #include <cmath>
 #include <algorithm>
-export module odfaeg.graphic.viewportMatrix;
-import odfaeg.math.vec;
-import odfaeg.math.matrix;
+#include "../Math/vec.hpp"
+#include "../Math/matrix.hpp"
 namespace odfaeg {
     namespace graphic {
         export class ViewportMatrix {
@@ -24,5 +22,4 @@ namespace odfaeg {
         };
     }
 }
-module : private;
 #include "viewportMatrix.inl"
