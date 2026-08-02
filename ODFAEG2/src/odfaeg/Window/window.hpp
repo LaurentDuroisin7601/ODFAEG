@@ -3,7 +3,6 @@
 #include "../../../include/odfaeg/Window/windowHandle.hpp"
 #include <vulkan/vulkan.hpp>
 #include <iostream>
-//import odfaeg.window.window;
 #include "../Core/string.hpp"
 #include "../Math/vec.hpp"
 #include "windowImpl.hpp"
@@ -12,7 +11,7 @@
 #include "iEvent.hpp"
 namespace odfaeg {
     namespace window {
-        export class Window {
+        class Window {
         public:
             Window();
             Window(VideoMode mode, const core::String& title, std::uint32_t style);

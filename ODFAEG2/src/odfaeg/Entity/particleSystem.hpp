@@ -7,6 +7,7 @@
 #include <ostream>
 #include "rect.hpp"
 #include "gameObject.hpp"
+#include "emittors.hpp"
 namespace odfaeg {
     namespace entity {
         namespace

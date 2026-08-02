@@ -310,6 +310,9 @@ else()
 		${SRCROOT}/mesh.cpp
 		${SRCROOT}/renderGraph.cpp
 	)
+	target_include_directories(odfaeg-graphics PRIVATE
+		${PROJECT_SOURCE_DIR}/external/meshoptimizer/src
+	)
 	target_include_directories(odfaeg-graphics PRIVATE ${PROJECT_SOURCE_DIR}/external/vma)
 	#target_include_directories(odfaeg-graphics-mod PRIVATE ${VCPKG_INSTALLED_DIR}/x64-windows/include)
 	#target_include_directories(odfaeg-graphics-mod PRIVATE ${Vulkan_INCLUDE_DIRS})

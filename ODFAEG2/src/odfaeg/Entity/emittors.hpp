@@ -2,6 +2,7 @@
 #define ODFAEG_EMITTORS_HPP
 #include <functional>
 #include <cstdint>
+#include "../Core/clock.hpp"
 namespace odfaeg {
     namespace entity {
         std::uint32_t packColor(Color color) {

@@ -4,11 +4,11 @@
 #include <vector>
 #include <deque>
 #include "../Core/utilities.hpp"
-#include "../Entity/gameOject.hpp"
+#include "../Entity/gameObject.hpp"
+#include "gpuContext.hpp"
 #include "material.hpp"
 #include "vertexBuffer.hpp"
 #include "texture.hpp"
-#include "gpuContext"
 namespace odfaeg {
     namespace graphic {
         export class Mesh {

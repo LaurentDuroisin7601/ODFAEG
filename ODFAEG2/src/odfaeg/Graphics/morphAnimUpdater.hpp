@@ -19,7 +19,7 @@
 #include "descriptor.hpp"
 #include "gpuContext.hpp"
 #include "device.hpp"
-#include "gameObject.hpp"
+#include "../Entity/gameObject.hpp"
 #include "../Entity/primitiveType.hpp"
 namespace odfaeg {
     namespace graphic {
@@ -90,5 +90,5 @@ namespace odfaeg {
         };
     }
 }
-#include "morphAnim.hpp"
+#include "morphAnimUpdater.inl"
 #endif

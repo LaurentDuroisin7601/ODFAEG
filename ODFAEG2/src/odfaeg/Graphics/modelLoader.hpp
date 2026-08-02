@@ -15,10 +15,10 @@
 #include <vulkan/vulkan_core.h>
 #include <vk_mem_alloc.h>
 #include <glm/gtx/string_cast.hpp>
-#include "model.hpp"
+#include "../Entity/model.hpp"
 #include "device.hpp"
-#include "resourceManager.hpp"
-#include "vec.hpp"
+#include "../Core/resourceManager.hpp"
+#include "../Math/vec.hpp"
 #include "../Math/matrix.hpp"
 #include "mesh.hpp"
 #include "../Entity/vertex.hpp"
