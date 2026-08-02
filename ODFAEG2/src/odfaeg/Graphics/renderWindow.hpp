@@ -3,20 +3,19 @@ module;
 #include <cstdint>
 #include <odfaeg/Window/windowHandle.hpp>
 #include <deque>
-export module odfaeg.graphic.renderWindow;
-import odfaeg.window.window;
-import odfaeg.window.windowStyle;
-import odfaeg.window.videoMode;
-import odfaeg.graphic.renderTarget;
-import odfaeg.core.string;
-import odfaeg.graphic.device;
-import odfaeg.graphic.swapchain;
-import odfaeg.graphic.frameBuffer;
-import odfaeg.graphic.renderPass;
-import odfaeg.math.vec;
-import odfaeg.entity.color;
-import odfaeg.graphic.semaphore;
-import odfaeg.graphic.fence;
+#include "../window/window.hpp"
+#include "../window/windowStyle.hpp"
+#include "../Window/videoMode.hpp"
+#include "renderTarget.hpp"
+#include "../Core/string.hpp"
+#include "device.hpp"
+#include "swapchain.hpp"
+#include "frameBuffer.hpp"
+#include "renderPass.hpp"
+#include "../Math/vec.hpp"
+#include "../Entity/color.hpp"
+#include "semaphore.hpp"
+#include "fence.hpp"
 namespace odfaeg {
 	namespace graphic {
 		export class RenderWindow : public window::Window, public  RenderTarget {
@@ -106,5 +105,4 @@ namespace odfaeg {
         };			
 	}
 }
-module : private;
 #include "renderWindow.inl"

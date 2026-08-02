@@ -1,19 +1,17 @@
-module;
 #include <vulkan/vulkan.hpp>
 #include <vector>
 #include <deque>
-export module odfaeg.graphic.renderTexture;
-import odfaeg.graphic.device;
-import odfaeg.graphic.image;
-import odfaeg.graphic.texture;
-import odfaeg.graphic.renderPass;
-import odfaeg.graphic.frameBuffer;
-import odfaeg.graphic.fence;
-import odfaeg.graphic.semaphore;
-import odfaeg.entity.color;
-import odfaeg.math.vec;
-import odfaeg.graphic.renderTarget;
-import odfaeg.graphic.gpuContext;
+#include "device.hpp"
+#include "image.hpp"
+#include "texture.hpp"
+#include "renderPass.hpp"
+#include "frameBuffer.hpp"
+#include "fence.hpp"
+#include "semaphore.hpp"
+#include "../Entity/color.hpp"
+#include "../Math/vec.hpp"
+#include "renderTarget.hpp"
+#include "gpuContext.hpp"
 namespace odfaeg {
 	namespace graphic {
 		export class RenderTexture : public RenderTarget {
@@ -69,5 +67,4 @@ namespace odfaeg {
 		};
 	}
 }
-module : private;
 #include "renderTexture.inl"
