@@ -2,6 +2,7 @@
 #define ODFAEG_VERTEXARRAY_HPP
 #include <vector>
 #include <cstdint>
+#include <meshoptimizer.h>
 #include "../Entity/vertex.hpp"
 #include "../Entity/primitiveType.hpp"
 #include "../Math/transformMatrix.hpp"

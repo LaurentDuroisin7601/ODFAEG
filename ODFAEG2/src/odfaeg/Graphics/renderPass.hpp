@@ -1,4 +1,4 @@
-#ifndef ODFAEG_RNEDERPASS_HPP
+#ifndef ODFAEG_RENDERPASS_HPP
 #define ODFAEG_RENDERPASS_HPP
 #include <vulkan/vulkan.hpp>
 #include "device.hpp"

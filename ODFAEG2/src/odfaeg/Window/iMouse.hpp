@@ -1,13 +1,13 @@
 #ifndef ODFAEG_IMOUSE_HPP
 #define ODFAEG_IMOUSE_HPP
 #include <odfaeg/config.hpp>
-#if defined(ODFAEG_SYSTEM_WINDOWS)
+/*#if defined(ODFAEG_SYSTEM_WINDOWS)
 #include "Windows/win32Mouse.hpp"
 typedef odfaeg::window::Win32Mouse MouseType;
 #else if defined(ODFAEG_SYSTEM_LINUX)
 #include "Linux/x11Mouse.hpp"
 typedef odfaeg::window::X11Mouse MouseType;
-#endif
+#endif*/
 #include <odfaeg/config.hpp>
 //#include "window.hpp"
 #include "../Math/vec.hpp"

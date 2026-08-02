@@ -14,7 +14,7 @@
 #include "../Math/vec.hpp"
 #include "../Math/matrix.hpp"
 #include "../Math/quaternion.hpp"
-#include "gameoBject.hpp"
+#include "gameObject.hpp"
 #include "assimpHelper.hpp"
 namespace odfaeg {
     namespace entity {

@@ -129,6 +129,8 @@ namespace odfaeg {
             T width;  ///< Width of the rectangle
             T height; ///< Height of the rectangle
         };
+        typedef Rect<int>   IntRect;
+        typedef Rect<float> FloatRect;
     }
 }
 #include "rect.inl"

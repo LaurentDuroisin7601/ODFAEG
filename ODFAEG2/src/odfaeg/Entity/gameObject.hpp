@@ -5,7 +5,10 @@
 #include <map>
 #include <memory>
 #include <deque>
+#include "transformable.hpp"
+#include "enttImpl.hpp"
 #include "vertexArray.hpp"
+#include <glm/glm.hpp>
 namespace odfaeg {
 	namespace entity {
         class SubMesh {
@@ -183,7 +186,7 @@ namespace odfaeg {
             math::Vec3f getShadowOrigin();
             void setAnimIndex(unsigned int boneIndex);
             unsigned int getAnimIndex();
-            void setSelected(bool selected) override;
+            void setSelected(bool selected);
             virtual GameObject* clone() = 0;
             void setExternal(bool external);
             bool isExternal();

@@ -1,5 +1,5 @@
-#ifndef ODFAEG_TRANSFORMMATRX_HPP
-#define ODFAEG_TRANSFORMMATRIX_HPP
+#ifndef ODFAEG_TRANSFORMATRIX_HPP
+#define ODFAEG_TRANSFORMATRIX_HPP
 #include "vec.hpp"
 #include "matrix.hpp"
 #include "maths.hpp"

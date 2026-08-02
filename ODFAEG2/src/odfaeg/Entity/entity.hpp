@@ -7,6 +7,7 @@
 #include <map>
 #include <cstdint>
 #include "../Core/serialization.hpp"
+#include "../Core/stateManager.hpp"
 namespace odfaeg {
     namespace entity {       
         class Entity : core::Registered<Entity> {

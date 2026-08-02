@@ -1,13 +1,3 @@
-module;
-#include <vulkan/vulkan.hpp>
-#include <vector>
-#include <set>
-#include <vk_mem_alloc.h>
-#include <iostream>
-//import odfaeg.graphic.device;
-module odfaeg.graphic.device;
-import odfaeg.graphic.debug;
-import odfaeg.graphic.instance;
 namespace odfaeg {
     namespace graphic {
         const std::vector<const char*> Device::deviceExtensions = {

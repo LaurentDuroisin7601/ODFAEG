@@ -11,7 +11,7 @@
 #include "vertexBuffer.hpp"
 #include "texture.hpp"
 #include "instance.hpp"
-#include "device"
+#include "device.hpp"
 #include "../Entity/primitiveType.hpp"
 #include "shader.hpp"
 #include "blendMode.hpp"

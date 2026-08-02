@@ -5,6 +5,8 @@
 #include <memory>
 #include <vector>
 #include "command.hpp"
+#include "iKeyboard.hpp"
+#include "iMouse.hpp"
 /*
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.

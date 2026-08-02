@@ -11,7 +11,7 @@
 #include "../Core/nonCopyable.hpp"
 #include "device.hpp" 
 #include "texture.hpp"
-#include "vertexBuffer"
+#include "vertexBuffer.hpp"
 namespace odfaeg {
 	namespace graphic {
 	    class DescriptorPool : public core::NonCopyable {

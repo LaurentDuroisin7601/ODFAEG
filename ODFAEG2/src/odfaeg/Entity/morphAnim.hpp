@@ -2,6 +2,7 @@
 #define ODFAEG_MORPHANIM_HPP
 #include <vector>
 #include <iostream>
+#include "gameObject.hpp"
 namespace odfaeg {
     namespace entity {
         class MorphAnim : public GameObject {
