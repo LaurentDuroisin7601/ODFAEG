@@ -112,5 +112,5 @@ namespace odfaeg {
         using TextureManager = ResourceManager<odfaeg::graphic::Texture, I>;
     }
 }
-#include "texture.inl"
+//#include "texture.inl"
 #endif

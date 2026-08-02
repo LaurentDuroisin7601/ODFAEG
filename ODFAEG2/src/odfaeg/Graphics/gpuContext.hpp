@@ -6,10 +6,6 @@
 #include <iostream>
 #include "pipeline.hpp"
 #include "descriptor.hpp"
-#include "image.hpp"
-#include "buffer.hpp"
-#include "vertexBuffer.hpp"
-#include "texture.hpp"
 #include "instance.hpp"
 #include "device.hpp"
 #include "../Entity/primitiveType.hpp"
@@ -17,6 +13,10 @@
 #include "blendMode.hpp"
 #include "fence.hpp"
 #include "semaphore.hpp"
+#include "image.hpp"
+#include "buffer.hpp"
+#include "vertexBuffer.hpp"
+#include "texture.hpp"
 namespace odfaeg {
     namespace graphic {
         export class GPUContext {

@@ -10,7 +10,6 @@
 #include "../Physics/boundingBox.hpp"
 #include "commandPool.hpp"
 #include "../Core/nonCopyable.hpp"
-#include "gpuContext.hpp"
 namespace odfaeg {
     namespace graphic {
 
@@ -107,5 +106,5 @@ namespace odfaeg {
         }
     }
 } // namespace sf
-#include "vertexBuffer.inl"
+//#include "vertexBuffer.inl"
 #endif
