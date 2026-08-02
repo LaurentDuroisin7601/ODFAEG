@@ -1,19 +1,17 @@
-module;
 #include <vector>
 #include <vulkan/vulkan.hpp>
-export module odfaeg.graphic.vertexBuffer;
-import odfaeg.math.transformMatrix;
-import odfaeg.entity.primitiveType;
-import odfaeg.graphic.device;
-import odfaeg.entity.vertex;
-import odfaeg.graphic.buffer;
-import odfaeg.physic.boundingBox;
-import odfaeg.graphic.commandPool;
-import odfaeg.core.nonCopyable;
+#include "../Math/transformMatrix.hpp"
+#include "../Entity/primitiveType.hpp"
+#include "device.hpp"
+#include "../Entity/vertex.hpp"
+#include "buffer.hpp"
+#include "../Physics/boundingBox.hpp"
+#include "commandPool.hpp"
+#include "../Core/nonCopyable.hpp"
 namespace odfaeg {
     namespace graphic {
 
-        export class  VertexBuffer : public core::NonCopyable {
+        class  VertexBuffer : public core::NonCopyable {
         public:
             VertexBuffer(Device& device, unsigned int nbBuffers=1);
             VertexBuffer(Device& device, entity::PrimitiveType primitiveType, unsigned int nbBuffers=1);
@@ -106,5 +104,4 @@ namespace odfaeg {
         }
     }
 } // namespace sf
-module : private;
 #include "vertexBuffer.inl"

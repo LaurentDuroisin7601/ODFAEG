@@ -1,15 +1,3 @@
-module;
-#include <vector>
-#include <vulkan/vulkan.hpp>
-#include <iostream>
-#include <odfaeg/config.hpp>
-#include "vk_mem_alloc.h"
-//import odfaeg.graphic.vertexBuffer;
-module odfaeg.graphic.vertexBuffer;
-import odfaeg.math.vec;
-import odfaeg.graphic.gpuContext;
-import odfaeg.graphic.renderTarget;
-import odfaeg.graphic.renderStates;
 namespace odfaeg {
     namespace graphic {        
         VertexBuffer::VertexBuffer(Device& device, unsigned int nbBuffers)  : /*Drawable(), */ device(device), nbBuffers(nbBuffers), m_primitiveType(entity::PrimitiveType::Points),
