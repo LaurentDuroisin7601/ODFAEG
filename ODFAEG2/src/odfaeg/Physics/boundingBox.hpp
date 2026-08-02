@@ -1,3 +1,5 @@
+#ifndef ODFAEG_BOUNDINGBOX_HPP
+#define ODFAEG_BOUNDING_BOX_HPP
 #include <vector>
 #include "../Math/vec.hpp"
 #include "../Math/transformMatrix.hpp"
@@ -120,3 +122,4 @@ namespace odfaeg {
     }
 }
 #include "boundingBox.inl"
+#endif
