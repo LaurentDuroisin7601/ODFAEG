@@ -1,6 +1,8 @@
 #ifndef ODFAEG_MODEL_HPP
 #define ODFAEG_MODEL_HPP
 #include <string>
+#include "gameObject.hpp"
+#include "../Math/vec.hpp"
 namespace odfaeg {
     namespace entity {
         class Model : public GameObject {

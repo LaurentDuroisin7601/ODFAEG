@@ -4,7 +4,6 @@
 #include <vulkan/vulkan.hpp>
 #include <iostream>
 //import odfaeg.window.window;
-export module odfaeg.window.window;
 #include "../Core/string.hpp"
 #include "../Math/vec.hpp"
 #include "windowImpl.hpp"
