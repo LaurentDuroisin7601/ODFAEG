@@ -1,3 +1,5 @@
+#ifndef ODFAEG_BONE_HPP
+#define ODFAEG_BONE_HPP
 #include <cassert>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -66,3 +68,4 @@ namespace odfaeg {
     }
 }
 #include "bone.inl"
+#endif

@@ -1,3 +1,5 @@
+#ifndef ODFAEG_ANIMATOR_HPP
+#define ODFAEG_ANIMATOR_HPP
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <vector>
@@ -30,3 +32,4 @@ namespace odfaeg {
     }
 }
 #include "animator.inl"
+#endif

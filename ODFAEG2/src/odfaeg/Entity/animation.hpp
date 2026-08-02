@@ -1,3 +1,5 @@
+#ifndef ODFAEG_ANIMATION_HPP
+#define ODFAEG_ANIMATION_HPP
 #include <cassert>
 #include <map>
 #include <assimp/Importer.hpp>
@@ -44,3 +46,4 @@ namespace odfaeg {
     }
 }
 #include "animation.inl"
+#endif

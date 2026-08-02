@@ -1,3 +1,5 @@
+#ifndef ODFAEG_ASSIMPHELPER_HPP
+#define ODFAEG_ASSIMPHLPER_HPP
 #include<assimp/vector3.h>
 #include<assimp/matrix4x4.h>
 #include<assimp/quaternion.h>
@@ -81,3 +83,4 @@ namespace odfaeg {
         };
     }
 }
+#endif

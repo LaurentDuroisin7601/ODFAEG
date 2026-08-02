@@ -1,5 +1,5 @@
 #ifndef ODFAEG_PARTICLESYSTEM_HPP
-#define ODFAEG_PARTICLESSYSTEM_HPP
+#define ODFAEG_PARTICLESYSTEM_HPP
 #include <cassert>
 #include <vector>
 #include <functional>
