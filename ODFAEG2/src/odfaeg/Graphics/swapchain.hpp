@@ -1,13 +1,12 @@
 module;
 #include <vulkan/vulkan.hpp>
 #include <cstdint>
-export module odfaeg.graphic.swapchain;
-import odfaeg.core.nonCopyable;
-import odfaeg.graphic.device;
-import odfaeg.graphic.image;
+#include "../Core/nonCopyable.hpp"
+#include "device.hpp"
+#include "image.hpp"
 namespace odfaeg {
 	namespace graphic {
-		export  class Swapchain : public core::NonCopyable{
+		class Swapchain : public core::NonCopyable{
 		public :
 			Swapchain(Device& device);
 			Swapchain(Swapchain&& swapchain) noexcept;
