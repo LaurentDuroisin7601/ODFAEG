@@ -55,3 +55,5 @@ namespace odfaeg {
 		};		
 	}
 }
+module : private;
+#include "win32Cursor.inl"

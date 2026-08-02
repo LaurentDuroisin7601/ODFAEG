@@ -1,6 +1,9 @@
 module;
 #include <vector>
+#include <algorithm>
+#include <functional>
 export module odfaeg.window.videoMode;
+import odfaeg.window.videoModeImpl;
 namespace odfaeg {
     namespace window {
         export class VideoMode
@@ -145,3 +148,5 @@ namespace odfaeg {
 
     }
 }
+module : private;
+#include "videoMode.inl"

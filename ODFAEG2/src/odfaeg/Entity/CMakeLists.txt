@@ -86,6 +86,7 @@ else()
     target_include_directories(odfaeg-entity PRIVATE ${ASSIMP_INCLUDE_DIRS})
     target_link_directories(odfaeg-entity PRIVATE ${ASSIMP_LIBRARY_DIRS})
     target_link_libraries(odfaeg-entity PRIVATE ${ASSIMP_LIBRARIES})
+    target_link_libraries(odfaeg-entity PUBLIC odfaeg-physics odfaeg-math odfaeg-core)
     target_include_directories(odfaeg-entity
             PUBLIC
             $<INSTALL_INTERFACE:include>

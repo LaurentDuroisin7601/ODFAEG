@@ -1,13 +1,15 @@
-module;
-#include <odfaeg/Window/windowHandle.hpp>
+module; 
+#include "../../../include/odfaeg/Window/windowHandle.hpp"
 #include <vulkan/vulkan.hpp>
+#include <iostream>
+//import odfaeg.window.window;
 export module odfaeg.window.window;
-import odfaeg.math.vec;
 import odfaeg.core.string;
-import odfaeg.window.iEvent;
-import odfaeg.window.videoMode;
-import odfaeg.window.cursor;
+import odfaeg.math.vec;
 import odfaeg.window.windowImpl;
+import odfaeg.window.cursor;
+import odfaeg.window.videoMode;
+import odfaeg.window.iEvent;
 namespace odfaeg {
     namespace window {
         export class Window {
@@ -278,3 +280,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "window.inl"

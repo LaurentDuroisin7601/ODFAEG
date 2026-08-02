@@ -2,13 +2,13 @@ module;
 #include <map>
 #include <functional>
 #include <memory>
+#include <vector>
 #include <iostream>
 export module odfaeg.window.action;
-
 import odfaeg.window.iEvent;
 import odfaeg.window.iKeyboard;
 import odfaeg.window.iMouse;
-
+import odfaeg.window.command;
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -161,3 +161,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "action.inl"

@@ -94,3 +94,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "cursor.inl"

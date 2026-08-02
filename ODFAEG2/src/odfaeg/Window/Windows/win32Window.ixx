@@ -1,18 +1,126 @@
 module;
+#include <windows.h>
+#include <dbt.h>
+#ifndef UNICODE
+#define UNICODE
+#endif
+#ifndef _UNICODE
+#define _UNICODE
+#endif
+#ifndef XBUTTON1
+#define XBUTTON1 0x0001
+#endif
+#ifndef XBUTTON2
+#define XBUTTON2 0x0002
+#endif
+#ifndef WM_MOUSEHWHEEL
+#define WM_MOUSEHWHEEL 0x020E
+#endif
+#ifndef MAPVK_VK_TO_VSC
+#define MAPVK_VK_TO_VSC (0)
+#endif
+#define WIN32_LEAN_AND_MEAN
+
+#ifdef _WIN32_WINDOWS
+#undef _WIN32_WINDOWS
+#endif
+#ifdef _WIN32_WINNT
+#undef _WIN32_WINNT
+#endif
+#define _WIN32_WINDOWS 0x0501
+#define _WIN32_WINNT   0x0501
+#ifdef WINNER
+#undef WINVER
+#define WINVER         0x0501
+#endif
+#include <vector>
+#include <cstring>
+#include <chrono>
+#include <iostream>
+#include <thread>
+#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_win32.h>
+#include <odfaeg/Window/windowHandle.hpp>
 #include <queue>
 #include <windows.h>
 #include <odfaeg/Window/windowHandle.hpp>
 #include <vulkan/vulkan.hpp>
 export module odfaeg.window.win32Window;
 import odfaeg.core.string;
+import odfaeg.core.utf;
 import odfaeg.math.vec;
-import odfaeg.window.win32Cursor;
 import odfaeg.window.iKeyboard;
+import odfaeg.window.iMouse;
 import odfaeg.window.iEvent;
 import odfaeg.window.windowStyle;
 import odfaeg.window.videoMode;
+import odfaeg.window.win32Cursor;
 namespace odfaeg {
     namespace window {
+        namespace
+        {
+            unsigned int               windowCount = 0; // Windows owned by ODFAEG
+            unsigned int               handleCount = 0; // All window handles
+            const wchar_t* className = L"ODFAEG_Window";
+            odfaeg::window::Win32Window* fullscreenWindow = NULL;
+
+            const GUID GUID_DEVINTERFACE_HID = { 0x4d1e55b2, 0xf16f, 0x11cf, {0x88, 0xcb, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30} };
+
+            void setProcessDpiAware()
+            {
+                // Try SetProcessDpiAwareness first
+                HINSTANCE shCoreDll = LoadLibrary(L"Shcore.dll");
+
+                if (shCoreDll)
+                {
+                    enum ProcessDpiAwareness
+                    {
+                        ProcessDpiUnaware = 0,
+                        ProcessSystemDpiAware = 1,
+                        ProcessPerMonitorDpiAware = 2
+                    };
+
+                    typedef HRESULT(WINAPI* SetProcessDpiAwarenessFuncType)(ProcessDpiAwareness);
+                    SetProcessDpiAwarenessFuncType SetProcessDpiAwarenessFunc = reinterpret_cast<SetProcessDpiAwarenessFuncType>(GetProcAddress(shCoreDll, "SetProcessDpiAwareness"));
+
+                    if (SetProcessDpiAwarenessFunc)
+                    {
+                        // We only check for E_INVALIDARG because we would get
+                        // E_ACCESSDENIED if the DPI was already set previously
+                        // and S_OK means the call was successful
+                        if (SetProcessDpiAwarenessFunc(ProcessSystemDpiAware) == E_INVALIDARG)
+                        {
+                            std::cerr << "Failed to set process DPI awareness" << std::endl;
+                        }
+                        else
+                        {
+                            FreeLibrary(shCoreDll);
+                            return;
+                        }
+                    }
+
+                    FreeLibrary(shCoreDll);
+                }
+
+                // Fall back to SetProcessDPIAware if SetProcessDpiAwareness
+                // is not available on this system
+                HINSTANCE user32Dll = LoadLibrary(L"user32.dll");
+
+                if (user32Dll)
+                {
+                    typedef BOOL(WINAPI* SetProcessDPIAwareFuncType)(void);
+                    SetProcessDPIAwareFuncType SetProcessDPIAwareFunc = reinterpret_cast<SetProcessDPIAwareFuncType>(GetProcAddress(user32Dll, "SetProcessDPIAware"));
+
+                    if (SetProcessDPIAwareFunc)
+                    {
+                        if (!SetProcessDPIAwareFunc())
+                            std::cerr << "Failed to set process DPI awareness" << std::endl;
+                    }
+
+                    FreeLibrary(user32Dll);
+                }
+            }
+        }
         export class  Win32Window  {
             
         
@@ -267,3 +375,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "win32Window.inl"

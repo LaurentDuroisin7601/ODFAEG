@@ -98,14 +98,14 @@ namespace odfaeg {
             */
             template <typename...A>
             void setCommandSigParams(std::string key, A&&... args) {
-                //std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
+                std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                 std::map<std::string, Command>::iterator it = commands.find(key);
                 if (it != commands.end())
                     it->second.setSigParams(std::forward<A>(args)...);
             }
             template <typename...A>
             void setCommandSlotParams(std::string key, A&&... args) {
-                //std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
+                std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                 std::map<std::string, Command>::iterator it = commands.find(key);
                 if (it != commands.end())
                     it->second.setSlotParams(std::forward<A>(args)...);
@@ -118,14 +118,14 @@ namespace odfaeg {
             */
             template <typename...A>
             void bindCommandSigParams(std::string key, A&&... args) {
-                //std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
+                std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                 std::map<std::string, Command>::iterator it = commands.find(key);
                 if (it != commands.end())
                     it->second.bindSigParams(std::forward<A>(args)...);
             }
             template <typename...A>
             void bindCommandSlotParams(std::string key, A&&... args) {
-                //std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
+                std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                 std::map<std::string, Command>::iterator it = commands.find(key);
                 if (it != commands.end())
                     it->second.bindSlotParams(std::forward<A>(args)...);
@@ -149,7 +149,7 @@ namespace odfaeg {
             *   \param window::IEvent : the window::IEvent to pass into the stack.
             */
             void pushEvent(IEvent event) {
-                //std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
+                std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                 std::map<std::string, Command>::iterator it;
                 for (it = commands.begin(); it != commands.end(); it++) {                    
                     Action* action = it->second.getAction();
@@ -232,14 +232,14 @@ namespace odfaeg {
                 }               
             }
             void clearEventsStack() {
-                //std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
+                std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                 std::map<std::string, Command>::iterator it;
                 for (it = commands.begin(); it != commands.end(); it++) {
                     it->second.clearEventsStack();
                 }                
             }
             void removeCommand(std::string name) {
-                //std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
+                std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                 toRemove.push_back(name);
             }   
             ~Listener() {

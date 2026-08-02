@@ -1,0 +1,44 @@
+namespace odfaeg {
+    namespace window {
+
+        ////////////////////////////////////////////////////////////
+        bool Win32Mouse::isButtonPressed(IMouse::Button button)
+        {
+            int vkey = 0;
+            switch (button)
+            {
+            case IMouse::Left:     vkey = GetSystemMetrics(SM_SWAPBUTTON) ? VK_RBUTTON : VK_LBUTTON; break;
+            case IMouse::Right:    vkey = GetSystemMetrics(SM_SWAPBUTTON) ? VK_LBUTTON : VK_RBUTTON; break;
+            case IMouse::Middle:   vkey = VK_MBUTTON;  break;
+            case IMouse::XButton1: vkey = VK_XBUTTON1; break;
+            case IMouse::XButton2: vkey = VK_XBUTTON2; break;
+            default:              vkey = 0;           break;
+            }
+
+            return (GetAsyncKeyState(vkey) & 0x8000) != 0;
+        }
+        ////////////////////////////////////////////////////////////
+        math::Vector2i Win32Mouse::getPosition()
+        {
+            POINT point;
+            GetCursorPos(&point);
+            return math::Vector2i(point.x, point.y);
+        }
+        ////////////////////////////////////////////////////////////
+        math::Vector2i Win32Mouse::getPosition(const Win32Window& relativeTo)
+        {
+            WindowHandle handle = relativeTo.getSystemHandle();
+            if (handle)
+            {
+                POINT point;
+                GetCursorPos(&point);
+                ScreenToClient((HWND)handle, &point);
+                return math::Vector2i(point.x, point.y);
+            }
+            else
+            {
+                return math::Vector2i(0, 0);
+            }
+        }
+    }
+}

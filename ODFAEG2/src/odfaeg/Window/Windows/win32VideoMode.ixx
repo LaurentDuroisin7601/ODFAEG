@@ -16,3 +16,5 @@ namespace odfaeg {
         };        
     }
 }
+module : private;
+#include "win32VideoMode.inl"

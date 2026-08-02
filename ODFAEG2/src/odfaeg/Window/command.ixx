@@ -5,6 +5,7 @@ export module odfaeg.window.command;
 import odfaeg.core.delegate;
 import odfaeg.window.action;
 import odfaeg.window.iEvent;
+import odfaeg.window.iKeyboard;
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -144,3 +145,5 @@ namespace odfaeg
         };
     }
 }
+module : private;
+#include "command.inl"
