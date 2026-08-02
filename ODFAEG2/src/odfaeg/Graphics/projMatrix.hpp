@@ -1,3 +1,5 @@
+#ifndef ODFAEG_PROJMATRIX_HPP
+#define ODFAEG_PROJMATRIX_HPP
 #include "../Math/matrix.hpp"
 #include "../Math/vec.hpp"
 /**
@@ -82,3 +84,4 @@ namespace odfaeg {
     }
 }
 #include "projMatrix.inl"
+#endif

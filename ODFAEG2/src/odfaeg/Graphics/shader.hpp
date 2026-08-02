@@ -1,3 +1,5 @@
+#ifndef ODFAEG_SHADER_HPP
+#define ODFAEG_SHADER_HPP
 #include <vulkan/vulkan.hpp>
 #include <string>
 #include <shaderc/shaderc.hpp>
@@ -187,3 +189,4 @@ namespace odfaeg{
 	}
 }
 #include "shader.inl"
+#endif

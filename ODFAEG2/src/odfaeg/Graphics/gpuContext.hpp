@@ -1,3 +1,5 @@
+#ifndef ODFAEG_GPUCONTEXT_HPP
+#define ODFAEG_GPUCONTEXT_HPP
 #include <deque>
 #include <memory>
 #include <odfaeg/config.hpp>
@@ -55,3 +57,4 @@ namespace odfaeg {
     }
 }
 #include "gpuContext.inl"
+#endif

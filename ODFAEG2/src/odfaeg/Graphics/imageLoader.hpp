@@ -1,3 +1,5 @@
+#ifndef ODFAEG_IMAGELOADER_HPP
+#define ODFAEG_IMAGELOADER_HPP
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -260,3 +262,4 @@ namespace odfaeg {
     }
 }
 #include "imageLoader.inl"
+#endif

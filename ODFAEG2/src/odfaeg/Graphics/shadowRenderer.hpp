@@ -1,3 +1,5 @@
+#ifndef ODFAEG_SHADOWRENDERER_HPP
+#define ODFAEG_SHADOWRENDERER_HPP
 #include <string>
 #include <vector>
 #include <deque>
@@ -140,4 +142,5 @@ namespace odfaeg {
     }
 }
 #include "shadowRenderer.inl"
+#endif
 

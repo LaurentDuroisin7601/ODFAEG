@@ -1,3 +1,5 @@
+#ifndef ODFAEG_SEMAPHORE_HPP
+#define ODFAEG_SEMAPHORE_HPP
 #include <vulkan/vulkan.hpp>
 #include "device.hpp"
 namespace odfaeg {
@@ -21,4 +23,5 @@ namespace odfaeg {
 	}
 }
 #include "semaphore.inl"
+#endif
 

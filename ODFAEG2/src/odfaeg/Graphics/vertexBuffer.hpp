@@ -1,3 +1,5 @@
+#ifndef ODFAEG_VERTEXBUFFER_HPP
+#define ODFAEG_VERTEXBUFFER_HPP
 #include <vector>
 #include <vulkan/vulkan.hpp>
 #include "../Math/transformMatrix.hpp"
@@ -105,3 +107,4 @@ namespace odfaeg {
     }
 } // namespace sf
 #include "vertexBuffer.inl"
+#endif

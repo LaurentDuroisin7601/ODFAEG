@@ -1,3 +1,5 @@
+#ifndef ODFAEG_TRANSFORMMATRX_HPP
+#define ODFAEG_TRANSFORMMATRIX_HPP
 #include "vec.hpp"
 #include "matrix.hpp"
 #include "maths.hpp"
@@ -96,3 +98,4 @@ namespace odfaeg {
 	}
 }
 #include "transformMatrix.inl"
+#endif

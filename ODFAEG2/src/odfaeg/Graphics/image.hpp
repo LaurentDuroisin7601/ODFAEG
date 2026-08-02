@@ -1,4 +1,5 @@
-module;
+#ifndef ODFAEG_IMAGE_HPP
+#define ODFAEG_IMAGE_HPP
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.h>
 #include "../Core/nonCopyable.hpp"
@@ -66,3 +67,4 @@ namespace odfaeg {
 	}
 }
 #include "image.inl"
+#endif

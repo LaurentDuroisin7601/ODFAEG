@@ -1,3 +1,5 @@
+#ifndef ODFAEG_ICOMPONENT_HPP
+#define ODFAEG_ICOMPONENT_HPP
 #include "../Window/listener.hpp"
 #include "../Physics/boundingBox.hpp"
 #include "../Window/iEvent.hpp"
@@ -49,3 +51,4 @@ namespace odfaeg {
         };
     }
 }
+#endif

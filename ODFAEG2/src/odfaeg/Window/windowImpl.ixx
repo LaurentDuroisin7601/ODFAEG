@@ -3,7 +3,6 @@ module;
 #include <iostream>
 #include <cstdint>
 #include "../../../include/odfaeg/Window/windowHandle.hpp"
-//import odfaeg.window.windowImpl;
 export module odfaeg.window.windowImpl;
 import odfaeg.core.clock;
 import odfaeg.window.iEvent;

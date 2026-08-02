@@ -1,4 +1,5 @@
-module;
+#ifndef ODFAEG_MORPHANIM_UPDATER_HPP
+#define ODFAEG_MORPHANIM_UPDATER_HPP
 #include <vector>
 #include <deque>
 #include <atomic>
@@ -90,3 +91,4 @@ namespace odfaeg {
     }
 }
 #include "morphAnim.hpp"
+#endif

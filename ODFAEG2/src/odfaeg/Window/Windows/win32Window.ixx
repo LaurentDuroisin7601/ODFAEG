@@ -49,11 +49,11 @@ export module odfaeg.window.win32Window;
 import odfaeg.core.string;
 import odfaeg.core.utf;
 import odfaeg.math.vec;
-/*import odfaeg.window.iKeyboard;
-import odfaeg.window.iMouse;*/
+import odfaeg.window.iKeyboard;
+import odfaeg.window.iMouse;
 import odfaeg.window.iEvent;
 import odfaeg.window.windowStyle;
-//import odfaeg.window.videoMode;
+import odfaeg.window.videoMode;
 import odfaeg.window.win32Cursor;
 namespace odfaeg {
     namespace window {

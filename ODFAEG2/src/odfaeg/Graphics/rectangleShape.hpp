@@ -1,3 +1,5 @@
+#ifndef ODFAEG_RECTANGLESHAPE_HPP
+#define ODFAEG_RECTANGLESHAPE_HPP
 #include "shape.hpp"
 #include "device.hpp"
 #include "../Math/vec.hpp"
@@ -53,3 +55,4 @@ namespace odfaeg {
 	}
 }
 #include "rectangleShape.inl"
+#endif

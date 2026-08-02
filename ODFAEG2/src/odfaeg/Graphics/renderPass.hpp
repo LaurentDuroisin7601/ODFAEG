@@ -1,3 +1,5 @@
+#ifndef ODFAEG_RNEDERPASS_HPP
+#define ODFAEG_RENDERPASS_HPP
 #include <vulkan/vulkan.hpp>
 #include "device.hpp"
 #include "../Core/nonCopyable.hpp"
@@ -24,3 +26,4 @@ namespace odfaeg {
 	}
 }
 #include "renderPass.inl"
+#endif

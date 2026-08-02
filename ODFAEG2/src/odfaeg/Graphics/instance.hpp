@@ -1,3 +1,5 @@
+#ifndef ODFAEG_INSTANCE_HPP
+#define ODFAEG_INSTANCE_HPP
 #include <vulkan/vulkan.hpp>
 #include <odfaeg/config.hpp>
 #if defined(ODFAEG_SYSTEM_WINDOWS)
@@ -54,3 +56,4 @@ namespace odfaeg {
     }
 }
 #include "instance.inl"
+#endif

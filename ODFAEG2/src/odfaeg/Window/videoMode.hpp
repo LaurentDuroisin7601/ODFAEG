@@ -1,7 +1,6 @@
 #include <vector>
 #include <algorithm>
 #include <functional>
-#include "videoModeImpl.hpp"
 namespace odfaeg {
     namespace window {
         class VideoMode
@@ -146,4 +145,4 @@ namespace odfaeg {
 
     }
 }
-#include "videoMode.inl"
+//#include "videoMode.inl"

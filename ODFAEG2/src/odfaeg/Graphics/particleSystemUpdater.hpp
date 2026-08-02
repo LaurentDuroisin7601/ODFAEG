@@ -1,4 +1,5 @@
-module;
+#ifndef ODFAEG_PARTICLESYSTEMUPDATER_HPP
+#define ODFAEG_PARTICLESYSTEMUPDATER_HPP
 #include <vector>
 #include <deque>
 #include <atomic>
@@ -101,3 +102,4 @@ namespace odfaeg {
     }
 }
 #include "particleSystem.inl"
+#endif

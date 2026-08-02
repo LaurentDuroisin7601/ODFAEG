@@ -1,3 +1,5 @@
+#ifndef ODFAEG_PIPELINE_HPP
+#define ODFAEG_PIPELINE_HPP
 #include <vulkan/vulkan.hpp>
 #include <deque>
 #include <vulkan/vulkan.hpp>
@@ -39,3 +41,4 @@ namespace odfaeg {
 }
 module : private;
 #include "pipeline.inl"
+#endif

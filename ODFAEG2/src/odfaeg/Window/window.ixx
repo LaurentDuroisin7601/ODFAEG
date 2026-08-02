@@ -6,7 +6,7 @@ module;
 export module odfaeg.window.window;
 import odfaeg.core.string;
 import odfaeg.math.vec;
-//import odfaeg.window.windowImpl;
+import odfaeg.window.windowImpl;
 import odfaeg.window.cursor;
 import odfaeg.window.videoMode;
 import odfaeg.window.iEvent;

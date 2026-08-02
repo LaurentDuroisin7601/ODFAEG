@@ -9,7 +9,7 @@ typedef odfaeg::window::Win32Mouse MouseType;
 typedef odfaeg::window::X11Mouse MouseType;
 #endif
 #include <odfaeg/config.hpp>
-#include "window.hpp"
+//#include "window.hpp"
 #include "../Math/vec.hpp"
 namespace odfaeg {
     namespace window {        
@@ -45,5 +45,5 @@ namespace odfaeg {
         };
     }
 }
-#include "iMouse.inl"
+//#include "iMouse.inl"
 #endif

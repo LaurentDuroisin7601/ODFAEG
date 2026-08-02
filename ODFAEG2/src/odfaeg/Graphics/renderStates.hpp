@@ -1,3 +1,5 @@
+#ifndef ODFAEG_RENDERSTATES_HPP
+#define ODFAEG_RENDERSTATES_HPP
 #include "blendMode.hpp"
 #include "../Math/transformMatrix.hpp"
 #include "texture.hpp"
@@ -81,3 +83,4 @@ namespace odfaeg {
 	}
 }
 #include "renderStates.inl"
+#endif

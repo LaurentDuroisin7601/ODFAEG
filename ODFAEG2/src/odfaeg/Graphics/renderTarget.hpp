@@ -1,4 +1,5 @@
-module;
+#ifndef ODFAEG_RENDERTARGET_HPP
+#define ODFAEG_RENDERTARGET_HPP
 #include <vulkan/vulkan.hpp>
 #include <set>
 #include <vector>
@@ -334,3 +335,4 @@ namespace odfaeg {
 	}
 }
 #include "renderTarget.inl"
+#endif

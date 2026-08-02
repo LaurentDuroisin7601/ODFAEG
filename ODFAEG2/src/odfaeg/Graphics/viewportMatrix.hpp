@@ -1,3 +1,5 @@
+#ifndef ODFAEG_VIEWPORTMATRIX_HPP
+#define ODFAEG_VIEWPORTMATRIX_HPP
 #include <cmath>
 #include <algorithm>
 #include "../Math/vec.hpp"
@@ -23,3 +25,4 @@ namespace odfaeg {
     }
 }
 #include "viewportMatrix.inl"
+#endif

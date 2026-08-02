@@ -1,3 +1,5 @@
+#ifndef ODFAEG_RENDERGRAPH_HPP
+#define ODFAEG_RENDERGRAPH_HPP
 #include <map>
 #include <string>
 #include <vulkan/vulkan.hpp>
@@ -46,3 +48,4 @@ namespace odfaeg {
     }
 }
 #include "renderGraph.inl"
+#endif

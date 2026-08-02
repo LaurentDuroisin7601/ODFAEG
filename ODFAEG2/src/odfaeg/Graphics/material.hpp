@@ -1,3 +1,5 @@
+#ifndef ODFAEG_MATERIAL_HPP
+#define ODFAEG_MATERIAL_HPP
 #include <deque>
 #include <array>
 #include <string>
@@ -182,3 +184,4 @@ namespace odfaeg {
 	}
 }
 #include "material.inl"
+#endif

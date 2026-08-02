@@ -1,4 +1,5 @@
-module;
+#ifndef ODFAEG_RENDERWINDOW_HPP
+#define ODFAEG_RENDERWINDOW_HPP
 #include <vulkan/vulkan.hpp>
 #include <cstdint>
 #include <odfaeg/Window/windowHandle.hpp>
@@ -106,3 +107,4 @@ namespace odfaeg {
 	}
 }
 #include "renderWindow.inl"
+#endif

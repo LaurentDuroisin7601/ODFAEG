@@ -1,3 +1,5 @@
+#ifndef ODFAEG_TEXTURE_HPP
+#define ODFAEG_TEXTURE_HPP
 #include <vulkan/vulkan.hpp>
 #include <gli.hpp>
 #include <string>
@@ -110,3 +112,4 @@ namespace odfaeg {
     }
 }
 #include "texture.inl"
+#endif

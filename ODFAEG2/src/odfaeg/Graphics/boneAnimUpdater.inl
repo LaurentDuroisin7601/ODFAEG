@@ -1,6 +1,3 @@
-//
-// Created by laurent on 09/06/2026
-module;
 #include <vector>
 #include <vulkan/vulkan.h>
 #include <string>

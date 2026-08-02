@@ -1,3 +1,5 @@
+#ifndef ODFAEG_IRENDERER_HPP
+#define ODFAEG_IRENDERER_HPP
 #include "iComponent"
 #include "../Math/vec.hpp"
 #include "Window/iEvent.hpp"
@@ -27,3 +29,4 @@ namespace odfaeg {
         };
     }
 }
+#endif

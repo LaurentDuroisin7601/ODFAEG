@@ -1,4 +1,5 @@
-module;
+#ifndef ODFAEG_SHAPE_HPP
+#define ODFAEG_SHAPE_HPP
 #include <iostream>
 #include <odfaeg/config.hpp>
 #include "renderTarget.hpp"
@@ -265,3 +266,4 @@ namespace odfaeg {
 	}
 }
 #include "shape.inl"
+#endif

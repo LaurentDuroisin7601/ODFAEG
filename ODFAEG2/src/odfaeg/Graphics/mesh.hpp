@@ -1,3 +1,5 @@
+#ifndef ODFAEG_MESH_HPP
+#define ODFAEG_MESH_HPP
 #include <memory>
 #include <vector>
 #include <deque>
@@ -50,3 +52,4 @@ namespace odfaeg {
     }
 }
 #include "mesh.inl"
+#endif

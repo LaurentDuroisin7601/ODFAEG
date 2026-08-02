@@ -1,3 +1,5 @@
+#ifndef ODFAEG_VIEWMATRIX_HPP
+#define ODFAEG_VIEWMATRIX_HPP
 #include "../Math/matrix.hpp"
 #include "../Math/vec.hpp"
 /**
@@ -59,3 +61,4 @@ namespace odfaeg {
     }
 }
 #include "viewMatrix.inl"
+#endif

@@ -1,4 +1,5 @@
-module;
+#ifndef ODFAEG_SWAPCHAIN_HPP
+#define ODFAEG_SWAPCHAIN_HPP
 #include <vulkan/vulkan.hpp>
 #include <cstdint>
 #include "../Core/nonCopyable.hpp"
@@ -34,3 +35,4 @@ namespace odfaeg {
 	}
 }
 #include "swapchain.inl"
+#endif

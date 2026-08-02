@@ -1,3 +1,5 @@
+#ifndef ODFAEG_RENDERTEXTURE_HPP
+#define ODFAEG_RENDERTEXTURE_HPP
 #include <vulkan/vulkan.hpp>
 #include <vector>
 #include <deque>
@@ -68,3 +70,4 @@ namespace odfaeg {
 	}
 }
 #include "renderTexture.inl"
+#endif

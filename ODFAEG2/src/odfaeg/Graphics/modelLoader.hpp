@@ -1,4 +1,5 @@
-module;
+#ifndef ODFAEG_MODELOADER_HPP
+#define ODFAEG_MODELOADER_HPP
 #include <cstdint>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -67,3 +68,4 @@ namespace odfaeg {
     }
 }
 #include "modelLoader.inl"
+#endif

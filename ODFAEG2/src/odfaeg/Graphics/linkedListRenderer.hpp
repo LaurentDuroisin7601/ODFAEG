@@ -1,3 +1,5 @@
+#ifndef ODFAEG_LINKEDLIST_RENDERER_HPP
+#define ODFAEG_LINKEDLIST_RENDERER_HPP
 #include <deque>
 #include <string>
 #include <odfaeg/config.hpp>
@@ -74,3 +76,4 @@ namespace odfaeg {
     }
 }
 #include "linkedListRenderer.inl"
+#endif

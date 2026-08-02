@@ -1,3 +1,5 @@
+#ifndef ODFAEG_WIDGET_HPP
+#define ODFAEG_WIDGET_HPP
 #include <vector>
 #include <memory>
 #include "iComponent.hpp"
@@ -49,3 +51,4 @@ namespace odfaeg {
         };
     }
 }
+#endif

@@ -1,7 +1,6 @@
 module;
 #include <cstdint>
 #include <odfaeg/config.hpp>
-//import odfaeg.window.cursorImpl;
 export module odfaeg.window.cursorImpl;
 import odfaeg.window.iCursorType;
 import odfaeg.math.vec;
