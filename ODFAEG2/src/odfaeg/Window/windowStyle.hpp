@@ -1,3 +1,5 @@
+#ifndef ODFAEG_WINDOWSTYLE_HPP
+#define ODFAEG_WINDOWSTYLE_HPP
 namespace odfaeg::window::Style {
 
     enum {
@@ -10,3 +12,4 @@ namespace odfaeg::window::Style {
     };
 
 }
+#endif

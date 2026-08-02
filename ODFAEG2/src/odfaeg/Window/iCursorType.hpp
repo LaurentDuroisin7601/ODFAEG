@@ -1,3 +1,5 @@
+#ifndef ODFAEG_ICURSORTYPE_HPP
+#define ODFAEG_ICURSORTYPE_HPP
 namespace odfaeg::window {
     ////////////////////////////////////////////////////////////
         /// \brief Enumeration of the native system cursor types
@@ -42,3 +44,4 @@ namespace odfaeg::window {
 		NotAllowed              ///< Action not allowed cursor
 	};	
 }
+#endif

@@ -1,4 +1,5 @@
-module;
+#ifndef ODFAEG_VIDEOMODE_IMPL_HPP
+#define ODFAEG_VIDEOMODE_IMPL_HPP
 #include <odfaeg/config.hpp>
 #include <vector>
 //import odfaeg.window.videoModeImpl;
@@ -35,3 +36,4 @@ namespace odfaeg {
     }
 }
 #include "videoModeImpl.inl"
+#endif

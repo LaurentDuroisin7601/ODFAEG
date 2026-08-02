@@ -1,3 +1,5 @@
+#ifndef ODFAEG_WIN32VIDEOMODE_HPP
+#define ODFAEG_WIN32VIDEOMODE_HPP
 #include <queue>
 #include <windows.h>
 #include <odfaeg/Window/windowHandle.hpp>
@@ -258,3 +260,4 @@ namespace odfaeg {
         };
     }
 }
+#endif

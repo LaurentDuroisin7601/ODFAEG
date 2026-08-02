@@ -1,4 +1,5 @@
-
+#ifndef ODFAEG_WIN32KEYBOARD_HPP
+#define ODFAEG_WIN32KEYBOARD_HPP
 #include <windows.h>
 #ifdef _WIN32_WINDOWS
 #undef _WIN32_WINDOWS
@@ -26,3 +27,4 @@ namespace odfaeg {
     }
 }
 #include "win32Keyboard.inl"
+#endif

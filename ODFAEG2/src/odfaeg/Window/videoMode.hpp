@@ -1,3 +1,5 @@
+#ifndef ODFAEG_VIDEOMODE_HPP
+#define ODFAEG_VIDEOMODE_HPP
 #include <vector>
 #include <algorithm>
 #include <functional>
@@ -146,3 +148,4 @@ namespace odfaeg {
     }
 }
 //#include "videoMode.inl"
+#endif

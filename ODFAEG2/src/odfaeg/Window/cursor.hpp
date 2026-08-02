@@ -1,3 +1,5 @@
+#ifndef ODFAEG_CURSOR_HPP
+#define ODFAEG_CURSOR_HPP
 #include <cstdint>
 #include "../Math/vec.hpp";
 #include "iCursorType.hpp"
@@ -93,3 +95,4 @@ namespace odfaeg {
     }
 }
 #include "cursor.inl"
+#endif

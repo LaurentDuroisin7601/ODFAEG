@@ -1,3 +1,5 @@
+#ifndef ODFAEG_CURSORIMPL_HPP
+#define ODFAEG_CURSORIMPL_HPP
 #include <cstdint>
 #include <odfaeg/config.hpp>
 #include "iCursorType.hpp";
@@ -94,3 +96,4 @@ namespace odfaeg {
     }
 }
 #include "cursorImpl.inl"
+#endif

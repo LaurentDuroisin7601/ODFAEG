@@ -1,3 +1,5 @@
+#ifndef ODFAEG_WIN32MOUSE_HPP
+#define ODFAEG_WIN32MOUSE_HPP
 #include <windows.h>
 #ifdef _WIN32_WINDOWS
 #undef _WIN32_WINDOWS
@@ -53,3 +55,4 @@ namespace odfaeg {
     }
 }
 #include "win32Mouse.inl"
+#endif

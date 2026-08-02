@@ -1,3 +1,5 @@
+#ifndef ODFAEG_WIN32CURSOR_HPP
+#define ODFAEG_WIN32CURSOR_HPP
 #include <windows.h>
 #include <cstdint>
 #include <cstring>
@@ -157,3 +159,4 @@ namespace odfaeg {
     }
 }
 #include "win32Cursor.inl"
+#endif

@@ -1,3 +1,5 @@
+#ifndef ODFAEG_IEVENT_HPP
+#define ODFAEG_IEVENT_HPP
 namespace odfaeg {
     namespace window {
         struct IEvent {
@@ -84,3 +86,4 @@ namespace odfaeg {
         };
     }
 }
+#endif

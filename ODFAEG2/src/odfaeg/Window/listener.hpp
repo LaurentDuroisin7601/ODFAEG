@@ -1,4 +1,5 @@
-module;
+#ifndef ODFAEG_LISTENER_HPP
+#define ODFAEG_LISTENER_HPP
 #include <thread>
 #include <map>
 #include <condition_variable>
@@ -260,3 +261,4 @@ namespace odfaeg {
         };
     }
 }
+#endif
