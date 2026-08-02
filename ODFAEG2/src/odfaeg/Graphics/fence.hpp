@@ -2,6 +2,7 @@
 #define ODFAEG_FENCE_HPP
 #include <vulkan/vulkan.hpp>
 #include <vector>
+#include "device.hpp"
 namespace odfaeg{
 	namespace graphic {
 		class Fence {

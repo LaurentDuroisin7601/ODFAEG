@@ -1,10 +1,10 @@
 #ifndef ODFAEG_IRENDERER_HPP
 #define ODFAEG_IRENDERER_HPP
-#include "iComponent"
+#include "iComponent.hpp"
 #include "../Math/vec.hpp"
-#include "Window/iEvent.hpp"
-#include "Window/action.hpp"
-#include "window/command.hpp"
+#include "../Window/iEvent.hpp"
+#include "../Window/action.hpp"
+#include "../Window/command.hpp"
 #include "../Core/delegate.hpp"
 namespace odfaeg {
     namespace graphic {

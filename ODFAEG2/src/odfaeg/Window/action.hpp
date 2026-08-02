@@ -4,7 +4,7 @@
 #include <functional>
 #include <memory>
 #include <vector>
-#include "command.hpp"
+//#include "command.hpp"
 #include "iKeyboard.hpp"
 #include "iMouse.hpp"
 /*
@@ -13,6 +13,7 @@
   */
 namespace odfaeg {
     namespace window {
+        class Action;        
         /**
           * \file action.h
           * \class Action

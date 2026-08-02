@@ -12,6 +12,7 @@
 #include "../core/string.hpp"
 #include "../Math/vec.hpp"
 #include "cursorImpl.hpp"
+#include <odfaeg/config.hpp>
 #if defined(ODFAEG_SYSTEM_WINDOWS)
 #include "Windows/win32Window.hpp"
 typedef odfaeg::window::Win32Window WindowImplType;
@@ -19,10 +20,6 @@ typedef odfaeg::window::Win32Window WindowImplType;
 #include "Linux/x11Window.hpp"
 typedef odfaeg::window::X11Window WindowImplType;
 #endif
-namespace
-{
-    const odfaeg::window::WindowImpl* fullscreenWindow = nullptr;
-}
 namespace odfaeg {
     namespace window {        
         class WindowImpl : public WindowImplType {

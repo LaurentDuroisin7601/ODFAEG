@@ -19,10 +19,6 @@ typedef odfaeg::window::Win32Window WindowImplType;
 import odfaeg.window.x11Window;
 typedef odfaeg::window::X11Window WindowImplType;
 #endif
-namespace
-{
-    const odfaeg::window::WindowImpl* fullscreenWindow = nullptr;
-}
 namespace odfaeg {
     namespace window {        
         export class WindowImpl : public WindowImplType {

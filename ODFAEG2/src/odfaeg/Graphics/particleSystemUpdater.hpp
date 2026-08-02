@@ -101,5 +101,5 @@ namespace odfaeg {
         };
     }
 }
-#include "particleSystem.inl"
+#include "particleSystemUpdater.inl"
 #endif

@@ -15,6 +15,7 @@
 #include <vector>
 #include <iostream>
 #include "../Core/nonCopyable.hpp"
+#include "debug.hpp"
 namespace odfaeg {
     namespace graphic {
         class Instance : public core::NonCopyable {

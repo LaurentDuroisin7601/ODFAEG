@@ -5,7 +5,7 @@
 #include "../Core/nonCopyable.hpp"
 namespace odfaeg {
 	namespace graphic {
-		export class RenderPass : public core::NonCopyable {
+		class RenderPass : public core::NonCopyable {
 		public:
 			RenderPass(Device& device);
 			RenderPass(RenderPass&& other) noexcept;

@@ -12,7 +12,7 @@
 namespace odfaeg {
     namespace graphic {
 
-        export class Device : public core::NonCopyable {
+        class Device : public core::NonCopyable {
         public:
             struct SwapChainSupportDetails {
                 VkSurfaceCapabilitiesKHR capabilities;

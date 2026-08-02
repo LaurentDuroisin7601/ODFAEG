@@ -4,7 +4,7 @@
 #include <vector>
 namespace odfaeg {
     namespace graphic {
-        export struct BlendMode
+        struct BlendMode
         {
             ////////////////////////////////////////////////////////
             /// \brief Enumeration of the blending factors
@@ -107,7 +107,7 @@ namespace odfaeg {
         /// \return True if blending modes are equal, false if they are different
         ///
         ////////////////////////////////////////////////////////////
-        export bool operator==(const BlendMode& left, const BlendMode& right);
+        bool operator==(const BlendMode& left, const BlendMode& right);
 
         ////////////////////////////////////////////////////////////
         /// \relates BlendMode
@@ -119,15 +119,15 @@ namespace odfaeg {
         /// \return True if blending modes are different, false if they are equal
         ///
         ////////////////////////////////////////////////////////////
-        export bool operator!=(const BlendMode& left, const BlendMode& right);
+        bool operator!=(const BlendMode& left, const BlendMode& right);
 
         ////////////////////////////////////////////////////////////
         // Commonly used blending modes
         ////////////////////////////////////////////////////////////
-        export extern const BlendMode BlendAlpha;
-        export extern const BlendMode BlendAdd;
-        export extern const BlendMode BlendMultiply; ///< Multiply source and dest
-        export extern const BlendMode BlendNone;     ///< Overwrite dest with source        
+        extern const BlendMode BlendAlpha;
+        extern const BlendMode BlendAdd;
+        extern const BlendMode BlendMultiply; ///< Multiply source and dest
+        extern const BlendMode BlendNone;     ///< Overwrite dest with source        
     }
 }
 #include "blendMode.inl"

@@ -18,7 +18,7 @@ namespace odfaeg {
           *
           * This class defines a view matrix, who's used to convert world coordinates into view coordinates.
           */
-        export class ViewMatrix {
+        class ViewMatrix {
         private:
             math::Matrix4f matrix4f; /**< the 3D view matrix */
             math::Matrix4f invMat4f; /**< the 3D inverssed view matrix */            

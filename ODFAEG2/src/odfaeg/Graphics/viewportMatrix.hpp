@@ -6,7 +6,7 @@
 #include "../Math/matrix.hpp"
 namespace odfaeg {
     namespace graphic {
-        export class ViewportMatrix {
+        class ViewportMatrix {
         public:
             ViewportMatrix();
             void setViewport(math::Vec3f position, math::Vec3f size);

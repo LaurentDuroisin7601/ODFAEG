@@ -1,5 +1,9 @@
+namespace
+{
+    const odfaeg::window::WindowImpl* fullscreenWindow = nullptr;
+}
 namespace odfaeg {
-    namespace window {
+    namespace window {        
         WindowImpl::WindowImpl() : WindowImplType()
         {
             m_frameTimeLimit = core::Time::zero;

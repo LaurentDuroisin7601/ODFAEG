@@ -4,7 +4,7 @@
 #include "device.hpp"
 namespace odfaeg {
 	namespace graphic {
-		export class Semaphore {
+		class Semaphore {
 		public:
 			Semaphore(Device& device);
 			void create(bool timeline = false, std::uint64_t value=0);

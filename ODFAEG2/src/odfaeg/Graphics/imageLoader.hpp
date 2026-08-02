@@ -22,7 +22,7 @@ namespace odfaeg {
         /// \brief Class for loading, manipulating and saving images
         ///
         ////////////////////////////////////////////////////////////
-        export class  ImageLoader
+        class  ImageLoader
         {
         public:
 

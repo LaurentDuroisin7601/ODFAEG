@@ -1,4 +1,3 @@
-module;
 namespace odfaeg {
 	namespace graphic {	
 		Semaphore::Semaphore(Device& device)  : device(device) {

@@ -19,7 +19,7 @@
 #include "descriptor.hpp"
 #include "commandPool.hpp"
 #include "buffer.hpp"
-#include "threadPool.hpp"
+#include "../Core/threadPool.hpp"
 #include "../Window/listener.hpp"
 namespace odfaeg {
     namespace graphic {

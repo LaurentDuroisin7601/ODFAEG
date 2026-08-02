@@ -7,7 +7,7 @@
 #include "device.hpp"
 namespace odfaeg {
 	namespace graphic {
-		export class Buffer : public core::NonCopyable {
+		class Buffer : public core::NonCopyable {
 		public :
 			Buffer(Device& device);	
 			Buffer(Buffer&& other) noexcept;

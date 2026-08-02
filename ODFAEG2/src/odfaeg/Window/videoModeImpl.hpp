@@ -13,7 +13,7 @@ typedef odfaeg::window::X11VideoMode VideoModeImplType;
 #endif
 namespace odfaeg {
     namespace window {
-        export class VideoModeImpl
+        class VideoModeImpl
         {
         public:
 
