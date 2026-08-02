@@ -121,3 +121,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "vertex.inl"

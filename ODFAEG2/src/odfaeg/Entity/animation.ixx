@@ -1,11 +1,12 @@
 module;
+#include <cassert>
 #include <map>
-#include <vector>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <string>
 #include <memory>
+#include <iostream>
 #include <glm/glm.hpp>
 export module odfaeg.entity.animation;
 import odfaeg.entity.bone;
@@ -44,3 +45,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "animation.inl"

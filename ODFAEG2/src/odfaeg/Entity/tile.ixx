@@ -5,6 +5,9 @@ import odfaeg.entity.gameObject;
 import odfaeg.math.vec;
 import odfaeg.entity.rect;
 import odfaeg.entity.color;
+import odfaeg.entity.impl;
+import odfaeg.entity.vertexArray;
+import odfaeg.entity.vertex;
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -77,3 +80,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "tile.inl"

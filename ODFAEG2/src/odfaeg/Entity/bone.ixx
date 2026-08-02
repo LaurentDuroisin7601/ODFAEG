@@ -1,17 +1,21 @@
 module;
+#include <cassert>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <vector>
 #include <string>
+#include <iostream>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/string_cast.hpp>
 export module odfaeg.entity.bone;
 import odfaeg.math.vec;
 import odfaeg.math.matrix;
 import odfaeg.math.quaternion;
 import odfaeg.entity.gameObject;
+import odfaeg.entity.assimpHelper;
 namespace odfaeg {
     namespace entity {
         export class Bone : public GameObject {
@@ -63,3 +67,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "bone.inl"

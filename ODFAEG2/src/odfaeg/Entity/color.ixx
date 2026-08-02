@@ -1,5 +1,6 @@
 module;
 #include <cstdint>
+#include <algorithm>
 export module odfaeg.entity.color;
 namespace odfaeg {
 	namespace entity {
@@ -191,3 +192,5 @@ namespace odfaeg {
         export Color& operator *=(Color& left, const Color& right);
 	}
 }
+module : private;
+#include "color.inl"

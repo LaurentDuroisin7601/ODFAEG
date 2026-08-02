@@ -1,5 +1,9 @@
 module;
+#include <cassert>
+#include <vector>
 #include <functional>
+#include <iostream>
+#include <ostream>
 export module odfaeg.entity.particleSystem;
 import odfaeg.entity.particle;
 import odfaeg.entity.emittors;
@@ -9,9 +13,17 @@ import odfaeg.entity.rect;
 import odfaeg.entity.vertex;
 import odfaeg.entity.vertexArray;
 import odfaeg.math.vec;
-
+import odfaeg.entity.rect;
+import odfaeg.math.vec;
 namespace odfaeg {
     namespace entity {
+        namespace
+        {
+            FloatRect getFullRect()
+            {
+                return FloatRect(0.f, 0.f, 1.f, 1.f);
+            }
+        } // namespa
         template <typename T>
         concept Universal = std::is_same_v<T, UniversalEmittor>;
         export class ParticleSystem : public GameObject {
@@ -58,3 +70,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "particleSystem.inl"

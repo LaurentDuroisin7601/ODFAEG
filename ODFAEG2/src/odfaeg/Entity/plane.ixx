@@ -1,9 +1,13 @@
 module;
+#include <utility>
 #include <string>
 export module odfaeg.entity.plane;
 import odfaeg.entity.gameObject;
 import odfaeg.entity.rect;
 import odfaeg.math.vec;
+import odfaeg.entity.vertex;
+import odfaeg.entity.vertexArray;
+import odfaeg.entity.primitiveType
 namespace odfaeg {
     namespace entity {
         export class Plane : public GameObject {
@@ -17,4 +21,6 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "plane.inl"
 

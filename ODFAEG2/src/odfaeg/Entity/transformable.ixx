@@ -252,4 +252,6 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "transformable.inl"
 

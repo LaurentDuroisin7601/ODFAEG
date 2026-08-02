@@ -1,10 +1,12 @@
 module;
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
-#include <assimp/postprocess.h>
 #include <vector>
 #include <string>
+#include <odfaeg/config.hpp>
+#include <iostream>
 #include <glm/glm.hpp>
+#include <glm/gtx/string_cast.hpp>
 export module odfaeg.entity.animator;
 import odfaeg.entity.animation;
 import odfaeg.math.matrix;
@@ -31,3 +33,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "animator.inl"

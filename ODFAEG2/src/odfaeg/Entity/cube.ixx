@@ -5,6 +5,8 @@ import odfaeg.entity.gameObject;
 import odfaeg.entity.color;
 import odfaeg.entity.rect;
 import odfaeg.math.vec;
+import odfaeg.entity.vertexArray;
+import odfaeg.entity.vertex;
 namespace odfaeg {
     namespace entity {
         export class Cube : public GameObject {
@@ -26,3 +28,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "cube.inl"

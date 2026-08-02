@@ -1,12 +1,11 @@
 module;
-#include <vulkan/vulkan.hpp>
-#include <string>
-#include <vector>
-#include <memory>
+#include <algorithm>
+#include <iostream>
 #include <map>
+#include <memory>
 #include <deque>
-#include <glm/glm.hpp>
 export module odfaeg.entity.gameObject;
+import odfaeg.entity.impl;
 import odfaeg.entity.vertexArray;
 import odfaeg.entity.entity;
 import odfaeg.entity.transformable;
@@ -224,3 +223,5 @@ namespace odfaeg {
 		};
 	}
 }
+module : private;
+#include "gameObject.inl"

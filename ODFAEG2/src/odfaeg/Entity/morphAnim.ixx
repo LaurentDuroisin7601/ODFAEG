@@ -1,5 +1,6 @@
 module;
 #include <vector>
+#include <iostream>
 export module odfaeg.entity.morphAnim;
 import odfaeg.entity.gameObject;
 import odfaeg.math.vec;
@@ -18,3 +19,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "morphAnim.inl"

@@ -40,3 +40,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "vertexArray.inl"
