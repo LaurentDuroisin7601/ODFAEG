@@ -1,5 +1,6 @@
 module;
 #include <vulkan/vulkan.hpp>
+#include <vector>
 export module odfaeg.graphic.frameBuffer;
 import odfaeg.graphic.device;
 import odfaeg.graphic.image;
@@ -23,3 +24,5 @@ namespace odfaeg {
 		};
 	}
 }
+module : private;
+#include "fence.hpp"

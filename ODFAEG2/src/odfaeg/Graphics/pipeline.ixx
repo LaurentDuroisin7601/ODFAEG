@@ -1,7 +1,10 @@
 module;
-#include <deque>
-#include <memory>
 #include <vulkan/vulkan.hpp>
+#include <deque>
+#include <vulkan/vulkan.hpp>
+#include <odfaeg/config.hpp>
+#include <iostream>
+#include <memory>
 export module odfaeg.graphic.pipeline;
 import odfaeg.core.nonCopyable;
 import odfaeg.graphic.device;
@@ -10,6 +13,7 @@ import odfaeg.entity.primitiveType;
 import odfaeg.graphic.descriptor;
 import odfaeg.graphic.blendMode;
 import odfaeg.graphic.renderPass;
+import odfaeg.graphic.vertexBuffer;
 namespace odfaeg {
 	namespace graphic {
 		export class Pipeline : public core::NonCopyable {
@@ -35,3 +39,5 @@ namespace odfaeg {
 		};
 	}
 }
+module : private;
+#include "pipeline.inl"

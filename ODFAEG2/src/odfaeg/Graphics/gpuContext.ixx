@@ -1,6 +1,8 @@
 module;
 #include <deque>
 #include <memory>
+#include <odfaeg/config.hpp>
+#include <iostream>
 export module odfaeg.graphic.gpuContext;
 import odfaeg.graphic.pipeline;
 import odfaeg.graphic.descriptor;
@@ -54,3 +56,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "gpuContext.inl"

@@ -3,6 +3,8 @@ module;
 #include <vulkan/vulkan.hpp>
 #include <vector>
 #include <memory>
+#include <odfaeg/config.hpp>
+#include <iostream>
 export module odfaeg.graphic.descriptor;
 import odfaeg.graphic.buffer;
 import odfaeg.graphic.image;
@@ -73,3 +75,5 @@ namespace odfaeg {
 		};
 	}
 }
+module : private;
+#include "descriptor.inl"

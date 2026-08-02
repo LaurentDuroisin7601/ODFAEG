@@ -1,6 +1,17 @@
 module;
-#include <vector>
 #include <vulkan/vulkan.hpp>
+#include <odfaeg/config.hpp>
+#if defined(ODFAEG_SYSTEM_WINDOWS)
+#include <windows.h>
+#include <vulkan/vulkan_win32.h>
+#else if defined(ODFAEG_SYSTEM_LINUX)
+#include <X11/Xlib.h>
+#include <vulkan/vulkan_xlib.h>
+#endif
+#include <set>
+#include <algorithm>
+#include <iostream>
+#include <vector>
 #include <iostream>
 export module odfaeg.graphic.instance;
 import odfaeg.core.nonCopyable;
@@ -44,3 +55,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "instance.inl"

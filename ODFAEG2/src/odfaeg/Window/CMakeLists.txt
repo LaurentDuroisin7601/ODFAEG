@@ -3,7 +3,8 @@ set(SRCROOT ${PROJECT_SOURCE_DIR}/src/odfaeg/Window)
 set(INCROOT ${PROJECT_SOURCE_DIR}/include/odfaeg/Window)
 
 #file(GLOB_RECURSE SRC CONFIGURE_DEPENDS "${SRCROOT}/*.cpp")
-file(GLOB_RECURSE HEADERS_COMMON CONFIGURE_DEPENDS "${INCROOT}/*.hpp")
+file(GLOB_RECURSE HEADERS_COMMON
+ CONFIGURE_DEPENDS "${INCROOT}/*.hpp")
 
 add_library(odfaeg-window STATIC)
 target_sources(odfaeg-window  

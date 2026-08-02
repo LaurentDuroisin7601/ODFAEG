@@ -83,3 +83,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "projMatrix.inl"

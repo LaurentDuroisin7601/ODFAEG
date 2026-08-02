@@ -54,3 +54,5 @@ namespace odfaeg {
         };		
 	}
 }
+module : private;
+#include "rectangleShape.inl"

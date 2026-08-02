@@ -4,10 +4,15 @@ module;
 #include <odfaeg/config.hpp>
 #include <condition_variable>
 #include <memory>
+#include <stdexcept>
+#include <vulkan/vulkan.hpp>
+#include "vk_mem_alloc.h"
+#include "odfaeg/config.hpp"
 export module odfaeg.graphic.linkedListRenderer;
 import odfaeg.graphic.iRenderer;
 import odfaeg.graphic.renderTarget;
 import odfaeg.entity.primitiveType;
+import odfaeg.entity.vertex;
 import odfaeg.graphic.renderStates;
 import odfaeg.graphic.descriptor;
 import odfaeg.graphic.pipeline;
@@ -70,3 +75,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "linkedListRenderer.inl"

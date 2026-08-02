@@ -2,10 +2,13 @@ module;
 #include <vulkan/vulkan.hpp>
 #include <optional>
 #include <vector>
+#include <set>
 #include <vk_mem_alloc.h>
+#include <iostream>
 export module odfaeg.graphic.device;
 import odfaeg.graphic.instance;
 import odfaeg.core.nonCopyable;
+import odfaeg.graphic.debug;
 namespace odfaeg {
     namespace graphic {
 
@@ -63,3 +66,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "device.hpp"

@@ -1,10 +1,3 @@
-module;
-#include <iostream>
-#include <vulkan/vulkan.hpp>
-#include <vk_mem_alloc.h>
-//import odfaeg.graphic.buffer;
-module odfaeg.graphic.buffer;
-import odfaeg.graphic.device;
 namespace odfaeg {
 	namespace graphic {
 		Buffer::Buffer(Device& device) : allocator(device.getAllocator()) {	
@@ -97,3 +90,5 @@ namespace odfaeg {
 		}
 	}
 }
+module : private;
+#include "buffer.inl"

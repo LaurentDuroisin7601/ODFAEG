@@ -66,3 +66,5 @@ namespace odfaeg {
 		}; 
 	}
 }
+module : private;
+#include "image.inl"

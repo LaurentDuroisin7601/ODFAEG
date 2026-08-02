@@ -16,3 +16,5 @@ export namespace odfaeg {
         void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
     }
 }
+module : private;
+#include "debug.inl"

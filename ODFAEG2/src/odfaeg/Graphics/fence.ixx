@@ -20,3 +20,5 @@ namespace odfaeg{
 		};
 	}
 }
+module : private;
+#include "fence.inl"

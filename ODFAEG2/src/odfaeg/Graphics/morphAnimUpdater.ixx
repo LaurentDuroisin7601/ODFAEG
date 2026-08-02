@@ -3,6 +3,11 @@ module;
 #include <deque>
 #include <atomic>
 #include <condition_variable>
+#include <stdexcept>
+#include <odfaeg/config.hpp>
+#include <vulkan/vulkan_core.h>
+#include <iostream>
+#include "vk_mem_alloc.h"
 export module odfaeg.graphic.morphAnimUpdater;
 import odfaeg.entity.morphAnim;
 import odfaeg.graphic.buffer;
@@ -11,6 +16,11 @@ import odfaeg.graphic.shader;
 import odfaeg.graphic.commandPool;
 import odfaeg.core.timer;
 import odfaeg.math.vec;
+import odfaeg.graphic.descriptor;
+import odfaeg.graphic.gpuContext;
+import odfaeg.graphic.device;
+import odfaeg.entity.gameObject;
+import odfaeg.entity.primitiveType;
 namespace odfaeg {
     namespace graphic {
         export class MorphAnimUpdater : public core::Timer {
@@ -80,3 +90,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "morphAnim.hpp"

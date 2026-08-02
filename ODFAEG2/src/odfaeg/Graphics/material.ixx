@@ -3,6 +3,12 @@ module;
 #include <array>
 #include <string>
 #include <vector>
+#include <odfaeg/config.hpp>
+#include <condition_variable>
+#include <memory>
+#include <stdexcept>
+#include <vulkan/vulkan.hpp>
+#include "vk_mem_alloc.h"
 export module odfaeg.graphic.material;
 import odfaeg.graphic.texture;
 import odfaeg.entity.color;
@@ -177,3 +183,5 @@ namespace odfaeg {
 		};
 	}
 }
+module : private;
+#include "material.inl"

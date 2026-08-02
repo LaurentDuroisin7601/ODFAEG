@@ -4,6 +4,17 @@ module;
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
+#include <deque>
+#include <entt.hpp>
+#include <stdexcept>
+#include <vulkan/vulkan.h>
+#include <vk_mem_alloc.h>
+#include <mutex>
+#include <condition_variable>
+#include <future>
+#include <iostream>
+#include <odfaeg/config.hpp>
+#include "vk_mem_alloc.h"
 export module odfaeg.graphic.particleSystemUpdater;
 import odfaeg.entity.particleSystem;
 import odfaeg.entity.particle;
@@ -20,6 +31,12 @@ import odfaeg.entity.vertex;
 import odfaeg.entity.emittors;
 import odfaeg.graphic.camera;
 import odfaeg.math.vec;
+import odfaeg.graphic.gpuContext;
+import odfaeg.graphic.descriptor;
+import odfaeg.entity.primitiveType;
+import odfaeg.entity.emittors;
+import odfaeg.graphic.device;
+import odfaeg.core.clock;
 namespace odfaeg {
     namespace graphic {
         export class ParticleSystemUpdater : public core::Timer {
@@ -84,3 +101,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "particleSystem.inl"

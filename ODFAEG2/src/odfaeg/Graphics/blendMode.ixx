@@ -1,4 +1,5 @@
 module;
+#include <odfaeg/config.hpp>
 #include <vector>
 export module odfaeg.graphic.blendMode;
 namespace odfaeg {
@@ -129,3 +130,5 @@ namespace odfaeg {
         export extern const BlendMode BlendNone;     ///< Overwrite dest with source        
     }
 }
+module : private;
+#include "blendMode.inl"

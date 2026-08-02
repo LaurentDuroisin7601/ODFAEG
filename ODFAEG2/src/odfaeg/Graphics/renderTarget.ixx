@@ -332,3 +332,5 @@ namespace odfaeg {
         }
 	}
 }
+module : private;
+#include "renderTarget.inl"

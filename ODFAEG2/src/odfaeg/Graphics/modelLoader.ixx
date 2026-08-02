@@ -5,6 +5,15 @@ module;
 #include <vector>
 #include <deque>
 #include <atomic>
+#include <cassert>
+#include <filesystem>
+#include <iostream>
+#include <assimp/postprocess.h>
+#include <odfaeg/config.hpp>
+#include <vector>
+#include <vulkan/vulkan_core.h>
+#include <vk_mem_alloc.h>
+#include <glm/gtx/string_cast.hpp>
 export module odfaeg.graphic.modelLoader;
 import odfaeg.graphic.model;
 import odfaeg.graphic.device;
@@ -22,6 +31,11 @@ import odfaeg.core.clock;
 import odfaeg.graphic.material;
 import odfaeg.entity.vertexArray;
 import odfaeg.entity.gameObject;
+import odfaeg.entity.assimpHelper;
+import odfaeg.math.transformMatrix;
+import odfaeg.physic.boundingBox;
+import odfaeg.entity.color;
+import odfaeg.entity.primitiveType;
 namespace odfaeg {
     namespace graphic {
         export class ModelLoader {
@@ -53,3 +67,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "modelLoader.inl"

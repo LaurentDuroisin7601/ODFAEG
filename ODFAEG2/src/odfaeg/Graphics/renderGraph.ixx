@@ -1,6 +1,9 @@
 module;
 #include <map>
 #include <string>
+#include <vulkan/vulkan.hpp>
+#include <map>
+#include <iostream>
 export module odfaeg.graphic.renderGraph;
 import odfaeg.graphic.iComponent;
 import odfaeg.graphic.iRenderer;
@@ -44,3 +47,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "renderGraph.inl"

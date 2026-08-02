@@ -1,4 +1,6 @@
 module;
+#include <iostream>
+#include <ostream>
 #include <vulkan/vulkan.hpp>
 export module odfaeg.graphic.commandPool;
 import odfaeg.graphic.device;
@@ -30,3 +32,5 @@ namespace odfaeg {
 		};
 	}
 }
+module : private;
+#include "commandPool.inl"

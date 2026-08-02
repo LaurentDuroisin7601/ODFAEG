@@ -8,6 +8,7 @@ import odfaeg.entity.gameObject;
 import odfaeg.graphic.material;
 import odfaeg.graphic.vertexBuffer;
 import odfaeg.graphic.texture;
+import odfaeg.graphic.gpuContext;
 namespace odfaeg {
     namespace graphic {
         export class Mesh {
@@ -50,3 +51,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "mesh.inl"

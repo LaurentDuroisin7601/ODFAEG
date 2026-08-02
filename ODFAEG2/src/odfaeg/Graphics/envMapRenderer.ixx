@@ -4,18 +4,29 @@ module;
 #include <string>
 #include <odfaeg/config.hpp>
 #include <deque>
+#include <vulkan/vulkan.hpp>
+#include "vk_mem_alloc.h"
+import odfaeg.core.delegate;
 import odfaeg.core.threadPool;
-import odfaeg.math.matrix;
 import odfaeg.math.vec;
-import odfaeg.window.listener;
+import odfaeg.math.matrix;
+import odfaeg.window.command;
+import odfaeg.graphic.gpuContext;
 import odfaeg.graphic.renderTarget;
+import odfaeg.physic.boundingBox;
 import odfaeg.graphic.renderTexture;
+import odfaeg.graphic.texture;
+import odfaeg.graphic.device;
+import odfaeg.entity.vertex;
+import odfaeg.entity.gameObject;
+import odfaeg.graphic.descriptor;
+import odfaeg.graphic.blendMode;
+import odfaeg.entity.primitiveType;
+import odfaeg.graphic.camera;
+module odfaeg.graphic.envMapRenderer;
 import odfaeg.graphic.mesh;
-import odfaeg.graphic.vertexBuffer;
-import odfaeg.graphic.shader;
-import odfaeg.graphic.commandPool;
 import odfaeg.graphic.buffer;
-import odfaeg.graphic.image;
+import odfaeg.graphic.renderStates;
 export module odfaeg.graphic.envMapRenderer;
 namespace odfaeg {
     namespace graphic {
@@ -95,3 +106,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "envMapRenderer.inl"

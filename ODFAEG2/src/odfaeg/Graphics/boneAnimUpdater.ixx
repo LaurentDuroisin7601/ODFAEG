@@ -3,6 +3,16 @@ module;
 #include <deque>
 #include <atomic>
 #include <condition_variable>
+#include <vector>
+#include <vulkan/vulkan.h>
+#include <string>
+#include <stdexcept>
+#include "odfaeg/config.hpp"
+#include <iostream>
+#include <glm/glm.hpp>
+#include <glm/gtx/string_cast.hpp>
+#include <condition_variable>
+#include "vk_mem_alloc.h"
 export module odfaeg.graphic.boneAnimUpdater;
 import odfaeg.entity.animator;
 import odfaeg.graphic.buffer;
@@ -11,6 +21,12 @@ import odfaeg.math.vec;
 import odfaeg.graphic.commandPool;
 import odfaeg.graphic.shader;
 import odfaeg.graphic.vertexBuffer;
+import odfaeg.graphic.gpuContext;
+import odfaeg.graphic.descriptor;
+import odfaeg.math.matrix;
+import odfaeg.graphic.device;
+import odfaeg.entity.vertex;
+import odfaeg.entity.primitiveType;
 // Created by laurent on 09/06/2026.
 //
 namespace odfaeg {
@@ -71,5 +87,7 @@ namespace odfaeg {
         };
     } // graphic
 } // odfaeg
+module : private;
+#include "boneAnimUpdater.inl"
 
 

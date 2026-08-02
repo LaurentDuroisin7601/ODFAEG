@@ -4,6 +4,10 @@ import odfaeg.graphic.projMatrix;
 import odfaeg.graphic.viewMatrix;
 import odfaeg.physic.boundingBox;
 import odfaeg.math.vec;
+import odfaeg.math.transformMatrix;
+import odfaeg.math.vec;
+import odfaeg.math.maths;
+import odfaeg.math.computer;
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -223,3 +227,5 @@ namespace odfaeg {
         };
     }
 }
+module : private;
+#include "camera.inl"

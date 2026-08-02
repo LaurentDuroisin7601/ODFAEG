@@ -1,18 +1,3 @@
-module;
-#include <stdexcept>
-#include <vector>
-#include <odfaeg/config.hpp>
-#include <vulkan/vulkan_core.h>
-#include <iostream>
-#include <condition_variable>
-#include "vk_mem_alloc.h"
-//import odfaeg.graphic.morphAnimUpdater;
-module odfaeg.graphic.morphAnimUpdater;
-import odfaeg.graphic.descriptor;
-import odfaeg.graphic.gpuContext;
-import odfaeg.graphic.device;
-import odfaeg.entity.gameObject;
-import odfaeg.entity.primitiveType;
 namespace odfaeg {
     namespace graphic {
         MorphAnimUpdater& MorphAnimUpdater::instance(std::condition_variable& cv, std::mutex& mtx) {

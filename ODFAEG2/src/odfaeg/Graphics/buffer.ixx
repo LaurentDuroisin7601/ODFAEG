@@ -1,4 +1,5 @@
 module;
+#include <iostream>
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.h>
 export module odfaeg.graphic.buffer;
@@ -33,3 +34,5 @@ namespace odfaeg {
 		}
 	}
 }
+module : private;
+#include "buffer.inl"
