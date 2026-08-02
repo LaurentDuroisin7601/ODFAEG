@@ -1,30 +1,3 @@
-module;
-#include <deque>
-#include <vulkan/vulkan.hpp>
-#include <vk_mem_alloc.h>
-#include "../../../include/odfaeg/config.hpp"
-#include <iostream>
-#include <vector>
-#include <odfaeg/config.hpp>
-#include <mutex>
-//import odfaeg.graphic.renderTarget;
-module odfaeg.graphic.renderTarget;
-import odfaeg.core.utilities;
-import odfaeg.graphic.material;
-import odfaeg.entity.entity;
-import odfaeg.graphic.viewportMatrix;
-import odfaeg.math.vec;
-import odfaeg.physic.boundingBox;
-import odfaeg.entity.vertex;
-import odfaeg.graphic.texture;
-import odfaeg.graphic.gpuContext;
-import odfaeg.graphic.particleSystemUpdater;
-import odfaeg.graphic.morphAnimUpdater;
-import odfaeg.graphic.boneAnimUpdater;
-import odfaeg.graphic.renderStates;
-import odfaeg.graphic.blendMode;
-import odfaeg.entity.gameObject;
-import odfaeg.entity.vertexArray;
 namespace odfaeg {
 	namespace graphic {
 

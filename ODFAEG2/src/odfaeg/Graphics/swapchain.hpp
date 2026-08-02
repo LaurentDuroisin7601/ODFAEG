@@ -33,5 +33,4 @@ namespace odfaeg {
 		};
 	}
 }
-module : private;
 #include "swapchain.inl"

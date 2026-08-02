@@ -1,7 +1,4 @@
 module;
-#include <vulkan/vulkan.hpp>
-//import odfaeg.graphic.semaphore;
-module odfaeg.graphic.semaphore;
 namespace odfaeg {
 	namespace graphic {	
 		Semaphore::Semaphore(Device& device)  : device(device) {

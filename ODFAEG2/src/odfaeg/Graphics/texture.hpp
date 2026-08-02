@@ -1,20 +1,18 @@
-module;
 #include <vulkan/vulkan.hpp>
 #include <gli.hpp>
 #include <string>
 #include <vector>
 #include <deque>
-export module odfaeg.graphic.texture;
-import odfaeg.graphic.image;
-import odfaeg.graphic.device;
-import odfaeg.math.vec;
-import odfaeg.graphic.imageLoader;
-import odfaeg.entity.rect;
-import odfaeg.graphic.commandPool;
-import odfaeg.core.nonCopyable;
-import odfaeg.core.resourceManager;
-import odfaeg.graphic.buffer;
-import odfaeg.graphic.gpuContext;
+#include "image.hpp"
+#include "device.hpp"
+#include "../Math/vec.hpp"
+#include "imageLoader.hpp"
+#include "rect.hpp"
+#include "commandPool.hpp"
+#include "../Core/nonCopyable.hpp"
+#include "../Core/resourceManager.hpp"
+#include "buffer.hpp"
+#include "gpuContext.hpp"
 namespace
 {
     std::mutex idMutex;
@@ -105,11 +103,10 @@ namespace odfaeg {
 		};         
 	}    
 }
-export namespace odfaeg {
+namespace odfaeg {
     namespace core {
         template <typename I=std::string>
         using TextureManager = ResourceManager<odfaeg::graphic::Texture, I>;
     }
 }
-module : private;
 #include "texture.inl"
