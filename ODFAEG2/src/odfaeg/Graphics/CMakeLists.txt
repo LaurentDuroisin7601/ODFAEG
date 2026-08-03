@@ -172,8 +172,7 @@ if(ODFAEG_USE_MODULES)
 	)
 	install(
 			TARGETS odfaeg-graphics-mod	
-			vma
-			meshoptimizer
+			vma			
 			EXPORT odfaeg-targets
 			FILE_SET cxx_modules DESTINATION share/odfaeg/modules/Graphics
 	)
@@ -349,6 +348,24 @@ else()
 			$<INSTALL_INTERFACE:include>
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
 	)	
+	# Installer la lib statique
+	install(
+		TARGETS odfaeg-graphics
+		EXPORT odfaeg-targets		
+		ARCHIVE DESTINATION lib
+		FILE_SET HEADERS DESTINATION include/odfaeg/Graphics
+	)
+	install(
+        TARGETS vma
+        EXPORT odfaeg-targets
+        ARCHIVE DESTINATION lib
+    )
+	# Installer les headers publics
+	install(
+		DIRECTORY ${SRCROOT}/
+		DESTINATION include/odfaeg/Graphics
+		FILES_MATCHING PATTERN "*.hpp" PATTERN "*.inl"
+	)
 endif()
 
 

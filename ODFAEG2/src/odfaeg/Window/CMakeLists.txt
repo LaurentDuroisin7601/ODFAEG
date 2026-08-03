@@ -168,7 +168,7 @@ elseif(WIN32)
                 )
         else()
                 target_sources(odfaeg-window
-                PUBLIC  
+                PRIVATE 
                         ${SRCROOT}/win.hpp   
                         ${SRCROOT}/iCursorType.hpp	
                         ${SRCROOT}/iEvent.hpp	
@@ -227,17 +227,12 @@ elseif(WIN32)
                         ${SRCROOT}/command.cpp
                 )
                 target_include_directories(odfaeg-window
-                                PUBLIC
-                                $<INSTALL_INTERFACE:include>
-                                $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-                )
-                target_include_directories(odfaeg-window PRIVATE ${PROJECT_SOURCE_DIR}/external)
-                target_include_directories(odfaeg-window
-                INTERFACE
-                        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
-                        $<BUILD_INTERFACE:${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include/>
-                        $<INSTALL_INTERFACE:include>
-                )
+			PUBLIC
+			$<INSTALL_INTERFACE:include>
+			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+	        )	
+                #target_include_directories(odfaeg-window PRIVATE ${PROJECT_SOURCE_DIR}/external)
+                
                 #set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH FALSE)
                 find_package(PkgConfig REQUIRED MODULE)
                 #find_package(Vulkan REQUIRED)
@@ -246,6 +241,19 @@ elseif(WIN32)
                 #link_directories(${VULKAN_LIBRARY_DIRS})
                 target_link_libraries(odfaeg-window PRIVATE ${VULKAN_LIBRAIRIES})
                 target_link_libraries(odfaeg-window PUBLIC odfaeg-physics odfaeg-entity odfaeg-math odfaeg-core)
+                # Installer la lib statique
+                install(
+                        TARGETS odfaeg-window
+                        EXPORT odfaeg-targets
+                        ARCHIVE DESTINATION lib
+                        FILE_SET HEADERS DESTINATION include/odfaeg/Window
+                )
+                # Installer les headers publics
+                install(
+                        DIRECTORY ${SRCROOT}/
+                        DESTINATION include/odfaeg/Window
+                        FILES_MATCHING PATTERN "*.hpp" PATTERN "*.inl"
+                )
         endif()
 endif()
 

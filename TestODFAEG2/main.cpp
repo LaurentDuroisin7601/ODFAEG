@@ -47,12 +47,17 @@ import odfaeg.core.delegate;
 import odfaeg.graphic.renderGraph;
 import odfaeg.graphic.componentManager;
 import odfaeg.graphic.iComponent;
-import odfaeg.graphic.renderTexture;
+import odfaeg.graphic.renderTexture;*/
+#include "odfaeg/Core/core.hpp"
+#include "odfaeg/Math/math.hpp"
+#include "odfaeg/Entity/ent.hpp"
+#include "odfaeg/Window/win.hpp"
+#include "odfaeg/Graphics/graphics.hpp"
 using namespace odfaeg::core;
 using namespace odfaeg::entity;
 using namespace odfaeg::window;
 using namespace odfaeg::graphic;
-using namespace odfaeg::math;*/
+using namespace odfaeg::math;
 
 enum TextureNames {
 	WOOD
