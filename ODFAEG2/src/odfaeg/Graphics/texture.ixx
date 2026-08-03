@@ -14,7 +14,6 @@ import odfaeg.graphic.commandPool;
 import odfaeg.core.nonCopyable;
 import odfaeg.core.resourceManager;
 import odfaeg.graphic.buffer;
-import odfaeg.graphic.gpuContext;
 namespace
 {
     std::mutex idMutex;
@@ -111,5 +110,5 @@ export namespace odfaeg {
         using TextureManager = ResourceManager<odfaeg::graphic::Texture, I>;
     }
 }
-module : private;
-#include "texture.inl"
+/*module : private;
+#include "texture.inl"*/

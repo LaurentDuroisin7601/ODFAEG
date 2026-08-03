@@ -10,7 +10,6 @@ import odfaeg.graphic.buffer;
 import odfaeg.physic.boundingBox;
 import odfaeg.graphic.commandPool;
 import odfaeg.core.nonCopyable;
-import ofaeg.graphic.gpuContext;
 namespace odfaeg {
     namespace graphic {
 
@@ -107,5 +106,5 @@ namespace odfaeg {
         }
     }
 } // namespace sf
-module : private;
-#include "vertexBuffer.inl"
+/*module : private;
+#include "vertexBuffer.inl"*/
