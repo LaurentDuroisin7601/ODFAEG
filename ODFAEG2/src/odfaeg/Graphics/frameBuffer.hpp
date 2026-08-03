@@ -24,5 +24,5 @@ namespace odfaeg {
 		};
 	}
 }
-#include "fence.hpp"
+#include "frameBuffer.inl"
 #endif
