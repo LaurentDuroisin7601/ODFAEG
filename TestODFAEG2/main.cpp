@@ -257,6 +257,6 @@ int main() {
 			clock.restart();
 		}     
 	}
-	vkDestroyDescriptorPool(ctx.getDevice().getDevice(), &imguiDescriptorPool);
+	vkDestroyDescriptorPool(ctx.getDevice().getDevice(), imguiDescriptorPool, nullptr);
 	return 0;
 }

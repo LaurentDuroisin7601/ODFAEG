@@ -348,6 +348,31 @@ else()
 			$<INSTALL_INTERFACE:include>
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
 	)	
+	target_include_directories(odfaeg-graphics
+    PUBLIC
+        $<INSTALL_INTERFACE:include/odfaeg/external/vma>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/vma>
+    )
+	target_include_directories(odfaeg-graphics
+    PUBLIC
+        $<INSTALL_INTERFACE:include/odfaeg/external/gli>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/gli>
+    )
+	target_include_directories(odfaeg-graphics
+    PUBLIC
+        $<INSTALL_INTERFACE:include/odfaeg/external/stb>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/stb>
+    )
+	target_include_directories(odfaeg-graphics
+    PUBLIC
+        $<INSTALL_INTERFACE:include/odfaeg/external/stb>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/stb>
+    )
+	target_include_directories(odfaeg-graphics
+    PUBLIC
+        $<INSTALL_INTERFACE:include/odfaeg/external/entt>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/entt>
+    )
 	# Installer la lib statique
 	install(
 		TARGETS odfaeg-graphics

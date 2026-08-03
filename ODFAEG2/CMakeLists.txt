@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28.0)
-option(ODFAEG_USE_MODULES "Use C++20 modules instead of includes" ON)
+option(ODFAEG_USE_MODULES "Use C++20 modules instead of includes" OFF)
 if(ODFAEG_USE_MODULES)
 set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API ON)
 set(CMAKE_CXX_SCAN_FOR_MODULES ON)
@@ -93,27 +93,26 @@ install(
 
 include(CMakePackageConfigHelpers)
 if (ODFAEG_USE_MODULES)
+configure_package_config_file(
+    cmake/odfaegModulesConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/odfaegModulesConfig.cmake
+    INSTALL_DESTINATION lib/cmake/odfaeg
+)
 install(
     EXPORT odfaeg-targets
     FILE odfaegModulesTargets.cmake
     NAMESPACE odfaeg::
     DESTINATION lib/cmake/odfaeg
 )
-configure_package_config_file(
-    cmake/odfaegModulesConfig.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/odfaegConfig.cmake
-    INSTALL_DESTINATION lib/cmake/odfaeg
-)
 install(
     FILES odfaegConfig.cmake
     DESTINATION lib/cmake/odfaeg
 )
 else()
-install(
-    EXPORT odfaeg-targets
-    FILE odfaegIncludesTargets.cmake
-    NAMESPACE odfaeg::
-    DESTINATION lib/cmake/odfaeg
+configure_package_config_file(
+    cmake/odfaegIncludesConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/odfaegIncludesConfig.cmake
+    INSTALL_DESTINATION lib/cmake/odfaeg
 )
 install(
     EXPORT odfaeg-targets
@@ -121,13 +120,18 @@ install(
     NAMESPACE odfaeg::
     DESTINATION lib/cmake/odfaeg
 )
-configure_package_config_file(
-    cmake/odfaegIncludesConfig.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/odfaegConfig.cmake
-    INSTALL_DESTINATION lib/cmake/odfaeg
+install(
+    EXPORT odfaeg-targets
+    FILE odfaegIncludesTargets.cmake
+    NAMESPACE odfaeg::
+    DESTINATION lib/cmake/odfaeg
 )
 install(
     FILES odfaegConfig.cmake
     DESTINATION lib/cmake/odfaeg
+)
+install(
+    DIRECTORY ${PROJECT_SOURCE_DIR}/external/
+    DESTINATION include/odfaeg/external
 )
 endif()

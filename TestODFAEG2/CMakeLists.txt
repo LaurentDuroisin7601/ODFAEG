@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.28.0)
-set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API ON)
-set(CMAKE_CXX_SCAN_FOR_MODULES ON)
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API OFF)
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD_EXTENSIONS OFF)
@@ -38,10 +38,10 @@ find_package(odfaeg REQUIRED)
 target_link_libraries(MyGame
     PRIVATE
         odfaeg::odfaeg-core
-        odfaeg::odfaeg-math
-        odfaeg::odfaeg-window
-        odfaeg::odfaeg-graphics
-        odfaeg::odfaeg-entity
+        odfaeg::odfaeg-math         
         odfaeg::odfaeg-physics
+        odfaeg::odfaeg-entity
+        odfaeg::odfaeg-window
+        odfaeg::odfaeg-graphics       
 	    imgui_custom
 )

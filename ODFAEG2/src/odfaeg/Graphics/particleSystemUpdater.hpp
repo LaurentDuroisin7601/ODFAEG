@@ -25,7 +25,7 @@
 #include "semaphore.hpp"
 #include "../Core/timer.hpp"
 #include "vertexBuffer.hpp"
-#include "commandPool.cpp"
+#include "commandPool.hpp"
 #include "shader.hpp"
 #include "../Entity/vertex.hpp"
 #include "../Entity/emittors.hpp"

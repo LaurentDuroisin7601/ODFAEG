@@ -49,6 +49,7 @@ if(ODFAEG_USE_MODULES)
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
     )
+     
     target_link_libraries(odfaeg-entity PRIVATE odfaeg-entity-mod)
     install(
         TARGETS odfaeg-entity
@@ -79,6 +80,7 @@ else()
 	file(GLOB_RECURSE SRC CONFIGURE_DEPENDS "${SRCROOT}/*.cpp")
     target_sources(odfaeg-entity PRIVATE ${SRC} ${HEADERS_COMMON} ${HEADERS_SRC} ${ODFAEG_INL}) 
     target_include_directories(odfaeg-entity PRIVATE ${PROJECT_SOURCE_DIR}/external)
+    target_include_directories(odfaeg-entity PRIVATE ${PROJECT_SOURCE_DIR}/external/glm)
     target_include_directories(odfaeg-entity PRIVATE ${PROJECT_SOURCE_DIR}/external/entt)
     target_include_directories(odfaeg-entity PRIVATE ${PROJECT_SOURCE_DIR}/external/meshoptimizer/src)
     file(GLOB_RECURSE MESH_OPTIMIZER_SRC CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/external/meshoptimizer/src/*.cpp")
@@ -97,7 +99,22 @@ else()
             $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
     )
-    # Installer la lib statique
+    target_include_directories(odfaeg-entity
+    PUBLIC
+        $<INSTALL_INTERFACE:include/odfaeg/external>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external>
+    )
+    target_include_directories(odfaeg-entity
+    PUBLIC
+        $<INSTALL_INTERFACE:include/odfaeg/external>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external>
+    )
+    target_include_directories(odfaeg-entity
+    PUBLIC
+        $<INSTALL_INTERFACE:include/odfaeg/external/meshoptimizer/src>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/meshoptimizer/src>
+    )
+    #installer la lib statique
 	install(
 		TARGETS odfaeg-entity
 		EXPORT odfaeg-targets

@@ -53,10 +53,6 @@ else()
 	target_include_directories(odfaeg-core PRIVATE ${PROJECT_SOURCE_DIR}/include)
 	target_include_directories(odfaeg-core PRIVATE "C:/Program Files/LLVM/include")
 	target_sources(odfaeg-core PRIVATE ${SRC} ${HEADERS_COMMON} ${HEADERS_SRC} ${ODFAEG_INL})
-	install(
-		DIRECTORY ${PROJECT_SOURCE_DIR}/external/
-		DESTINATION include/odfaeg/external
-	)
 	# Installer la lib statique
 	install(
 		TARGETS odfaeg-core
