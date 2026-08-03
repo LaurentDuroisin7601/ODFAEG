@@ -1,4 +1,5 @@
 module;
+#include <vector>
 #include <algorithm>
 #include <functional>
 export module odfaeg.window.videoMode;

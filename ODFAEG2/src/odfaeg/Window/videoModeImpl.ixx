@@ -1,6 +1,8 @@
 module;
 #include <odfaeg/config.hpp>
 #include <vector>
+#include <algorithm>
+#include <functional>
 //import odfaeg.window.videoModeImpl;
 export module odfaeg.window.videoModeImpl;
 import odfaeg.window.videoMode;
