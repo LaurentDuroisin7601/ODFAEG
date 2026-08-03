@@ -7,7 +7,6 @@
 		"openssl",
 		"libsndfile",
 		"freetype",
-		"shaderc",
-		"vulkan-memory-allocator"
+		"shaderc"
 	]
 }

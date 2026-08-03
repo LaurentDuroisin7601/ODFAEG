@@ -8,6 +8,6 @@
 		"libsndfile",
 		"freetype",		
 		"shaderc",		
-		"dirent"
+		"imgui"
 	]
 }
