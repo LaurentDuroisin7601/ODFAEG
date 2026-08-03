@@ -38,5 +38,5 @@ namespace odfaeg {
 		};
 	}
 }
-//#include "pipeline.inl"
+#include "pipeline.inl"
 #endif

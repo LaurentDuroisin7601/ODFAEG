@@ -410,9 +410,18 @@ namespace odfaeg {
         };
 		class EnttEntity {
 		public:
-			/*template <typename D, typename... Args>
-		    static D* make_entity(Args... args);*/
-			static void initEntity(Entity& entity);
+			static ComponentMapping& getComponentMapping() {
+				static ComponentMapping componentMapping;
+				return componentMapping;
+			}
+			
+			static void initEntity(Entity& entity) {
+				ComponentMapping& componentMapping = getComponentMapping();
+				entity.setTypes(componentMapping.getEntityFactory().updateTypes(entity.getType()));
+				entity.setId(componentMapping.getEntityFactory().getUniqueId());
+				entity.setEnttID((uint32_t)componentMapping.getEntityFactory().getEnttID());
+				Entity::setNbEntitiesTypes(componentMapping.getEntityFactory().getNbEntitiesTypes());
+			}
 		};
 	}
 }

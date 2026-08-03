@@ -1,5 +1,5 @@
-#include "enttImpl.hpp"
-/*namespace odfaeg {
+/*#include "enttImpl.hpp"
+namespace odfaeg {
 	namespace entity {
        
 	    ComponentMapping& getComponentMapping() {
