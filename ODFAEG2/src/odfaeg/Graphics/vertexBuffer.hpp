@@ -106,5 +106,4 @@ namespace odfaeg {
         }
     }
 } // namespace sf
-//#include "vertexBuffer.inl"
 #endif

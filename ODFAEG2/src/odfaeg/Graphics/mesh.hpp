@@ -11,7 +11,7 @@
 #include "texture.hpp"
 namespace odfaeg {
     namespace graphic {
-        export class Mesh {
+        class Mesh {
             public :
             Mesh(entity::GameObject* gameObject);
             void addMaterial(Material* material);            

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28.0)
-option(ODFAEG_USE_MODULES "Use C++20 modules instead of includes" OFF)
+option(ODFAEG_USE_MODULES "Use C++20 modules instead of includes" ON)
 if(ODFAEG_USE_MODULES)
 set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API ON)
 set(CMAKE_CXX_SCAN_FOR_MODULES ON)

@@ -375,4 +375,5 @@ namespace
         }
     }
 }
+module : private;
 #include "win32Window.inl"

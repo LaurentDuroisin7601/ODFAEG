@@ -159,5 +159,4 @@ namespace odfaeg {
         };
     }
 }
-//#include "action.inl"
 #endif

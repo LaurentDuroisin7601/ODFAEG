@@ -10,13 +10,12 @@
 #include "device.hpp"
 #include "shader.hpp"
 #include "../Entity/primitiveType.hpp"
-#include "descriptor.hpp"
 #include "blendMode.hpp"
 #include "renderPass.hpp"
-#include "vertexBuffer.hpp"
+#include "descriptor.hpp"
 namespace odfaeg {
 	namespace graphic {
-		export class Pipeline : public core::NonCopyable {
+		class Pipeline : public core::NonCopyable {			
 		public :			
 			Pipeline(Device& device);
 			Pipeline(Pipeline&& pipeline) noexcept;
@@ -39,6 +38,5 @@ namespace odfaeg {
 		};
 	}
 }
-module : private;
-#include "pipeline.inl"
+//#include "pipeline.inl"
 #endif

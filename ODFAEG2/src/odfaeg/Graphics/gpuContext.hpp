@@ -4,8 +4,6 @@
 #include <memory>
 #include <odfaeg/config.hpp>
 #include <iostream>
-#include "pipeline.hpp"
-#include "descriptor.hpp"
 #include "instance.hpp"
 #include "device.hpp"
 #include "../Entity/primitiveType.hpp"
@@ -15,11 +13,13 @@
 #include "semaphore.hpp"
 #include "image.hpp"
 #include "buffer.hpp"
+#include "pipeline.hpp"
+#include "descriptor.hpp"
 #include "vertexBuffer.hpp"
 #include "texture.hpp"
 namespace odfaeg {
     namespace graphic {
-        export class GPUContext {
+        class GPUContext {        
         public :
             static GPUContext& instance();
             std::deque<std::deque<Pipeline>>& getGraphicsPipeline(Shader& shader);
@@ -56,5 +56,4 @@ namespace odfaeg {
         };
     }
 }
-#include "gpuContext.inl"
 #endif

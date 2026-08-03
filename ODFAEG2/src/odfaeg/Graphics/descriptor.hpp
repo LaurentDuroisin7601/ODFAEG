@@ -10,6 +10,7 @@
 #include "image.hpp"
 #include "../Core/nonCopyable.hpp"
 #include "device.hpp" 
+#include "gpuContext.hpp"
 #include "texture.hpp"
 #include "vertexBuffer.hpp"
 namespace odfaeg {
@@ -31,7 +32,7 @@ namespace odfaeg {
 			size_t maxSets;
 			VkDescriptorPool descriptorPool;
 			Device& device;
-		};
+		};	
 		class DescriptorSetLayout : public core::NonCopyable {
 		public:
 			DescriptorSetLayout(Device& device);
@@ -49,7 +50,7 @@ namespace odfaeg {
 			bool bindless;
 			VkDescriptorSetLayout descriptorSetLayout;
 			Device& device;
-		};
+		};	
 		class DescriptorSet : public core::NonCopyable {
 		public :
 			DescriptorSet(Device& device);

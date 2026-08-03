@@ -56,7 +56,7 @@ namespace odfaeg {
 		}
 		DescriptorPool::~DescriptorPool() {
 			cleanup();
-		}
+		}	
 		DescriptorSetLayout::DescriptorSetLayout(Device& device) : device(device) {
 
 			descriptorSetLayout = VK_NULL_HANDLE;
@@ -131,6 +131,7 @@ namespace odfaeg {
 		DescriptorSetLayout::~DescriptorSetLayout() {
 			cleanup();
 		}
+    	
 		DescriptorSet::DescriptorSet(Device& device) : device(device) {
 			descriptorSet = VK_NULL_HANDLE;
 		}

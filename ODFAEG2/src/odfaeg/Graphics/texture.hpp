@@ -14,8 +14,6 @@
 #include "../Core/nonCopyable.hpp"
 #include "../Core/resourceManager.hpp"
 #include "buffer.hpp"
-#include "gpuContext.hpp"
-#include "device.hpp"
 namespace
 {
     std::mutex idMutex;
@@ -112,5 +110,4 @@ namespace odfaeg {
         using TextureManager = ResourceManager<odfaeg::graphic::Texture, I>;
     }
 }
-//#include "texture.inl"
 #endif
