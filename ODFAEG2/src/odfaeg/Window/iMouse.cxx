@@ -1,3 +1,5 @@
+module;
+#include <odfaeg/config.hpp>
 module odfaeg.window.iMouse;
 #if defined(ODFAEG_SYSTEM_WINDOWS)
 import odfaeg.window.win32Keyboard;

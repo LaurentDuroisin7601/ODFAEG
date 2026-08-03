@@ -25,4 +25,4 @@ namespace odfaeg {
 	}
 }
 module : private;
-#include "fence.hpp"
+#include "frameBuffer.inl"

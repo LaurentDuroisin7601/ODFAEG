@@ -6,6 +6,7 @@ module;
 #include <deque>
 #include <vulkan/vulkan.hpp>
 #include "vk_mem_alloc.h"
+export module odfaeg.graphic.envMapRenderer;
 import odfaeg.core.delegate;
 import odfaeg.core.threadPool;
 import odfaeg.math.vec;
@@ -23,11 +24,9 @@ import odfaeg.graphic.descriptor;
 import odfaeg.graphic.blendMode;
 import odfaeg.entity.primitiveType;
 import odfaeg.graphic.camera;
-module odfaeg.graphic.envMapRenderer;
 import odfaeg.graphic.mesh;
 import odfaeg.graphic.buffer;
 import odfaeg.graphic.renderStates;
-export module odfaeg.graphic.envMapRenderer;
 namespace odfaeg {
     namespace graphic {
         class EnvMapRenderer {

@@ -1,4 +1,5 @@
 module;
+#include <vector>
 export module odfaeg.graphic.camera;
 import odfaeg.graphic.projMatrix;
 import odfaeg.graphic.viewMatrix;

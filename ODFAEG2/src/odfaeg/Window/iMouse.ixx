@@ -38,5 +38,5 @@ namespace odfaeg {
         };
     }
 }
-module : private;
-#include "iMouse.inl"
+/*module : private;
+#include "iMouse.inl"*/

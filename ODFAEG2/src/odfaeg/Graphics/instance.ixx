@@ -15,6 +15,7 @@ module;
 #include <iostream>
 export module odfaeg.graphic.instance;
 import odfaeg.core.nonCopyable;
+import odfaeg.graphic.debug;
 namespace odfaeg {
     namespace graphic {
         export class Instance : public core::NonCopyable {
