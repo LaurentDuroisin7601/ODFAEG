@@ -187,6 +187,7 @@ else()
 	target_sources(odfaeg-graphics
 		PUBLIC
 			PRIVATE
+			${SRCROOT}/graphics.hpp
 			${SRCROOT}/debug.hpp
 			${SRCROOT}/instance.hpp
 			${SRCROOT}/device.hpp

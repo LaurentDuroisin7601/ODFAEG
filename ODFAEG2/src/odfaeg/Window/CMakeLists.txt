@@ -168,7 +168,8 @@ elseif(WIN32)
                 )
         else()
                 target_sources(odfaeg-window
-                PUBLIC     
+                PUBLIC  
+                        ${SRCROOT}/win.hpp   
                         ${SRCROOT}/iCursorType.hpp	
                         ${SRCROOT}/iEvent.hpp	
                         ${SRCROOT}/iKeyboard.hpp       
