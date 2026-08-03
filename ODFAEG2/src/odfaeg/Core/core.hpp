@@ -1,0 +1,21 @@
+#ifndef ODFAEG_CORE_HPP
+#define ODFAEG_CORE_HPP
+#include "any.hpp"
+#include "archive.hpp"
+#include "class.hpp"
+#include "clock.hpp"
+#include "delegate.hpp"
+#include "factory.hpp"
+#include "inputStream.hpp"
+#include "resourceCache.hpp"
+#include "resourceManager.hpp"
+#include "runtime_compiler.hpp"
+#include "serialization.hpp"
+#include "stateManager.hpp"
+#include "string.hpp"
+#include "threadPool.hpp"
+#include "timer.hpp"
+#include "utilities.hpp" 
+#include "variant.hpp"
+#include "worker.hpp"
+#endif

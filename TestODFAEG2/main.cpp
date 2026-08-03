@@ -6,7 +6,7 @@
 #include <vulkan/vulkan.hpp>
 #include "imgui.h"
 #include "external/imgui/backends/imgui_impl_vulkan.h"
-import odfaeg.graphic.renderWindow;
+/*import odfaeg.graphic.renderWindow;
 import odfaeg.window.videoMode;
 import odfaeg.graphic.instance;
 import odfaeg.graphic.device;
@@ -52,7 +52,7 @@ using namespace odfaeg::core;
 using namespace odfaeg::entity;
 using namespace odfaeg::window;
 using namespace odfaeg::graphic;
-using namespace odfaeg::math;
+using namespace odfaeg::math;*/
 
 enum TextureNames {
 	WOOD

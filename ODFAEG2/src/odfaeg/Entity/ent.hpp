@@ -1,0 +1,23 @@
+#ifndef ODFAEG_ENT_HPP
+#define ODFAEG_ENT_HPP
+#include "animation.hpp"
+#include "animator.hpp"
+#include "assimpHelper.hpp"
+#include "bone.hpp"
+#include "color.hpp"
+#include "cube.hpp"
+#include "emittors.hpp"
+#include "entity.hpp"
+#include "enttImpl.hpp"
+#include "gameObject.hpp"
+#include "model.hpp"
+#include "morphAnim.hpp"
+#include "particleSystem.hpp"
+#include "plane.hpp"
+#include "primitiveType.hpp"
+#include "rect.hpp"
+#include "tile.hpp"
+#include "transformable.hpp"
+#include "vertex.hpp"
+#include "vertexArray.hpp"
+#endif
