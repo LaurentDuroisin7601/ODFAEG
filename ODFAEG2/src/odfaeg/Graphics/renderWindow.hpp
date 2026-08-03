@@ -19,7 +19,7 @@
 #include "fence.hpp"
 namespace odfaeg {
 	namespace graphic {
-		export class RenderWindow : public window::Window, public  RenderTarget {
+		class RenderWindow : public window::Window, public  RenderTarget {
 			public :
                 RenderWindow(window::VideoMode mode, const core::String& title,   Device& vkDevice, std::uint32_t style = window::Style::Default, bool useDepth = false, bool useStencil = false);
             explicit RenderWindow(window::WindowHandle handle, Device& vkDevice, bool useDepth=false, bool useStencil=false);

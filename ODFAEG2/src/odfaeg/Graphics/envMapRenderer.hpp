@@ -26,6 +26,7 @@
 #include "mesh.hpp"
 #include "buffer.hpp"
 #include "renderStates.hpp"
+#include "iRenderer.hpp"
 namespace odfaeg {
     namespace graphic {
         class EnvMapRenderer {

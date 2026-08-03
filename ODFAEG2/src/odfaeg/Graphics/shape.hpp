@@ -34,7 +34,7 @@ namespace
 }
 namespace odfaeg {
 	namespace graphic {
-		export class Shape : public Drawable, public entity::Transformable {
+		class Shape : public Drawable, public entity::Transformable {
 		public :
             
             ////////////////////////////////////////////////////////////

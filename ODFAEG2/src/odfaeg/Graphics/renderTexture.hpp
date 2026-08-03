@@ -16,7 +16,7 @@
 #include "gpuContext.hpp"
 namespace odfaeg {
 	namespace graphic {
-		export class RenderTexture : public RenderTarget {
+		class RenderTexture : public RenderTarget {
         public:            
             inline static const unsigned int NB_SWAPCHAIN_IMAGES = 3;
             inline static const unsigned int RT_MAX_FRAMES_IN_FLIGHT = 2;

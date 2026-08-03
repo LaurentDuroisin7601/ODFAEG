@@ -16,7 +16,7 @@
 #include "texture.hpp"
 namespace odfaeg {
     namespace graphic {
-        export class RenderGraph {
+        class RenderGraph {
             public :                     
             RenderGraph();
             void addLinkedListPass(RenderTarget& output, unsigned int layer, std::string typesToRender, unsigned int windowId=-1);

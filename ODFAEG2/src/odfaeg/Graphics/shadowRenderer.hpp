@@ -23,7 +23,7 @@
 #include "../Window/listener.hpp"
 namespace odfaeg {
     namespace graphic {
-        export class ShadowRenderer : public IRenderer {
+        class ShadowRenderer : public IRenderer {
         public :
             struct CascadeData {
                 math::Vec4f cascadePlaneDistances[NB_CASCADES+1];
