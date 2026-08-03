@@ -17,6 +17,7 @@ if(ODFAEG_USE_MODULES)
     # Target interne (modules)
    	add_library(odfaeg-core-mod STATIC)
     target_compile_features(odfaeg-core-mod PUBLIC cxx_std_20)
+	target_include_directories(odfaeg-core-mod PRIVATE external)
    	target_include_directories(odfaeg-core-mod PRIVATE external/boost)
 	target_include_directories(odfaeg-core-mod PRIVATE ${PROJECT_SOURCE_DIR}/include)
 	target_sources(odfaeg-core-mod
@@ -47,10 +48,15 @@ if(ODFAEG_USE_MODULES)
 else()
 	file(GLOB_RECURSE HEADERS_SRC CONFIGURE_DEPENDS "${SRCROOT}/*.hpp")
 	file(GLOB_RECURSE SRC CONFIGURE_DEPENDS "${SRCROOT}/*.cpp")
-	target_include_directories(odfaeg-core PRIVATE external/boost)
+	#target_include_directories(odfaeg-core PRIVATE ${PROJECT_SOURCE_DIR}/external)
+	target_include_directories(odfaeg-core PRIVATE ${PROJECT_SOURCE_DIR}/external/boost)
 	target_include_directories(odfaeg-core PRIVATE ${PROJECT_SOURCE_DIR}/include)
 	target_include_directories(odfaeg-core PRIVATE "C:/Program Files/LLVM/include")
 	target_sources(odfaeg-core PRIVATE ${SRC} ${HEADERS_COMMON} ${HEADERS_SRC} ${ODFAEG_INL})
+	install(
+		DIRECTORY ${PROJECT_SOURCE_DIR}/external/
+		DESTINATION include/odfaeg/external
+	)
 	# Installer la lib statique
 	install(
 		TARGETS odfaeg-core

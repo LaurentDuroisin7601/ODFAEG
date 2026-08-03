@@ -7,7 +7,7 @@
 #include  <sstream>
 #include  <filesystem>
 #include <odfaeg/config.hpp>
-#include <dirent.h>
+#include "dirent.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 namespace odfaeg {

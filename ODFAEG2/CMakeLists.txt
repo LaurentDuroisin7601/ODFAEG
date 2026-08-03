@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 3.28.0)
-option(ODFAEG_USE_MODULES "Use C++20 modules instead of includes" OFF)
+option(ODFAEG_USE_MODULES "Use C++20 modules instead of includes" ON)
 if(ODFAEG_USE_MODULES)
 set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API ON)
 set(CMAKE_CXX_SCAN_FOR_MODULES ON)
+else()
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API OFF)
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 endif()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -70,8 +73,7 @@ add_subdirectory(src/odfaeg)
 install(
     TARGETS
         odfaeg-base        
-    EXPORT odfaeg-targets    
-    
+    EXPORT odfaeg-targets 
 )
 
 # Install ODFAEG headers
@@ -85,25 +87,20 @@ install(
     DIRECTORY ${PROJECT_SOURCE_DIR}/Shader/
     DESTINATION Shader
 )
-# Install shaders
-install(
-    DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Shaders/
-    DESTINATION Shader
-)
-
 # ============================================================
 # 5) Install the global ODFAEG package config
 # ============================================================
+
+include(CMakePackageConfigHelpers)
+if (ODFAEG_USE_MODULES)
 install(
     EXPORT odfaeg-targets
-    FILE odfaegTargets.cmake
+    FILE odfaegModulesTargets.cmake
     NAMESPACE odfaeg::
     DESTINATION lib/cmake/odfaeg
 )
-include(CMakePackageConfigHelpers)
-
 configure_package_config_file(
-    cmake/odfaegConfig.cmake.in
+    cmake/odfaegModulesConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/odfaegConfig.cmake
     INSTALL_DESTINATION lib/cmake/odfaeg
 )
@@ -111,3 +108,26 @@ install(
     FILES odfaegConfig.cmake
     DESTINATION lib/cmake/odfaeg
 )
+else()
+install(
+    EXPORT odfaeg-targets
+    FILE odfaegIncludesTargets.cmake
+    NAMESPACE odfaeg::
+    DESTINATION lib/cmake/odfaeg
+)
+install(
+    EXPORT odfaeg-targets
+    FILE odfaegIncludesConfig.cmake
+    NAMESPACE odfaeg::
+    DESTINATION lib/cmake/odfaeg
+)
+configure_package_config_file(
+    cmake/odfaegIncludesConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/odfaegConfig.cmake
+    INSTALL_DESTINATION lib/cmake/odfaeg
+)
+install(
+    FILES odfaegConfig.cmake
+    DESTINATION lib/cmake/odfaeg
+)
+endif()

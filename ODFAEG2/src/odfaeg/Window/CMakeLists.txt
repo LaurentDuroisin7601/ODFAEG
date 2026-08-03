@@ -230,7 +230,13 @@ elseif(WIN32)
 			PUBLIC
 			$<INSTALL_INTERFACE:include>
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-	        )	
+	        )
+                target_include_directories(odfaeg-window
+                INTERFACE
+                        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+                        $<BUILD_INTERFACE:${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include/>
+                        $<INSTALL_INTERFACE:include>
+                )	
                 #target_include_directories(odfaeg-window PRIVATE ${PROJECT_SOURCE_DIR}/external)
                 
                 #set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH FALSE)

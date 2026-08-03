@@ -1,0 +1,7 @@
+@PACKAGE_INIT@
+
+# Charger les targets générés automatiquement
+include("${CMAKE_CURRENT_LIST_DIR}/odfaegIncludesTargets.cmake")
+check_required_components(odfaeg)
+
+

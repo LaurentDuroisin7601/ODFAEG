@@ -61,6 +61,11 @@ if(ODFAEG_USE_MODULES)
             FILE_SET cxx_modules DESTINATION share/odfaeg/modules/Entity
     )
     install(
+        TARGETS meshoptimizer
+        EXPORT odfaeg-targets
+        ARCHIVE DESTINATION lib
+    )
+    install(
         DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/odfaeg-entity-mod.dir/
         DESTINATION share/odfaeg/pcm/Entity
         FILES_MATCHING PATTERN "*.pcm" PATTERN "*.modmap"
