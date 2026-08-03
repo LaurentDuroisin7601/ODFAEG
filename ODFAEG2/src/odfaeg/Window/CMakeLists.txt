@@ -58,6 +58,7 @@ target_sources(odfaeg-window-mod
 	${SRCROOT}/windowImpl.cpp
 	${SRCROOT}/window.cpp
 	${SRCROOT}/action.cpp
+        ${SRCROOT}/action.cpp
 	${SRCROOT}/command.cpp
 )
 target_link_libraries(odfaeg-window PRIVATE
@@ -97,6 +98,12 @@ elseif(WIN32)
                         ${SRCROOT}/command.ixx
                         ${SRCROOT}/listener.ixx	
                 )
+                target_sources(odfaeg-window-mod
+                PRIVATE  
+                        ${SRCROOT}/Windows/win32Window.cxx
+                        ${SRCROOT}/action.cxx
+                        ${SRCROOT}/videoModeImpl.cxx
+                        ${SRCROOT}/videoMode.cxx)
                 target_sources(odfaeg-window-mod
                 PRIVATE           
                         ${SRCROOT}/iKeyboard.inl

@@ -1,4 +1,4 @@
-module odfaeg.window.iMouse;
+module odfaeg.window.iKeyboard;
 #if defined(ODFAEG_SYSTEM_WINDOWS)
 import odfaeg.window.win32Keyboard;
 typedef odfaeg::window::Win32Keyboard KeyboardType;
@@ -6,4 +6,4 @@ typedef odfaeg::window::Win32Keyboard KeyboardType;
 import odfaeg.window.x11Keyboard;
 typedef odfaeg::window::X11Keyboard KeyboardType;
 #endif
-#include "iMouse.inl"
+#include "iKeyboard.hpp"

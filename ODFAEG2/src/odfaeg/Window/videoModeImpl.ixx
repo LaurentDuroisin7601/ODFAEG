@@ -3,8 +3,8 @@ module;
 #include <vector>
 //import odfaeg.window.videoModeImpl;
 export module odfaeg.window.videoModeImpl;
-/*import odfaeg.window.videoMode;
-#if defined(ODFAEG_SYSTEM_WINDOWS)
+import odfaeg.window.videoMode;
+/*#if defined(ODFAEG_SYSTEM_WINDOWS)
 import odfaeg.window.win32VideoMode;
 typedef odfaeg::window::Win32VideoMode VideoModeImplType;
 #else if defined(ODFAEG_SYSTEM_LINUX)
@@ -35,4 +35,5 @@ namespace odfaeg {
         };
     }
 }
-#include "videoModeImpl.inl"
+/*module : private;
+#include "videoModeImpl.inl"*/

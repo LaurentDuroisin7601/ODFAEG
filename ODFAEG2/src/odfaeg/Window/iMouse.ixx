@@ -2,14 +2,7 @@ module;
 #include <odfaeg/config.hpp>
 //import odfaeg.window.iMouse;
 export module odfaeg.window.iMouse;
-#if defined (ODFAEG_SYSTEM_WINDOWS)
-import odfaeg.window.win32Mouse;
-typedef odfaeg::window::Win32Mouse MouseType;
-#else if defined(ODFAEG_SYSTEM_LINUX)
-import odfaeg.window.x11Mouse;
-typedef odfaeg::window::X11Mouse MouseType;
-#endif
-//import odfaeg.window.window;
+import odfaeg.window.window;
 import odfaeg.math.vec;
 namespace odfaeg {
     namespace window {        

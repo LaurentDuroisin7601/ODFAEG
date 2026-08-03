@@ -1,6 +1,8 @@
 module;
 #include <windows.h>
 #include <cstdint>
+#include <cstring>
+#include <iostream>
 export module odfaeg.window.win32Cursor;
 import odfaeg.window.iCursorType;
 import odfaeg.math.vec;

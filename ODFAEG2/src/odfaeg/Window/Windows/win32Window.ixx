@@ -1,6 +1,4 @@
 module;
-#include <windows.h>
-#include <dbt.h>
 #ifndef UNICODE
 #define UNICODE
 #endif
@@ -33,6 +31,8 @@ module;
 #undef WINVER
 #define WINVER         0x0501
 #endif
+#include <windows.h>
+#include <dbt.h>
 #include <vector>
 #include <cstring>
 #include <chrono>
@@ -49,7 +49,6 @@ import odfaeg.core.string;
 import odfaeg.core.utf;
 import odfaeg.math.vec;
 import odfaeg.window.iKeyboard;
-import odfaeg.window.iMouse;
 import odfaeg.window.iEvent;
 import odfaeg.window.windowStyle;
 import odfaeg.window.videoMode;
@@ -316,7 +315,7 @@ namespace
     unsigned int               windowCount = 0; // Windows owned by ODFAEG
     unsigned int               handleCount = 0; // All window handles
     const wchar_t* className = L"ODFAEG_Window";
-    odfaeg::window::Win32Window* fullscreenWindow = NULL;
+    odfaeg::window::Win32Window* w32FullscreenWindow = NULL;
 
     const GUID GUID_DEVINTERFACE_HID = { 0x4d1e55b2, 0xf16f, 0x11cf, {0x88, 0xcb, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30} };
 
@@ -375,5 +374,5 @@ namespace
         }
     }
 }
-module : private;
-#include "win32Window.inl"
+/*module : private;
+#include "win32Window.inl"*/
