@@ -13,8 +13,6 @@ export namespace odfaeg {
             Quaternion normalize();
             Quaternion slerp(Quaternion q2, float changeAmount);
             Matrix4f toRotationMatrix();
-        private:
-            float norm();
         };
     }
 }

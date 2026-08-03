@@ -1,3 +1,5 @@
+#ifndef ODFAEG_ENTT_IMPL_HPP
+#define ODFAEG_ENTT_IMPL_HPP
 #include <optional>
 #include <array>
 #include <vector>
@@ -423,7 +425,7 @@ namespace odfaeg {
         }
 	}
 }
-
+#endif
 
 
 	
