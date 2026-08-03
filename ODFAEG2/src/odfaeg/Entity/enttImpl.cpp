@@ -1,15 +1,12 @@
 #include "enttImpl.hpp"
-namespace odfaeg {
+/*namespace odfaeg {
 	namespace entity {
        
 	    ComponentMapping& getComponentMapping() {
 	        static ComponentMapping componentMapping;
 	        return componentMapping;
 	    }
-	    /*template <typename D, typename... Args>
-	    D* EnttEntity::make_entity(Args... args) {
-	        return getComponentMapping().getEntityFactory().make_entity<D>(args...);
-	    }*/
+	    
         void EnttEntity::initEntity(Entity& entity) {
             ComponentMapping& componentMapping = getComponentMapping();
             entity.setTypes(componentMapping.getEntityFactory().updateTypes(entity.getType()));
@@ -18,7 +15,7 @@ namespace odfaeg {
 	        Entity::setNbEntitiesTypes(componentMapping.getEntityFactory().getNbEntitiesTypes());
         }
 	}
-}
+}*/
 
 
 
