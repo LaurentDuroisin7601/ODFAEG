@@ -30,6 +30,7 @@
 #include "particleSystemUpdater.hpp"
 #include "morphAnimUpdater.hpp"
 #include "boneAnimUpdater.hpp"
+#include "viewportMatrix.hpp"
 namespace odfaeg {
 	namespace graphic {		
 		class RenderTarget {
@@ -324,7 +325,7 @@ namespace odfaeg {
 			IndexesPC indexesPC;
 			PFN_vkCmdDrawMeshTasksEXT vkCmdDrawMeshTasksEXT;					
 		};
-		export class Drawable {
+		class Drawable {
             public :
             virtual void draw(RenderTarget& renderTarget, RenderStates states) = 0;
         };

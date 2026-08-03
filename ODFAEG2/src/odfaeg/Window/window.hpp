@@ -5,10 +5,10 @@
 #include <iostream>
 #include "../Core/string.hpp"
 #include "../Math/vec.hpp"
-#include "windowImpl.hpp"
 #include "cursor.hpp"
 #include "videoMode.hpp"
 #include "iEvent.hpp"
+#include "windowImpl.hpp"
 namespace odfaeg {
     namespace window {
         class Window {

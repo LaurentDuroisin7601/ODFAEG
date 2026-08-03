@@ -1,5 +1,4 @@
 #include "pipeline.hpp"
 #include "gpuContext.hpp"
 #include "vertexBuffer.hpp"
-#include "descriptor.hpp"
 #include "pipeline.inl"

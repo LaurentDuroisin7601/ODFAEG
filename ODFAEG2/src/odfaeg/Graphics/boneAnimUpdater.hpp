@@ -16,6 +16,8 @@
 #include "device.hpp"
 #include "../Entity/vertex.hpp"
 #include "../Entity/primitiveType.hpp"
+#include "../Entity/animator.hpp"
+#include "../Core/timer.hpp"
 namespace odfaeg {
     namespace graphic {
         class BoneAnimUpdater : public core::Timer {

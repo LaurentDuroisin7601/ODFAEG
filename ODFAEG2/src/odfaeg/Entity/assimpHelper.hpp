@@ -5,6 +5,7 @@
 #include<assimp/quaternion.h>
 #include<glm/glm.hpp>
 #include<glm/gtc/quaternion.hpp>
+#include "../Math/quaternion.hpp"
 namespace odfaeg {
     namespace entity {
         class AssimpHelpers

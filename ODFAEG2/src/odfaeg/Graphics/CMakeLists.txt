@@ -25,7 +25,10 @@ foreach(SHADER_SRC ${SHADERC_SRC})
 
     list(APPEND SPV_OUTPUTS ${SHADER_SPV})
 endforeach()
-
+set(ODFAEG_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
+target_compile_definitions(odfaeg-graphics PUBLIC
+    ODFAEG_INSTALL_DIR="${ODFAEG_INSTALL_DIR}"
+)
 # Cible pour compiler tous les shaders
 add_custom_target(compile_shaders ALL DEPENDS ${SPV_OUTPUTS})
 target_sources(odfaeg-graphics 

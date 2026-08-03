@@ -10,7 +10,6 @@
 #include "image.hpp"
 #include "../Core/nonCopyable.hpp"
 #include "device.hpp" 
-#include "gpuContext.hpp"
 #include "texture.hpp"
 #include "vertexBuffer.hpp"
 namespace odfaeg {

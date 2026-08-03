@@ -38,7 +38,7 @@
 #include "../Entity/primitiveType.hpp"
 namespace odfaeg {
     namespace graphic {
-        export class ModelLoader {
+        class ModelLoader {
 
         public :
 

@@ -1,5 +1,4 @@
 module;
-#include <odfaeg/config.hpp>
 #include <vector>
 #include <algorithm>
 #include <functional>
