@@ -17,8 +17,8 @@ if(ODFAEG_USE_MODULES)
     # Target interne (modules)
    	add_library(odfaeg-core-mod STATIC)
     target_compile_features(odfaeg-core-mod PUBLIC cxx_std_20)
-	target_include_directories(odfaeg-core-mod PRIVATE external)
-   	target_include_directories(odfaeg-core-mod PRIVATE external/boost)
+	target_include_directories(odfaeg-core-mod PRIVATE ${PROJECT_SOURCE_DIR}/external)
+   	target_include_directories(odfaeg-core-mod PRIVATE ${PROJECT_SOURCE_DIR}/external/boost)
 	target_include_directories(odfaeg-core-mod PRIVATE ${PROJECT_SOURCE_DIR}/include)
 	target_sources(odfaeg-core-mod
     		PUBLIC

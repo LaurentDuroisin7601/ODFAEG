@@ -386,5 +386,6 @@ namespace odfaeg {
         * \brief this function can be redefined in the sub-class if we need to do something when the object is moving.
         */
         void Transformable::onMove(math::Vec3f& t) {}
-	    }
+	    
+    }
 }

@@ -1,1 +1,1 @@
-include("${CMAKE_CURRENT_LIST_DIR}/odfaegIncludesConfig.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/odfaegModulesConfig.cmake")

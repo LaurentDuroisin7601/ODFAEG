@@ -131,25 +131,50 @@ if(ODFAEG_USE_MODULES)
 		${SRCROOT}/renderGraph.inl
 	)
 	target_compile_features(odfaeg-graphics-mod PUBLIC cxx_std_20)
-
-	target_include_directories(odfaeg-graphics-mod PRIVATE ${PROJECT_SOURCE_DIR}/external/vma)
+	target_include_directories(odfaeg-graphics-mod
+			PUBLIC
+			$<INSTALL_INTERFACE:include>
+			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+	)	
+	target_include_directories(odfaeg-graphics-mod
+			PUBLIC
+			$<INSTALL_INTERFACE:include>
+			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include/odfaeg/external>
+	)	
+	target_include_directories(odfaeg-graphics-mod
+	INTERFACE
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+			$<BUILD_INTERFACE:${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include/>
+			$<INSTALL_INTERFACE:include>
+	)
+	if (ODFAEG_COMPILER STREQUAL "msvc")
+		find_package(Vulkan REQUIRED)
+		find_package(assimp CONFIG REQUIRED)
+		find_package(freetype CONFIG REQUIRED)
+		find_package(unofficial-shaderc CONFIG REQUIRED)
+	else()
+		find_package(PkgConfig REQUIRED)
+		pkg_check_modules(VULKAN REQUIRED vulkan)
+		pkg_check_modules(FREETYPE REQUIRED freetype2)
+		pkg_check_modules(SHADERC REQUIRED shaderc)
+		pkg_check_modules(ASSIMP REQUIRED assimp)
+	endif()
 	#target_include_directories(odfaeg-graphics-mod PRIVATE ${VCPKG_INSTALLED_DIR}/x64-windows/include)
-	#target_include_directories(odfaeg-graphics-mod PRIVATE ${Vulkan_INCLUDE_DIRS})
+	target_include_directories(odfaeg-graphics-mod PRIVATE ${VULKAN_INCLUDE_DIRS})
+	#target_include_directories(odfaeg-graphics-mod PRIVATE $ENV{VULKAN_SDK}/Include)
+	
+	target_include_directories(odfaeg-graphics-mod PRIVATE ${PROJECT_SOURCE_DIR}/external/vma)
+	
 	add_library(vma ${PROJECT_SOURCE_DIR}/external/vma/vk_mem_alloc.cpp)
+	target_include_directories(vma PRIVATE  $ENV{VULKAN_SDK}/Include)
 	target_link_libraries(odfaeg-graphics-mod PRIVATE vma)
 	#set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH FALSE)
-	find_package(PkgConfig REQUIRED)
-	pkg_check_modules(VULKAN REQUIRED vulkan)
-	pkg_check_modules(FREETYPE REQUIRED freetype2)
-	pkg_check_modules(SHADERC REQUIRED shaderc)
-	pkg_check_modules(ASSIMP REQUIRED assimp)
-	#find_package(Vulkan REQUIRED)
-	target_include_directories(odfaeg-graphics-mod PRIVATE ${VULKAN_INCLUDE_DIRS})
+	
+	
+	
 	target_link_libraries(odfaeg-graphics-mod PUBLIC odfaeg-window-mod odfaeg-entity-mod odfaeg-physics-mod odfaeg-math-mod odfaeg-core-mod PUBLIC ${VULKAN_LIBRARIES})
 
-	#find_package(assimp CONFIG REQUIRED)
-	#find_package(freetype CONFIG REQUIRED)
-	#find_package(shaderc CONFIG REQUIRED)
+	
 	target_include_directories(odfaeg-graphics-mod PRIVATE ${ASSIMP_INCLUDE_DIRS})
 	target_link_directories(odfaeg-graphics-mod PRIVATE ${ASSIMP_LIBRARY_DIRS})
 	target_link_libraries(odfaeg-graphics-mod PRIVATE ${ASSIMP_LIBRARIES}
@@ -159,18 +184,14 @@ if(ODFAEG_USE_MODULES)
 	target_include_directories(odfaeg-graphics-mod PRIVATE ${PROJECT_SOURCE_DIR}/external/entt)
 	target_include_directories(odfaeg-graphics-mod PRIVATE ${PROJECT_SOURCE_DIR}/external/gli)
 	
-	target_include_directories(odfaeg-graphics-mod
-			PUBLIC
-			$<INSTALL_INTERFACE:include>
-			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-	)	
+	
 	target_link_libraries(odfaeg-graphics PRIVATE odfaeg-graphics-mod)
 	install(
-			TARGETS odfaeg-graphics
+			TARGETS odfaeg-graphics			
 			EXPORT odfaeg-targets
 			FILE_SET HEADERS DESTINATION include
 	)
-	install(
+		install(
 			TARGETS odfaeg-graphics-mod	
 			vma			
 			EXPORT odfaeg-targets

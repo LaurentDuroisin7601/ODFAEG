@@ -136,5 +136,8 @@ namespace odfaeg {
 
             return result;
         }
+        float Quaternion::norm() {
+            return w * w + x * x + y * y + z * z;
+        }
     }
 }

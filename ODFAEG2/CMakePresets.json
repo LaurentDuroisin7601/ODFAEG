@@ -25,6 +25,17 @@
 			}
 		},
 		{
+			"name": "msys2-gcc",
+			"generator": "Ninja",
+			"binaryDir": "out/build/release",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release",
+				"CMAKE_C_COMPILER": "gcc",
+				"CMAKE_CXX_COMPILER": "g++",				
+				"CMAKE_TOOLCHAIN_FILE": "cmake/toolchains/msys2-clang.cmake"
+			}
+		},
+		{
 			"name": "clang-windows",
 			"generator": "Ninja",
 			"binaryDir": "out/build/clang/release",
