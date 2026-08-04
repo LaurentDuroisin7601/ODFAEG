@@ -44,4 +44,5 @@ namespace odfaeg {
         };
     }
 }
+#include "resourceCache.inl"
 #endif

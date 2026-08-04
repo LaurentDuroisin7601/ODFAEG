@@ -250,6 +250,7 @@ namespace odfaeg {
         std::ostream& operator<< (std::ostream& out, const VecN<T, N>& vec);
     }
 }
+#include "vec.inl"
 #endif
 
 
