@@ -51,7 +51,7 @@ else()
     file(GLOB_RECURSE HEADERS_SRC CONFIGURE_DEPENDS "${SRCROOT}/*.hpp")
     file(GLOB_RECURSE SRC CONFIGURE_DEPENDS "${SRCROOT}/*.cpp")
     target_sources(odfaeg-physics PRIVATE ${SRC} ${HEADERS_COMMON} ${HEADERS_SRC} ${ODFAEG_INL})
-    target_link_libraries(odfaeg-physics PRIVATE odfaeg-math odfaeg-core)
+    target_link_libraries(odfaeg-physics PUBLIC odfaeg-math odfaeg-core)
     # Installer la lib statique
     install(
         TARGETS odfaeg-physics
