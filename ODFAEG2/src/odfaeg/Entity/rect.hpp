@@ -131,6 +131,21 @@ namespace odfaeg {
         };
         typedef Rect<int>   IntRect;
         typedef Rect<float> FloatRect;
-    }
+        ////////////////////////////////////////////////////////////
+        template <typename T>
+        inline bool operator ==(const Rect<T>& left, const Rect<T>& right)
+        {
+            return (left.left == right.left) && (left.width == right.width) &&
+                (left.top == right.top) && (left.height == right.height);
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        template <typename T>
+        inline bool operator !=(const Rect<T>& left, const Rect<T>& right)
+        {
+            return !(left == right);
+        }
+    }    
 }
 #endif
