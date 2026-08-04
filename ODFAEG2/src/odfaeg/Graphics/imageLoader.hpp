@@ -7,10 +7,6 @@
 #include <vector>
 #include <cctype>
 #include <vulkan/vulkan.hpp>
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <stb_image_write.h>
 #include <gli.hpp>
 #include "../Entity/color.hpp"
 #include "../Math/vec.hpp"

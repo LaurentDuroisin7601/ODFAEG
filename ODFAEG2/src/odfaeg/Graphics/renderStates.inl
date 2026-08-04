@@ -1,5 +1,6 @@
 namespace odfaeg {
     namespace graphic { 
+        RenderStates RenderStates::Default = RenderStates(); 
         RenderStates::RenderStates() :
             blendMode(),
             transform(),
