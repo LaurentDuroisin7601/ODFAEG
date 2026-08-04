@@ -18,7 +18,6 @@ namespace odfaeg {
         };
     }
 }//
-#include "model.inl"
 #endif
 // Created by laurent on 26/05/2026.
 //

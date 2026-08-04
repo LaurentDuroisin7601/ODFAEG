@@ -32,5 +32,4 @@ namespace odfaeg {
         };
     }
 }
-#include "animator.inl"
 #endif

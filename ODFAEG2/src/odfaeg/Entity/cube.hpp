@@ -25,5 +25,4 @@ namespace odfaeg {
         };
     }
 }
-#include "cube.inl"
 #endif

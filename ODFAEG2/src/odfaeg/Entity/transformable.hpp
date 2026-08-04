@@ -249,5 +249,4 @@ namespace odfaeg {
         };
     }
 }
-#include "transformable.inl"
 #endif

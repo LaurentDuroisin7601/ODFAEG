@@ -74,5 +74,4 @@ namespace odfaeg {
         };
     }
 }
-#include "tile.inl"
 #endif

@@ -45,5 +45,4 @@ namespace odfaeg {
         };
     }
 }
-#include "animation.inl"
 #endif

@@ -221,5 +221,4 @@ namespace odfaeg {
 		};
 	}
 }
-#include "gameObject.inl"
 #endif

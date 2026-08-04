@@ -67,5 +67,4 @@ namespace odfaeg {
         };
     }
 }
-#include "bone.inl"
 #endif

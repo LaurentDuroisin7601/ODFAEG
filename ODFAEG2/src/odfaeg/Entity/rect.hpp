@@ -133,5 +133,4 @@ namespace odfaeg {
         typedef Rect<float> FloatRect;
     }
 }
-#include "rect.inl"
 #endif

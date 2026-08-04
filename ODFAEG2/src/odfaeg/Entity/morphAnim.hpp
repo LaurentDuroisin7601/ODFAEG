@@ -18,5 +18,4 @@ namespace odfaeg {
         };
     }
 }
-#include "morphAnim.inl"
 #endif

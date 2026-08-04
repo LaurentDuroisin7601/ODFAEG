@@ -192,5 +192,4 @@ namespace odfaeg {
         Color& operator *=(Color& left, const Color& right);
 	}
 }
-#include "color.inl"
 #endif

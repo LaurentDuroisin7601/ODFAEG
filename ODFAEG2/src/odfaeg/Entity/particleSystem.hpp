@@ -63,5 +63,4 @@ namespace odfaeg {
         };
     }
 }
-#include "particleSystem.inl"
 #endif
