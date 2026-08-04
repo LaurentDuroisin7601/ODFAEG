@@ -119,4 +119,5 @@ namespace odfaeg {
         };
     }
 }
+#include "serialization.inl"
 #endif

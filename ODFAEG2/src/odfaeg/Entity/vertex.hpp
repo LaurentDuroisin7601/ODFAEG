@@ -121,5 +121,4 @@ namespace odfaeg {
         };
     }
 }
-#include "vertex.inl"
 #endif
