@@ -239,7 +239,7 @@ void main() {
                         uint instanceBase = atomicAdd(outputInstanceBase[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].instanceBase, 1);
                         //debugPrintfEXT("Non instanced! %i", instanceBase);
                         IndirectElementsDrawCommand indirectElementsDrawCommand;
-                        //debugPrintfEXT("submesh nb indexes : %i, index offset : %i, vertex offset : %i, nb vertices : %i", subMesh.nbIndexes,subMesh.indexOffset, subMesh.vertexOffset, subMesh.nbVertices);
+                        //debugPrintfEXT("submesh nb indexes : %i, index offset : %i, vertex offset : %i, nb vertices : %i", lodLevelData.lodLevel[subMesh.lodOffset+lod].index_count,subMesh.indexOffset+lodLevelData.lodLevel[subMesh.lodOffset+lod].index_offset, subMesh.vertexOffset, subMesh.nbVertices);
                         /*if (subMesh.lodOffset + lod >= 215)
                             debugPrintfEXT("lodOffset=%d lod=%d\n", subMesh.lodOffset, lod);*/
                         indirectElementsDrawCommand.index_count = lodLevelData.lodLevel[subMesh.lodOffset+lod].index_count;

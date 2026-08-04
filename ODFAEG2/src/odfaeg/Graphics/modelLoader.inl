@@ -64,8 +64,10 @@ namespace odfaeg {
             processNode(transform, scene->mRootNode, scene, mesh, model, loadTextures);
             std::vector<ImageLoader> imageLoaders;
             size_t totalImagesSize = 0;
+            std::vector<std::string> aliases;
             for (unsigned int i = currentTexturesOffset; i < textureManager.getAliases().size(); i++) {
                 std::string alias = textureManager.getAliases()[i];
+                aliases.push_back(alias);
                 ImageLoader imageLoader;
                 if (textureManager.getAliases()[i].length() > 0 && textureManager.getAliases()[i].at(0) == '*') {
                     //std::cout<<"load texture from memory!"<<std::endl;
@@ -85,6 +87,7 @@ namespace odfaeg {
                   <<" total image size : "<<totalImagesSize.load()
                   << std::endl;*/
                 Texture* texture = textureManager.getResourceByAlias(alias);
+                //std::cout<<"create alias : "<<alias<<std::endl;
                 if (imageLoader.isCompressed()) {
                     texture->setFormat(imageLoader.getVkFormat());
                 } else {
@@ -111,7 +114,8 @@ namespace odfaeg {
                     }*/
                     dataOffset = (dataOffset + 15) & ~15;
                     staggingBuffer.update(imageLoaders[i].getPixelsPtr(j), imageLoaders[i].getDataSize(j), dataOffset);
-                    textureManager.getResourceByAlias(textureManager.getAliases()[currentTexturesOffset+i])->update(commandPool, staggingBuffer, imageLoaders[i].getSize(j).x(), imageLoaders[i].getSize(j).y(), 0, 0, dataOffset, j);
+                    //std::cout<<"alias : "<<aliases[i]<<std::endl;
+                    textureManager.getResourceByAlias(aliases[i])->update(commandPool, staggingBuffer, imageLoaders[i].getSize(j).x(), imageLoaders[i].getSize(j).y(), 0, 0, dataOffset, j);
                     //std::cout<<"id : "<<textureManager.getResourceByAlias(textureManager.getAliases()[currentTexturesOffset+i])->getId()<<std::endl;
                     /*std::cout << "mip " << j << " size = " << imageLoaders[i].getDataSize(j)
                     << "  offset : " << dataOffset << std::endl;*/
@@ -131,7 +135,8 @@ namespace odfaeg {
                 throw std::runtime_error("Echec de l'envoi d'un command buffer!");
             }
             vkDeviceWaitIdle(device.getDevice());
-            currentTexturesOffset += textureManager.getAliases().size();
+            currentTexturesOffset = textureManager.getAliases().size();
+            imageLoaders.clear();
             math::Vec3f currentSize = model->getSize();
             for (unsigned int i = 0; i < model->getSubMeshesCount(); i++) {
                 entity::VertexArray& va = model->getSubMeshes()[i].getVertexArray();

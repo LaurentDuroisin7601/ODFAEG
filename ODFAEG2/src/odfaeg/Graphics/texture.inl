@@ -450,6 +450,7 @@ namespace odfaeg {
             return imageLoader.loadFromMemory(data, size) && loadFromImage(imageLoader, area);
         }
         bool Texture::loadFromImage(const ImageLoader& imageLoader, const entity::IntRect& area) {
+            //std::cout<<"load from image!"<<std::endl;
             if (imageLoader.isCompressed()) {
 
                 m_format = imageLoader.getVkFormat();
@@ -462,7 +463,7 @@ namespace odfaeg {
             m_DataSize = imageLoader.getDataSize();
             create(imageLoader.getSize().x(), imageLoader.getSize().y());
 
-            //std::cout<<"data size : "<<m_DataSize<<std::endl;
+            std::cout<<"data size : "<<m_DataSize<<std::endl;
 
             update(imageLoader.getPixelsPtr(), imageLoader.getSize().x(), imageLoader.getSize().y(), 0, 0);
             //std::cout<<"texture : "<<this<<std::endl;
@@ -498,6 +499,7 @@ namespace odfaeg {
             staggingBuffer.create(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
             staggingBuffer.update(pixels, imageSize);
             for (unsigned int i = 0; i < nbBuffers; i++) {
+                //std::cout<<"image i : "<<images[i].getHandle()<<std::endl;
                 commandPool.beginRecordCommandBuffer(i);
                 transitionImageLayout(images[i], commandPool.getHandle(i),VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
                 images[i].copyBufferToImage(commandPool.getHandle(i), staggingBuffer, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), static_cast<uint32_t>(x), static_cast<uint32_t>(y));
@@ -524,6 +526,7 @@ namespace odfaeg {
             //std::cout<<"data size : "<<imageSize<<"image size : "<<texWidth<<","<<texHeight<<std::endl;
             //create(texWidth, texHeight, 1, mipLevels, false, false);
             for (unsigned int i = 0; i < nbBuffers; i++) {
+                std::cout<<"transition : "<<i<<","<<images[i].getHandle()<<std::endl;
                 transitionImageLayout(images[i], commandPool.getHandle(i),VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevel, 0, 1, 1);
                 images[i].copyBufferToImage(commandPool.getHandle(i), staggingBuffer, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), static_cast<uint32_t>(x), static_cast<uint32_t>(y), srcStart, mipLevel);
                 transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevel, 0, 1, 1);
@@ -581,6 +584,8 @@ namespace odfaeg {
             barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barrier.image = image.getHandle();
+            /*if (image.getHandle() == VK_NULL_HANDLE)
+                system("PAUSE");*/
             VkImageAspectFlags aspectMask = image.getImageAspectFlags();
             if (hasStencilComponent(image.getFormat())) {  
                 /*if (image.getFormat() == VK_FORMAT_R32_UINT) {

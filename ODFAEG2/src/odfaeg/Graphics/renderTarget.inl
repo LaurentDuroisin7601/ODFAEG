@@ -428,6 +428,7 @@ namespace odfaeg {
 					object.subMeshesOffset = currentSubmeshesOffset;
 					object.modelDataOffset = currentModelDataOffset;
 					object.nbSubMeshes = gameObjects[i]->getGameObject()->getSubMeshesCount();
+					std::cout<<"nb submeshes : "<<object.nbSubMeshes<<std::endl;
 					objectDatas.push_back(object);
 					ModelData modelData;
 					modelData.modelMatrix = gameObjects[i]->getGameObject()->getTransform().getMatrix().transpose();
@@ -471,6 +472,7 @@ namespace odfaeg {
 						subMesh.getVertexArray().updateLods();
 						//std::cout<<"vertex offset : "<<currentVertexOffset[primitiveType]<<std::endl;
 						unsigned int baseVertex = currentVertexOffset[primitiveType];
+						//std::cout<<"base vertex : "<<subMeshData.vertexOffset <<"nb vertices : "<<subMeshData.nbVertices<<std::endl;
 						for (unsigned int v = 0; v < subMesh.getVertexArray().getVertexCount(); v++) {
 							//std::cout<<"add vertex : "<<subMesh.getVertexBuffer()[v].position<<std::endl;
 							vertices[primitiveType].append(subMesh.getVertexArray()[v]);
@@ -494,7 +496,8 @@ namespace odfaeg {
 						for (unsigned int l = 0; l < lods.size(); l++) {
 							LODLevelData lodLevelData{};
 							lodLevelData.index_offset = lods[l].indexOffset;
-							lodLevelData.index_count = lods[l].indexCount;							
+							lodLevelData.index_count = lods[l].indexCount;
+							//std::cout<<"first index lod : "<<l<<","<<subMeshData.indexOffset+lods[l].indexOffset<<","<<lods[l].indexCount<<std::endl;					
 							unsigned int currentLodMeshletOffset = meshletDatas.size() - currentSubmeshMeshletOffset;
 							//std::cout<<"currentSubmeshMeshletOffset : "<<currentSubmeshMeshletOffset<<" "<<currentLodMeshletOffset<<","<<meshletDatas.size()<<std::endl;
 							lodLevelData.meshletOffset = currentLodMeshletOffset;
