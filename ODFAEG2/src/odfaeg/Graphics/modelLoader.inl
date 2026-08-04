@@ -132,6 +132,17 @@ namespace odfaeg {
             }
             vkDeviceWaitIdle(device.getDevice());
             currentTexturesOffset += textureManager.getAliases().size();
+            math::Vec3f currentSize = model->getSize();
+            for (unsigned int i = 0; i < model->getSubMeshesCount(); i++) {
+                entity::VertexArray& va = model->getSubMeshes()[i].getVertexArray();
+                if (va.getBounds().getSize().x() > currentSize.x())
+                    currentSize.x() = va.getBounds().getSize().x();
+                if (va.getBounds().getSize().y() > currentSize.y())
+                    currentSize.y() = va.getBounds().getSize().y();
+                if (va.getBounds().getSize().z() > currentSize.z())
+                    currentSize.z() = va.getBounds().getSize().z();
+            }
+            model->setSize(currentSize);
             //std::cout<<"scene loading time : "<<clk2.getElapsedTime().asMilliseconds()<<"ms"<<std::endl;
             return mesh;
         }
@@ -396,7 +407,7 @@ namespace odfaeg {
                 //std::cout<<"texture"<<std::endl;
             }*/
 
-            math::Vec3f currentSize = model->getSize();
+            //math::Vec3f currentSize = model->getSize();
             //if (!device.areMeshShadersSupported()) {
                 entity::SubMesh subMesh;
                 Material* material = new Material();
@@ -443,7 +454,6 @@ namespace odfaeg {
                     va[i] = vertices[i];
                 }
                 for (unsigned int i = 0; i < indexes.size(); i++) {
-                    
                     va.setIndex(i, indexes[i]);
                 }
                 
@@ -467,12 +477,12 @@ namespace odfaeg {
                         //std::cout<<"vertex position : "<<vb[i].position<<std::endl;
                     }
                 }
-                if (va.getBounds().getSize().x() > currentSize.x())
+                /*if (va.getBounds().getSize().x() > currentSize.x())
                     currentSize.x() = va.getBounds().getSize().x();
                 if (va.getBounds().getSize().y() > currentSize.y())
                     currentSize.y() = va.getBounds().getSize().y();
                 if (va.getBounds().getSize().z() > currentSize.z())
-                    currentSize.z() = va.getBounds().getSize().z();
+                    currentSize.z() = va.getBounds().getSize().z();*/
                 //std::cout<<"size : "<<currentSize<<std::endl;                
                 subMesh.setVertexArray(va);
                 std::lock_guard<std::recursive_mutex>(getGlobalMutex());
@@ -571,7 +581,7 @@ namespace odfaeg {
                 } 
             }    */
             std::lock_guard<std::recursive_mutex>(getGlobalMutex());
-            model->setSize(currentSize);       
+            //model->setSize(currentSize);       
             
             //std::cout<<"size : "<<vb.getBounds().getSize()<<std::endl;
            

@@ -31,7 +31,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < children.size(); i++) {
                     children[i]->buildMaterialsFromTextureManager(textureManager);
                 }
-            }    
+            }                
             void buildMaterialsFromTextureManager(core::TextureManager<std::string>& textureManager) {
                 for(unsigned int i = 0; i < gameObject->getSubMeshes().size(); i++) {
                     materials.push_back(std::make_unique<Material>());
