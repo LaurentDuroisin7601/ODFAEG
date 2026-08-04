@@ -254,8 +254,9 @@ namespace odfaeg {
             //std::cout<<"primitive type : "<<m_primitiveType<<std::endl;
 
             VkDeviceSize bufferSize = (m_vertices .size() == 0) ? sizeof(entity::Vertex) : sizeof(entity::Vertex) * m_vertices.size();
-            //std::cout<<"buffer size : "<<sizeof(Vertex)<<","<<m_vertices.size()<<std::endl;
+           
             if (needToUpdateVertexBuffer[currentFrame]) {
+                //std::cout<<"nb vertices: "<<m_vertices.size()<<std::endl;
                 if (bufferSize > maxVerticesSize[currentFrame]) {
                     //std::cout<<"update!"<<std::endl;
                     vertexStaggingBuffer[currentFrame].create(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
@@ -291,7 +292,7 @@ namespace odfaeg {
             }
             bufferSize = (indices.size() == 0) ? sizeof(std::uint32_t) : sizeof(std::uint32_t) * indices.size();
             if (needToUpdateIndexBuffer[currentFrame]) {
-
+                //std::cout<<"nb indexes : "<<indices.size()<<std::endl;
                 if (bufferSize > maxIndexSize[currentFrame]) {
                     //std::cout<<"update index buffer!"<<std::endl;
                     indexStaggingBuffer[currentFrame].create(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);

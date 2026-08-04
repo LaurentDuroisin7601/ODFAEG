@@ -456,7 +456,11 @@ namespace odfaeg {
 						subMeshData.primitiveType = primitiveType;
 						subMeshData.vertexOffset = currentVertexOffset[primitiveType];
 						subMeshData.indexOffset = currentIndexOffset[primitiveType];
-						subMeshData.materialId = gameObjects[i]->getMaterials()[j]->getId();
+						for (unsigned int m = 0; m < materials.size(); m++) {
+							if (materials[m] == gameObjects[i]->getMaterials()[j]) {
+								subMeshData.materialId = gameObjects[i]->getMaterials()[j]->getId();
+							}
+						}						
 						subMeshData.nbVertices = subMesh.getVertexArray().getVertexCount();
 						subMeshData.nbIndexes = subMesh.getVertexArray().getIndexCount();
 						subMeshData.objectId = i;

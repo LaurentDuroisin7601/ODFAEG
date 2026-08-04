@@ -10,6 +10,7 @@
 #include "../Physics/boundingBox.hpp"
 #include "commandPool.hpp"
 #include "../Core/nonCopyable.hpp"
+#include <iostream>
 namespace odfaeg {
     namespace graphic {
 
@@ -53,6 +54,7 @@ namespace odfaeg {
             static VkVertexInputBindingDescription getBindingDescription() {
                 VkVertexInputBindingDescription bindingDescription{};
                 bindingDescription.binding = 0;
+                //std::cout<<"stride : "<<sizeof(entity::Vertex)<<std::endl;
                 bindingDescription.stride = sizeof(entity::Vertex);
                 bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
                 return bindingDescription;

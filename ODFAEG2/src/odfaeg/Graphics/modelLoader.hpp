@@ -64,7 +64,6 @@ namespace odfaeg {
             core::Clock clk, clk2;
             bool isSkinned;
             unsigned int currentTexturesOffset;
-            std::string path;
         };
     }
 }
