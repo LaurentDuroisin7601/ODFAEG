@@ -88,7 +88,7 @@ namespace odfaeg {
 
 			cleanup();
 		}
-		void Buffer::swap(Buffer& a, Buffer& b) noexcept {
+		void swap(Buffer& a, Buffer& b) noexcept {
 			a.swap(b);
 		}
 	}
