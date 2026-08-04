@@ -526,7 +526,7 @@ namespace odfaeg {
             //std::cout<<"data size : "<<imageSize<<"image size : "<<texWidth<<","<<texHeight<<std::endl;
             //create(texWidth, texHeight, 1, mipLevels, false, false);
             for (unsigned int i = 0; i < nbBuffers; i++) {
-                std::cout<<"transition : "<<i<<","<<images[i].getHandle()<<std::endl;
+                //std::cout<<"transition : "<<i<<","<<images[i].getHandle()<<std::endl;
                 transitionImageLayout(images[i], commandPool.getHandle(i),VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevel, 0, 1, 1);
                 images[i].copyBufferToImage(commandPool.getHandle(i), staggingBuffer, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), static_cast<uint32_t>(x), static_cast<uint32_t>(y), srcStart, mipLevel);
                 transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevel, 0, 1, 1);

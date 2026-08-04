@@ -67,6 +67,7 @@ namespace odfaeg {
             std::vector<std::string> aliases;
             for (unsigned int i = currentTexturesOffset; i < textureManager.getAliases().size(); i++) {
                 std::string alias = textureManager.getAliases()[i];
+                std::cout<<"create alias : "<<"i : "<<i<<alias<<std::endl;
                 aliases.push_back(alias);
                 ImageLoader imageLoader;
                 if (textureManager.getAliases()[i].length() > 0 && textureManager.getAliases()[i].at(0) == '*') {
@@ -87,7 +88,7 @@ namespace odfaeg {
                   <<" total image size : "<<totalImagesSize.load()
                   << std::endl;*/
                 Texture* texture = textureManager.getResourceByAlias(alias);
-                //std::cout<<"create alias : "<<alias<<std::endl;
+                
                 if (imageLoader.isCompressed()) {
                     texture->setFormat(imageLoader.getVkFormat());
                 } else {
@@ -166,7 +167,7 @@ namespace odfaeg {
             std::cout<<"transp world : "<<nodeLocal * parentTransform<<std::endl;*/
             //std::cout<<"nb meshes to load : "<<node->mNumMeshes<<std::endl;
             clk.restart();
-            //jobFence.reset(node->mNumMeshes);
+            jobFence.reset(node->mNumMeshes);
             for(unsigned int i = 0; i < node->mNumMeshes; i++)
             {
                 aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
@@ -175,7 +176,7 @@ namespace odfaeg {
                     jobFence.jobDone();
                 });
             }
-            //jobFence.wait();
+            jobFence.wait();
             //std::cout<<"loading meshes time : "<<clk.getElapsedTime().asMilliseconds()<<"ms"<<std::endl;
             // then do the same for each of its children
             for(unsigned int i = 0; i < node->mNumChildren; i++)
@@ -701,6 +702,7 @@ namespace odfaeg {
                     textures.push_back(texture);
                     skip = true;
                 }
+                //std::cout<<"mesh tex path : "<<path<<std::endl;
                 if (!skip) {
                     //std::cout<<"nb textures : "<<textureManager.getAliases().size()<<std::endl;
                     Texture* texture = new Texture(device);
@@ -726,6 +728,7 @@ namespace odfaeg {
                     //texture->setTexType(convertAssimpType(type));
                     //texture->create(imageLoader.getSize().x(), imageLoader.getSize().y());
                     textures.push_back(texture);
+                    //std::cout<<"make texture : "<<path<<std::endl;
                     //std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                     textureManager.make_resource(texture, path);
                 }

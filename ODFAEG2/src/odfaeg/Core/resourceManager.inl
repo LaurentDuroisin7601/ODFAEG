@@ -237,7 +237,8 @@ namespace odfaeg {
             template <typename R, typename I>
             std::vector<I> ResourceManager<R, I>::getAliases() {
                 std::vector<I> aliases;
-                for (auto& pair : mAliasMap) {
+                for (auto pair : mAliasMap) {
+                    //std::cout<<" get alias : "<<pair.first<<std::endl;
                     aliases.push_back(pair.first);
                 }
                 return aliases;
