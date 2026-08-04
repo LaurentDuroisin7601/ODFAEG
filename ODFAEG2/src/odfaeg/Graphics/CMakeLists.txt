@@ -363,7 +363,7 @@ else()
 	target_include_directories(odfaeg-graphics PRIVATE ${PROJECT_SOURCE_DIR}/external)
 	target_include_directories(odfaeg-graphics PRIVATE ${PROJECT_SOURCE_DIR}/external/entt)
 	target_include_directories(odfaeg-graphics PRIVATE ${PROJECT_SOURCE_DIR}/external/gli)
-	
+	target_include_directories(odfaeg-graphics PRIVATE ${PROJECT_SOURCE_DIR}/external/assimp)
 	target_include_directories(odfaeg-graphics
 			PUBLIC
 			$<INSTALL_INTERFACE:include>
@@ -386,8 +386,8 @@ else()
     )
 	target_include_directories(odfaeg-graphics
     PUBLIC
-        $<INSTALL_INTERFACE:include/odfaeg/external/stb>
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/stb>
+        $<INSTALL_INTERFACE:include/odfaeg/external/assimp>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/assimp>
     )
 	target_include_directories(odfaeg-graphics
     PUBLIC

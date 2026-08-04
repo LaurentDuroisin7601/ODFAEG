@@ -1,9 +1,5 @@
 #ifndef ODFAEG_IMAGELOADER_HPP
 #define ODFAEG_IMAGELOADER_HPP
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <gli.hpp>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -11,6 +7,11 @@
 #include <vector>
 #include <cctype>
 #include <vulkan/vulkan.hpp>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
+#include <gli.hpp>
 #include "../Entity/color.hpp"
 #include "../Math/vec.hpp"
 #include "../Core/inputStream.hpp"
