@@ -480,7 +480,8 @@ namespace odfaeg {
 						}
 						for (unsigned int v = 0; v < subMesh.getVertexArray().getIndexCount(); v++) {
 							//std::cout<<"add index"<<std::endl;
-							vertices[primitiveType].addIndex(baseVertex + subMesh.getVertexArray().getIndex(v));
+							uint32_t idx = subMesh.getVertexArray().getIndex(v);
+							vertices[primitiveType].addIndex(idx /*+ baseVertex*/);
 							currentIndexOffset[primitiveType]++;
 						}
 						/*std::cout<<"new total vertex count : "<<vertices[primitiveType].getVertexCount()<<std::endl;
