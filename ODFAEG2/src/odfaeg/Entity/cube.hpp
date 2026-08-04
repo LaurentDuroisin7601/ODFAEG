@@ -23,9 +23,6 @@ namespace odfaeg {
             FloatRect m_textRect;
             std::string m_textureId;            
         };
-        std::uint32_t packColor(Color color) {
-            return (color.a << 24) | (color.b << 16) | (color.g << 8) | color.r;
-        }
     }
 }
 #endif

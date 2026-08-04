@@ -111,9 +111,9 @@ namespace odfaeg {
         {
             return left = left * right;
         }
-        /*std::uint32_t packColor(Color color) {
+        std::uint32_t packColor(Color color) {
             return (color.a << 24) | (color.b << 16) | (color.g << 8) | color.r;
-        }*/
+        }
 	    //Marche pas, les couleurs ne sont pas définie dans les autres modules!
 	    inline const Color Color::Black(0, 0, 0);
 	    inline const Color Color::White(255, 255, 255);
