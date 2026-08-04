@@ -67,7 +67,7 @@ namespace odfaeg {
             std::vector<std::string> aliases;
             for (unsigned int i = currentTexturesOffset; i < textureManager.getAliases().size(); i++) {
                 std::string alias = textureManager.getAliases()[i];
-                std::cout<<"create alias : "<<"i : "<<i<<alias<<std::endl;
+                //std::cout<<"create alias : "<<"i : "<<i<<alias<<std::endl;
                 aliases.push_back(alias);
                 ImageLoader imageLoader;
                 if (textureManager.getAliases()[i].length() > 0 && textureManager.getAliases()[i].at(0) == '*') {
