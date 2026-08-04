@@ -3,11 +3,9 @@
 #include <functional>
 #include <cstdint>
 #include "../Core/clock.hpp"
+#include "color.hpp"
 namespace odfaeg {
-    namespace entity {
-        std::uint32_t packColor(Color color) {
-            return (color.a << 24) | (color.b << 16) | (color.g << 8) | color.r;
-        }
+    namespace entity {        
         struct alignas(16) EmittorInterface {
             core::Time timeUntilRemoval=core::seconds(0);
             unsigned int particleSystemId=0, alive=1;

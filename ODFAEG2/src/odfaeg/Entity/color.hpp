@@ -190,6 +190,7 @@ namespace odfaeg {
         ///
         ////////////////////////////////////////////////////////////
         Color& operator *=(Color& left, const Color& right);
+        std::uint32_t packColor(Color color);
 	}
 }
 #endif

@@ -27,7 +27,7 @@ namespace odfaeg {
           * The index of min and max are : 0,0 for the min x; 0, 1 for the max x; 1,0 for the min Y, etc...
           */
         class Computer {
-        public:
+        public:        
             static Vec2f getMoy(std::vector<Vec2f> verts);
             static Vec3f getMoy(std::vector<Vec3f> verts);
             //Calculs les minimum est maximum d'un vecteurs pass� et les stocke dans un tableau.

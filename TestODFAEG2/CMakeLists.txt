@@ -37,11 +37,11 @@ find_package(odfaeg REQUIRED)
 
 target_link_libraries(MyGame
     PRIVATE
-        odfaeg::odfaeg-core
-        odfaeg::odfaeg-math         
+        odfaeg::odfaeg-graphics
+        odfaeg::odfaeg-window  
+        odfaeg::odfaeg-entity   
         odfaeg::odfaeg-physics
-        odfaeg::odfaeg-entity
-        odfaeg::odfaeg-window
-        odfaeg::odfaeg-graphics       
+        odfaeg::odfaeg-math
+        odfaeg::odfaeg-core
 	    imgui_custom
 )
