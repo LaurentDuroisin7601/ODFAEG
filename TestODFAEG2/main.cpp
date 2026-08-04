@@ -126,9 +126,10 @@ int main() {
 	ResourceManager<Texture, TextureNames> textureManager;
 	ResourceManager<Texture, std::string> modelTextureManager;
 	ModelLoader modelLoader(GPUContext::instance().getDevice(), modelTextureManager);
-	//Mesh* bistroExterior = modelLoader.loadModel("Bistro_v5_2/BistroExterior.fbx");
-	std::cout<<"test"<<std::endl;
-	Mesh* bistroExterior = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
+	Mesh* bistroExterior = modelLoader.loadModel("Bistro_v5_2/BistroExterior.fbx");
+	bistroExterior->getGameObject()->setScale(Vec3f(1, -1, 1));
+	//std::cout<<"test"<<std::endl;
+	//Mesh* bistroExterior = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
 	//GameObject* bistroExterior = modelLoader.loadModel(/*"CubeTest/cube_test.glb"*//**/"carGLTF/scene.gltf"/*"Bistro_v5_2/BistroExterior.fbx"*/);
 	//bistroExterior->setRotation(45, Vec3f(0, 1, 0));
 	/*std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
@@ -223,9 +224,9 @@ int main() {
 		window.clear();
 		window.setTypesToRender("*", window.getCurrentFrame());
 		window.setCamera(camera);
-		std::cout<<"draw"<<std::endl;
+		//std::cout<<"draw"<<std::endl;
 		window.draw(Triangles);
-		std::cout<<"drawn"<<std::endl;
+		//std::cout<<"drawn"<<std::endl;
 		/*sceneColorTexture.clear(Color::Red);
 		renderGraph.render();*/
 		
@@ -235,7 +236,7 @@ int main() {
 		
 		
 	 	window.submit();
-		std::cout<<"submited"<<std::endl;
+		//std::cout<<"submited"<<std::endl;
 		window.beginRecordCommandBuffer();
 		window.setCamera(imGUICamera);
 		window.setDepthStencil(false, false);

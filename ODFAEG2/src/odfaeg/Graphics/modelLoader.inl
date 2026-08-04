@@ -286,12 +286,12 @@ namespace odfaeg {
             zUpyUp.reset();
             // 1. Correction UP (Z-up → Y-up)
             if (sceneUpAxis == Axis::Z) {
-                std::cout<<"up axis rotation"<<std::endl;
+                //std::cout<<"up axis rotation"<<std::endl;
                 zUpyUp.setRotation(math::Vec3f(1.f,0.f,0.f), -90.f);
             }
             // 2. Correction FRONT (Y-forward → -Z-forward)
             if (sceneFrontAxis == Axis::Y) {
-                std::cout<<"front axis rotation"<<std::endl;
+                //std::cout<<"front axis rotation"<<std::endl;
                 axisCorrection.setRotation(math::Vec3f(0.f,0.f,1.f), 180.f);
             }
 
@@ -358,7 +358,8 @@ namespace odfaeg {
                 }
             }*/
             std::vector<uint32_t> indexes;
-            //unsigned int baseIndex = 0;
+            /*entity::VertexArray va(entity::Triangles) ;          
+            unsigned int baseIndex = 0;*/
             for(unsigned int i = 0; i < mesh->mNumFaces; i++)
             {
                 aiFace face = mesh->mFaces[i];
@@ -367,8 +368,8 @@ namespace odfaeg {
                 for(unsigned int j = 0; j < face.mNumIndices; j++) {
                     indexes.push_back(face.mIndices[j]);
                     //std::cout<<"index : "<<face.mIndices[j]<<std::endl;
-                    //vb.append(vertices[face.mIndices[j]]);                    
-                    //vb.addIndex(face.mIndices[j]);
+                    /*va.append(vertices[face.mIndices[j]]);                    
+                    va.addIndex(va.getVertexCount()-1);*/
                 }
                 //baseIndex += face.mNumIndices;
             }
@@ -399,8 +400,7 @@ namespace odfaeg {
             //if (!device.areMeshShadersSupported()) {
                 entity::SubMesh subMesh;
                 Material* material = new Material();
-                for (unsigned int i = 0; 
-                    i < entity::SubMesh::NBTEXTYPES; i++)
+                for (unsigned int i = 0; i < entity::SubMesh::NBTEXTYPES; i++)
                     material->setTexture(nullptr, static_cast<entity::SubMesh::TexType>(i));
                 for (unsigned int i = 0; i < diffuseMaps.size(); i++) {
                     //diffuseMaps[i]->setTexType(Material::DIFFUSE);
@@ -439,10 +439,11 @@ namespace odfaeg {
                 }
                 entity::VertexArray va(entity::PrimitiveType::Triangles);
                 va.resize(vertices.size(), indexes.size());
-                for (unsigned int v = 0; v < vertices.size(); v++) {  
-                    va[v] = vertices[v];
+                for (unsigned int i = 0; i < vertices.size(); i++) {  
+                    va[i] = vertices[i];
                 }
                 for (unsigned int i = 0; i < indexes.size(); i++) {
+                    
                     va.setIndex(i, indexes[i]);
                 }
                 

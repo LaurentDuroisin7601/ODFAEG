@@ -480,7 +480,7 @@ namespace odfaeg {
 						}
 						for (unsigned int v = 0; v < subMesh.getVertexArray().getIndexCount(); v++) {
 							//std::cout<<"add index"<<std::endl;
-							vertices[primitiveType].addIndex( subMesh.getVertexArray().getIndex(v));
+							vertices[primitiveType].addIndex(baseVertex + subMesh.getVertexArray().getIndex(v));
 							currentIndexOffset[primitiveType]++;
 						}
 						/*std::cout<<"new total vertex count : "<<vertices[primitiveType].getVertexCount()<<std::endl;
@@ -507,6 +507,7 @@ namespace odfaeg {
 										cluster.id = currentClustersOffset;	
 										cluster.meshletOffset = 0;	
 										cluster.meshletCount = 0;
+										cluster.lodLevel = l;
 										physic::BoundingBox bb(x, y, z, 50, 50, 50);
 										AABB clusterAABB;	
 										clusterAABB.center = bb.getCenter();
@@ -1883,9 +1884,9 @@ namespace odfaeg {
 				vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ViewProjMatPC), &viewProjInfos);
 			}			
 			vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(ViewProjMatPC), sizeof(IndexesPC), &indexesPC);
-			if (!device.areMeshShadersSupported()) {
-				VkBuffer vertexBuffers[] = { vertices[primitiveType].getVertexBuffer(0).getHandle()};
-				VkDeviceSize offsets[] = { 0, 0 };
+			VkBuffer vertexBuffers[] = { vertices[primitiveType].getVertexBuffer(0).getHandle()};
+			VkDeviceSize offsets[] = { 0, 0 };
+			if (!device.areMeshShadersSupported()) {				
 				vkCmdBindVertexBuffers(commandPool.getHandle(getCurrentFrame()), 0, 1, vertexBuffers, offsets);
 				vkCmdBindIndexBuffer(commandPool.getHandle(getCurrentFrame()), vertices[primitiveType].getIndexBuffer(0).getHandle(), 0, VK_INDEX_TYPE_UINT32);
 			}
