@@ -67,7 +67,7 @@ namespace odfaeg {
 				int meshletOffset;
 				int meshletCount;
 			};
-			struct alignas(16) SubMeshData {
+			struct SubMeshData {
 				AABB globalBounds;
 				int vertexOffset;
 				int indexOffset;
@@ -104,8 +104,8 @@ namespace odfaeg {
 				math::Matrix4f borderMatrices;
 			};
 			struct MaterialData {
-				math::Vec2f uvScale;
-				math::Vec2f uvOffset;
+				/*math::Vec2f uvScale;
+				math::Vec2f uvOffset;*/
 				unsigned int diffuseTextureIndex;
 				unsigned int specularTextureIndex;
 				unsigned int normalTextureIndex;
@@ -121,7 +121,7 @@ namespace odfaeg {
 				unsigned int vertsInstanceSet;
 				unsigned int materialId;
 				unsigned int nbBuffers;
-				unsigned int padding;
+				//unsigned int padding;
 			};	
 			struct DrawElementsIndirectCommand {
 				unsigned int index_count;

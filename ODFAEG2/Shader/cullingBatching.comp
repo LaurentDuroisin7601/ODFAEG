@@ -49,8 +49,8 @@ struct ModelData {
 };        
 /*Matériaux*/
 struct MaterialData {   
-    vec2 uvScale;
-    vec2 uvOffset;
+    /*vec2 uvScale;
+    vec2 uvOffset;*/
     uint diffuseTextureIndex;
     uint specularTextureIndex;
     uint normalTextureIndex;
@@ -65,8 +65,7 @@ struct MaterialData {
     int instanceGroupId;
     uint vertsInstanceSet;
     uint materialId;
-    uint nbBuffers;
-    uint padding;
+    uint nbBuffers;    
 };
 struct IndirectElementsDrawCommand {
     uint index_count;
@@ -265,7 +264,7 @@ void main() {
                         //material.materialId = materialId;
                         //debugPrintfEXT("culling shader draw id : %i, material id : %i", indirectElementsDrawCommandOffset, materialId);
                         if (subMesh.materialId == 1)
-                            debugPrintfEXT("diffuse tex id : %i", material.diffuseTextureIndex);
+                            debugPrintfEXT("sm id : %i, diffuse tex id : %i", subMesh.id, material.diffuseTextureIndex);
                         outputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[indirectElementsDrawCommandOffset] = material;
                         uint offsetInOutputMeshData = atomicAdd(offsetInOutputMeshData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshDataOffset, 1);
                         outputMeshesData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshData[offsetInOutputMeshData]  = subMesh;

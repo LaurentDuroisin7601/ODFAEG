@@ -9,8 +9,6 @@ layout (push_constant) uniform PushConstant {
     layout(offset=136) int currentImageIndex;
 } pc;
 struct MaterialData {
-    vec2 uvScale;
-    vec2 uvOffset;
     uint diffuseTextureIndex;
     uint specularTextureIndex;
     uint normalTextureIndex;
@@ -25,8 +23,7 @@ struct MaterialData {
     int instanceGroupId;
     uint vertsInstanceSet;
     uint materialId;
-    uint nbBuffers;
-    uint padding;
+    uint nbBuffers;    
 };
 layout (std430, set = 0, binding = 2) buffer MaterialDataSSBO {
     MaterialData materialData[];
@@ -50,8 +47,8 @@ void main() {
     vec2 uv = fragTexCoord;
     // --- Diffuse ---
     vec4 diffuse = fragColor;
-    if (mat.diffuseTextureIndex == 4)
-        debugPrintfEXT("diffuse %i", mat.diffuseTextureIndex);
+    /*if (mat.diffuseTextureIndex == 4)
+        debugPrintfEXT("diffuse %i", mat.diffuseTextureIndex);*/
     if (mat.diffuseTextureIndex > 0 && mat.diffuseTextureIndex < MAX_TEXTURES) {
         diffuse *= texture(diffuseTextures[mat.diffuseTextureIndex-1], uv);
     }

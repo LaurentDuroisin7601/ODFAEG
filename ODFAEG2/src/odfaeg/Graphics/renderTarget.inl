@@ -399,8 +399,8 @@ namespace odfaeg {
 					material.roughnessTextureIndex = (materials[i]->getTexture(entity::SubMesh::ROUGHNESS) != nullptr) ? materials[i]->getTexture(entity::SubMesh::ROUGHNESS)->getId() : 0;
 					material.aoTextureIndex = (materials[i]->getTexture(entity::SubMesh::AO) != nullptr) ? materials[i]->getTexture(entity::SubMesh::AO)->getId() : 0;
 					material.emissiveTextureIndex = (materials[i]->getTexture(entity::SubMesh::EMISSIVE) != nullptr) ? materials[i]->getTexture(entity::SubMesh::EMISSIVE)->getId() : 0;
-					material.uvScale = /*(materials[i]->getTexture(Material::DIFFUSE) != nullptr) ? math::Vec2f(1.f / materials[i]->getTexture(Material::DIFFUSE)->getSize().x(), 1.f / materials[i]->getTexture(Material::DIFFUSE)->getSize().y()) :*/ math::Vec2f(1.f, 1.f);
-					material.uvOffset = math::Vec2f(0.f, 0.f);
+					/*material.uvScale = /*(materials[i]->getTexture(Material::DIFFUSE) != nullptr) ? math::Vec2f(1.f / materials[i]->getTexture(Material::DIFFUSE)->getSize().x(), 1.f / materials[i]->getTexture(Material::DIFFUSE)->getSize().y()) :*/ /*math::Vec2f(1.f, 1.f);
+					material.uvOffset = math::Vec2f(0.f, 0.f);*/
 					material.materialType = materials[i]->getType();
 					material.nbBuffers = (materials[i]->getTexture(entity::SubMesh::DIFFUSE) != nullptr) ? materials[i]->getTexture(entity::SubMesh::DIFFUSE)->getNbBuffers() : 0;
 					material.vertsInstanceSet  = 0;
@@ -460,10 +460,10 @@ namespace odfaeg {
 						for (unsigned int m = 0; m < materials.size(); m++) {
 							
 							if (*materials[m] == *gameObjects[i]->getMaterials()[j]) {
-								if (materials[m]->getTexture(entity::SubMesh::DIFFUSE) != nullptr && materials[m]->getTexture(entity::SubMesh::DIFFUSE)->getId() == 4) {
-									std::cout<<"ids : "<<gameObjects[i]->getMaterials()[j]->getId()<<","<<materialDatas[gameObjects[i]->getMaterials()[j]->getId()].diffuseTextureIndex<<std::endl;
+								/*if (materials[m]->getTexture(entity::SubMesh::DIFFUSE) != nullptr && materials[m]->getTexture(entity::SubMesh::DIFFUSE)->getId() == 4) {
+									std::cout<<"ids : "<<subMeshData.id<<","<<gameObjects[i]->getMaterials()[j]->getId()<<","<<materialDatas[gameObjects[i]->getMaterials()[j]->getId()].diffuseTextureIndex<<std::endl;
 									system("PAUSE");
-								}
+								}*/
 								subMeshData.materialId = gameObjects[i]->getMaterials()[j]->getId();
 							}
 						}						
