@@ -457,7 +457,7 @@ namespace odfaeg {
 						subMeshData.vertexOffset = currentVertexOffset[primitiveType];
 						subMeshData.indexOffset = currentIndexOffset[primitiveType];
 						for (unsigned int m = 0; m < materials.size(); m++) {
-							if (materials[m] == gameObjects[i]->getMaterials()[j]) {
+							if (*materials[m] == *gameObjects[i]->getMaterials()[j]) {
 								subMeshData.materialId = gameObjects[i]->getMaterials()[j]->getId();
 							}
 						}						
