@@ -279,5 +279,4 @@ namespace odfaeg {
         };
     }
 }
-#include "window.inl"
 #endif

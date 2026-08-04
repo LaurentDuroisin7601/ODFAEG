@@ -94,5 +94,4 @@ namespace odfaeg {
         };
     }
 }
-#include "cursor.inl"
 #endif

@@ -1,4 +1,5 @@
 #include "windowImpl.hpp"
+#include "windowImpl.inl"
 /*#include <odfaeg/config.hpp>
 #if defined(ODFAEG_SYSTEM_WINDOWS)
 #include "Windows/win32Window.hpp"

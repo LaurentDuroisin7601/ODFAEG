@@ -95,5 +95,4 @@ namespace odfaeg {
 
     }
 }
-#include "cursorImpl.inl"
 #endif

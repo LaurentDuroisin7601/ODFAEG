@@ -266,5 +266,4 @@ namespace odfaeg {
         };
     }
 }
-#include "windowImpl.inl"
 #endif

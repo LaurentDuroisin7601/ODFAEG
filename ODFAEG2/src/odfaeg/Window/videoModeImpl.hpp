@@ -35,5 +35,4 @@ namespace odfaeg {
         };
     }
 }
-#include "videoModeImpl.inl"
 #endif

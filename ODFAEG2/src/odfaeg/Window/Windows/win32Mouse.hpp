@@ -54,5 +54,4 @@ namespace odfaeg {
         };
     }
 }
-#include "win32Mouse.inl"
 #endif
