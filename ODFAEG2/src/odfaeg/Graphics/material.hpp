@@ -183,5 +183,4 @@ namespace odfaeg {
 		};
 	}
 }
-#include "material.inl"
 #endif

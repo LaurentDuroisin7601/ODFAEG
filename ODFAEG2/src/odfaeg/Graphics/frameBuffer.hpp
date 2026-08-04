@@ -24,5 +24,4 @@ namespace odfaeg {
 		};
 	}
 }
-#include "frameBuffer.inl"
 #endif

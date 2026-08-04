@@ -261,5 +261,4 @@ namespace odfaeg {
         };
     }
 }
-#include "imageLoader.inl"
 #endif

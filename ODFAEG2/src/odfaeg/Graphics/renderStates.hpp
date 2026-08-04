@@ -82,5 +82,4 @@ namespace odfaeg {
         RenderStates RenderStates::Default = RenderStates();     
 	}
 }
-#include "renderStates.inl"
 #endif

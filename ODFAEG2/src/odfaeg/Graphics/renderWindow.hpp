@@ -106,5 +106,4 @@ namespace odfaeg {
         };			
 	}
 }
-#include "renderWindow.inl"
 #endif

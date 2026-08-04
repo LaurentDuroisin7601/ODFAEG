@@ -105,5 +105,4 @@ namespace odfaeg {
         };
     }
 }
-#include "envMapRenderer.inl"
 #endif

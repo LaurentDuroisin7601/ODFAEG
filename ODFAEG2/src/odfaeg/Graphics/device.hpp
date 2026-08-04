@@ -66,5 +66,4 @@ namespace odfaeg {
         };
     }
 }
-#include "device.inl"
 #endif

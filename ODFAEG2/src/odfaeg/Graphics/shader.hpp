@@ -188,5 +188,4 @@ namespace odfaeg{
         };
 	}
 }
-#include "shader.inl"
 #endif

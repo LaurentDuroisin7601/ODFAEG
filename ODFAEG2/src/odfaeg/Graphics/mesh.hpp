@@ -51,5 +51,4 @@ namespace odfaeg {
         };
     }
 }
-#include "mesh.inl"
 #endif

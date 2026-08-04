@@ -32,5 +32,4 @@ namespace odfaeg {
 		};
 	}
 }
-#include "commandPool.inl"
 #endif

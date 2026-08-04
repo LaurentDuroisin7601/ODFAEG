@@ -20,5 +20,4 @@ namespace odfaeg{
 		};
 	}
 }
-#include "fence.inl"
 #endif

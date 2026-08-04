@@ -60,5 +60,4 @@ namespace odfaeg {
         };
     }
 }
-#include "viewMatrix.inl"
 #endif

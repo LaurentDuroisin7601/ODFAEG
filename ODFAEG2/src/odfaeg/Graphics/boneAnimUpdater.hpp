@@ -76,5 +76,4 @@ namespace odfaeg {
         };
     } // graphic
 } // odfaeg
-#include "boneAnimUpdater.inl"
 #endif

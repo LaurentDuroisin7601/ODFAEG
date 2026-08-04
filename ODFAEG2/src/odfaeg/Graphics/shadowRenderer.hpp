@@ -141,6 +141,5 @@ namespace odfaeg {
         };
     }
 }
-#include "shadowRenderer.inl"
 #endif
 

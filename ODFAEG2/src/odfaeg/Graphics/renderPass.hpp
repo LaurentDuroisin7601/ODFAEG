@@ -25,5 +25,4 @@ namespace odfaeg {
 		};
 	}
 }
-#include "renderPass.inl"
 #endif

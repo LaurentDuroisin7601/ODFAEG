@@ -227,5 +227,4 @@ namespace odfaeg {
         };
     }
 }
-#include "camera.inl"
 #endif

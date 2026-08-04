@@ -34,5 +34,4 @@ namespace odfaeg {
 		}
 	}
 }
-#include "buffer.inl"
 #endif

@@ -69,5 +69,4 @@ namespace odfaeg {
 		};
 	}
 }
-#include "renderTexture.inl"
 #endif

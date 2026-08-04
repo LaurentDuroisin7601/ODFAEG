@@ -22,6 +22,5 @@ namespace odfaeg {
 		};
 	}
 }
-#include "semaphore.inl"
 #endif
 

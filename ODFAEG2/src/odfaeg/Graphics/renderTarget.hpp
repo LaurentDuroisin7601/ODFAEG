@@ -335,5 +335,4 @@ namespace odfaeg {
         }
 	}
 }
-#include "renderTarget.inl"
 #endif

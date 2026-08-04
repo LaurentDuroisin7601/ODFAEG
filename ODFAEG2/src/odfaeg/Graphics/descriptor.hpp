@@ -75,5 +75,4 @@ namespace odfaeg {
 		};
 	}
 }
-#include "descriptor.inl"
 #endif

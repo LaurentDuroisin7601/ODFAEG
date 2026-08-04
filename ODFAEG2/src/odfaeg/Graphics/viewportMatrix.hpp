@@ -24,5 +24,4 @@ namespace odfaeg {
         };
     }
 }
-#include "viewportMatrix.inl"
 #endif

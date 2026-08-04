@@ -47,5 +47,4 @@ namespace odfaeg {
         };
     }
 }
-#include "renderGraph.inl"
 #endif

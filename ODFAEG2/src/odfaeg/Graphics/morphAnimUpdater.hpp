@@ -90,5 +90,4 @@ namespace odfaeg {
         };
     }
 }
-#include "morphAnimUpdater.inl"
 #endif

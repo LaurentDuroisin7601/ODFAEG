@@ -265,5 +265,4 @@ namespace odfaeg {
 		};
 	}
 }
-#include "shape.inl"
 #endif

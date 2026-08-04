@@ -56,5 +56,4 @@ namespace odfaeg {
         };
     }
 }
-#include "instance.inl"
 #endif

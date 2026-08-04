@@ -130,5 +130,4 @@ namespace odfaeg {
         extern const BlendMode BlendNone;     ///< Overwrite dest with source        
     }
 }
-#include "blendMode.inl"
 #endif

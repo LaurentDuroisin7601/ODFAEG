@@ -16,5 +16,4 @@ namespace odfaeg {
         void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
     }
 }
-#include "debug.inl"
 #endif
