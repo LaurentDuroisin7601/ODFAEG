@@ -173,5 +173,4 @@ namespace odfaeg {
         };        
     }
 }
-#include "stateManager.inl"
 #endif

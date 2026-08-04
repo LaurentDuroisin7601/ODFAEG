@@ -156,5 +156,4 @@ namespace odfaeg {
         };
     }
 }
-#include "runtime_compiler.inl"
 #endif

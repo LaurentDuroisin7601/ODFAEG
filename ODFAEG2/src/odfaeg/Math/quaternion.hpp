@@ -18,5 +18,4 @@ namespace odfaeg {
         };
     }
 }
-#include "quaternion.inl"
 #endif

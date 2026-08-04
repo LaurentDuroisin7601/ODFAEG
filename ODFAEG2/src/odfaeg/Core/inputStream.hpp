@@ -131,5 +131,4 @@ namespace odfaeg{
         };
 	}
 }
-#include "inputStream.inl"
 #endif

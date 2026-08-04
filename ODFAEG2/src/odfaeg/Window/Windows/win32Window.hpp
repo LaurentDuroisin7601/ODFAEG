@@ -52,7 +52,7 @@
 #include "../iKeyboard.hpp"
 namespace odfaeg {
     namespace window {        
-        class  Win32Window  {
+        class  Win32Window  {            
         public:
             Win32Window();
             ////////////////////////////////////////////////////////////

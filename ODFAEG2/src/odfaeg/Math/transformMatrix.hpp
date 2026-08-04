@@ -97,5 +97,4 @@ namespace odfaeg {
         };
 	}
 }
-#include "transformMatrix.inl"
 #endif

@@ -703,5 +703,4 @@ namespace odfaeg {
         typedef Utf<32> Utf32;           
      }    
 }
-#include "utf.inl"
 #endif

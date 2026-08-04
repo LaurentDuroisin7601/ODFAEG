@@ -33,5 +33,4 @@ namespace odfaeg {
         };
     }
 }
-#include "threadPool.inl" 
 #endif

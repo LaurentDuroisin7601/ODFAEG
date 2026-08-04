@@ -399,5 +399,4 @@ namespace odfaeg {
         };
     }
 }
-#include "variant.inl"
 #endif

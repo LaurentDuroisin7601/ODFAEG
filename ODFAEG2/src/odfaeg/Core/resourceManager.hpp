@@ -168,7 +168,6 @@ namespace odfaeg
         };
     }
 }
-#include "resourceManager.inl"
 #endif
 ////////////////
 /*export namespace odfaeg {

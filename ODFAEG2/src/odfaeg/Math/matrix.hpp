@@ -168,5 +168,4 @@ namespace odfaeg {
         using Matrix4f =  Mat<float, 4, 4>;
     }
 }
-#include "matrix.inl"
 #endif

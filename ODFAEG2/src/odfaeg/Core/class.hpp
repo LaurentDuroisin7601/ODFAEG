@@ -122,5 +122,4 @@ namespace odfaeg {
         };        
     }
 }
-#include "class.inl"
 #endif

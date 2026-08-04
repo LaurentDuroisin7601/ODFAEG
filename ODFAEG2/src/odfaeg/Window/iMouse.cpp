@@ -1,4 +1,5 @@
 #include "iMouse.hpp"
+#include "window.hpp"
 #if defined(ODFAEG_SYSTEM_WINDOWS)
 #include "Windows/win32Mouse.hpp"
 typedef odfaeg::window::Win32Mouse MouseType;

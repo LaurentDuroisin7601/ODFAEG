@@ -57,5 +57,4 @@ namespace odfaeg {
         };
     }
 }
-#include "timer.inl"
 #endif

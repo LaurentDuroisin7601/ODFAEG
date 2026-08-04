@@ -1,4 +1,3 @@
-//import odfaeg.window.win32Window;
 namespace
 {
     unsigned int               windowCount = 0; // Windows owned by ODFAEG

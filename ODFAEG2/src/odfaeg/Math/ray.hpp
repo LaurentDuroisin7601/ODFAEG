@@ -39,5 +39,4 @@ namespace odfaeg {
         };
     }
 }
-#include "ray.inl"
 #endif

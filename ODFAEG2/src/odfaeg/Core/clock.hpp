@@ -74,5 +74,4 @@ namespace odfaeg {
         };
     }
 }
-#include "clock.inl"
 #endif

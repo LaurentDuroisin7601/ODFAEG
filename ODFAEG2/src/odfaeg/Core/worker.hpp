@@ -36,5 +36,4 @@ namespace odfaeg {
         };
     }
 }
-#include "worker.inl"
 #endif

@@ -5,13 +5,13 @@
 #include <cstdint>
 #include "../../../include/odfaeg/Window/windowHandle.hpp"
 #include "../Core/clock.hpp"
-#include "iEvent.hpp"
+/*#include "iEvent.hpp"
 #include "windowStyle.hpp"
-#include "videoMode.hpp"
+#include "videoMode.hpp"*/
 #include "cursor.hpp"
-#include "../core/string.hpp"
+/*#include "../core/string.hpp"
 #include "../Math/vec.hpp"
-#include "cursorImpl.hpp"
+#include "cursorImpl.hpp"*/
 #include <odfaeg/config.hpp>
 #if defined(ODFAEG_SYSTEM_WINDOWS)
 #include "Windows/win32Window.hpp"

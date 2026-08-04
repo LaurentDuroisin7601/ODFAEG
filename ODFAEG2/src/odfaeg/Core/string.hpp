@@ -220,5 +220,4 @@ namespace odfaeg {
         String operator +(const String& left, const String& right);
     }
 }
-#include "string.inl"
 #endif

@@ -30,5 +30,4 @@ namespace odfaeg {
         std::string getCurrentPath();
     }
 }
-#include "utilities.inl"
 #endif

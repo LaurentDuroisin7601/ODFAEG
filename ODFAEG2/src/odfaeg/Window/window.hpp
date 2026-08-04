@@ -3,11 +3,11 @@
 #include "../../../include/odfaeg/Window/windowHandle.hpp"
 #include <vulkan/vulkan.hpp>
 #include <iostream>
-#include "../Core/string.hpp"
+/*#include "../Core/string.hpp"
 #include "../Math/vec.hpp"
 #include "cursor.hpp"
 #include "videoMode.hpp"
-#include "iEvent.hpp"
+#include "iEvent.hpp"*/
 #include "windowImpl.hpp"
 namespace odfaeg {
     namespace window {
