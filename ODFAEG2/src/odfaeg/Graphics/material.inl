@@ -12,7 +12,7 @@ namespace odfaeg {
         } 
         bool Material::TextureInfo::operator== (const TextureInfo& info) {
             //std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
-            return texture == info.texture;
+            return (texture == nullptr && info.texture == nullptr) ||  (texture != nullptr && info.texture != nullptr && texture->getId() == info.texture->getId());
         }
         bool Material::TextureInfo::operator!= (const TextureInfo& info) {
             return !(*this == info);

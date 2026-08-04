@@ -117,6 +117,7 @@ namespace odfaeg {
                     staggingBuffer.update(imageLoaders[i].getPixelsPtr(j), imageLoaders[i].getDataSize(j), dataOffset);
                     //std::cout<<"alias : "<<aliases[i]<<std::endl;
                     textureManager.getResourceByAlias(aliases[i])->update(commandPool, staggingBuffer, imageLoaders[i].getSize(j).x(), imageLoaders[i].getSize(j).y(), 0, 0, dataOffset, j);
+                    std::cout<<"texutre id, alias : "<<textureManager.getResourceByAlias(aliases[i])->getId()<<","<<aliases[i]<<std::endl;
                     //std::cout<<"id : "<<textureManager.getResourceByAlias(textureManager.getAliases()[currentTexturesOffset+i])->getId()<<std::endl;
                     /*std::cout << "mip " << j << " size = " << imageLoaders[i].getDataSize(j)
                     << "  offset : " << dataOffset << std::endl;*/

@@ -67,7 +67,7 @@ namespace odfaeg {
 				int meshletOffset;
 				int meshletCount;
 			};
-			struct SubMeshData {
+			struct alignas(16) SubMeshData {
 				AABB globalBounds;
 				int vertexOffset;
 				int indexOffset;
@@ -80,7 +80,7 @@ namespace odfaeg {
 				int lodLevel;
 				int objectId;
 				int clusterOffset;
-				int clusterCount;				
+				int clusterCount;								
 			};
 			struct Cluster {
 				AABB globalBounds;

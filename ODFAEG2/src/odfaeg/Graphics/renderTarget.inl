@@ -389,6 +389,7 @@ namespace odfaeg {
 				std::vector<MaterialData> materialDatas;
 				//std::cout<<"material : "<<materials.size()<<std::endl;
 				for (unsigned int i = 0; i < materials.size(); i++) {
+					//std::cout<<"texture id : "<<materials[i]->getTexture(entity::SubMesh::DIFFUSE)->getId()<<std::endl;
 					MaterialData material;
 					//std::cout<<"material : "<<materials[i]<<std::endl;
 					material.diffuseTextureIndex = (materials[i]->getTexture(entity::SubMesh::DIFFUSE) != nullptr) ? materials[i]->getTexture(entity::SubMesh::DIFFUSE)->getId() : 0;
@@ -428,7 +429,7 @@ namespace odfaeg {
 					object.subMeshesOffset = currentSubmeshesOffset;
 					object.modelDataOffset = currentModelDataOffset;
 					object.nbSubMeshes = gameObjects[i]->getGameObject()->getSubMeshesCount();
-					std::cout<<"nb submeshes : "<<object.nbSubMeshes<<std::endl;
+					//std::cout<<"nb submeshes : "<<object.nbSubMeshes<<std::endl;
 					objectDatas.push_back(object);
 					ModelData modelData;
 					modelData.modelMatrix = gameObjects[i]->getGameObject()->getTransform().getMatrix().transpose();
@@ -457,7 +458,12 @@ namespace odfaeg {
 						subMeshData.vertexOffset = currentVertexOffset[primitiveType];
 						subMeshData.indexOffset = currentIndexOffset[primitiveType];
 						for (unsigned int m = 0; m < materials.size(); m++) {
+							
 							if (*materials[m] == *gameObjects[i]->getMaterials()[j]) {
+								if (materials[m]->getTexture(entity::SubMesh::DIFFUSE) != nullptr && materials[m]->getTexture(entity::SubMesh::DIFFUSE)->getId() == 4) {
+									std::cout<<"ids : "<<gameObjects[i]->getMaterials()[j]->getId()<<","<<materialDatas[gameObjects[i]->getMaterials()[j]->getId()].diffuseTextureIndex<<std::endl;
+									system("PAUSE");
+								}
 								subMeshData.materialId = gameObjects[i]->getMaterials()[j]->getId();
 							}
 						}						
