@@ -1,7 +1,7 @@
 namespace odfaeg {
     namespace graphic {
         ModelLoader::ModelLoader (Device& device, core::ResourceManager<Texture, std::string>& textureManager) : device(device), textureManager(textureManager),
-        commandPool(device), staggingBuffer(device), threadPool(6) {
+        commandPool(device), staggingBuffer(device), threadPool(24) {
             float maxF = std::numeric_limits<float>::max();
             float minF = std::numeric_limits<float>::min();
             min = math::Vec3f(maxF, maxF, maxF);
@@ -152,10 +152,16 @@ namespace odfaeg {
             // process all the node's meshes (if any)
             math::Matrix4f nodeLocal = entity::AssimpHelpers::convertAssimpToODFAEGMatrix(node->mTransformation);
             math::Matrix4f world = parentTransform * nodeLocal;
-            //std::cout<<"parent : "<<parentTransform<<std::endl<<"node : "<<nodeLocal<<std::endl;
+        
+            /*std::cout<<"parent : "<<parentTransform<<std::endl;
+            //std::cout<<"transposed parent : "<<parentTransform.transpose()<<std::endl;
+            std::cout<<"node : "<<nodeLocal<<std::endl;
+            std::cout<<"transposed node : "<<nodeLocal.transpose()<<std::endl;
+            std::cout<<"world : "<<parentTransform * nodeLocal<<std::endl;
+            std::cout<<"transp world : "<<nodeLocal * parentTransform<<std::endl;*/
             //std::cout<<"nb meshes to load : "<<node->mNumMeshes<<std::endl;
             clk.restart();
-            jobFence.reset(node->mNumMeshes);
+            //jobFence.reset(node->mNumMeshes);
             for(unsigned int i = 0; i < node->mNumMeshes; i++)
             {
                 aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
@@ -164,7 +170,7 @@ namespace odfaeg {
                     jobFence.jobDone();
                 });
             }
-            jobFence.wait();
+            //jobFence.wait();
             //std::cout<<"loading meshes time : "<<clk.getElapsedTime().asMilliseconds()<<"ms"<<std::endl;
             // then do the same for each of its children
             for(unsigned int i = 0; i < node->mNumChildren; i++)
@@ -310,6 +316,7 @@ namespace odfaeg {
 
             // 3. Correction handedness
             if (isLeftHanded) {
+                std::cout<<"left handed"<<std::endl;
                 axisCorrection.setScale(math::Vec3f(1.f,1.f,-1.f));
             }
             //std::cout<<"materials loaded : "<<mat.getTexture()<<std::endl;
@@ -342,9 +349,12 @@ namespace odfaeg {
                 vertices[i].normal[0] = mesh->mNormals[i].x;
                 vertices[i].normal[1] = mesh->mNormals[i].y;
                 vertices[i].normal[2] = mesh->mNormals[i].z;
-                vertices[i].color = entity::Color::White;
+                //vertices[i].color = entity::Color::White;
             }
-            extractBoneWeightForVertices(vertices, mesh, scene, model);
+            {
+                std::lock_guard<std::recursive_mutex>(getGlobalMutex());
+                extractBoneWeightForVertices(vertices, mesh, scene, model);
+            }
             /*VertexBuffer vb(device, Triangles);
             for (unsigned int i = 0; i < vertices.size(); i++) {
                 //std::cout<<"add vertex"<<std::endl;
@@ -466,8 +476,12 @@ namespace odfaeg {
                 math::Matrix4f finalCorrection = scaleCorrection.getMatrix() *
                                                 axisCorrection.getMatrix() *
                                                 handednessCorrection.getMatrix();
+                /*std::cout<<"scale correction : "<<scaleCorrection.getMatrix()<<std::endl;
+                std::cout<<"axis correction : "<<axisCorrection.getMatrix()<<std::endl;
+                std::cout<<"handness correction : "<<handednessCorrection.getMatrix()<<std::endl;*/
                 math::Matrix4f finalTransform = world * finalCorrection;
-                //std::cout<<"final transform : "<<finalTransform<<std::endl;
+                //std::cout<<"mesh world : "<<world<<std::endl;
+                /*std::cout<<"final transform : "<<finalTransform<<std::endl;*/
                 
                 
                 if (!isSkinned) {
@@ -580,7 +594,7 @@ namespace odfaeg {
                     
                 } 
             }    */
-            std::lock_guard<std::recursive_mutex>(getGlobalMutex());
+           
             //model->setSize(currentSize);       
             
             //std::cout<<"size : "<<vb.getBounds().getSize()<<std::endl;
