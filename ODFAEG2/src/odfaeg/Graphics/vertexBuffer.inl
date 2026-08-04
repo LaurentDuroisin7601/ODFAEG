@@ -401,5 +401,8 @@ namespace odfaeg {
                needToUpdateIndexBuffer[i] = true;
             indices[pos] = idx;
         }
+        void swap(VertexBuffer& a, VertexBuffer& b) noexcept {
+            a.swap(b);
+        }
     }	
 }

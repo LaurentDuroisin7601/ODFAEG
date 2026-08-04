@@ -145,7 +145,8 @@ namespace odfaeg {
         inline bool operator !=(const Rect<T>& left, const Rect<T>& right)
         {
             return !(left == right);
-        }
+        }  
     }    
 }
+#include "rect.inl"
 #endif

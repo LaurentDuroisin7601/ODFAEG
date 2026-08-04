@@ -101,9 +101,7 @@ namespace odfaeg {
             Device& device;
             CommandPool commandPool;
         };        
-        void swap(VertexBuffer& a, VertexBuffer& b) noexcept {
-            a.swap(b);
-        }
+        void swap(VertexBuffer& a, VertexBuffer& b) noexcept;
     }
 } // namespace sf
 #endif
