@@ -481,8 +481,8 @@ namespace odfaeg {
 						for (unsigned int v = 0; v < subMesh.getVertexArray().getIndexCount(); v++) {
 							uint32_t idx = subMesh.getVertexArray().getIndex(v);
 							vertices[primitiveType].addIndex(idx);
-							if (v == 0)
-								std::cout<<"add index : "<<baseVertex<<","<<idx<<std::endl;
+							/*if (v == 0)
+								std::cout<<"add index : "<<baseVertex<<","<<idx<<std::endl;*/
 							
 							currentIndexOffset[primitiveType]++;
 						}
