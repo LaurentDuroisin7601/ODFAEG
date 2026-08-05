@@ -298,7 +298,7 @@ namespace odfaeg {
             bool isLeftHandled = false;
             float det = world.getDet();
             bool isLeftHanded = false;
-            if (det < 0.0f) {
+            if (det > 0.0f) {
                 //std::cout<<"left handed!"<<std::endl;
                 isLeftHanded = true;
             }
@@ -486,7 +486,8 @@ namespace odfaeg {
                 /*std::cout<<"scale correction : "<<scaleCorrection.getMatrix()<<std::endl;
                 std::cout<<"axis correction : "<<axisCorrection.getMatrix()<<std::endl;
                 std::cout<<"handness correction : "<<handednessCorrection.getMatrix()<<std::endl;*/
-                math::Matrix4f finalTransform = world * finalCorrection;
+                
+                math::Matrix4f finalTransform = finalCorrection * world;
                 //std::cout<<"mesh world : "<<world<<std::endl;
                 /*std::cout<<"final transform : "<<finalTransform<<std::endl;*/
                 
@@ -495,11 +496,12 @@ namespace odfaeg {
                     for (unsigned int i = 0; i < va.getVertexCount(); i++) {
                         math::Vec4f pos(va[i].position.x(), va[i].position.y(), va[i].position.z(), 1);
                         math::Vec4f tpos = finalTransform * pos;
+                        //std::cout<<"t pos : "<<tpos<<std::endl;
                         va[i].position = math::Vec3f(tpos.x(), tpos.y(), tpos.z());
                         pos = math::Vec4f(va[i].normal.x(), va[i].normal.y(), va[i].normal.z(), 1);
                         tpos = finalTransform * pos;
                         va[i].normal = math::Vec3f(tpos.x(), tpos.y(), tpos.z());
-                        //std::cout<<"vertex position : "<<vb[i].position<<std::endl;
+                        //std::cout<<"vertex position : "<<va[i].position<<std::endl;
                     }
                 }
                 /*if (va.getBounds().getSize().x() > currentSize.x())
