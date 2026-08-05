@@ -7,6 +7,7 @@
 #include <deque>
 #include <odfaeg/config.hpp>
 #include <condition_variable>
+#include <iostream>
 #include "../Math/vec.hpp"
 #include "../Math/matrix.hpp"
 #include "../Entity/primitiveType.hpp"

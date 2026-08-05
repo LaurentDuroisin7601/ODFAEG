@@ -5,19 +5,22 @@
 layout(push_constant) uniform PushConstant {
     uint currentFrame;
 } pc;
-struct MaterialData {   
-    vec2 uvScale;
-    vec2 uvOffset;
-    uint textureIndex;
+struct MaterialData {       
+    uint diffuseTextureIndex;
+    uint specularTextureIndex;
+    uint normalTextureIndex;
+    uint metalnessTextureIndex;
+    uint roughnessTextureIndex;
+    uint aoTextureIndex;
+    uint emissiveTextureIndex;
     uint materialType;
-    uint materialSet;
+    uint materialSet;   
     uint nbVertices;
     uint nbIndexes;
     int instanceGroupId;
     uint vertsInstanceSet;
     uint materialId;
-    uint objectDrawableId;
-    uint nbBuffers;
+    uint nbBuffers;    
 };
 /*position dans le buffer de matrices de sortie pour les instance*/
 layout (std430, set = 0, binding = 0) buffer offsetInOutputModelDataSSBO {
@@ -51,7 +54,8 @@ void main() {
     offsetInOutputMeshesBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshesDataOffset = 0u;
     offsetInOutputMaterialBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame] .materialDataOffset = 0u;
     offsetInOutputElementsIndirectCommandBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].elementIndirectCommandOffset = 0u;
-    drawCountData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].drawCount = 0u;   
+    drawCountData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].drawCount = 0u;  
+    //debugPrintfEXT("material id : %i : primitive type : %i, count : %i", materialId, primitiveType, drawCountData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].drawCount); 
     outputInstanceBase[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].instanceBase = 0u;
     //debugPrintfEXT("reset  : %i, current frame : %i", firstIndexData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].firstIndex, pc.currentFrame);
 	inputMaterialBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet = 0;

@@ -205,7 +205,7 @@ void main() {
                     //Vérifie si les sommets pour l'instance n'ont pas déjà été ajoutés. (Les instances sont regroupée par instanceGroupId dans matériaux)
                     //Si le matériel est instancé.
                     if (inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].instanceGroupId != -1) {
-                            //debugPrintfEXT("Instanced!");
+                            //debugPrintfEXT("Instanced! %i", inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].instanceGroupId);
 
                         uint instanceBase = atomicAdd(outputInstanceBase[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].instanceBase, 1);
                             
@@ -236,7 +236,7 @@ void main() {
                         
                         uint indirectElementsDrawCommandOffset = atomicAdd(outputDrawCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].drawCount, 1);
                         uint instanceBase = atomicAdd(outputInstanceBase[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].instanceBase, 1);
-                        //debugPrintfEXT("Non instanced! %i", instanceBase);
+                        //debugPrintfEXT("indexes! %i, draw count : %i", instanceBase, indirectElementsDrawCommandOffset );
                         IndirectElementsDrawCommand indirectElementsDrawCommand;
                         /*if (subMesh.id == 1590)
                             debugPrintfEXT("submesh id : %i, vertex offset : %i, nb vertices : %i", subMesh.id, subMesh.vertexOffset, subMesh.nbVertices);*/

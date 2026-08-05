@@ -408,6 +408,8 @@ namespace odfaeg {
 					material.nbIndexes = 0;
 					material.materialId = materials[i]->getId();
 					material.instanceGroupId = materials[i]->getInstanceGroup();
+					/*if (material.instanceGroupId != -1)
+						system("PAUSE");**/
 					materialDatas.push_back(material);
 
 				}

@@ -225,6 +225,7 @@ int main() {
 		window.setDepthStencil(true, false);
 		window.clear();
 		window.setTypesToRender("*", window.getCurrentFrame());
+		//window.applyCullingAndBatching();
 		window.setCamera(camera);
 		//std::cout<<"draw"<<std::endl;
 		window.draw(Triangles);
