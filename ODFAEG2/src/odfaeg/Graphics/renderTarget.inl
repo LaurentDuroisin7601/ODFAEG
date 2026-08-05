@@ -470,7 +470,12 @@ namespace odfaeg {
 						subMeshData.nbVertices = subMesh.getVertexArray().getVertexCount();
 						subMeshData.nbIndexes = subMesh.getVertexArray().getIndexCount();
 						subMeshData.objectId = i;
-						subMeshData.clusterOffset = currentClustersOffset;						
+						subMeshData.clusterOffset = currentClustersOffset;
+						/*if (subMeshData.id == 1590) {
+							std::cout<<"id : vertex offset : nbVertices : "<<subMeshData.id<<","<<subMeshData.vertexOffset<<","<<subMeshData.nbVertices<<std::endl;
+							system("PAUSE");
+						}*/
+
 						//std::cout<<"vertices count : "<<subMesh.getVertexBuffer().getVertexCount()<<std::endl;
 						/*int pause;
 						std::cin>>pause;*/

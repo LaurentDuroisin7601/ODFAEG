@@ -117,7 +117,7 @@ namespace odfaeg {
                     staggingBuffer.update(imageLoaders[i].getPixelsPtr(j), imageLoaders[i].getDataSize(j), dataOffset);
                     //std::cout<<"alias : "<<aliases[i]<<std::endl;
                     textureManager.getResourceByAlias(aliases[i])->update(commandPool, staggingBuffer, imageLoaders[i].getSize(j).x(), imageLoaders[i].getSize(j).y(), 0, 0, dataOffset, j);
-                    std::cout<<"texutre id, alias : "<<textureManager.getResourceByAlias(aliases[i])->getId()<<","<<aliases[i]<<std::endl;
+                    //std::cout<<"texutre id, alias : "<<textureManager.getResourceByAlias(aliases[i])->getId()<<","<<aliases[i]<<std::endl;
                     //std::cout<<"id : "<<textureManager.getResourceByAlias(textureManager.getAliases()[currentTexturesOffset+i])->getId()<<std::endl;
                     /*std::cout << "mip " << j << " size = " << imageLoaders[i].getDataSize(j)
                     << "  offset : " << dataOffset << std::endl;*/
@@ -493,8 +493,12 @@ namespace odfaeg {
                 
                 if (!isSkinned) {
                     for (unsigned int i = 0; i < va.getVertexCount(); i++) {
-                        va[i].position = finalTransform * va[i].position;
-                        va[i].normal = finalCorrection * -va[i].normal;
+                        math::Vec4f pos(va[i].position.x(), va[i].position.y(), va[i].position.z(), 1);
+                        math::Vec4f tpos = finalTransform * pos;
+                        va[i].position = math::Vec3f(tpos.x(), tpos.y(), tpos.z());
+                        pos = math::Vec4f(va[i].normal.x(), va[i].normal.y(), va[i].normal.z(), 1);
+                        tpos = finalTransform * pos;
+                        va[i].normal = math::Vec3f(tpos.x(), tpos.y(), tpos.z());
                         //std::cout<<"vertex position : "<<vb[i].position<<std::endl;
                     }
                 }
