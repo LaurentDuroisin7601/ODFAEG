@@ -56,8 +56,6 @@ struct ModelData {
 };        
 /*Matériaux*/
 struct MaterialData {   
-    vec2 uvScale;
-    vec2 uvOffset;
     uint diffuseTextureIndex;
     uint specularTextureIndex;
     uint normalTextureIndex;
@@ -73,7 +71,6 @@ struct MaterialData {
     uint vertsInstanceSet;
     uint materialId;
     uint nbBuffers;
-    uint padding;
 };
 struct MeshDrawCommand {
     uint groupXCount;

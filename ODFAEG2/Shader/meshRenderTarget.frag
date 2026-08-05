@@ -9,8 +9,6 @@ layout (push_constant) uniform PushConstant {
     layout(offset=136) int currentImageIndex;
 } pc;
 struct MaterialData {
-    vec2 uvScale;
-    vec2 uvOffset;
     uint diffuseTextureIndex;
     uint specularTextureIndex;
     uint normalTextureIndex;
@@ -26,7 +24,6 @@ struct MaterialData {
     uint vertsInstanceSet;
     uint materialId;
     uint nbBuffers;
-    uint padding;
 };
 layout (std430, set = 0, binding = 9) buffer MaterialDataSSBO {
     MaterialData materialData[];

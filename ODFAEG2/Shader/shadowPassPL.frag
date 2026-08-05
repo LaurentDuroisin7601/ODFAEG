@@ -22,8 +22,6 @@ struct NodeType {
     uint next;
 };
 struct MaterialData {
-    vec2 uvScale;
-    vec2 uvOffset;
     uint diffuseTextureIndex;
     uint specularTextureIndex;
     uint normalTextureIndex;
@@ -39,7 +37,6 @@ struct MaterialData {
     uint vertsInstanceSet;
     uint materialId;
     uint nbBuffers;
-    uint padding;
 };
 layout (std430, set = 0, binding = 2) buffer MaterialDataSSBO {
     MaterialData materialData[];

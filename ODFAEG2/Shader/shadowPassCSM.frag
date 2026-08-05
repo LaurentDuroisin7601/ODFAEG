@@ -10,9 +10,7 @@ struct NodeType {
     float depth;
     uint next;
 };
-struct MaterialData {
-    vec2 uvScale;
-    vec2 uvOffset;
+struct MaterialData {    
     uint diffuseTextureIndex;
     uint specularTextureIndex;
     uint normalTextureIndex;
@@ -28,7 +26,6 @@ struct MaterialData {
     uint vertsInstanceSet;
     uint materialId;
     uint nbBuffers;
-    uint padding;
 };
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragTexCoord;

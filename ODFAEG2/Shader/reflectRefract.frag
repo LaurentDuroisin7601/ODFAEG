@@ -15,8 +15,6 @@ layout (push_constant) uniform PushConsts {
     layout(offset = 240) uint imageIndex;
 } pushConsts;
 struct MaterialData {
-    vec2 uvScale;
-    vec2 uvOffset;
     uint diffuseTextureIndex;
     uint specularTextureIndex;
     uint normalTextureIndex;
@@ -31,8 +29,7 @@ struct MaterialData {
     int instanceGroupId;
     uint vertsInstanceSet;
     uint materialId;
-    uint nbBuffers;
-    uint padding;
+    uint nbBuffers;    
     int reflectable;
     int refractable;
 };

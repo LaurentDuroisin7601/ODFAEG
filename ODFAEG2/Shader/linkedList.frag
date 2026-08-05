@@ -11,9 +11,7 @@ struct NodeType {
     float depth;
     uint next;
 };
-struct MaterialData {
-    vec2 uvScale;
-    vec2 uvOffset;
+struct MaterialData {    
     uint diffuseTextureIndex;
     uint specularTextureIndex;
     uint normalTextureIndex;
@@ -29,7 +27,6 @@ struct MaterialData {
     uint vertsInstanceSet;
     uint materialId;
     uint nbBuffers;
-    uint padding;
 };
 layout (push_constant) uniform PushConstant {
     layout (offset=136) uint maxNodes;
