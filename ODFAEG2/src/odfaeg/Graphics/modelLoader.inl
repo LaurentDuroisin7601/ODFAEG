@@ -323,7 +323,7 @@ namespace odfaeg {
 
             // 3. Correction handedness
             if (isLeftHanded) {
-                std::cout<<"left handed"<<std::endl;
+                //std::cout<<"left handed"<<std::endl;
                 axisCorrection.setScale(math::Vec3f(1.f,1.f,-1.f));
             }
             //std::cout<<"materials loaded : "<<mat.getTexture()<<std::endl;
