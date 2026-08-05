@@ -55,7 +55,7 @@ namespace odfaeg {
                     int primitiveType;
                 };
                 struct ReflRefrFragPC {
-                    math::Vec3f cameraPos;                    
+                    math::Vec4f cameraPos;                    
                     int currentImageIndex;
                 };
                 EnvMapRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, bool usethread=true);

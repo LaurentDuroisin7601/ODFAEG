@@ -124,16 +124,16 @@ int main() {
 	Camera imGUICamera = window.getCamera();
 	window.setCamera(camera);
 	ResourceManager<Texture, TextureNames> textureManager;
-	ResourceManager<Texture, std::string> modelTextureManager;
-	ModelLoader modelLoader(GPUContext::instance().getDevice(), modelTextureManager);
-	Mesh* bistroExterior = modelLoader.loadModel("Bistro_v5_2/BistroExterior.fbx");
+	/*ResourceManager<Texture, std::string> modelTextureManager;
+	ModelLoader modelLoader(GPUContext::instance().getDevice(), modelTextureManager);*/
+	//Mesh* bistroExterior = modelLoader.loadModel("Bistro_v5_2/BistroExterior.fbx");
 	//Mesh* bistroInterior = modelLoader.loadModel("Bistro_v5_2/BistroInterior.fbx");
 	//bistroExterior->getGameObject()->setScale(Vec3f(1, 1, -1));
 	//std::cout<<"test"<<std::endl;
 	//Mesh* bistroExterior = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
 	//GameObject* bistroExterior = modelLoader.loadModel(/*"CubeTest/cube_test.glb"*//**/"carGLTF/scene.gltf"/*"Bistro_v5_2/BistroExterior.fbx"*/);
-	//bistroExterior->setRotation(45, Vec3f(0, 1, 0));
-	/*std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
+	//bistroExterior->getGameObject()->setRotation(90, Vec3f(0, 1, 0));
+	std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
 	textureManager.fromFileWithAlias("tilesets/wood.png", WOOD, args);
 	Texture* texWood = textureManager.getResourceByAlias(WOOD);
 	texWood->setSamplerAddressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT);	
@@ -195,8 +195,8 @@ int main() {
 	std::vector<IComponent*> components = renderGraph.getComponents();
 	for (unsigned int i = 0; i < components.size(); i++) {
 		componentManager.addComponent(components[i]);
-	}*/
-	window.addGameObject(bistroExterior);	
+	}
+	//window.addGameObject(bistroExterior);	
 	//window.addGameObject(bistroInterior);	
 		//std::cout<<"i : "<<i<<std::endl;*/
 	

@@ -16,7 +16,7 @@ namespace odfaeg {
         {
             rendererReady.store(false);
             envMap.createCubeMap(ENV_MAP_SIZE, false, false);
-            envMap.getCamera().setViewport(physic::BoundingBox(0, 0, parentRenderer.getCamera().getViewport().getPosition().z(), ENV_MAP_SIZE, ENV_MAP_SIZE, parentRenderer.getCamera().getViewport().getSize().z()));
+            envMap.setCamera(parentRenderer.getCamera());
             createCommandPools();
             maxNodes = 20 * ENV_MAP_SIZE * ENV_MAP_SIZE;
             envMapFragPC.maxNodes = maxNodes;
@@ -319,6 +319,7 @@ namespace odfaeg {
                         RenderStates states;
                         states.shader = &envMapShader;
                         states.blendMode = blendMode;
+                        envMapVertPC.projMatrix = envMap.getCamera().getProjMatrix().getMatrix().transpose();
                         envMapFragPC.maxNodes = maxNodes;
                         envMapFragPC.currentImageIndex = envMap.getImageIndex();
                         std::vector<uint32_t> offsetEnvViewMatrices;
@@ -395,14 +396,21 @@ namespace odfaeg {
                             sets.push_back(GPUContext::instance().getDescriptorSets(reflRefrShader)[i][0].getHandle());
                         }
                         blendMode.updateIds();
+                        reflRefrVertPC.projMatrix = parentRenderer.getCamera().getProjMatrix().getMatrix().transpose();
+                        reflRefrVertPC.viewMatrix = parentRenderer.getCamera().getViewMatrix().getMatrix().transpose();
+                        reflRefrVertPC.currentFrame = parentRenderer.getCurrentFrame();
                         //std::cout<<"sizes = "<<linkedListPipeline.size()<<","<<linkedListPipeline[i].size()<<",ids : "<<i<<","<<RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id<<std::endl;
                         //std::cout<<"bind pipeline : "<<linkedListPipeline[i][RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id].getHandle()<<std::endl;
                         
                         for (unsigned int v = 0; v < reflRefrGameObjects[cmp]->getVertexBuffers().size(); v++) {                                
                             vkCmdBindPipeline(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
+                            reflRefrVertPC.primitiveType = reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType();
+                            reflRefrVertPC.materialIndex = reflRefrGameObjects[cmp]->getMaterials()[0]->getId();
+                            reflRefrFragPC.cameraPos =  reflRefrGameObjects[cmp]->getGameObject()->getCenter();
                             //std::cout<<"pipeline bound"<<std::endl;
                             vkCmdBindDescriptorSets(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
-                            vkCmdPushConstants(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(ReflRefrFragPC), &reflRefrFragPC);
+                            vkCmdPushConstants(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(ReflRefrVertPC), &reflRefrVertPC);
+                            vkCmdPushConstants(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(ReflRefrVertPC), sizeof(ReflRefrFragPC), &reflRefrFragPC);
                             parentRenderer.draw(reflRefrCmdPools[cmp], reflRefrGameObjects[cmp]->getVertexBuffers()[v], states);
                         }
                         reflRefrCmdPools[cmp].endRecordCommandBuffer(parentRenderer.getCurrentFrame());                   
