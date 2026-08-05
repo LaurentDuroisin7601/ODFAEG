@@ -298,7 +298,7 @@ namespace odfaeg {
             bool isLeftHandled = false;
             float det = world.getDet();
             bool isLeftHanded = false;
-            if (det < 0.0f) {
+            if (det > 0.0f) {
                 //std::cout<<"left handed!"<<std::endl;
                 isLeftHanded = true;
             }
@@ -487,7 +487,7 @@ namespace odfaeg {
                 std::cout<<"axis correction : "<<axisCorrection.getMatrix()<<std::endl;
                 std::cout<<"handness correction : "<<handednessCorrection.getMatrix()<<std::endl;*/
                 
-                math::Matrix4f finalTransform = world * finalCorrection;
+                math::Matrix4f finalTransform = finalCorrection * world;
                 //std::cout<<"mesh world : "<<world<<std::endl;
                 /*std::cout<<"final transform : "<<finalTransform<<std::endl;*/
                 
