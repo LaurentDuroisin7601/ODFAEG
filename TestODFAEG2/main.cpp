@@ -130,14 +130,16 @@ int main() {
 	//Mesh* bistroInterior = modelLoader.loadModel("Bistro_v5_2/BistroInterior.fbx");
 	//bistroExterior->getGameObject()->setScale(Vec3f(1, 1, -1));
 	//std::cout<<"test"<<std::endl;
-	//Mesh* bistroExterior = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
+	/*Mesh* bistroExterior = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
+	bistroExterior->getGameObject()->setScale(Vec3f(1, 1, -1));*/
+	//std::cout<<"test"<<std::endl;
 	//GameObject* bistroExterior = modelLoader.loadModel(/*"CubeTest/cube_test.glb"*//**/"carGLTF/scene.gltf"/*"Bistro_v5_2/BistroExterior.fbx"*/);
 	//bistroExterior->getGameObject()->setRotation(90, Vec3f(0, 1, 0));
 	std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
 	textureManager.fromFileWithAlias("tilesets/wood.png", WOOD, args);
 	Texture* texWood = textureManager.getResourceByAlias(WOOD);
 	texWood->setSamplerAddressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT);	
-	Plane plane(Vec3f(-25, -2, -25), Vec3f(50, 0, 50));
+	odfaeg::entity::Plane plane(Vec3f(-25, -2, -25), Vec3f(50, 0, 50));
 	plane.setTexCoords(FloatRect(0, 0, 25, 25));
 	plane.setTexture(conversionIntString(WOOD));	
 	
@@ -167,6 +169,8 @@ int main() {
 	cube5.move(Vec3f(-1.5f, 2.0f, -3.0));
     cube5.setRotation(60.0f, Vec3f(1.0, 0.0, 1.0));
     cube5.scale(Vec3f(0.75f, 0.75f, 0.75f));
+
+	Cube cube6(Vec3f(-1, -1, -1), 2, 2, 2, Color::Transparent);
    	
 	Mesh planeMesh(&plane);
 	Mesh cube1Mesh(&cube1);
@@ -174,6 +178,13 @@ int main() {
 	Mesh cube3Mesh(&cube2);
 	Mesh cube4Mesh(&cube3);
 	Mesh cube5Mesh(&cube5);
+	Mesh cube6Mesh(&cube6);
+	Material* material = new Material();
+	material->setRefractable(true);
+	material->setRefractable(true);
+	cube6Mesh.addMaterial(material);
+	
+
 	planeMesh.buildMaterialsFromTextureManager(textureManager);
 	cube1Mesh.buildMaterialsFromTextureManager(textureManager);
 	cube2Mesh.buildMaterialsFromTextureManager(textureManager);
@@ -186,7 +197,7 @@ int main() {
 	window.addGameObject(&cube3Mesh);
 	window.addGameObject(&cube4Mesh);
 	window.addGameObject(&cube5Mesh);
-	RenderTexture sceneColorTexture(ctx.getDevice());
+	/*RenderTexture sceneColorTexture(ctx.getDevice());
 	sceneColorTexture.create(window.getSize().x(), window.getSize().y());
 	sceneColorTexture.setCamera(camera);
 	RenderGraph renderGraph;
@@ -195,7 +206,7 @@ int main() {
 	std::vector<IComponent*> components = renderGraph.getComponents();
 	for (unsigned int i = 0; i < components.size(); i++) {
 		componentManager.addComponent(components[i]);
-	}
+	}*/
 	//window.addGameObject(bistroExterior);	
 	//window.addGameObject(bistroInterior);	
 		//std::cout<<"i : "<<i<<std::endl;*/
@@ -210,6 +221,8 @@ int main() {
 	ShadowRenderer::PointLight pointLight;
 	pointLight.pos = Vec3f(0, 0, 0);
 	renderGraph.addPonctualLight<ShadowRenderer>(1, pointLight);*/
+	EnvMapRenderer envMapRenderer(window, 0, "*");
+	envMapRenderer.addReflRefrGameObject(&cube6Mesh);
 	std::string s;	
 	while (window.isOpen()) {
 		odfaeg::window::IEvent event;
@@ -224,11 +237,14 @@ int main() {
 		
 		window.setDepthStencil(true, false);
 		window.clear();
-		window.setTypesToRender("*", window.getCurrentFrame());
-		//window.applyCullingAndBatching();
 		window.setCamera(camera);
+		//window.setTypesToRender("*", window.getCurrentFrame());
+		envMapRenderer.clear();
+		envMapRenderer.draw();
+		//window.applyCullingAndBatching();
+		
 		//std::cout<<"draw"<<std::endl;
-		window.draw(Triangles);
+		//window.draw(Triangles);
 		//std::cout<<"drawn"<<std::endl;
 		/*sceneColorTexture.clear(Color::Red);
 		renderGraph.render();*/

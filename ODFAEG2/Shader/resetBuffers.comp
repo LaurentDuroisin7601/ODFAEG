@@ -20,7 +20,9 @@ struct MaterialData {
     int instanceGroupId;
     uint vertsInstanceSet;
     uint materialId;
-    uint nbBuffers;    
+    uint nbBuffers;  
+    int reflectable;
+    int refractable;    
 };
 /*position dans le buffer de matrices de sortie pour les instance*/
 layout (std430, set = 0, binding = 0) buffer offsetInOutputModelDataSSBO {

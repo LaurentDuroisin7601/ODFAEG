@@ -24,6 +24,8 @@ struct MaterialData {
     uint vertsInstanceSet;
     uint materialId;
     uint nbBuffers;
+    int reflectable;
+    int refractable;  
 };
 layout (std430, set = 0, binding = 9) buffer MaterialDataSSBO {
     MaterialData materialData[];

@@ -429,6 +429,8 @@ namespace odfaeg {
                 return commandBuffersReady[parentRenderer.getCurrentFrame()].load() || stop.load();
             });
             commandBuffersReady[parentRenderer.getCurrentFrame()].store(false);
+            envMap.applyComputeGraphicsBarrier();
+            parentRenderer.applyComputeGraphicsBarrier();
             for (unsigned int e = 0; e < reflRefrGameObjects.size(); e++) {
                 envMap.clear();
                 envMap.beginRendering();

@@ -122,7 +122,8 @@ namespace odfaeg {
 				unsigned int vertsInstanceSet;
 				unsigned int materialId;
 				unsigned int nbBuffers;
-				//unsigned int padding;
+				int reflectable;
+				int refractable;
 			};	
 			struct DrawElementsIndirectCommand {
 				unsigned int index_count;

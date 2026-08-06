@@ -26,6 +26,8 @@ struct MaterialData {
     uint vertsInstanceSet;
     uint materialId;
     uint nbBuffers;
+    int reflectable;
+    int refractable;  
 };
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragTexCoord;

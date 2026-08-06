@@ -591,4 +591,5 @@ namespace odfaeg {
         
     }
 }
+#include "delegate.inl"
 #endif

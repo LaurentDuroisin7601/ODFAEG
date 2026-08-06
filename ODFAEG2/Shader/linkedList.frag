@@ -27,6 +27,8 @@ struct MaterialData {
     uint vertsInstanceSet;
     uint materialId;
     uint nbBuffers;
+    int reflectable;
+    int refractable;  
 };
 layout (push_constant) uniform PushConstant {
     layout (offset=136) uint maxNodes;
