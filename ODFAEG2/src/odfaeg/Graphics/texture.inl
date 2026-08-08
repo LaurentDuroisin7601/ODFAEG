@@ -361,6 +361,16 @@ namespace odfaeg {
                 //id = getUniqueId();
                 GPUContext::instance().getSharedTextures(0).push_back(std::move(*this));
             }
+            if (FBOAttachment) {
+                auto& vec = GPUContext::instance().getSharedTextures(texType);
+                id = vec.size()+1;
+                //std::cout<<"FBO texture id : "<<id<<std::endl;                
+                //vec.push_back(std::move(*this));
+                vec.emplace_back(device);
+                vec.back().copyFrom(*this);
+                //std::cout<<"FBO texture id : "<<vec.back().getId()<<std::endl;
+                //GPUContext::instance().getSharedTextures(0).push_back(std::move(*this));
+            }
             isFBOTexture = FBOAttachment;
             return true;
         }
