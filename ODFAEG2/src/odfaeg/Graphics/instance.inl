@@ -3,6 +3,8 @@ namespace odfaeg {
         Instance::Instance() {
 
             instance = VK_NULL_HANDLE;
+            if (enableValidationLayers)
+                debugThread = std::thread(&debugThreadFunc);
             //std::cout << "CTOR Instance() : " <<instance<<std::endl;
         }
         void Instance::createInstance() {
@@ -156,6 +158,10 @@ namespace odfaeg {
 
                 vkDestroyInstance(instance, nullptr);
             }
+            if (enableValidationLayers) {
+                debugThreadRunning = false;
+                debugThread.join();   
+            }         
         }
 
         VkInstance Instance::getInstance() {

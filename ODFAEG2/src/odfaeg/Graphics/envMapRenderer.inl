@@ -27,9 +27,9 @@ namespace odfaeg {
                 linkedListBuffer.emplace_back(GPUContext::instance().getDevice());
                 nodeCounterBuffer.emplace_back(GPUContext::instance().getDevice());
                 headPtrsStorageImage.back().create(ENV_MAP_SIZE, ENV_MAP_SIZE, 1, VK_IMAGE_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY,
-                    1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
-                Texture::transitionImageLayout(headPtrsStorageImage.back(), commandPool.getHandle(0), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+                    1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);                
                 headPtrsStorageImage.back().createImageView(VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
+                Texture::transitionImageLayout(headPtrsStorageImage.back(), commandPool.getHandle(0), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
                 //headPtrsStorageImage.back().createSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, 1, false, false);
                 nodeCounterBuffer.back().create(sizeof(std::uint32_t), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
                 linkedListBuffer.back().create(maxNodes * nodeSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);                
@@ -62,13 +62,13 @@ namespace odfaeg {
             fullScreenQuad.addIndex(3);
             fullScreenQuad.update();
             std::string shaderDir = std::string(ODFAEG_INSTALL_DIR) + "/Shader";
-            if (envMapShader.loadFromFile(shaderDir + "/envMap.vert", shaderDir + "/envMap.frag")) {
+            if (!envMapShader.loadFromFile(shaderDir + "/envMap.vert", shaderDir + "/envMap.frag")) {
                 throw std::runtime_error("Could not load env map shader");
             }
-            if (envMapQuadShader.loadFromFile(shaderDir + "linkedListQuad.vert", shaderDir + "linkedListQuad.frag")) {
+            if (!envMapQuadShader.loadFromFile(shaderDir + "linkedListQuad.vert", shaderDir + "linkedListQuad.frag")) {
                 throw std::runtime_error("Could not load env linked list quad shader");
             }            
-            if (reflRefrShader.loadFromFile(shaderDir + "/reflectRefract.vert", shaderDir + "/reflectRefract.frag")) {
+            if (!reflRefrShader.loadFromFile(shaderDir + "/reflectRefract.vert", shaderDir + "/reflectRefract.frag")) {
                 throw std::runtime_error("Could not load refl/refr shader");
             }
             dirs[0] = math::Vec3f(1, 0, 0);

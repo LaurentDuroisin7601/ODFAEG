@@ -332,6 +332,9 @@ namespace odfaeg {
                 viewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
             }  
             imageAspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            if (FBOAttachment) {
+                m_format = VK_FORMAT_R8G8B8A8_UNORM;
+            }
             createCommandBuffers();
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 images[i].create(size, size, 1, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
@@ -339,8 +342,7 @@ namespace odfaeg {
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 6);
                 
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
-                if (FBOAttachment) {
-                    m_format = VK_FORMAT_R8G8B8A8_UNORM;
+                if (FBOAttachment) {                   
                     commandPool.beginRecordCommandBuffer(i);
                     transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 0, 0, 1, 6);
                     commandPool.endRecordCommandBuffer(i);
