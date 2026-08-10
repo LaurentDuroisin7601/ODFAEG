@@ -101,6 +101,7 @@ namespace odfaeg {
             VkImageAspectFlags imageAspectMask;
 			VkSamplerAddressMode wrapU, wrapV;
 			std::vector<MipInfo> mipsInfos;
+            bool isCubeMap;
 		};         
 	}    
 }

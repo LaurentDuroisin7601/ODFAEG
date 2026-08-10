@@ -1,10 +1,12 @@
 namespace odfaeg {
 	namespace graphic {
         Texture::Texture(Device& device, unsigned int nbBuffers) : device(device), texType(0), nbBuffers(nbBuffers), m_Smooth(false), m_Repeated(false), m_size(0u, 0u), commandPool(device), id(0), unormalized(false), isFBOTexture(false) {
-                    
-            for (unsigned int i = 0; i < nbBuffers; i++) {
+            
+            for (unsigned int i = 0; i < nbBuffers; i++) {                    
                 images.emplace_back(device);
             }
+            if (nbBuffers > 1)
+                std::cout<<"nb image at texture constructor : "<<images.size()<<std::endl;   
             id = 0;
             wrapU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
             wrapV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
@@ -24,7 +26,7 @@ namespace odfaeg {
             commandPool.createCommandBuffers(true, nbBuffers);
         }
 	    void Texture::copyFrom(Texture& texture) {            
-            m_format = texture.m_format;
+            m_format = texture.m_format;            
             id = texture.id;
             /*std::cout<<"FBO texture id : "<<texture.id<<std::endl;
             system("PAUSE");*/
@@ -37,7 +39,13 @@ namespace odfaeg {
             mipLevels = texture.mipLevels;
             mipsInfos = texture.mipsInfos;
             layerCount = texture.layerCount;
-            create(texture.m_size.x(), texture.m_size.y(), 1, texture.mipLevels);
+            isCubeMap = texture.isCubeMap;
+            if (isCubeMap) {
+                std::cout<<"create cube map : "<<"nb buffers : "<<texture.nbBuffers<<"images size : "<<texture.images.size()<<std::endl;
+                createCubeMap(texture.m_size.x());
+            } else {
+                create(texture.m_size.x(), texture.m_size.y(), 1, texture.mipLevels);
+            }
             update(texture, 0, 0);
         }
 	    void Texture::copyFrom(CommandPool& commandPool, Texture& texture) {
@@ -54,6 +62,7 @@ namespace odfaeg {
             mipLevels = texture.mipLevels;
             layerCount = texture.layerCount;
             mipsInfos = texture.mipsInfos;
+            isCubeMap = texture.isCubeMap;
             create(texture.m_size.x(), texture.m_size.y(), 1, texture.mipLevels);
             for (unsigned int i = 0; i < mipLevels; i++) {
                 update(commandPool, texture, 0, 0, i);
@@ -114,6 +123,7 @@ namespace odfaeg {
         }
         bool Texture::create(uint32_t texWidth, uint32_t texHeight, uint32_t texDepth, unsigned int mipLevels, bool layered, bool FBOAttachment) {
             //std::cout<<"fbo attachment ?"<<FBOAttachment<<std::endl;
+            isCubeMap = false;
             m_size = math::Vector2u(texWidth, texHeight);
             this->mipLevels = mipLevels;
             layerCount = (layered) ? texDepth : 1;
@@ -320,7 +330,8 @@ namespace odfaeg {
             return true;
         }
         bool Texture::createCubeMap(uint32_t size, bool layered, bool FBOAttachment) {
-            id = getUniqueId();
+            //id = getUniqueId();
+            isCubeMap = true;
             m_size = math::Vector2u(size, size);
             layerCount = 6;
             VkImageType imageType = VK_IMAGE_TYPE_2D; 
@@ -359,7 +370,7 @@ namespace odfaeg {
                 }
                 vkDeviceWaitIdle(device.getDevice());
                 //id = getUniqueId();
-                GPUContext::instance().getSharedTextures(0).push_back(std::move(*this));
+                //GPUContext::instance().getSharedTextures(0).push_back(std::move(*this));
             }
             if (FBOAttachment) {
                 auto& vec = GPUContext::instance().getSharedTextures(texType);
@@ -367,6 +378,7 @@ namespace odfaeg {
                 //std::cout<<"FBO texture id : "<<id<<std::endl;                
                 //vec.push_back(std::move(*this));
                 vec.emplace_back(device);
+                std::cout<<"nb buffers before copy : "<<images.size()<<std::endl;
                 vec.back().copyFrom(*this);
                 //std::cout<<"FBO texture id : "<<vec.back().getId()<<std::endl;
                 //GPUContext::instance().getSharedTextures(0).push_back(std::move(*this));
@@ -814,6 +826,7 @@ namespace odfaeg {
             copyRegion.extent.height = texture.m_size.y();
             copyRegion.extent.depth  = 1;
             for (unsigned int i = 0; i < nbBuffers; i++) {
+                std::cout<<"buffer : "<<texture.images.size()<<std::endl;
                 commandPool.beginRecordCommandBuffer(i);
                 VkImageLayout currentLayout = texture.images[i].getLayout();                
                 texture.transitionImageLayout(texture.images[i], commandPool.getHandle(i), currentLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
