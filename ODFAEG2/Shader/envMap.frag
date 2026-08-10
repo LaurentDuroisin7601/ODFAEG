@@ -34,9 +34,9 @@ struct MaterialData {
     int refractable;    
 };
 layout (push_constant) uniform PushConstant {
-    layout (offset=136) uint maxNodes;
-    layout (offset=140) int currentImageIndex;
-    layout (offset=144) vec2 resolution;
+    layout (offset=72) uint maxNodes;
+    layout (offset=76) int currentImageIndex;
+    layout (offset=80) vec2 resolution;
 } pc;
 layout (std430, set = 0, binding = 2) buffer MaterialDataSSBO {
     MaterialData materialData[];

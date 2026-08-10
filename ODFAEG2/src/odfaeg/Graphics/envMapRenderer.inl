@@ -276,6 +276,7 @@ namespace odfaeg {
         void EnvMapRenderer::clear() {
             parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
             parentRenderer.applyCullingAndBatching();
+            envMap.beginRecordCommandBuffer();
             envMap.setTypesToRender(typesToRenderExpression, envMap.getCurrentFrame());
             envMap.applyCullingAndBatching();
             cv.notify_one();
