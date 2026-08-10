@@ -23,10 +23,10 @@ void main() {
   //debugPrintfEXT("Full quad fs");
   NodeType frags[MAX_FRAGMENTS];
   int count = 0;
-  vec2 hrLrScale = (pc.resolution / PPLL_RESOLUTION) + 1;
+  vec2 hrLrScale = pc.resolution / PPLL_RESOLUTION;
   ivec2 lrFragCoord = ivec2(gl_FragCoord.xy / hrLrScale); 
   uint n = imageLoad(headPointers[pc.currentFrame], lrFragCoord).r;  
-  uint hResId = uint((int(gl_FragCoord.x) % PPLL_RESOLUTION) + (int(gl_FragCoord.y) % PPLL_RESOLUTION) * hrLrScale);
+  uint hResId = uint((int(gl_FragCoord.x) % int(hrLrScale.x)) + (int(gl_FragCoord.y) % int(hrLrScale.y)) * hrLrScale.x);
   while( n != 0xffffffffu && count < MAX_FRAGMENTS && nodeData[pc.currentFrame].nodes[n].hResId == hResId) {
        frags[count] = nodeData[pc.currentFrame].nodes[n];
        n = frags[count].next;
