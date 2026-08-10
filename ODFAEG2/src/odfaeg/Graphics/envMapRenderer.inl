@@ -359,7 +359,7 @@ namespace odfaeg {
                         RenderStates states;
                         states.shader = &envMapQuadShader;
                         states.blendMode = blendMode;
-                        envMapQuadFragPC.currentFrame = parentRenderer.getCurrentFrame();
+                        envMapQuadFragPC.currentImageIndex = parentRenderer.getImageIndex();
                         std::vector<VkDescriptorSet> sets;
                         for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(envMapQuadShader).size(); i++) {
                             sets.push_back(GPUContext::instance().getDescriptorSets(envMapQuadShader)[i][0].getHandle());
@@ -370,7 +370,7 @@ namespace odfaeg {
                         vkCmdBindPipeline(envMapQuadCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
                         //std::cout<<"pipeline bound"<<std::endl;
                         vkCmdBindDescriptorSets(envMapQuadCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
-                        vkCmdPushConstants(envMapQuadCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(EnvMapQuadFragPC), &currentFrame);
+                        vkCmdPushConstants(envMapQuadCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(EnvMapQuadFragPC), &envMapQuadFragPC);
                         envMap.draw(envMapQuadCmdPools[cmp], fullScreenQuad, states);
                         envMapQuadCmdPools[cmp].endRecordCommandBuffer(parentRenderer.getCurrentFrame());                        
                         jobFence[parentRenderer.getCurrentFrame()].jobDone();
