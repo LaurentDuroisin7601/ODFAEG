@@ -3,13 +3,16 @@
 #extension GL_EXT_debug_printf : enable
 #define MAX_FRAMES_IN_FLIGHT 2
 #define MAX_FRAGMENTS 20
+#define PPLL_RESOLUTION 524
 struct NodeType {
   vec4 color;
   float depth;
   uint next;
+  uint hResId;
 };
 layout (push_constant) uniform PushConstant {
   int currentFrame;
+  vec2 resolution;
 } pc;
 layout(set = 0, binding = 0, r32ui) uniform uimage2D headPointers[MAX_FRAMES_IN_FLIGHT];
 layout(std430, set = 0, binding = 1) buffer linkedLists {
@@ -20,8 +23,11 @@ void main() {
   //debugPrintfEXT("Full quad fs");
   NodeType frags[MAX_FRAGMENTS];
   int count = 0;
-  uint n = imageLoad(headPointers[pc.currentFrame], ivec2(gl_FragCoord.xy)).r;
-  while( n != 0xffffffffu && count < MAX_FRAGMENTS) {
+  vec2 hrLrScale = (pc.resolution / PPLL_RESOLUTION) + 1;
+  ivec2 lrFragCoord = ivec2(gl_FragCoord.xy / hrLrScale); 
+  uint n = imageLoad(headPointers[pc.currentFrame], lrFragCoord).r;  
+  uint hResId = uint((int(gl_FragCoord.x) % PPLL_RESOLUTION) + (int(gl_FragCoord.y) % PPLL_RESOLUTION) * hrLrScale);
+  while( n != 0xffffffffu && count < MAX_FRAGMENTS && nodeData[pc.currentFrame].nodes[n].hResId == hResId) {
        frags[count] = nodeData[pc.currentFrame].nodes[n];
        n = frags[count].next;
        count++;

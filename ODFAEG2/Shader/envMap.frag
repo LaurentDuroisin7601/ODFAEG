@@ -6,11 +6,13 @@
 #define MAX_TEXTURES 1024
 #define MAX_FRAMES_IN_FLIGHT 2
 #define NB_PRIMITIVE_TYPES 6
+#define PPLL_RESOLUTION 524
 layout (early_fragment_tests) in;
-struct NodeType {
+struct NodeType {    
     vec4 color;
     float depth;
     uint next;
+    uint hResId;
 };
 struct MaterialData {   
     uint diffuseTextureIndex;
@@ -34,6 +36,7 @@ struct MaterialData {
 layout (push_constant) uniform PushConstant {
     layout (offset=136) uint maxNodes;
     layout (offset=140) int currentImageIndex;
+    layout (offset=144) vec2 resolution;
 } pc;
 layout (std430, set = 0, binding = 2) buffer MaterialDataSSBO {
     MaterialData materialData[];
@@ -55,7 +58,8 @@ layout(location = 5) flat in int currentFrame;
 layout(location = 0) out vec4 outColor;
 void main() {
     //debugPrintfEXT("current frame : %i, primitive type : %i", currentFrame, primitiveType);
-
+    vec2 hrLrScale = (pc.resolution / PPLL_RESOLUTION) + 1;
+    ivec2 lrFragCoord = ivec2(gl_FragCoord.xy / hrLrScale); 
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[v_DrawID];
 
     // --- Diffuse ---
@@ -66,7 +70,8 @@ void main() {
     }
     uint nodeIdx = atomicAdd(countData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].count, 1);
     if (nodeIdx < pc.maxNodes) {
-         uint prevHead = imageAtomicExchange(headPointers[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame], ivec2(gl_FragCoord.xy), nodeIdx);
+         uint prevHead = imageAtomicExchange(headPointers[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame], lrFragCoord, nodeIdx);
+         linkedListData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].nodes[nodeIdx].hResId = uint((int(gl_FragCoord.x) % PPLL_RESOLUTION) + (int(gl_FragCoord.y) % PPLL_RESOLUTION) * hrLrScale);
          linkedListData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].nodes[nodeIdx].color = diffuse;
          linkedListData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].nodes[nodeIdx].depth = gl_FragCoord.z;
          linkedListData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].nodes[nodeIdx].next = prevHead;
