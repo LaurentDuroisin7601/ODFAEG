@@ -20,7 +20,9 @@ namespace odfaeg {
             createCommandPools();
             maxNodes = 20 * ENV_MAP_SIZE * ENV_MAP_SIZE;
             envMapFragPC.maxNodes = maxNodes;
-            unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int);
+            envMapFragPC.resolution = math::Vec2f(ENV_MAP_SIZE, ENV_MAP_SIZE);
+            envMapQuadFragPC.resolution = math::Vec2f(ENV_MAP_SIZE, ENV_MAP_SIZE);
+            unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int) * 2;
             commandPool.beginRecordCommandBuffer(0);            
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT*6; i++) {
                 headPtrsStorageImage.emplace_back(GPUContext::instance().getDevice());
@@ -164,7 +166,7 @@ namespace odfaeg {
             pushConstants.clear();
             VkPushConstantRange quadPushConstant;
             quadPushConstant.offset = 0;
-            quadPushConstant.size = sizeof(unsigned int);
+            quadPushConstant.size = sizeof(EnvMapQuadFragPC);
             quadPushConstant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
             pushConstants.push_back(quadPushConstant);
             GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, 0).createGraphicPipeline(envMapQuadShader, entity::PrimitiveType::Triangles, GPUContext::instance().getDescriptorSetLayout(envMapQuadShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);            
@@ -357,7 +359,7 @@ namespace odfaeg {
                         RenderStates states;
                         states.shader = &envMapQuadShader;
                         states.blendMode = blendMode;
-                        unsigned int currentFrame = parentRenderer.getCurrentFrame();
+                        envMapQuadFragPC.currentFrame = parentRenderer.getCurrentFrame();
                         std::vector<VkDescriptorSet> sets;
                         for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(envMapQuadShader).size(); i++) {
                             sets.push_back(GPUContext::instance().getDescriptorSets(envMapQuadShader)[i][0].getHandle());
@@ -368,7 +370,7 @@ namespace odfaeg {
                         vkCmdBindPipeline(envMapQuadCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
                         //std::cout<<"pipeline bound"<<std::endl;
                         vkCmdBindDescriptorSets(envMapQuadCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
-                        vkCmdPushConstants(envMapQuadCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(unsigned int), &currentFrame);
+                        vkCmdPushConstants(envMapQuadCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(EnvMapQuadFragPC), &currentFrame);
                         envMap.draw(envMapQuadCmdPools[cmp], fullScreenQuad, states);
                         envMapQuadCmdPools[cmp].endRecordCommandBuffer(parentRenderer.getCurrentFrame());                        
                         jobFence[parentRenderer.getCurrentFrame()].jobDone();

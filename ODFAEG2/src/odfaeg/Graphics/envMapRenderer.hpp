@@ -37,7 +37,12 @@ namespace odfaeg {
                 struct EnvMapFragPC {
                     unsigned int maxNodes;
                     int currentImageIndex;
-                };   
+                    math::Vec2f resolution;
+                }; 
+                struct EnvMapQuadFragPC {
+                    int currentImageIndex;
+                    math::Vec2f resolution;
+                };               
                 struct EnvMapVertPC {
                     math::Matrix4f projMatrix;
                     unsigned int primitiveType;
@@ -99,6 +104,7 @@ namespace odfaeg {
                 window::Listener eventListener;
                 EnvMapVertPC envMapVertPC;
                 EnvMapFragPC envMapFragPC;
+                EnvMapQuadFragPC envMapQuadFragPC;
                 ReflRefrVertPC reflRefrVertPC;
                 ReflRefrFragPC reflRefrFragPC;
                 // Private members and methods
