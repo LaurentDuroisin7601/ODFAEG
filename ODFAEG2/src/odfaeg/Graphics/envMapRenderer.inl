@@ -154,7 +154,7 @@ namespace odfaeg {
             renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
             renderingCreateInfo.colorAttachmentCount = 1;
             renderingCreateInfo.pColorAttachmentFormats = &envMap.getTexture().getFormat();
-            renderingCreateInfo.depthAttachmentFormat = VK_FORMAT_UNDEFINED;
+            renderingCreateInfo.depthAttachmentFormat = envMap.getDepthStencilTexture().getFormat();
             renderingCreateInfo.viewMask = envMap.getViewMask();
             for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) { 
                 //std::cout<<"id : "<<blendMode.id<<std::endl;  
@@ -323,8 +323,9 @@ namespace odfaeg {
                         VkCommandBufferInheritanceRenderingInfo inheritanceRenderingInfo{};
                         inheritanceRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
                         inheritanceRenderingInfo.colorAttachmentCount = 1;
+                        inheritanceRenderingInfo.viewMask = envMap.getViewMask();
                         inheritanceRenderingInfo.pColorAttachmentFormats = &envMap.getImageFormat(),
-                        inheritanceRenderingInfo.depthAttachmentFormat = VK_FORMAT_UNDEFINED;                    
+                        inheritanceRenderingInfo.depthAttachmentFormat = envMap.getDepthStencilTexture().getFormat();                    
                         inheritanceRenderingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;                      
                         VkCommandBufferInheritanceInfo inheritanceInfo{};
                         inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -366,9 +367,10 @@ namespace odfaeg {
                     threadPool.enqueue([this, cmp] { 
                         VkCommandBufferInheritanceRenderingInfo inheritanceRenderingInfo{};
                         inheritanceRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
+                        inheritanceRenderingInfo.viewMask = envMap.getViewMask();
                         inheritanceRenderingInfo.colorAttachmentCount = 1;
                         inheritanceRenderingInfo.pColorAttachmentFormats = &envMap.getImageFormat(),
-                        inheritanceRenderingInfo.depthAttachmentFormat = VK_FORMAT_UNDEFINED;                    
+                        inheritanceRenderingInfo.depthAttachmentFormat = envMap.getDepthStencilTexture().getFormat();                    
                         inheritanceRenderingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;                
                         VkCommandBufferInheritanceInfo inheritanceInfo{};
                         inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -435,7 +437,7 @@ namespace odfaeg {
                             reflRefrFragPC.cameraPos =  reflRefrGameObjects[cmp]->getGameObject()->getCenter();
                             //std::cout<<"pipeline bound"<<std::endl;
                             vkCmdBindDescriptorSets(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
-                            vkCmdPushConstants(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(ReflRefrVertPC), &reflRefrVertPC);
+                            vkCmdPushConstants(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ReflRefrVertPC), &reflRefrVertPC);
                             vkCmdPushConstants(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(ReflRefrVertPC), sizeof(ReflRefrFragPC), &reflRefrFragPC);
                             parentRenderer.draw(reflRefrCmdPools[cmp], reflRefrGameObjects[cmp]->getVertexBuffers()[v], states);
                         }
@@ -463,16 +465,16 @@ namespace odfaeg {
             for (unsigned int e = 0; e < reflRefrGameObjects.size(); e++) {
                 envMap.clear();
                 envMap.beginRendering(true);
-                vkCmdExecuteCommands(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &envMapCmdPools[e].getHandle(parentRenderer.getCurrentFrame()));
+                vkCmdExecuteCommands(envMap.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &envMapCmdPools[e].getHandle(parentRenderer.getCurrentFrame()));
                 envMap.endRendering();
                 VkMemoryBarrier memoryBarrier{};
                 memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                 memoryBarrier.pNext = VK_NULL_HANDLE;
                 memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                 memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                vkCmdPipelineBarrier(envMap.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 envMap.beginRendering(true);
-                vkCmdExecuteCommands(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &envMapQuadCmdPools[e].getHandle(parentRenderer.getCurrentFrame()));
+                vkCmdExecuteCommands(envMap.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &envMapQuadCmdPools[e].getHandle(parentRenderer.getCurrentFrame()));
                 envMap.endRendering(); 
                 envMap.submit(true);
                 envMap.display();                

@@ -738,9 +738,9 @@ namespace odfaeg {
 				submitInfo.pCommandBuffers = &commandPool.getHandle(getCurrentFrame());
 				Device::QueueFamilyIndices indices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice());
 				
-				/*std::unique_lock lock(mtx);	
+				std::unique_lock lock(mtx);	
 					//std::cout<<"wait!"<<std::endl;				
-				cv.wait(lock, [this]{return ParticleSystemUpdater::instance(cv, mtx).isSubmitReady() && MorphAnimUpdater::instance(cv, mtx).isSubmitReady() && BoneAnimUpdater::instance(cv, mtx).isSubmitReady();});*/
+				cv.wait(lock, [this]{return ParticleSystemUpdater::instance(cv, mtx).isSubmitReady() && MorphAnimUpdater::instance(cv, mtx).isSubmitReady() && BoneAnimUpdater::instance(cv, mtx).isSubmitReady();});
 				
 				//std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
 				/*std::cout << "update buffers main thread " << std::this_thread::get_id()
@@ -1832,7 +1832,7 @@ namespace odfaeg {
 			applyViewportAndScissor(commandPool.getHandle(getCurrentFrame()));
 			//std::cout<<"use : "<<commandPool.getHandle(getCurrentFrame())<<std::endl;
 			if (vb.getIndexCount() > 0) {
-				std::cout<<"bind indexes : "<<std::endl;
+				//std::cout<<"bind indexes : "<<std::endl;
 				vkCmdBindIndexBuffer(commandPool.getHandle(getCurrentFrame()), vb.getIndexBuffer(0).getHandle(), 0, VK_INDEX_TYPE_UINT32);
 				vkCmdDrawIndexed(commandPool.getHandle(getCurrentFrame()), vb.getIndexCount(), 1, 0, 0, 0);
 			} else {

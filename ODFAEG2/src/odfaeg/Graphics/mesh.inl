@@ -25,6 +25,7 @@ namespace odfaeg {
                     vbs.back().addIndex(parent->getGameObject()->getSubMeshes()[i].getVertexArray().getIndex(v));                    
                 }
             }
+            vbs.back().update();
             for (unsigned int i = 0; i < children.size(); i++) {
                 populateVertexBuffer(children[i].get());
             }            
