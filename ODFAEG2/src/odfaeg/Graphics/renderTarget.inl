@@ -1832,6 +1832,7 @@ namespace odfaeg {
 			applyViewportAndScissor(commandPool.getHandle(getCurrentFrame()));
 			//std::cout<<"use : "<<commandPool.getHandle(getCurrentFrame())<<std::endl;
 			if (vb.getIndexCount() > 0) {
+				std::cout<<"bind indexes : "<<std::endl;
 				vkCmdBindIndexBuffer(commandPool.getHandle(getCurrentFrame()), vb.getIndexBuffer(0).getHandle(), 0, VK_INDEX_TYPE_UINT32);
 				vkCmdDrawIndexed(commandPool.getHandle(getCurrentFrame()), vb.getIndexCount(), 1, 0, 0, 0);
 			} else {

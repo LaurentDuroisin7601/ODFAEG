@@ -16,11 +16,8 @@ namespace odfaeg {
             populateVertexBuffer(this);
         }
         void Mesh::populateVertexBuffer(Mesh* parent) {
-            for (unsigned int i = 0; i < children.size(); i++) {
-                populateVertexBuffer(children[i].get());
-            }
-            for (unsigned int i = 0; i < parent->getGameObject()->getSubMeshes().size(); i++) {
-                vbs.emplace_back(GPUContext::instance().getDevice());
+            vbs.emplace_back(GPUContext::instance().getDevice());
+            for (unsigned int i = 0; i < parent->getGameObject()->getSubMeshes().size(); i++) {                
                 for(unsigned int v = 0; v < parent->getGameObject()->getSubMeshes()[i].getVertexArray().getVertexCount(); v++) {
                     vbs.back().append(parent->getGameObject()->getSubMeshes()[i].getVertexArray()[v]);                    
                 }
@@ -28,6 +25,9 @@ namespace odfaeg {
                     vbs.back().addIndex(parent->getGameObject()->getSubMeshes()[i].getVertexArray().getIndex(v));                    
                 }
             }
+            for (unsigned int i = 0; i < children.size(); i++) {
+                populateVertexBuffer(children[i].get());
+            }            
         }
         std::deque<VertexBuffer>& Mesh::getVertexBuffers() {
             return vbs;
