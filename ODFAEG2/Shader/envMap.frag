@@ -70,6 +70,7 @@ void main() {
         
         diffuse *= texture(diffuseTextures[mat.diffuseTextureIndex-1], uv);
     }
+    //debugPrintfEXT("diffuse : %v4f", diffuse);
     /*if (mat.diffuseTextureIndex > 1)
         debugPrintfEXT("material id : %i", mat.diffuseTextureIndex);*/
     uint nodeIdx = atomicAdd(countData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].count, 1);

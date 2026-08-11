@@ -27,7 +27,7 @@ layout (push_constant) uniform PushConstant {
 void main() {
 
         gl_PointSize = 2.0f;
-        gl_Position =  transpose(pc.projMatrix) * transpose(pc.viewMatrix) * transpose(pc.modelMatrix) * vec4(inPosition, 1);
+        gl_Position =  pc.projMatrix * pc.viewMatrix * pc.modelMatrix * vec4(inPosition, 1);
         // debugPrintfEXT("position : %v4f", gl_Position);
         fragColor = inColor;
         fragTexCoord = inTexCoord /** pc.uvScale + pc.uvOffset*/;

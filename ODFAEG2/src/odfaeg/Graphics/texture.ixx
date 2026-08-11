@@ -85,8 +85,7 @@ namespace odfaeg {
             VkFormat& getFormat();
             math::Vector2u getSize();
             unsigned int getNbBuffers() const;
-            unsigned int getLayerCount();  
-            bool isCubeMap();          
+            unsigned int getLayerCount();            
         private :
             unsigned int texType, mipLevels;
             Device& device;

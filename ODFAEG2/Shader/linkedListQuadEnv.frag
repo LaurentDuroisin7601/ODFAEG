@@ -18,7 +18,7 @@ layout(std430, set = 0, binding = 1) buffer linkedLists {
 } nodeData[MAX_FRAMES_IN_FLIGHT*6];
 layout(location = 0) out vec4 fcolor;
 void main() {
-  debugPrintfEXT("Full quad fs");
+  //debugPrintfEXT("Full quad fs");
   NodeType frags[MAX_FRAGMENTS];
   int count = 0;
   uint n = imageLoad(headPointers[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+pc.currentFrame], ivec2(gl_FragCoord.xy)).r;
@@ -46,5 +46,7 @@ void main() {
     color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);*/
     color = mix (color, frags[i].color, frags[i].color.a);
   }
+  /*if (color.r != 0 || color.g != 0 || color.b != 0) 
+    debugPrintfEXT("color : %v4f", color);*/
   fcolor = color;
 }
