@@ -17,7 +17,8 @@ namespace odfaeg {
         }
         void Mesh::populateVertexBuffer(Mesh* parent) {
             vbs.emplace_back(GPUContext::instance().getDevice());
-            for (unsigned int i = 0; i < parent->getGameObject()->getSubMeshes().size(); i++) {                
+            for (unsigned int i = 0; i < parent->getGameObject()->getSubMeshes().size(); i++) {  
+                vbs.back().setPrimitiveType(parent->getGameObject()->getSubMeshes()[i].getVertexArray().getPrimitiveType());              
                 for(unsigned int v = 0; v < parent->getGameObject()->getSubMeshes()[i].getVertexArray().getVertexCount(); v++) {
                     vbs.back().append(parent->getGameObject()->getSubMeshes()[i].getVertexArray()[v]);                    
                 }

@@ -443,6 +443,7 @@ namespace odfaeg {
                             vkCmdBindPipeline(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
                             reflRefrVertPC.primitiveType = reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType();
                             reflRefrVertPC.materialIndex = reflRefrGameObjects[cmp]->getMaterials()[0]->getId();
+                            reflRefrVertPC.modelMatrix = reflRefrGameObjects[cmp]->getGameObject()->getTransform().getMatrix().transpose();
                             reflRefrFragPC.cameraPos =  reflRefrGameObjects[cmp]->getGameObject()->getCenter();
                             //std::cout<<"pipeline bound"<<std::endl;
                             vkCmdBindDescriptorSets(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
