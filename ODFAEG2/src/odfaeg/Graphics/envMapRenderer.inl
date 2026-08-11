@@ -476,6 +476,16 @@ namespace odfaeg {
             parentRenderer.applyComputeGraphicsBarrier();
             for (unsigned int e = 0; e < reflRefrGameObjects.size(); e++) {
                 envMap.clear();
+                VkClearColorValue clearColor;
+                clearColor.uint32[0] = 0xffffffff;
+                VkImageSubresourceRange subresRange = {};
+                subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                subresRange.levelCount = 1;
+                subresRange.layerCount = 1;
+                for (unsigned int i = 0; i < 6; i++) {
+                    vkCmdClearColorImage(envMap.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), headPtrsStorageImage[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+                    vkCmdFillBuffer(envMap.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), nodeCounterBuffer[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), 0, sizeof(uint32_t), 0u);
+                }
                 envMap.beginRendering(true);
                 vkCmdExecuteCommands(envMap.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &envMapCmdPools[e].getHandle(parentRenderer.getCurrentFrame()));
                 envMap.endRendering();
