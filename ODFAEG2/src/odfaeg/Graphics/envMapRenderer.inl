@@ -109,8 +109,10 @@ namespace odfaeg {
         }
         void EnvMapRenderer::createCommandPools() {
             Device::QueueFamilyIndices queueFamilyIndices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice());
-            commandPool.create(queueFamilyIndices.graphicsFamily.value());
-            commandPool.createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT);            
+            if (commandPool.getHandles().size() == 0) {                
+                commandPool.create(queueFamilyIndices.graphicsFamily.value());
+                commandPool.createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT); 
+            }           
             for (unsigned int i = 0; i < reflRefrGameObjects.size(); i++) {
                 envMapCmdPools.emplace_back(GPUContext::instance().getDevice());
                 envMapCmdPools[i].create(queueFamilyIndices.graphicsFamily.value());

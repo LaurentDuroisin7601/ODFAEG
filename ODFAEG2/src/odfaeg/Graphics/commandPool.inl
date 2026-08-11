@@ -18,9 +18,7 @@ namespace odfaeg {
 			return *this;
 		}
 		void CommandPool::create(uint32_t queueFamilyIndex) {
-			if (commandPool != VK_NULL_HANDLE) {
-				cleanup();
-			}
+			cleanup();			
 			VkCommandPoolCreateInfo poolInfo{};
 			poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			poolInfo.flags =  VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
