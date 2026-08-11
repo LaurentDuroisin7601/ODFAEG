@@ -239,12 +239,12 @@ namespace odfaeg {
             for (unsigned int i = 0; i < viewMatrices.size(); i++) {
                 staggingViewMatricesBuffer.update(viewMatrices.data(), sizeof(EnvViewMatrix), i * viewMatrixAlignSize);
             }
-            for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {  
-                commandPool.beginRecordCommandBuffer(i);  
+            for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) { 
                 //viewMatricesBuffer.emplace_back(GPUContext::instance().getDevice());
-                viewMatricesBuffer.back().create(sizeof(EnvViewMatrix)*reflRefrGameObjects.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-                viewMatricesBuffer.back().setRange(sizeof(EnvViewMatrix));
-                Buffer::copyBuffer(staggingViewMatricesBuffer, viewMatricesBuffer.back(), sizeof(EnvViewMatrix)*viewMatrices.size(), commandPool.getHandle(i));   
+                viewMatricesBuffer[i].create(sizeof(EnvViewMatrix)*reflRefrGameObjects.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+                viewMatricesBuffer[i].setRange(sizeof(EnvViewMatrix));
+                commandPool.beginRecordCommandBuffer(i);  
+                Buffer::copyBuffer(staggingViewMatricesBuffer, viewMatricesBuffer[i], sizeof(EnvViewMatrix)*viewMatrices.size(), commandPool.getHandle(i));   
                 commandPool.endRecordCommandBuffer(i);             
             }
             std::cout << "Worker thread ID: " << std::this_thread::get_id() << "\n";
