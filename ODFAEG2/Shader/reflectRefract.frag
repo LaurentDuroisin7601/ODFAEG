@@ -42,11 +42,12 @@ void main() {
     MaterialData material = materialDataBuffer.materialData[materialId];
     vec4 reflectColor = vec4(1);
     vec3 i = (vec4(pos.xyz, 1) - pushConsts.cameraPos).xyz;
+    //debugPrintfEXT("i : %v3f, normal : %v3f", i, normalize(normal));
     //debugPrintfEXT("material id : %i, reflectable %i, refractable %i", material.materialId, material.reflectable, material.refractable);
     if (material.reflectable == 1) {
         vec3 r = reflect (i, normalize(normal));
         reflectColor = texture(sceneBox, r);
-        debugPrintfEXT("reflect color : %v4f", reflectColor);
+        //debugPrintfEXT("reflect color : %v4f", reflectColor);
     }
     float ratio = 1;
     if (material.materialType == 1) {
@@ -62,7 +63,7 @@ void main() {
     if (material.refractable == 1) {
         vec3 r = refract (i, normalize(normal), ratio);
         refractColor = texture(sceneBox, r);
-        debugPrintfEXT("refract color : %v4f", refractColor);
+        //debugPrintfEXT("refract color : %v4f", refractColor);
     }
     outColor = reflectColor * refractColor;
 }  

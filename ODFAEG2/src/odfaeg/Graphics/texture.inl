@@ -924,8 +924,8 @@ namespace odfaeg {
             copyRegion.extent.depth  = 1;
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 VkImageLayout currentLayout = texture.images[imageIndex].getLayout();                
-                texture.transitionImageLayout(texture.images[imageIndex], commandBuffer, currentLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-                transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                texture.transitionImageLayout(texture.images[imageIndex], commandBuffer, currentLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,0,0,1,texture.layerCount);
+                transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,0,0,1,layerCount);
                 //std::cout<<"copy"<<std::endl;
                 vkCmdCopyImage(
                     commandBuffer,
@@ -934,8 +934,8 @@ namespace odfaeg {
                     1,
                     &copyRegion
                 );
-                texture.transitionImageLayout(texture.images[imageIndex], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,currentLayout);
-                transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                texture.transitionImageLayout(texture.images[imageIndex], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,currentLayout,0,0,1,texture.layerCount);
+                transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,0,0,1,layerCount);
                 
             }
         }
