@@ -1051,7 +1051,10 @@ namespace odfaeg {
             // Taille max des images 2D
             uint32_t maxTexSize = props.limits.maxImageDimension2D;
             return maxTexSize;
-        }        
+        } 
+        bool Texture::isCubeMapTex() {
+            return isCubeMap;
+        }       
         bool Texture::isSmooth() const {
             return m_Smooth;
         }

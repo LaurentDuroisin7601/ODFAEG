@@ -31,7 +31,7 @@ struct MaterialData {
     uint materialId;
     uint nbBuffers;
     int reflectable;
-    int refractable;    
+    int refractable;  
 };
 layout (push_constant) uniform PushConstant {
     layout (offset=72) uint maxNodes;
@@ -65,9 +65,13 @@ void main() {
     // --- Diffuse ---
     vec2 uv = fragTexCoord;
     vec4 diffuse = fragColor;
+   
     if (mat.diffuseTextureIndex > 0 && mat.diffuseTextureIndex < MAX_TEXTURES) {
+        
         diffuse *= texture(diffuseTextures[mat.diffuseTextureIndex-1], uv);
     }
+    /*if (mat.diffuseTextureIndex > 1)
+        debugPrintfEXT("material id : %i", mat.diffuseTextureIndex);*/
     uint nodeIdx = atomicAdd(countData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].count, 1);
     if (nodeIdx < pc.maxNodes) {
          uint prevHead = imageAtomicExchange(headPointers[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame], lrFragCoord, nodeIdx);

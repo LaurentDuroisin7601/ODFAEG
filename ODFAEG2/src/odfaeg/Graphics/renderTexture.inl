@@ -49,6 +49,7 @@ namespace odfaeg {
             if (!depthOnly) {                
                 for (unsigned int i = 0; i < 1; i++) {
                     m_textures.emplace_back(device, NB_SWAPCHAIN_IMAGES);
+                    m_textures.back().setTexType(10);
                     m_textures.back().createCubeMap(size, layered, true);
                 }  
             }
@@ -94,7 +95,7 @@ namespace odfaeg {
 	    Texture& RenderTexture::getTexture(unsigned int attachmentPoint) {
             /*std::cout<<"id : "<<m_textures[attachmentPoint].getId()<<","<<GPUContext::instance().getSharedTextures(0)[m_textures[attachmentPoint].getId()-1].getId()<<std::endl;
             system("PAUSE");*/
-            return GPUContext::instance().getSharedTextures(0)[m_textures[attachmentPoint].getId()-1];
+            return m_textures[attachmentPoint].isCubeMapTex() ? GPUContext::instance().getSharedTextures(10)[m_textures[attachmentPoint].getId()-1] : GPUContext::instance().getSharedTextures(0)[m_textures[attachmentPoint].getId()-1];
         }
         math::Vector2u RenderTexture::getSize() const {
             return m_size;

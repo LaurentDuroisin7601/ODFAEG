@@ -227,10 +227,14 @@ namespace odfaeg {
             for (unsigned int r = 0; r < reflRefrGameObjects.size(); r++) {
                 EnvViewMatrix envViewMatrices;                
                 Camera envMapCamera = envMap.getCamera();
+                /*std::cout<<"positon : "<<reflRefrGameObjects[r]->getGameObject()->getCenter()<<std::endl;
+                system("PAUSE");*/
                 envMapCamera.setCenter(reflRefrGameObjects[r]->getGameObject()->getCenter());
                 for (unsigned int m = 0; m < 6; m++) {
                     math::Vec3f target = envMapCamera.getCenter() + dirs[m];
                     envMapCamera.lookAt(target.x(), target.y(), target.z(), ups[m]);    
+                    /*std::cout<<"view matrix : "<<envMapCamera.getViewMatrix().getMatrix().transpose()<<std::endl;
+                    system("PAUSE");*/
                     envViewMatrices.viewMatrices[m] = envMapCamera.getViewMatrix().getMatrix().transpose();                                    
                 }
                 viewMatrices.push_back(envViewMatrices);            
@@ -247,7 +251,7 @@ namespace odfaeg {
                 Buffer::copyBuffer(staggingViewMatricesBuffer, viewMatricesBuffer[i], sizeof(EnvViewMatrix)*viewMatrices.size(), commandPool.getHandle(i));   
                 commandPool.endRecordCommandBuffer(i);             
             }
-            std::cout << "Worker thread ID: " << std::this_thread::get_id() << "\n";
+            //std::cout << "Worker thread ID: " << std::this_thread::get_id() << "\n";
             VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
             submitInfo.commandBufferCount = commandPool.getHandles().size();
@@ -261,9 +265,9 @@ namespace odfaeg {
         void EnvMapRenderer::updateDescriptorSets() {
             bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
             DescriptorSet& envMapSet = GPUContext::instance().getDescriptorSets(envMapShader, (hasDiffuseTexture) ? 7 : 6, 1)[0];
-            envMapSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            envMapSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+envMap.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             envMapSet.updateBufferInfos(1, viewMatricesBuffer,VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC);
-            envMapSet.updateBufferInfos(2, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            envMapSet.updateBufferInfos(2, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS+envMap.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             envMapSet.updateImageInfos(3, headPtrsStorageImage, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
             envMapSet.updateBufferInfos(4, linkedListBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             envMapSet.updateBufferInfos(5, nodeCounterBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -341,7 +345,8 @@ namespace odfaeg {
                         states.shader = &envMapShader;
                         states.blendMode = blendMode;
                         envMapVertPC.projMatrix = envMap.getCamera().getProjMatrix().getMatrix().transpose();
-                        envMapFragPC.maxNodes = maxNodes;
+                        envMapVertPC.currentFrameIndex = envMap.getCurrentFrame();
+                        envMapFragPC.maxNodes = maxNodes;            
                         envMapFragPC.currentImageIndex = envMap.getImageIndex();
                         std::vector<uint32_t> offsetEnvViewMatrices;
                         for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
@@ -356,13 +361,14 @@ namespace odfaeg {
                         for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
                             //std::cout<<"sizes = "<<linkedListPipeline.size()<<","<<linkedListPipeline[i].size()<<",ids : "<<i<<","<<RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id<<std::endl;
                             //std::cout<<"bind pipeline : "<<blendMode.id<<","<<GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle()<<std::endl;
+                            envMapVertPC.primitiveType = i;
                             vkCmdBindPipeline(envMapCmdPools[cmp].getHandle(envMap.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getHandle());
                             //std::cout<<"pipeline bound"<<std::endl;
                             vkCmdBindDescriptorSets(envMapCmdPools[cmp].getHandle(envMap.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), offsetEnvViewMatrices.size(), offsetEnvViewMatrices.data());
                             vkCmdPushConstants(envMapCmdPools[cmp].getHandle(envMap.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(EnvMapVertPC), &envMapVertPC);
                             vkCmdPushConstants(envMapCmdPools[cmp].getHandle(envMap.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(EnvMapVertPC), sizeof(EnvMapFragPC), &envMapFragPC);
 
-                            parentRenderer.draw(envMapCmdPools[cmp], static_cast<entity::PrimitiveType>(i), states);
+                            envMap.draw(envMapCmdPools[cmp], static_cast<entity::PrimitiveType>(i), states);
                         }
                         envMapCmdPools[cmp].endRecordCommandBuffer(envMap.getCurrentFrame());                        
                         jobFence[envMap.getCurrentFrame()].jobDone();

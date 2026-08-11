@@ -65,7 +65,9 @@ struct MaterialData {
     int instanceGroupId;
     uint vertsInstanceSet;
     uint materialId;
-    uint nbBuffers;    
+    uint nbBuffers;  
+    int reflectable;
+    int refractable;  
 };
 struct IndirectElementsDrawCommand {
     uint index_count;

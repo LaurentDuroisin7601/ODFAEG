@@ -45,8 +45,8 @@ namespace odfaeg {
                 };               
                 struct EnvMapVertPC {
                     math::Matrix4f projMatrix;
-                    unsigned int primitiveType;
-                    unsigned int currentFrameIndex;                    
+                    int primitiveType;
+                    int currentFrameIndex;                    
                 };
                 struct ReflRefrVertPC {
                     math::Matrix4f projMatrix;
