@@ -187,7 +187,7 @@ namespace odfaeg {
                     .baseMipLevel = 0,
                     .levelCount = 1,
                     .baseArrayLayer = 0,
-                    .layerCount = 1
+                    .layerCount = m_textures[0].getLayerCount()
                 };
 
                 

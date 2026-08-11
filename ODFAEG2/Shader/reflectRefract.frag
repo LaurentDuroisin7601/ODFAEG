@@ -63,7 +63,7 @@ void main() {
     if (material.refractable == 1) {
         vec3 r = refract (i, normalize(normal), ratio);
         refractColor = texture(sceneBox, r);
-        //debugPrintfEXT("refract color : %v4f", refractColor);
+        debugPrintfEXT("refract color : %v4f", refractColor);
     }
     outColor = reflectColor * refractColor;
 }  
