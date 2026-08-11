@@ -103,6 +103,7 @@ namespace odfaeg {
             }*/
             gameObject->populateVertexBuffers();
             reflRefrGameObjects.push_back(gameObject);
+            createCommandPools();
             needToUpdateBuffers = true;
             needToUpdateDescriptorSets = true;
         }
@@ -244,6 +245,7 @@ namespace odfaeg {
                 Buffer::copyBuffer(staggingViewMatricesBuffer, viewMatricesBuffer.back(), sizeof(EnvViewMatrix)*viewMatrices.size(), commandPool.getHandle(i));   
                 commandPool.endRecordCommandBuffer(i);             
             }
+            std::cout << "Worker thread ID: " << std::this_thread::get_id() << "\n";
             VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
             submitInfo.commandBufferCount = commandPool.getHandles().size();
@@ -299,8 +301,7 @@ namespace odfaeg {
             registerFramesJob[envMap.getCurrentFrame()].store(false);
             if (!stop.load()) {
                 //std::cout<<"draw next frame!"<<std::endl;
-                if (needToUpdateBuffers) {
-                    createCommandPools();
+                if (needToUpdateBuffers) {                    
                     updateBuffers();
                     needToUpdateBuffers = false;
                 }
