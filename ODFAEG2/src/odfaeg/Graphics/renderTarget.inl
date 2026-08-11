@@ -409,9 +409,12 @@ namespace odfaeg {
 					material.nbVertices = 0;
 					material.nbIndexes = 0;
 					material.materialId = materials[i]->getId();
+					
 					material.instanceGroupId = materials[i]->getInstanceGroup();
 					material.reflectable = (materials[i]->isReflectable()) ? 1 : 0;
 					material.refractable = (materials[i]->isRefractable()) ? 1 : 0;
+					/*std::cout<<"id : "<<material.materialId<<", reflectable : "<<material.reflectable<<"refractable : "<<material.refractable<<std::endl;
+					system("PAUSE");*/
 					/*if (material.instanceGroupId != -1)
 						system("PAUSE");**/
 					materialDatas.push_back(material);
@@ -464,13 +467,17 @@ namespace odfaeg {
 						subMeshData.vertexOffset = currentVertexOffset[primitiveType];
 						subMeshData.indexOffset = currentIndexOffset[primitiveType];
 						for (unsigned int m = 0; m < materials.size(); m++) {
-							
+							//std::cout<<gameObjects[i]->getMaterials()[j]->isReflectable()<<std::endl;
 							if (*materials[m] == *gameObjects[i]->getMaterials()[j]) {
 								/*if (materials[m]->getTexture(entity::SubMesh::DIFFUSE) != nullptr && materials[m]->getTexture(entity::SubMesh::DIFFUSE)->getId() == 4) {
 									std::cout<<"ids : "<<subMeshData.id<<","<<gameObjects[i]->getMaterials()[j]->getId()<<","<<materialDatas[gameObjects[i]->getMaterials()[j]->getId()].diffuseTextureIndex<<std::endl;
 									system("PAUSE");
 								}*/
+								//std::cout<<"reflectable  "<<materials[m]->isReflectable()<<"refractable : "<<materials[m]->isRefractable()<<std::endl;
 								subMeshData.materialId = gameObjects[i]->getMaterials()[j]->getId();
+								/*if (materials[m]->isReflectable())
+									std::cout<<"material id : "<<subMeshData.materialId<<std::endl;
+								system("PAUSE");*/
 							}
 						}						
 						subMeshData.nbVertices = subMesh.getVertexArray().getVertexCount();

@@ -93,8 +93,9 @@ namespace odfaeg {
             return currentFrame;
         }
 	    Texture& RenderTexture::getTexture(unsigned int attachmentPoint) {
-            /*std::cout<<"id : "<<m_textures[attachmentPoint].getId()<<","<<GPUContext::instance().getSharedTextures(0)[m_textures[attachmentPoint].getId()-1].getId()<<std::endl;
-            system("PAUSE");*/
+            /*if (m_textures[attachmentPoint].isCubeMapTex())
+                std::cout<<"id : "<<m_textures[attachmentPoint].getId()<<","<<GPUContext::instance().getSharedTextures(10)[m_textures[attachmentPoint].getId()-1].getId()<<std::endl;
+                system("PAUSE");*/
             return m_textures[attachmentPoint].isCubeMapTex() ? GPUContext::instance().getSharedTextures(10)[m_textures[attachmentPoint].getId()-1] : GPUContext::instance().getSharedTextures(0)[m_textures[attachmentPoint].getId()-1];
         }
         math::Vector2u RenderTexture::getSize() const {

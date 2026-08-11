@@ -180,7 +180,7 @@ int main() {
 	Mesh cube5Mesh(&cube5);
 	Mesh cube6Mesh(&cube6);
 	Material* material = new Material();
-	material->setRefractable(true);
+	material->setReflectable(true);
 	material->setRefractable(true);
 	cube6Mesh.addMaterial(material);
 	

@@ -910,13 +910,13 @@ namespace odfaeg {
             copyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             copyRegion.srcSubresource.mipLevel = 0;
             copyRegion.srcSubresource.baseArrayLayer = 0;
-            copyRegion.srcSubresource.layerCount = 1;
+            copyRegion.srcSubresource.layerCount = texture.layerCount;
             copyRegion.srcOffset = {0, 0, 0};
 
             copyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             copyRegion.dstSubresource.mipLevel = 0;
             copyRegion.dstSubresource.baseArrayLayer = 0;
-            copyRegion.dstSubresource.layerCount = 1;
+            copyRegion.dstSubresource.layerCount = layerCount;
             copyRegion.dstOffset = {0, 0, 0};
 
             copyRegion.extent.width  = texture.m_size.x();

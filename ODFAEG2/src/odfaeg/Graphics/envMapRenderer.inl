@@ -177,7 +177,7 @@ namespace odfaeg {
             pushConstants.push_back(quadPushConstant);
             GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, 0).createGraphicPipeline(envMapQuadShader, entity::PrimitiveType::Triangles, GPUContext::instance().getDescriptorSetLayout(envMapQuadShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);            
             DescriptorSetLayout& reflRefrLayout = GPUContext::instance().getDescriptorSetLayout(reflRefrShader, 2);
-            reflRefrLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_FRAGMENT_BIT);
+            reflRefrLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
             reflRefrLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
             reflRefrLayout.update();
             renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
@@ -211,7 +211,7 @@ namespace odfaeg {
             quadLinkedListPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*6);
             quadLinkedListPool.update();
             DescriptorPool& reflRefrPool = GPUContext::instance().getDescriptorPool(reflRefrShader, 2);
-            reflRefrPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES);
+            reflRefrPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
             reflRefrPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);  
             reflRefrPool.update();
             DescriptorSet::allocate(envMapPool, envMapLayout, GPUContext::instance().getDescriptorSets(envMapShader, 7, 1), MAX_TEXTURES);
@@ -282,7 +282,7 @@ namespace odfaeg {
             linkedListQuadSet.updateDescriptorSet();
             // std::cout<<"update quads ds"<<std::endl;
             DescriptorSet& reflRefrSet = GPUContext::instance().getDescriptorSets(reflRefrShader, 2, 1)[0];
-            reflRefrSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            reflRefrSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::MATERIAL_DATA_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
            
             reflRefrSet.updateImageInfos(1, envMap.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             reflRefrSet.updateDescriptorSet();
@@ -443,6 +443,8 @@ namespace odfaeg {
                             vkCmdBindPipeline(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
                             reflRefrVertPC.primitiveType = reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType();
                             reflRefrVertPC.materialIndex = reflRefrGameObjects[cmp]->getMaterials()[0]->getId();
+                            /*std::cout<<"material index : "<<reflRefrVertPC.materialIndex<<",reflectable ? "<<reflRefrGameObjects[cmp]->getMaterials()[0]->isReflectable()<<std::endl;
+                            system("PAUSE");*/
                             reflRefrVertPC.modelMatrix = reflRefrGameObjects[cmp]->getGameObject()->getTransform().getMatrix().transpose();
                             reflRefrFragPC.cameraPos =  reflRefrGameObjects[cmp]->getGameObject()->getCenter();
                             //std::cout<<"draw vertex buffer : "<<v<<std::endl;

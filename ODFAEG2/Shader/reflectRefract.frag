@@ -1,4 +1,5 @@
 #version 460
+#extension GL_EXT_debug_printf : enable
 #extension GL_EXT_nonuniform_qualifier : enable
 #define NB_PRIMITIVE_TYPES 6
 #define MAX_FRAMES_IN_FLIGHT 2
@@ -35,15 +36,17 @@ struct MaterialData {
 };
 layout (std430, set = 0, binding = 0) buffer MaterialDataSSBO {
     MaterialData materialData[];
-} materialDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
-layout (set = 0, binding = 1) uniform samplerCube sceneBox[];                                                       
+} materialDataBuffer;
+layout (set = 0, binding = 1) uniform samplerCube sceneBox;                                                       
 void main() {
-    MaterialData material = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[materialId];
+    MaterialData material = materialDataBuffer.materialData[materialId];
     vec4 reflectColor = vec4(1);
     vec3 i = (vec4(pos.xyz, 1) - pushConsts.cameraPos).xyz;
+    //debugPrintfEXT("material id : %i, reflectable %i, refractable %i", material.materialId, material.reflectable, material.refractable);
     if (material.reflectable == 1) {
         vec3 r = reflect (i, normalize(normal));
-        reflectColor = texture(sceneBox[pushConsts.imageIndex], r);
+        reflectColor = texture(sceneBox, r);
+        debugPrintfEXT("reflect color : %v4f", reflectColor);
     }
     float ratio = 1;
     if (material.materialType == 1) {
@@ -58,7 +61,8 @@ void main() {
     vec4 refractColor = vec4(1);
     if (material.refractable == 1) {
         vec3 r = refract (i, normalize(normal), ratio);
-        refractColor = texture(sceneBox[pushConsts.imageIndex], r);
+        refractColor = texture(sceneBox, r);
+        debugPrintfEXT("refract color : %v4f", refractColor);
     }
     outColor = reflectColor * refractColor;
 }  
