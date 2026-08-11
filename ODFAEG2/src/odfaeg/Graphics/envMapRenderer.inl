@@ -445,7 +445,7 @@ namespace odfaeg {
                             reflRefrVertPC.materialIndex = reflRefrGameObjects[cmp]->getMaterials()[0]->getId();
                             reflRefrVertPC.modelMatrix = reflRefrGameObjects[cmp]->getGameObject()->getTransform().getMatrix().transpose();
                             reflRefrFragPC.cameraPos =  reflRefrGameObjects[cmp]->getGameObject()->getCenter();
-                            //std::cout<<"pipeline bound"<<std::endl;
+                            //std::cout<<"draw vertex buffer : "<<v<<std::endl;
                             vkCmdBindDescriptorSets(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
                             vkCmdPushConstants(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ReflRefrVertPC), &reflRefrVertPC);
                             vkCmdPushConstants(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(ReflRefrVertPC), sizeof(ReflRefrFragPC), &reflRefrFragPC);

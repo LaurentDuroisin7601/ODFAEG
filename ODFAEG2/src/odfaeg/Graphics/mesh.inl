@@ -17,14 +17,16 @@ namespace odfaeg {
         }
         void Mesh::populateVertexBuffer(Mesh* parent) {
             vbs.emplace_back(GPUContext::instance().getDevice());
+            unsigned int baseVertex = 0;
             for (unsigned int i = 0; i < parent->getGameObject()->getSubMeshes().size(); i++) {  
                 vbs.back().setPrimitiveType(parent->getGameObject()->getSubMeshes()[i].getVertexArray().getPrimitiveType());              
                 for(unsigned int v = 0; v < parent->getGameObject()->getSubMeshes()[i].getVertexArray().getVertexCount(); v++) {
                     vbs.back().append(parent->getGameObject()->getSubMeshes()[i].getVertexArray()[v]);                    
                 }
                 for(unsigned int v = 0; v < parent->getGameObject()->getSubMeshes()[i].getVertexArray().getIndexCount(); v++) {
-                    vbs.back().addIndex(parent->getGameObject()->getSubMeshes()[i].getVertexArray().getIndex(v));                    
+                    vbs.back().addIndex(baseVertex + parent->getGameObject()->getSubMeshes()[i].getVertexArray().getIndex(v));                    
                 }
+                baseVertex += parent->getGameObject()->getSubMeshes()[i].getVertexArray().getVertexCount();
             }
             vbs.back().update();
             for (unsigned int i = 0; i < children.size(); i++) {
