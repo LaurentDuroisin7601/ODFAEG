@@ -33,7 +33,8 @@ void main() {
         fragColor = inColor;
         fragTexCoord = inTexCoord /** pc.uvScale + pc.uvOffset*/;
         normal = mat3(transpose(inverse(pc.modelMatrix))) * normals;
-        debugPrintfEXT("normal : %v3f, t normal %v3f", normals, normal);
+        /*if (normal.x == 0 && normal.y == 0 && normal.z == 0)
+        debugPrintfEXT("normal : %v3f, t normal %v3f", normals, normal);*/
         primitiveType = pc.primitiveType;
         currentFrame = pc.currentFrame;
         outMaterialID = pc.materialIndex;

@@ -829,8 +829,8 @@ namespace odfaeg {
                 //std::cout<<"buffer : "<<texture.images.size()<<std::endl;
                 commandPool.beginRecordCommandBuffer(i);
                 VkImageLayout currentLayout = texture.images[i].getLayout();                
-                texture.transitionImageLayout(texture.images[i], commandPool.getHandle(i), currentLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                texture.transitionImageLayout(texture.images[i], commandPool.getHandle(i), currentLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 1, layerCount);
+                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 0, 1, layerCount);
                 vkCmdCopyImage(
                     commandPool.getHandle(i),
                     texture.images[i].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
@@ -838,8 +838,8 @@ namespace odfaeg {
                     1,
                     &copyRegion
                 );
-                texture.transitionImageLayout(texture.images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,currentLayout);
-                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                texture.transitionImageLayout(texture.images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,currentLayout, 0, 0, 1, layerCount);
+                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 0, 1, layerCount);
                 commandPool.endRecordCommandBuffer(i);
             }
             VkSubmitInfo submitInfo{};
