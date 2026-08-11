@@ -28,6 +28,9 @@ void main() {
   ivec2 lrFragCoord = ivec2(gl_FragCoord.xy) / hrLrScale; 
   uint n = imageLoad(headPointers[pc.currentFrame], lrFragCoord).r;  
   uint hResId = uint((int(gl_FragCoord.x) % int(hrLrScale.x)) + (int(gl_FragCoord.y) % int(hrLrScale.y)) * hrLrScale.x);
+  /*if (nodeData[pc.currentFrame].nodes[n].hResId > 0 && nodeData[pc.currentFrame].nodes[n].hResId < 3) {
+    debugPrintfEXT("h res id : %i", nodeData[pc.currentFrame].nodes[n].hResId);
+  }*/
   /*if (nodeData[pc.currentFrame].nodes[n].hResId == hResId)
     debugPrintfEXT("res : %v2f, scale %v2i, lr %v2i",pc.resolution,hrLrScale, lrFragCoord);*/
   while( n != 0xffffffffu && count < MAX_FRAGMENTS && nodeData[pc.currentFrame].nodes[n].hResId == hResId) {
@@ -54,7 +57,7 @@ void main() {
     color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);*/
     color = mix (color, frags[i].color, frags[i].color.a);
   }
-  if (color.r != 0 || color.g != 0 || color.b != 0) 
-    debugPrintfEXT("color : %v4f", color);
+  /*if (color.r != 0 || color.g != 0 || color.b != 0) 
+    debugPrintfEXT("color : %v4f", color);*/
   fcolor = color;
 }

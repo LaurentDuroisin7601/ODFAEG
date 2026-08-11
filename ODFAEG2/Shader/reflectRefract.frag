@@ -42,7 +42,8 @@ void main() {
     MaterialData material = materialDataBuffer[primitiveType*MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[materialId];
     vec4 reflectColor = vec4(1);
     vec3 i = (vec4(pos.xyz, 1) - pushConsts.cameraPos).xyz;
-    //debugPrintfEXT("i : %v3f, normal : %v3f", i, normalize(normal));
+    /*if (normal.x != 0 || normal.y != 0 || normal.z != 0)
+        debugPrintfEXT("i : %v3f, normal : %v3f", i, normalize(normal));*/
     //debugPrintfEXT("material id : %i, reflectable %i, refractable %i", material.materialId, material.reflectable, material.refractable);
     if (material.reflectable == 1) {
         vec3 r = reflect (i, normalize(normal));
