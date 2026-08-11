@@ -29,6 +29,7 @@ void main() {
         gl_PointSize = 2.0f;
         gl_Position =  pc.projMatrix * pc.viewMatrix * pc.modelMatrix * vec4(inPosition, 1);
         // debugPrintfEXT("position : %v4f", gl_Position);
+        pos = vec3(pc.modelMatrix * vec4(inPosition, 1)); 
         fragColor = inColor;
         fragTexCoord = inTexCoord /** pc.uvScale + pc.uvOffset*/;
         normal = mat3(transpose(inverse(pc.modelMatrix))) * normals;
