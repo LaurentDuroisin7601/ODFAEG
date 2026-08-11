@@ -156,12 +156,15 @@ namespace odfaeg {
             renderingCreateInfo.pColorAttachmentFormats = &envMap.getTexture().getFormat();
             renderingCreateInfo.depthAttachmentFormat = envMap.getDepthStencilTexture().getFormat();
             renderingCreateInfo.viewMask = envMap.getViewMask();
-            for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {   
-                GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).createGraphicPipeline(envMapShader, static_cast<entity::PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(envMapShader), renderingCreateInfo, envMap.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);                
+            for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) { 
+                //std::cout<<"id : "<<blendMode.id<<std::endl;  
+                GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).createGraphicPipeline(envMapShader, static_cast<entity::PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(envMapShader), renderingCreateInfo, envMap.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);      
+                /*std::cout<<"pipeline : "<<GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getHandle()<<std::endl;  
+                system("PAUSE"); */         
             }
             DescriptorSetLayout& quadLinkedListLayout = GPUContext::instance().getDescriptorSetLayout(envMapQuadShader, 2);
-            quadLinkedListLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
-            quadLinkedListLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
+            quadLinkedListLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT*6, VK_SHADER_STAGE_FRAGMENT_BIT);
+            quadLinkedListLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*6, VK_SHADER_STAGE_FRAGMENT_BIT);
             quadLinkedListLayout.update();
             pushConstants.clear();
             VkPushConstantRange quadPushConstant;
@@ -172,7 +175,7 @@ namespace odfaeg {
             GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, 0).createGraphicPipeline(envMapQuadShader, entity::PrimitiveType::Triangles, GPUContext::instance().getDescriptorSetLayout(envMapQuadShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);            
             DescriptorSetLayout& reflRefrLayout = GPUContext::instance().getDescriptorSetLayout(reflRefrShader, 2);
             reflRefrLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_FRAGMENT_BIT);
-            reflRefrLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, parentRenderer.getSwapchainImagesCount(), VK_SHADER_STAGE_FRAGMENT_BIT);
+            reflRefrLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
             reflRefrLayout.update();
             renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
             renderingCreateInfo.colorAttachmentCount = 1;
@@ -188,6 +191,7 @@ namespace odfaeg {
             fragmentPCRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
             pushConstants.push_back(fragmentPCRange);
             for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {   
+                std::cout<<"create pipeline id : "<<RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id<<std::endl;  
                 GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).createGraphicPipeline(reflRefrShader, static_cast<entity::PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(reflRefrShader), renderingCreateInfo, parentRenderer.getDepthStencilInfos()[RenderTarget::DEPTHNOSTENCIL], blendMode, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);                
             }
             DescriptorPool& envMapPool = GPUContext::instance().getDescriptorPool(envMapShader, 7);
@@ -200,14 +204,14 @@ namespace odfaeg {
             envMapPool.updatePoolSize(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
             envMapPool.update();
             DescriptorPool& quadLinkedListPool = GPUContext::instance().getDescriptorPool(envMapQuadShader, 2);
-            quadLinkedListPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT);
-            quadLinkedListPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT);
+            quadLinkedListPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT*6);
+            quadLinkedListPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*6);
             quadLinkedListPool.update();
             DescriptorPool& reflRefrPool = GPUContext::instance().getDescriptorPool(reflRefrShader, 2);
             reflRefrPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES);
-            reflRefrPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, parentRenderer.getSwapchainImagesCount());  
+            reflRefrPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);  
             reflRefrPool.update();
-            DescriptorSet::allocate(envMapPool, envMapLayout, GPUContext::instance().getDescriptorSets(envMapShader, 6, 1), MAX_TEXTURES);
+            DescriptorSet::allocate(envMapPool, envMapLayout, GPUContext::instance().getDescriptorSets(envMapShader, 7, 1), MAX_TEXTURES);
             DescriptorSet::allocate(quadLinkedListPool, quadLinkedListLayout, GPUContext::instance().getDescriptorSets(envMapQuadShader, 2, 1));
             DescriptorSet::allocate(reflRefrPool, reflRefrLayout, GPUContext::instance().getDescriptorSets(reflRefrShader, 2, 1));          
         }
@@ -252,7 +256,7 @@ namespace odfaeg {
         }  
         void EnvMapRenderer::updateDescriptorSets() {
             bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
-            DescriptorSet& envMapSet = GPUContext::instance().getDescriptorSets(envMapShader, (hasDiffuseTexture) ? 6 : 5, 1)[0];
+            DescriptorSet& envMapSet = GPUContext::instance().getDescriptorSets(envMapShader, (hasDiffuseTexture) ? 7 : 6, 1)[0];
             envMapSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             envMapSet.updateBufferInfos(1, viewMatricesBuffer,VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC);
             envMapSet.updateBufferInfos(2, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -263,15 +267,18 @@ namespace odfaeg {
                 envMapSet.updateImageInfos(6, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             }
             envMapSet.updateDescriptorSet();
+            //std::cout<<"update ds env map set"<<std::endl;
             DescriptorSet& linkedListQuadSet = GPUContext::instance().getDescriptorSets(envMapQuadShader, 2, 1)[0];
             linkedListQuadSet.updateImageInfos(0, headPtrsStorageImage, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
             linkedListQuadSet.updateBufferInfos(1, linkedListBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             linkedListQuadSet.updateDescriptorSet();
+            // std::cout<<"update quads ds"<<std::endl;
             DescriptorSet& reflRefrSet = GPUContext::instance().getDescriptorSets(reflRefrShader, 2, 1)[0];
             reflRefrSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-            
+           
             reflRefrSet.updateImageInfos(1, envMap.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             reflRefrSet.updateDescriptorSet();
+            //std::cout<<"update refl ref set"<<std::endl;
         } 
         void EnvMapRenderer::clear() {
             parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
@@ -279,6 +286,8 @@ namespace odfaeg {
             envMap.beginRecordCommandBuffer();
             envMap.setTypesToRender(typesToRenderExpression, envMap.getCurrentFrame());
             envMap.applyCullingAndBatching();
+            registerFramesJob[parentRenderer.getCurrentFrame()] = true;
+            //std::cout<<"clear!"<<std::endl;
             cv.notify_one();
         }  
         void EnvMapRenderer::drawNextFrame() {            
@@ -289,21 +298,25 @@ namespace odfaeg {
             });
             registerFramesJob[envMap.getCurrentFrame()].store(false);
             if (!stop.load()) {
+                //std::cout<<"draw next frame!"<<std::endl;
                 if (needToUpdateBuffers) {
                     createCommandPools();
                     updateBuffers();
                     needToUpdateBuffers = false;
                 }
+                //std::cout<<"buffer updated"<<std::endl;
                 if (needToUpdateDescriptorSets) {
                     //std::cout<<"update ds"<<std::endl;
                     updateDescriptorSets();
                     needToUpdateDescriptorSets = false;
                 }
+                //std::cout<<"descriptor sets updated!"<<std::endl;
                 VkPhysicalDeviceProperties props;
                 vkGetPhysicalDeviceProperties(GPUContext::instance().getDevice().getPhysicalDevice(), &props); 
                 uint32_t minAlign = props.limits.minStorageBufferOffsetAlignment;  
                 uint32_t viewMatrixAlignSize = (sizeof(EnvViewMatrix) + minAlign - 1) & ~(minAlign - 1);              
-                jobFence[parentRenderer.getCurrentFrame()].reset(reflRefrCmdPools.size()*2+1);
+                jobFence[parentRenderer.getCurrentFrame()].reset(reflRefrCmdPools.size()*3);
+                std::cout<<"reset job fence value  : "<<reflRefrCmdPools.size()*3<<std::endl;
                 for (unsigned int e = 0; e < reflRefrCmdPools.size(); e++) {
                     unsigned int cmp = e;                                  
                     threadPool.enqueue([this, cmp, viewMatrixAlignSize] { 
@@ -319,7 +332,7 @@ namespace odfaeg {
                         inheritanceInfo.renderPass = VK_NULL_HANDLE;
                         inheritanceInfo.framebuffer = VK_NULL_HANDLE;
                         envMapCmdPools[cmp].beginRecordCommandBuffer(envMap.getCurrentFrame(), inheritanceInfo);
-                        BlendMode blendMode;
+                        BlendMode blendMode;                        
                         RenderStates states;
                         states.shader = &envMapShader;
                         states.blendMode = blendMode;
@@ -338,12 +351,12 @@ namespace odfaeg {
                         blendMode.updateIds();
                         for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
                             //std::cout<<"sizes = "<<linkedListPipeline.size()<<","<<linkedListPipeline[i].size()<<",ids : "<<i<<","<<RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id<<std::endl;
-                            //std::cout<<"bind pipeline : "<<linkedListPipeline[i][RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id].getHandle()<<std::endl;
-                            vkCmdBindPipeline(envMapCmdPools[cmp].getHandle(envMap.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
+                            //std::cout<<"bind pipeline : "<<blendMode.id<<","<<GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle()<<std::endl;
+                            vkCmdBindPipeline(envMapCmdPools[cmp].getHandle(envMap.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getHandle());
                             //std::cout<<"pipeline bound"<<std::endl;
-                            vkCmdBindDescriptorSets(envMapCmdPools[cmp].getHandle(envMap.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), offsetEnvViewMatrices.size(), offsetEnvViewMatrices.data());
-                            vkCmdPushConstants(envMapCmdPools[cmp].getHandle(envMap.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(EnvMapVertPC), &envMapVertPC);
-                            vkCmdPushConstants(envMapCmdPools[cmp].getHandle(envMap.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(EnvMapFragPC), &envMapFragPC);
+                            vkCmdBindDescriptorSets(envMapCmdPools[cmp].getHandle(envMap.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), offsetEnvViewMatrices.size(), offsetEnvViewMatrices.data());
+                            vkCmdPushConstants(envMapCmdPools[cmp].getHandle(envMap.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(EnvMapVertPC), &envMapVertPC);
+                            vkCmdPushConstants(envMapCmdPools[cmp].getHandle(envMap.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), envMapShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(EnvMapFragPC), &envMapFragPC);
 
                             parentRenderer.draw(envMapCmdPools[cmp], static_cast<entity::PrimitiveType>(i), states);
                         }
@@ -351,8 +364,15 @@ namespace odfaeg {
                         jobFence[envMap.getCurrentFrame()].jobDone();
                     });                
                     threadPool.enqueue([this, cmp] { 
+                        VkCommandBufferInheritanceRenderingInfo inheritanceRenderingInfo{};
+                        inheritanceRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
+                        inheritanceRenderingInfo.colorAttachmentCount = 1;
+                        inheritanceRenderingInfo.pColorAttachmentFormats = &envMap.getImageFormat(),
+                        inheritanceRenderingInfo.depthAttachmentFormat = VK_FORMAT_UNDEFINED;                    
+                        inheritanceRenderingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;                
                         VkCommandBufferInheritanceInfo inheritanceInfo{};
                         inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                        inheritanceInfo.pNext = &inheritanceRenderingInfo;
                         inheritanceInfo.renderPass = VK_NULL_HANDLE;
                         inheritanceInfo.framebuffer = VK_NULL_HANDLE;
                         envMapQuadCmdPools[cmp].beginRecordCommandBuffer(parentRenderer.getCurrentFrame(), inheritanceInfo);
@@ -368,10 +388,11 @@ namespace odfaeg {
                         blendMode.updateIds();
                         //std::cout<<"sizes = "<<quadLinkedListPipeline.size()<<","<<quadLinkedListPipeline[Triangles].size()<<",ids : "<<Triangles<<","<<RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id<<std::endl;
                         //std::cout<<"bind pipeline : "<<quadLinkedListPipeline[Triangles][RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id].getHandle()<<std::endl;
-                        vkCmdBindPipeline(envMapQuadCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
+                        //std::cout<<"graphics pipeline quad : "<<GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getHandle()<<std::endl;
+                        vkCmdBindPipeline(envMapQuadCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getHandle());
                         //std::cout<<"pipeline bound"<<std::endl;
-                        vkCmdBindDescriptorSets(envMapQuadCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
-                        vkCmdPushConstants(envMapQuadCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(EnvMapQuadFragPC), &envMapQuadFragPC);
+                        vkCmdBindDescriptorSets(envMapQuadCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
+                        vkCmdPushConstants(envMapQuadCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(EnvMapQuadFragPC), &envMapQuadFragPC);
                         envMap.draw(envMapQuadCmdPools[cmp], fullScreenQuad, states);
                         envMapQuadCmdPools[cmp].endRecordCommandBuffer(parentRenderer.getCurrentFrame());                        
                         jobFence[parentRenderer.getCurrentFrame()].jobDone();
@@ -406,13 +427,14 @@ namespace odfaeg {
                         //std::cout<<"sizes = "<<linkedListPipeline.size()<<","<<linkedListPipeline[i].size()<<",ids : "<<i<<","<<RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id<<std::endl;
                         //std::cout<<"bind pipeline : "<<linkedListPipeline[i][RenderTarget::NODEPTHNOSTENCIL * blendMode.nbBlendModes+blendMode.id].getHandle()<<std::endl;
                         
-                        for (unsigned int v = 0; v < reflRefrGameObjects[cmp]->getVertexBuffers().size(); v++) {                                
-                            vkCmdBindPipeline(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
+                        for (unsigned int v = 0; v < reflRefrGameObjects[cmp]->getVertexBuffers().size(); v++) {  
+                            std::cout<<"pipeline id : "<<RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id<<std::endl;                             
+                            vkCmdBindPipeline(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
                             reflRefrVertPC.primitiveType = reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType();
                             reflRefrVertPC.materialIndex = reflRefrGameObjects[cmp]->getMaterials()[0]->getId();
                             reflRefrFragPC.cameraPos =  reflRefrGameObjects[cmp]->getGameObject()->getCenter();
                             //std::cout<<"pipeline bound"<<std::endl;
-                            vkCmdBindDescriptorSets(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), envMapShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
+                            vkCmdBindDescriptorSets(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
                             vkCmdPushConstants(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(ReflRefrVertPC), &reflRefrVertPC);
                             vkCmdPushConstants(reflRefrCmdPools[cmp].getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(reflRefrGameObjects[cmp]->getVertexBuffers()[v].getPrimitiveType(), reflRefrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(ReflRefrVertPC), sizeof(ReflRefrFragPC), &reflRefrFragPC);
                             parentRenderer.draw(reflRefrCmdPools[cmp], reflRefrGameObjects[cmp]->getVertexBuffers()[v], states);
@@ -421,8 +443,10 @@ namespace odfaeg {
                         jobFence[parentRenderer.getCurrentFrame()].jobDone();
                     });
                 }
-                jobFence[parentRenderer.getCurrentFrame()].wait();            
-            }            
+                jobFence[parentRenderer.getCurrentFrame()].wait();  
+                std::cout<<"wait ended"<<std::endl;          
+            } 
+            std::cout<<"end draw next frame!"<<std::endl;           
             commandBuffersReady[parentRenderer.getCurrentFrame()].store(true);
             cv.notify_all();                    
         } 
@@ -432,6 +456,7 @@ namespace odfaeg {
                     //std::cout<<"draw frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
                 return commandBuffersReady[parentRenderer.getCurrentFrame()].load() || stop.load();
             });
+            std::cout<<"begin draw!"<<std::endl;
             commandBuffersReady[parentRenderer.getCurrentFrame()].store(false);
             envMap.applyComputeGraphicsBarrier();
             parentRenderer.applyComputeGraphicsBarrier();

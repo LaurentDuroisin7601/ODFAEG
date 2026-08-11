@@ -5,8 +5,8 @@ namespace odfaeg {
             for (unsigned int i = 0; i < nbBuffers; i++) {                    
                 images.emplace_back(device);
             }
-            if (nbBuffers > 1)
-                std::cout<<"nb image at texture constructor : "<<images.size()<<std::endl;   
+            /*if (nbBuffers > 1)
+                std::cout<<"nb image at texture constructor : "<<images.size()<<std::endl; */  
             id = 0;
             wrapU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
             wrapV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
@@ -41,7 +41,7 @@ namespace odfaeg {
             layerCount = texture.layerCount;
             isCubeMap = texture.isCubeMap;
             if (isCubeMap) {
-                std::cout<<"create cube map : "<<"nb buffers : "<<texture.nbBuffers<<"images size : "<<texture.images.size()<<std::endl;
+                //std::cout<<"create cube map : "<<"nb buffers : "<<texture.nbBuffers<<"images size : "<<texture.images.size()<<std::endl;
                 createCubeMap(texture.m_size.x());
             } else {
                 create(texture.m_size.x(), texture.m_size.y(), 1, texture.mipLevels);
@@ -378,7 +378,7 @@ namespace odfaeg {
                 //std::cout<<"FBO texture id : "<<id<<std::endl;                
                 //vec.push_back(std::move(*this));
                 vec.emplace_back(device);
-                std::cout<<"nb buffers before copy : "<<images.size()<<std::endl;
+                //std::cout<<"nb buffers before copy : "<<images.size()<<std::endl;
                 vec.back().copyFrom(*this);
                 //std::cout<<"FBO texture id : "<<vec.back().getId()<<std::endl;
                 //GPUContext::instance().getSharedTextures(0).push_back(std::move(*this));
@@ -826,7 +826,7 @@ namespace odfaeg {
             copyRegion.extent.height = texture.m_size.y();
             copyRegion.extent.depth  = 1;
             for (unsigned int i = 0; i < nbBuffers; i++) {
-                std::cout<<"buffer : "<<texture.images.size()<<std::endl;
+                //std::cout<<"buffer : "<<texture.images.size()<<std::endl;
                 commandPool.beginRecordCommandBuffer(i);
                 VkImageLayout currentLayout = texture.images[i].getLayout();                
                 texture.transitionImageLayout(texture.images[i], commandPool.getHandle(i), currentLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);

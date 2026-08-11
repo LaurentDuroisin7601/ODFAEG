@@ -12,10 +12,10 @@ struct NodeType {
 layout (push_constant) uniform PushConstant {
   int currentFrame;
 } pc;
-layout(set = 0, binding = 0, r32ui) uniform uimage2D headPointers[MAX_FRAMES_IN_FLIGHT];
+layout(set = 0, binding = 0, r32ui) uniform uimage2D headPointers[MAX_FRAMES_IN_FLIGHT*6];
 layout(std430, set = 0, binding = 1) buffer linkedLists {
    NodeType nodes[];
-} nodeData[MAX_FRAMES_IN_FLIGHT];
+} nodeData[MAX_FRAMES_IN_FLIGHT*6];
 layout(location = 0) out vec4 fcolor;
 void main() {
   debugPrintfEXT("Full quad fs");
