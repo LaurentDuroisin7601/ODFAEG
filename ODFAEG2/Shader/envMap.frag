@@ -6,7 +6,7 @@
 #define MAX_TEXTURES 1024
 #define MAX_FRAMES_IN_FLIGHT 2
 #define NB_PRIMITIVE_TYPES 6
-#define PPLL_RESOLUTION 524
+#define PPLL_RESOLUTION 512
 layout (early_fragment_tests) in;
 struct NodeType {    
     vec4 color;
@@ -58,8 +58,9 @@ layout(location = 5) flat in int currentFrame;
 layout(location = 0) out vec4 outColor;
 void main() {
     //debugPrintfEXT("current frame : %i, primitive type : %i", currentFrame, primitiveType);
-    vec2 hrLrScale = pc.resolution / PPLL_RESOLUTION;
-    ivec2 lrFragCoord = ivec2(gl_FragCoord.xy / hrLrScale); 
+    ivec2 hrLrScale = ivec2(pc.resolution.xy) / PPLL_RESOLUTION;
+    ivec2 lrFragCoord = ivec2(gl_FragCoord.xy) / hrLrScale; 
+    //debugPrintfEXT("res : %v2f, %v2i", pc.resolution, hrLrScale);
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[v_DrawID];
 
     // --- Diffuse ---

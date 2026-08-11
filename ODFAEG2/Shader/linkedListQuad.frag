@@ -3,12 +3,10 @@
 #extension GL_EXT_debug_printf : enable
 #define MAX_FRAMES_IN_FLIGHT 2
 #define MAX_FRAGMENTS 20
-#define PPLL_RESOLUTION 524
 struct NodeType {
   vec4 color;
   float depth;
-  uint next;
-  uint hResId;
+  uint next;  
 };
 layout (push_constant) uniform PushConstant {
   int currentFrame;
@@ -22,12 +20,9 @@ layout(location = 0) out vec4 fcolor;
 void main() {
   //debugPrintfEXT("Full quad fs");
   NodeType frags[MAX_FRAGMENTS];
-  int count = 0;
-  vec2 hrLrScale = pc.resolution / PPLL_RESOLUTION;
-  ivec2 lrFragCoord = ivec2(gl_FragCoord.xy / hrLrScale); 
-  uint n = imageLoad(headPointers[pc.currentFrame], lrFragCoord).r;  
-  uint hResId = uint((int(gl_FragCoord.x) % int(hrLrScale.x)) + (int(gl_FragCoord.y) % int(hrLrScale.y)) * hrLrScale.x);
-  while( n != 0xffffffffu && count < MAX_FRAGMENTS && nodeData[pc.currentFrame].nodes[n].hResId == hResId) {
+  int count = 0;  
+  uint n = imageLoad(headPointers[pc.currentFrame], ivec2(gl_FragCoord.xy)).r;
+  while( n != 0xffffffffu && count < MAX_FRAGMENTS) {
        frags[count] = nodeData[pc.currentFrame].nodes[n];
        n = frags[count].next;
        count++;

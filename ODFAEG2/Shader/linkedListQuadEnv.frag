@@ -4,12 +4,15 @@
 #extension GL_EXT_multiview : enable
 #define MAX_FRAMES_IN_FLIGHT 2
 #define MAX_FRAGMENTS 20
+#define PPLL_RESOLUTION 512
 struct NodeType {
   vec4 color;
   float depth;
   uint next;
+  uint hResId; 
 };
 layout (push_constant) uniform PushConstant {
+  vec2 resolution;
   int currentFrame;
 } pc;
 layout(set = 0, binding = 0, r32ui) uniform uimage2D headPointers[MAX_FRAMES_IN_FLIGHT*6];
@@ -21,8 +24,13 @@ void main() {
   //debugPrintfEXT("Full quad fs");
   NodeType frags[MAX_FRAGMENTS];
   int count = 0;
-  uint n = imageLoad(headPointers[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+pc.currentFrame], ivec2(gl_FragCoord.xy)).r;
-  while( n != 0xffffffffu && count < MAX_FRAGMENTS) {
+  ivec2 hrLrScale = ivec2(pc.resolution.xy) / PPLL_RESOLUTION;
+  ivec2 lrFragCoord = ivec2(gl_FragCoord.xy) / hrLrScale; 
+  uint n = imageLoad(headPointers[pc.currentFrame], lrFragCoord).r;  
+  uint hResId = uint((int(gl_FragCoord.x) % int(hrLrScale.x)) + (int(gl_FragCoord.y) % int(hrLrScale.y)) * hrLrScale.x);
+  /*if (nodeData[pc.currentFrame].nodes[n].hResId == hResId)
+    debugPrintfEXT("res : %v2f, scale %v2i, lr %v2i",pc.resolution,hrLrScale, lrFragCoord);*/
+  while( n != 0xffffffffu && count < MAX_FRAGMENTS && nodeData[pc.currentFrame].nodes[n].hResId == hResId) {
        frags[count] = nodeData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].nodes[n];
        n = frags[count].next;
        count++;
@@ -46,7 +54,7 @@ void main() {
     color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);*/
     color = mix (color, frags[i].color, frags[i].color.a);
   }
-  /*if (color.r != 0 || color.g != 0 || color.b != 0) 
-    debugPrintfEXT("color : %v4f", color);*/
+  if (color.r != 0 || color.g != 0 || color.b != 0) 
+    debugPrintfEXT("color : %v4f", color);
   fcolor = color;
 }
