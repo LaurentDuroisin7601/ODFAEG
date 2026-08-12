@@ -49,7 +49,7 @@ void main() {
     if (material.reflectable == 1) {
         vec3 r = reflect (i, normalize(normal));
         reflectColor = texture(sceneBox, r);
-        //debugPrintfEXT("reflect color : %v4f", reflectColor);
+        
     }
     float ratio = 1;
     if (material.materialType == 1) {
@@ -64,9 +64,9 @@ void main() {
     vec4 refractColor = vec4(1);
     if (material.refractable == 1) {
         vec3 r = refract (i, normalize(normal), ratio);
-        refractColor = texture(sceneBox, r);
-        /*if (refractColor.r != 1)
-        debugPrintfEXT("ratio : %f, refract color : %v4f", ratio, refractColor);*/
+        refractColor = texture(sceneBox, r);        
     }
-    outColor = reflectColor * refractColor;
+    /*if ((reflectColor.r != 0 || reflectColor.g != 0 && reflectColor.b != 0) && (refractColor.r != 0 || refractColor.g != 0 && refractColor.b != 0))
+        debugPrintfEXT("ratio : %f, refract color : %v4f", ratio, refractColor);*/
+    outColor = mix(reflectColor, refractColor, refractColor.a);
 }  

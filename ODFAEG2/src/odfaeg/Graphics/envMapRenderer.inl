@@ -475,7 +475,7 @@ namespace odfaeg {
             envMap.applyComputeGraphicsBarrier();
             parentRenderer.applyComputeGraphicsBarrier();
             for (unsigned int e = 0; e < reflRefrGameObjects.size(); e++) {
-                envMap.clear(entity::Color::Red);
+                envMap.clear(entity::Color::Transparent);
                 VkClearColorValue clearColor;
                 clearColor.uint32[0] = 0xffffffff;
                 VkImageSubresourceRange subresRange = {};

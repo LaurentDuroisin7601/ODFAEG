@@ -63,7 +63,7 @@ void main() {
   }
   /*if (count == 0)
     debugPrintfEXT("count : %i", count);*/
-  vec4 color = vec4(1, 0, 0, 1);
+  vec4 color = vec4(0, 0, 0, 0);
   for( int i = 0; i < count; i++)
   {
     /*color.rgb = frags[i].color.rgb * frags[i].color.a + color.rgb * (1 - frags[i].color.a);
