@@ -391,7 +391,7 @@ namespace odfaeg {
                         RenderStates states;
                         states.shader = &envMapQuadShader;
                         states.blendMode = blendMode;
-                        envMapQuadFragPC.currentImageIndex = parentRenderer.getImageIndex();
+                        envMapQuadFragPC.currentFrameIndex = parentRenderer.getCurrentFrame();
                         std::vector<VkDescriptorSet> sets;
                         for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(envMapQuadShader).size(); i++) {
                             sets.push_back(GPUContext::instance().getDescriptorSets(envMapQuadShader)[i][0].getHandle());

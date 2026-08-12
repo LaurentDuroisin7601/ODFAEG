@@ -41,7 +41,7 @@ namespace odfaeg {
                 }; 
                 struct EnvMapQuadFragPC {                    
                     math::Vec2f resolution;
-                    int currentImageIndex;
+                    int currentFrameIndex;
                 };               
                 struct EnvMapVertPC {
                     math::Matrix4f projMatrix;

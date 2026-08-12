@@ -22,27 +22,31 @@ layout(std430, set = 0, binding = 1) buffer linkedLists {
 layout(location = 0) out vec4 fcolor;
 void main() {
   //debugPrintfEXT("Full quad fs");
-  NodeType frags[MAX_FRAGMENTS];
-  int count = 0;
+  NodeType frags[MAX_FRAGMENTS];  
+  uint count = 0;
   ivec2 hrLrScale = ivec2(pc.resolution.xy) / PPLL_RESOLUTION;
   ivec2 lrFragCoord = ivec2(gl_FragCoord.xy) / hrLrScale; 
+  //debugPrintfEXT("current frame : %i", pc.currentFrame);
   uint n = imageLoad(headPointers[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+pc.currentFrame], lrFragCoord).r;  
   uint hResId = uint((int(gl_FragCoord.x) % hrLrScale.x) + (int(gl_FragCoord.y) % hrLrScale.y) * hrLrScale.x);
   //debugPrintfEXT("hrLres scale : %v2i, frag coords : %v2i, ids : %i,%i, global id : %i", hrLrScale, ivec2(gl_FragCoord.xy), int(gl_FragCoord.x) % hrLrScale.x, int(gl_FragCoord.y) % hrLrScale.y, hResId);
   /*if (nodeData[pc.currentFrame].nodes[n].hResId > 0 && nodeData[pc.currentFrame].nodes[n].hResId < 3) {
     debugPrintfEXT("h res id : %i", nodeData[pc.currentFrame].nodes[n].hResId);
   }*/
+  //debugPrintfEXT("n : %i", n); 
   /*if (nodeData[pc.currentFrame].nodes[n].hResId == hResId)
     debugPrintfEXT("res : %v2f, scale %v2i, lr %v2i",pc.resolution,hrLrScale, lrFragCoord);*/
-  while( n != 0xffffffffu && count < MAX_FRAGMENTS) {    
+  while(n != 0xffffffffu && count < MAX_FRAGMENTS) { 
+    
     NodeType frag = nodeData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].nodes[n]; 
+    n = frag.next;
+    //debugPrintfEXT("max nodes : %i, view index : %i, next : %i, hRes : %i", MAX_FRAGMENTS * pc.resolution.x * pc.resolution.y, gl_ViewIndex, n, hResId); 
     //if (hResId < 0 || hResId > 3)   
     //debugPrintfEXT("view index : %i, lrFragCoord : %v2i, n : %i, next : %i, hresIds, %i,%i", gl_ViewIndex, lrFragCoord, n, frag.next, frag.hResId, hResId);
-    //if (frag.hResId == hResId) {       
+    if (frag.hResId == hResId) {
        frags[count] = frag;       
-       count++;  
-    //}
-    n = frag.next;    
+       count++;   
+    }  
   }
   
   // Do the insertion sort
@@ -57,6 +61,8 @@ void main() {
       }
       frags[j] = insert;
   }
+  /*if (count == 0)
+    debugPrintfEXT("count : %i", count);*/
   vec4 color = vec4(0, 0, 0, 1);
   for( int i = 0; i < count; i++)
   {
