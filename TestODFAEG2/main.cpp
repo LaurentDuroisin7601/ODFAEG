@@ -182,6 +182,7 @@ int main() {
 	Material* material = new Material();
 	material->setReflectable(true);
 	material->setRefractable(true);
+	material->setType(SubMesh::GLASS);
 	cube6Mesh.addMaterial(material);
 	
 

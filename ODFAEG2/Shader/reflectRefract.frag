@@ -14,7 +14,7 @@ layout(location = 0) out vec4 outColor;
 layout (push_constant) uniform PushConsts {
     layout(offset = 224) vec4 cameraPos;        
     layout(offset = 240) uint imageIndex;
-} pushConsts;
+} pc;
 struct MaterialData {
     uint diffuseTextureIndex;
     uint specularTextureIndex;
@@ -40,8 +40,9 @@ layout (std430, set = 0, binding = 0) buffer MaterialDataSSBO {
 layout (set = 0, binding = 1) uniform samplerCube sceneBox;                                                       
 void main() {
     MaterialData material = materialDataBuffer[primitiveType*MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[materialId];
-    vec4 reflectColor = vec4(1);
-    vec3 i = (vec4(pos.xyz, 1) - pushConsts.cameraPos).xyz;
+    vec4 reflectColor = vec4(1);    
+    vec3 i = vec3(vec4(pos.xyz, 1) - pc.cameraPos);
+    //debugPrintfEXT("frag pos : %v3f, camera pos : %v4f, i : %v3f", pos, pc.cameraPos, i);
     /*if (normal.x != 0 || normal.y != 0 || normal.z != 0)
         debugPrintfEXT("i : %v3f, normal : %v3f", i, normalize(normal));*/
     //debugPrintfEXT("material id : %i, reflectable %i, refractable %i", material.materialId, material.reflectable, material.refractable);
@@ -64,7 +65,7 @@ void main() {
     if (material.refractable == 1) {
         vec3 r = refract (i, normalize(normal), ratio);
         refractColor = texture(sceneBox, r);
-        //debugPrintfEXT("refract color : %v4f", refractColor);
+        //debugPrintfEXT("ratio : %f, refract color : %v4f", ratio, refractColor);
     }
     outColor = reflectColor * refractColor;
 }  

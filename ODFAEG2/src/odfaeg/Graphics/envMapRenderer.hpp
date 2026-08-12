@@ -96,7 +96,8 @@ namespace odfaeg {
                 std::deque<Image> headPtrsStorageImage; 
                 Buffer staggingViewMatricesBuffer;               
                 int layer;
-                inline static const unsigned int ENV_MAP_SIZE = 1024;
+                inline static const unsigned int ENV_MAP_SIZE = 2048;
+                inline static const unsigned int PPLL_RESOLUTION = 512;
                 std::vector<Mesh*> reflRefrGameObjects;
                 std::array<math::Vec3f, 6> dirs, ups;
                 std::condition_variable cv;
