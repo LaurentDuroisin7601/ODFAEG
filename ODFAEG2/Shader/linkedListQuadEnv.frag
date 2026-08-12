@@ -26,23 +26,25 @@ void main() {
   int count = 0;
   ivec2 hrLrScale = ivec2(pc.resolution.xy) / PPLL_RESOLUTION;
   ivec2 lrFragCoord = ivec2(gl_FragCoord.xy) / hrLrScale; 
-  uint n = imageLoad(headPointers[pc.currentFrame], lrFragCoord).r;  
+  uint n = imageLoad(headPointers[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+pc.currentFrame], lrFragCoord).r;  
   uint hResId = uint((int(gl_FragCoord.x) % hrLrScale.x) + (int(gl_FragCoord.y) % hrLrScale.y) * hrLrScale.x);
+  //debugPrintfEXT("hrLres scale : %v2i, frag coords : %v2i, ids : %i,%i, global id : %i", hrLrScale, ivec2(gl_FragCoord.xy), int(gl_FragCoord.x) % hrLrScale.x, int(gl_FragCoord.y) % hrLrScale.y, hResId);
   /*if (nodeData[pc.currentFrame].nodes[n].hResId > 0 && nodeData[pc.currentFrame].nodes[n].hResId < 3) {
     debugPrintfEXT("h res id : %i", nodeData[pc.currentFrame].nodes[n].hResId);
   }*/
   /*if (nodeData[pc.currentFrame].nodes[n].hResId == hResId)
     debugPrintfEXT("res : %v2f, scale %v2i, lr %v2i",pc.resolution,hrLrScale, lrFragCoord);*/
-  while( n != 0xffffffffu && count < MAX_FRAGMENTS /*&& nodeData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].nodes[n].hResId == hResId*/) {    
+  while( n != 0xffffffffu && count < MAX_FRAGMENTS) {    
     NodeType frag = nodeData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].nodes[n]; 
-    if (hResId < 0 || hResId > 3)   
-    debugPrintfEXT("hResID : %i", hResId);
+    //if (hResId < 0 || hResId > 3)   
+    //debugPrintfEXT("view index : %i, lrFragCoord : %v2i, n : %i, next : %i, hresIds, %i,%i", gl_ViewIndex, lrFragCoord, n, frag.next, frag.hResId, hResId);
     //if (frag.hResId == hResId) {       
        frags[count] = frag;       
-       count++;       
+       count++;  
     //}
-    n = frag.next;
+    n = frag.next;    
   }
+  
   // Do the insertion sort
   for (uint i = 1; i < count; ++i)
   {

@@ -22,7 +22,7 @@ namespace odfaeg {
             envMapFragPC.maxNodes = maxNodes;
             envMapFragPC.resolution = math::Vec2f(ENV_MAP_SIZE, ENV_MAP_SIZE);
             envMapQuadFragPC.resolution = math::Vec2f(ENV_MAP_SIZE, ENV_MAP_SIZE);
-            unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int) * 2;
+            unsigned int nodeSize = 5 * sizeof(float) + 2 * sizeof(unsigned int);
             commandPool.beginRecordCommandBuffer(0);            
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT*6; i++) {
                 headPtrsStorageImage.emplace_back(GPUContext::instance().getDevice());
@@ -486,10 +486,15 @@ namespace odfaeg {
                     vkCmdClearColorImage(envMap.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), headPtrsStorageImage[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
                     vkCmdFillBuffer(envMap.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), nodeCounterBuffer[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), 0, sizeof(uint32_t), 0u);
                 }
+                VkMemoryBarrier memoryBarrier{};
+                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                memoryBarrier.pNext = VK_NULL_HANDLE;
+                memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                vkCmdPipelineBarrier(envMap.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);                
                 envMap.beginRendering(true);
                 vkCmdExecuteCommands(envMap.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &envMapCmdPools[e].getHandle(parentRenderer.getCurrentFrame()));
-                envMap.endRendering();
-                VkMemoryBarrier memoryBarrier{};
+                envMap.endRendering();                
                 memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                 memoryBarrier.pNext = VK_NULL_HANDLE;
                 memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
