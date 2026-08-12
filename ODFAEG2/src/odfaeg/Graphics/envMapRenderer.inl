@@ -475,7 +475,7 @@ namespace odfaeg {
             envMap.applyComputeGraphicsBarrier();
             parentRenderer.applyComputeGraphicsBarrier();
             for (unsigned int e = 0; e < reflRefrGameObjects.size(); e++) {
-                envMap.clear();
+                envMap.clear(entity::Color::Red);
                 VkClearColorValue clearColor;
                 clearColor.uint32[0] = 0xffffffff;
                 VkImageSubresourceRange subresRange = {};
@@ -497,10 +497,10 @@ namespace odfaeg {
                 vkCmdPipelineBarrier(envMap.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 envMap.beginRendering(true);
                 vkCmdExecuteCommands(envMap.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &envMapQuadCmdPools[e].getHandle(parentRenderer.getCurrentFrame()));
-                envMap.endRendering(); 
+                envMap.endRendering();
+                vkCmdPipelineBarrier(envMap.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);                
                 envMap.submit(true);
-                envMap.display();                
-                vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);               
+                envMap.display();
                 parentRenderer.beginRendering(true);
                 vkCmdExecuteCommands(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &reflRefrCmdPools[e].getHandle(parentRenderer.getCurrentFrame()));
                 parentRenderer.endRendering();
