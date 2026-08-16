@@ -40,6 +40,7 @@ namespace odfaeg {
             Texture(Texture&& texture) noexcept;
             void copyFrom(Texture& texture);
             void copyFrom(CommandPool& commandPool, Texture& texture);
+            void generateMipmaps();
             Texture& operator=(Texture&& texture) noexcept;
 			void createCommandBuffers();
 			void setTexType(unsigned int texType);
@@ -47,8 +48,9 @@ namespace odfaeg {
 			void setSize(math::Vector2u size);
 			void setSamplerAddressMode(VkSamplerAddressMode wrapU, VkSamplerAddressMode wrapV);
             bool create(uint32_t texWidth, uint32_t texHeight, uint32_t texDepth=1, unsigned int mipLevels = 1, bool layered=false, bool FBOAttachment=false);
-            bool createDepthTexture(uint32_t texWidth, uint32_t texHeight, uint32_t depth=1, bool layered=false);
-            bool createCubeMap(uint32_t size, bool layered=false, bool FBOAttachment=false);
+            bool createDepthTexture(uint32_t texWidth, uint32_t texHeight, uint32_t depth=1, VkSampleCountFlagBits sampleCount=VK_SAMPLE_COUNT_1_BIT, bool layered=false);
+            bool createCubeMap(uint32_t size, unsigned int cubemapCount = 1, unsigned int mipLevels = 1, bool layered=false, bool FBOAttachment=false);
+            std::deque<ImageView>& getImageViews();
             bool createDepthCubeMap(uint32_t size, bool layered=false);
             bool loadCubeMapFromFile(std::vector<std::string> filenames, const entity::IntRect& area=entity::IntRect());
             bool loadCubeMapFromImage(const ImageLoader& image, uint32_t face, const entity::IntRect& area=entity::IntRect());
@@ -87,7 +89,8 @@ namespace odfaeg {
             unsigned int getNbBuffers() const;
             unsigned int getLayerCount();  
             bool isCubeMapTex();          
-        private :
+        private : 
+            std::deque<ImageView> views;           
             unsigned int texType, mipLevels;
             Device& device;
             std::deque<Image> images;

@@ -70,6 +70,7 @@ namespace odfaeg {
             static float inversSqrt(float value);
             //Donne le logarithme d'un nombre. (En base 10.)
             static float log10(float value);
+            static float log2(float value);
             //Donne le logarithme d'un nombre en base base.
             static float logn(float value, int base);
             //Donne le nombre � la puissance n.

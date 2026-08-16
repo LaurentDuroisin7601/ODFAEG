@@ -15,6 +15,8 @@ namespace odfaeg {
 			FrameBuffer& operator=(FrameBuffer&& other) noexcept;
 			void create(RenderPass& renderPass, ImageView& imageViews, uint32_t width, uint32_t height);
 			void create(RenderPass& renderPass, ImageView& imageViews, ImageView& depthbufferImageViews, unsigned int width, unsigned int height);
+			void createColor(RenderPass& renderPass, ImageView& imageViews, ImageView& colorImageView, uint32_t width, uint32_t height);
+			void createColor(RenderPass& renderPass, ImageView& imageViews, ImageView& depthbufferImageViews, ImageView& colorImageView, unsigned int width, unsigned int height);
 			void cleanup();
 			VkFramebuffer getHandle();
 			~FrameBuffer();

@@ -66,6 +66,8 @@ void main() {
         vec3 r = refract (i, normalize(normal), ratio);
         refractColor = texture(sceneBox, r);        
     }
+    
+    
     /*if ((reflectColor.r != 0 || reflectColor.g != 0 && reflectColor.b != 0) && (refractColor.r != 0 || refractColor.g != 0 && refractColor.b != 0))
         debugPrintfEXT("ratio : %f, refract color : %v4f", ratio, refractColor);*/
     outColor = mix(reflectColor, refractColor, refractColor.a);

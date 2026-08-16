@@ -291,6 +291,22 @@ namespace odfaeg {
 			descriptorWrites[binding].descriptorCount = imageInfos[binding].size();
 			descriptorWrites[binding].pImageInfo = imageInfos[binding].data();
 		}
+		void DescriptorSet::updateImageInfos(unsigned int binding, Texture& images, VkDescriptorType descriptorType, unsigned int imageViewIndex) {
+			imageInfos[binding].resize(images.getNbBuffers());
+			for (unsigned int j = 0; j < images.getNbBuffers(); j++) {
+				//std::cout<<"add texture info!"<<std::endl;
+				imageInfos[binding][j].imageLayout = images.getImage(j).getLayout();
+				imageInfos[binding][j].imageView = images.getImageViews()[imageViewIndex].getHandle();
+				imageInfos[binding][j].sampler = images.getImage(j).getSampler().getHandle();
+			}
+			descriptorWrites[binding].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[binding].dstSet = descriptorSet;
+			descriptorWrites[binding].dstBinding = binding;
+			descriptorWrites[binding].dstArrayElement = 0;
+			descriptorWrites[binding].descriptorType = descriptorType;
+			descriptorWrites[binding].descriptorCount = imageInfos[binding].size();
+			descriptorWrites[binding].pImageInfo = imageInfos[binding].data();
+		}
 		void DescriptorSet::updateImageInfos(unsigned int binding, std::deque<Image>& images, VkDescriptorType descriptorType) {
 			imageInfos[binding].resize(images.size());
 			for (unsigned int i = 0; i < images.size(); i++) {

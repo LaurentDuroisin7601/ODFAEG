@@ -52,9 +52,12 @@ namespace odfaeg {
             Instance& getInstance();
             void cleanup();
             bool areMeshShadersSupported();
+            VkSampleCountFlagBits getMaxUsableSampleCount();
+            VkSampleCountFlagBits getMsaaSamples();
             ~Device();
 
         private:
+            VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
             VkPhysicalDevicePushDescriptorPropertiesKHR pushDescriptorProps{};
             VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragmentShaderInterlockProps;
             Instance& instance;

@@ -77,9 +77,10 @@ namespace odfaeg {
             * \param text : the texture coordinates.
             */
             void setTexture(const Texture* texture,entity::SubMesh::TexType texType, unsigned int texUnit=0, std::string texId="");
-            void setLightInfos(math::Vec4f lightCenter, entity::Color lightColor);
-            math::Vec4f getLightCenter();
-            entity::Color getLightColor();  
+            void setAlbedo(entity::Color aldebo);
+            void setCenter(math::Vec4f center);
+            math::Vec4f getCenter();
+            entity::Color getAlbedo();  
             void setType(entity::SubMesh::Type type);
             entity::SubMesh::Type getType();
             /**
@@ -144,11 +145,11 @@ namespace odfaeg {
                 ar(refractionFactor);
                 ar(type);
                 ar(instanceGroup);
-                ar(lightCenter);
-                ar(lightColor.r);
-                ar(lightColor.g);
-                ar(lightColor.b);
-                ar(lightColor.a);
+                ar(center);
+                ar(albedo.r);
+                ar(albedo.g);
+                ar(albedo.b);
+                ar(albedo.a);
                 if (ar.isInputArchive()) {
                     maxSpecularIntensity = (specularIntensity > maxSpecularIntensity) ? specularIntensity : maxSpecularIntensity;
                     maxSpecularPower = (specularPower > maxSpecularPower) ? specularPower : maxSpecularPower;
@@ -175,8 +176,8 @@ namespace odfaeg {
             inline static std::deque<Material*> materials = std::deque<Material*>();
             inline static std::deque<Material*> sameMaterials = std::deque<Material*>();
             bool reflectable, refractable;
-            math::Vec4f lightCenter;
-            entity::Color lightColor;            
+            math::Vec4f center;
+            entity::Color albedo;            
             inline static unsigned int maxSpecularIntensity = 0;
             inline static unsigned int maxSpecularPower = 0;
             inline static unsigned int nbLayers = 0;

@@ -114,6 +114,9 @@ namespace odfaeg {
         float Math::inversSqrt(float value) {
             return 1.f / sqrt(value);
         }
+        float Math::log2(float value) {
+            return logn(value, 2);
+        }
         //Donne le logarithme d'un nombre. (En base 10.)
         float Math::log10(float value) {
             return (float)log(value);

@@ -55,6 +55,18 @@ namespace odfaeg {
 
             return requiredExtensions.empty();
         }
+        VkSampleCountFlagBits Device::getMaxUsableSampleCount() {
+            VkPhysicalDeviceProperties physicalDeviceProperties;
+            vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+            VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+            if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
+            if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
+            if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
+            if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
+            if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
+            if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
+            return VK_SAMPLE_COUNT_1_BIT;
+        }
         void Device::pickupPhysicalDevice(VkSurfaceKHR surface) {
             if (physicalDevice == VK_NULL_HANDLE) {
                 uint32_t deviceCount = 0;
@@ -73,10 +85,11 @@ namespace odfaeg {
                     vkGetPhysicalDeviceProperties(physicalDevice, &props);
                     if (isDeviceSuitable(device, surface) && props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
                         physicalDevice = device;
-                        VkPhysicalDeviceProperties props;
+                        /*VkPhysicalDeviceProperties props;
                         vkGetPhysicalDeviceProperties(physicalDevice, &props);
-                        //std::cout << "GPU: " << props.deviceName << std::endl;
-                        //system("PAUSE");
+                        std::cout << "GPU: " << props.deviceName << std::endl;
+                        system("PAUSE");*/
+                        msaaSamples = getMaxUsableSampleCount();
                         break;
                     }
                 }
@@ -400,6 +413,9 @@ namespace odfaeg {
         }
         VmaAllocator Device::getAllocator() {
             return allocator;
+        }
+        VkSampleCountFlagBits Device::getMsaaSamples() {
+            return msaaSamples;
         }
     }
 }

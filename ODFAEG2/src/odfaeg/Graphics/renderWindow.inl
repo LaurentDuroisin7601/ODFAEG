@@ -1,7 +1,7 @@
 namespace odfaeg {
 	namespace graphic {
         ////////////////////////////////////////////////////////////
-        RenderWindow::RenderWindow(window::VideoMode mode, const core::String& title, Device& device, std::uint32_t style, bool useDepth, bool useStencil) : useDepth(useDepth), useStencil(useStencil), RenderTarget(device, useDepth, useStencil), device(device), swapchain(device)
+        RenderWindow::RenderWindow(window::VideoMode mode, const core::String& title, Device& device, std::uint32_t style, bool useDepth, bool useStencil) : useDepth(useDepth), useStencil(useStencil), RenderTarget(device, useDepth, useStencil), device(device), swapchain(device), colorImage(device)
         {
             //std::cout<<"instance in render window : "<<this->device.getInstance().getInstance()<<std::endl;
             //this->device.getInstance().setInstance(VK_NULL_HANDLE);
@@ -12,13 +12,16 @@ namespace odfaeg {
             create(mode, title, style);
         }
         ////////////////////////////////////////////////////////////
-        RenderWindow::RenderWindow(window::WindowHandle handle, Device& device, bool useDepth, bool useStencil) : RenderTarget(device, useDepth, useStencil), device(device), swapchain(device)
+        RenderWindow::RenderWindow(window::WindowHandle handle, Device& device, bool useDepth, bool useStencil) : RenderTarget(device, useDepth, useStencil), device(device), swapchain(device), colorImage(device)
         {
             viewMask = 0;
             currentFrame = 0;
             imageIndex = 0;
             // Don't call the base class constructor because it contains virtual function calls
             create(handle);
+        }
+        void RenderWindow::createColorResources() {
+            colorImage.create(swapchain.getSwapchainExtents().width, swapchain.getSwapchainExtents().height, 1, VK_IMAGE_TYPE_2D, swapchain.getSwapchainImageFormat(), VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,VMA_MEMORY_USAGE_GPU_ONLY, 1, 1, device.getMsaaSamples(), VK_IMAGE_TILING_OPTIMAL);
         }
 	    void RenderWindow::onClose() {
             /*ParticleSystemUpdater::instance().stop();
@@ -53,14 +56,14 @@ namespace odfaeg {
                 renderPasses.reserve(2);
             }
             renderPasses.emplace_back(device);
-            renderPasses[0].create(swapchain.getSwapchainImageFormat(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+            renderPasses[0].create(swapchain.getSwapchainImageFormat(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, device.getMaxUsableSampleCount(), true);
 
             if (useDepthTest() || useStencilTest()) {
                 //std::cout<<"create depth texture!"<<std::endl;
                 renderPasses.emplace_back(device);
                 renderPasses.emplace_back(device);
                 renderPasses[1].create(getDepthStencilTexture().getFormat());
-                renderPasses[2].create(swapchain.getSwapchainImageFormat(), getDepthStencilTexture().getFormat(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);                
+                renderPasses[2].create(swapchain.getSwapchainImageFormat(), getDepthStencilTexture().getFormat(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, device.getMsaaSamples(), true);                
             } else {
                 renderPasses.emplace_back(device);
                 renderPasses[1].create(getDepthStencilTexture().getFormat());
@@ -358,6 +361,8 @@ namespace odfaeg {
             cleanupSwapchain();
             createSwapchain();
             createImageViews();
+            createColorResources();
+            getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, 1, device.getMsaaSamples());
             /*createRenderPass();
             createFrameBuffers();*/
         }
@@ -389,7 +394,8 @@ namespace odfaeg {
             createSwapchain();
             //std::cout<<"create image views!"<<std::endl;
             createImageViews();
-            getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height);
+            createColorResources();
+            getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, 1, device.getMsaaSamples());
             //std::cout<<"create dp cmds"<<std::endl;
 
             //std::cout<<"create render pass!"<<std::endl;
@@ -419,7 +425,7 @@ namespace odfaeg {
             frameBuffers[1].reserve(swapchain.getSwapchainImages().size());
             for (size_t i = 0; i < swapchain.getSwapchainImages().size(); i++) {
                 frameBuffers[0].emplace_back(device);
-                frameBuffers[0][i].create(renderPasses[0], swapchain.getSwapchainImages()[i].getImageView(), getExtents().width, getExtents().height);
+                frameBuffers[0][i].createColor(renderPasses[0], swapchain.getSwapchainImages()[i].getImageView(), colorImage.getImageView(), getExtents().width, getExtents().height);
                 frameBuffers[1].emplace_back(device);
                 frameBuffers[1][i].create(renderPasses[1], getDepthStencilTexture().getImage().getImageView(), getExtents().width, getExtents().height);
             }
@@ -427,7 +433,7 @@ namespace odfaeg {
                 frameBuffers[2].reserve(swapchain.getSwapchainImages().size());
                 for (size_t i = 0; i < swapchain.getSwapchainImages().size(); i++) {                    
                     frameBuffers[2].emplace_back(device);
-                    frameBuffers[2][i].create(renderPasses[2], swapchain.getSwapchainImages()[i].getImageView(), getDepthStencilTexture().getImage().getImageView(), getExtents().width, getExtents().height);
+                    frameBuffers[2][i].createColor(renderPasses[2], swapchain.getSwapchainImages()[i].getImageView(), getDepthStencilTexture().getImage().getImageView(), colorImage.getImageView(), getExtents().width, getExtents().height);
                 }
             }
         }
@@ -476,7 +482,11 @@ namespace odfaeg {
                 .imageLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
                 .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
                 .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                .clearValue = {.color = {0.0f, 0.0f, 0.0f, 1.0f}}
+                .clearValue = {.color = {0.0f, 0.0f, 0.0f, 1.0f}},
+                // Résolution MSAA → mono-sample
+                .resolveMode = VK_RESOLVE_MODE_AVERAGE_BIT,
+                .resolveImageView = colorImage.getImageView().getHandle(),
+                .resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
             };
             VkRenderingAttachmentInfo depthAttachmentInfo = {
                 .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
@@ -485,7 +495,7 @@ namespace odfaeg {
                 .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
                 .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                 .clearValue = {.depthStencil{1.f, 0}}
-            };
+            };            
             VkRenderingInfo renderingInfo = {
                 .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
                 .renderArea = {

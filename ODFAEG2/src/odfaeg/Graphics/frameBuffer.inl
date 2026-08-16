@@ -53,6 +53,47 @@ namespace odfaeg {
 				throw std::runtime_error("failed to create framebuffer!");
 			}
 		}
+		void FrameBuffer::createColor(RenderPass& renderPass, ImageView& imageViews, ImageView& colorImageView, uint32_t width, uint32_t height) {
+			if (frameBuffer != VK_NULL_HANDLE) {
+				cleanup();
+			}
+			VkFramebufferCreateInfo framebufferInfo{};
+			std::array<VkImageView, 2> attachments = {
+				colorImageView.getHandle(),
+				imageViews.getHandle()
+			};
+			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			framebufferInfo.renderPass = renderPass.getHandle();
+			framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+			framebufferInfo.pAttachments = attachments.data();
+			framebufferInfo.width = width;
+			framebufferInfo.height = height;
+			framebufferInfo.layers = 1;
+			if (vkCreateFramebuffer(device.getDevice(), &framebufferInfo, nullptr, &frameBuffer) != VK_SUCCESS) {
+				throw std::runtime_error("failed to create framebuffer!");
+			}
+		}
+		void FrameBuffer::createColor(RenderPass& renderPass, ImageView& imageViews, ImageView& depthbufferImageViews, ImageView& colorImageView, unsigned int width, unsigned int height) {
+			if (frameBuffer != VK_NULL_HANDLE) {
+				cleanup();
+			}
+			VkFramebufferCreateInfo framebufferInfo{};
+			std::array<VkImageView, 3> attachments = {
+				colorImageView.getHandle(),
+				depthbufferImageViews.getHandle(),
+				imageViews.getHandle()
+			};
+			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			framebufferInfo.renderPass = renderPass.getHandle();
+			framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+			framebufferInfo.pAttachments = attachments.data();
+			framebufferInfo.width = width;
+			framebufferInfo.height = height;
+			framebufferInfo.layers = 1;
+			if (vkCreateFramebuffer(device.getDevice(), &framebufferInfo, nullptr, &frameBuffer) != VK_SUCCESS) {
+				throw std::runtime_error("failed to create framebuffer!");
+			}
+		}
 		void FrameBuffer::cleanup() {
 			if (frameBuffer != VK_NULL_HANDLE) {
 				vkDestroyFramebuffer(device.getDevice(), frameBuffer, nullptr);

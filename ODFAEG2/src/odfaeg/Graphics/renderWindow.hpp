@@ -90,6 +90,7 @@ namespace odfaeg {
             void createFrameBuffers();
             void createRenderPass();
             void createSyncObjects();
+            void createColorResources();
 
             VkSurfaceKHR surface;
             Device& device;
@@ -102,7 +103,8 @@ namespace odfaeg {
             std::vector<std::vector<FrameBuffer>> frameBuffers;
             std::uint32_t currentFrame=0;
             bool framebufferResized = false;
-            std::uint32_t viewMask;            
+            std::uint32_t viewMask; 
+            Image colorImage;           
         };			
 	}
 }

@@ -126,37 +126,58 @@ namespace odfaeg {
                 throw std::runtime_error("failed to create render pass!");
             }
         }
-        void RenderPass::create(VkFormat format, VkImageLayout layout) {
+        void RenderPass::create(VkFormat format, VkImageLayout layout, VkSampleCountFlagBits msaaSamples, bool resolvePass) {
             if (renderPass != VK_NULL_HANDLE) {
                 cleanup();
             }
             VkAttachmentDescription colorAttachment{};
             colorAttachment.format = format;
-            colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            colorAttachment.samples = msaaSamples;
             colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
             colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             colorAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             colorAttachment.finalLayout = layout;
-
+            VkAttachmentDescription colorAttachmentResolve{};
+            if (resolvePass) {
+                colorAttachmentResolve.format = format;
+                colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+                colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+            }
             VkAttachmentReference colorAttachmentRef{};
             colorAttachmentRef.attachment = 0;
-            colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-
+            colorAttachmentRef.layout = layout;
+            VkAttachmentReference colorAttachmentResolveRef{};
+            if (resolvePass) {
+                colorAttachmentResolveRef.attachment = 1;
+                colorAttachmentResolveRef.layout = layout;
+            }
             VkSubpassDescription subpass{};
             subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
             subpass.colorAttachmentCount = 1;
             subpass.pColorAttachments = &colorAttachmentRef;
+            if (resolvePass) {
+                subpass.pResolveAttachments = &colorAttachmentResolveRef;
+            }
             subpass.pDepthStencilAttachment = nullptr;
-
-            std::array<VkAttachmentDescription, 1> attachments = { colorAttachment };
-
-            VkRenderPassCreateInfo renderPassInfo{};
+            VkRenderPassCreateInfo renderPassInfo{};            
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-            renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-            renderPassInfo.pAttachments = attachments.data();
+            if (resolvePass) {
+                std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, colorAttachmentResolve};
+                renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+                renderPassInfo.pAttachments = attachments.data();
+            } else {
+                std::array<VkAttachmentDescription, 1> attachments = { colorAttachment};
+                renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+                renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+                renderPassInfo.pAttachments = attachments.data();
+            }
             renderPassInfo.subpassCount = 1;
             renderPassInfo.pSubpasses = &subpass;
             VkSubpassDependency dependency{};
@@ -230,19 +251,33 @@ namespace odfaeg {
                 throw std::runtime_error("failed to create render pass!");
             }
         }
-        void RenderPass::create(VkFormat format, VkFormat depthStencilFormat, VkImageLayout layout) {
+        void RenderPass::create(VkFormat format, VkFormat depthStencilFormat, VkImageLayout layout, VkSampleCountFlagBits msaaSamples, bool resolvePass) {
             if (renderPass != VK_NULL_HANDLE) {
                 cleanup();
             }
             VkAttachmentDescription colorAttachment{};
             colorAttachment.format = format;
-            colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            colorAttachment.samples = msaaSamples;
             colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
             colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             colorAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             colorAttachment.finalLayout = layout;
+
+            VkAttachmentDescription colorAttachmentResolve{};
+            if (resolvePass) {
+                colorAttachmentResolve.format = format;
+                colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+                colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+            }
+            
+            
 
             VkAttachmentDescription depthAttachment{};
             depthAttachment.format = depthStencilFormat;
@@ -256,24 +291,40 @@ namespace odfaeg {
 
             VkAttachmentReference colorAttachmentRef{};
             colorAttachmentRef.attachment = 0;
-            colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
+            colorAttachmentRef.layout = layout;
+            
             VkAttachmentReference depthAttachmentRef{};
             depthAttachmentRef.attachment = 1;
             depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+            VkAttachmentReference colorAttachmentResolveRef{};
+            if (resolvePass) {
+                colorAttachmentResolveRef.attachment = 2;
+                colorAttachmentResolveRef.layout = layout;
+            }
 
             VkSubpassDescription subpass{};
             subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
             subpass.colorAttachmentCount = 1;
             subpass.pColorAttachments = &colorAttachmentRef;
+            if (resolvePass) {
+                subpass.pResolveAttachments = &colorAttachmentResolveRef;
+            }
             subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
-            std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+            
 
             VkRenderPassCreateInfo renderPassInfo{};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-            renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-            renderPassInfo.pAttachments = attachments.data();
+            if (resolvePass) {
+                std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve};
+                renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+                renderPassInfo.pAttachments = attachments.data();
+            } else {
+                std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+                renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+                renderPassInfo.pAttachments = attachments.data();
+            }
             renderPassInfo.subpassCount = 1;
             renderPassInfo.pSubpasses = &subpass;
             VkSubpassDependency dependency{};

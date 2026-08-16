@@ -30,8 +30,8 @@ namespace odfaeg {
             id = 0;            
             instanceGroup = -1;
             layer = 0;
-            lightCenter = math::Vec3f(0.f, 0.f, 0.f);
-            lightColor = entity::Color::White;
+            center = math::Vec3f(0.f, 0.f, 0.f);
+            albedo = entity::Color::White;
             for (unsigned int i = 0; i < entity::SubMesh::NBTEXTYPES; i++) {
                 setTexture(nullptr, static_cast<entity::SubMesh::TexType>(i));
             }
@@ -93,16 +93,19 @@ namespace odfaeg {
         entity::SubMesh::Type Material::getType() {
             return type;
         }      
-        void Material::setLightInfos(math::Vec4f center, entity::Color color) {
-            lightCenter = center;
-            lightColor = color;
-            updateIds();
+        void Material::setAlbedo(entity::Color albedo) {
+            this->albedo = albedo;
+            //updateIds();
         }
-        math::Vec4f Material::getLightCenter() {
-            return lightCenter;
+        void Material::setCenter(math::Vec4f center) {
+            this->center = center;
+            //updateIds();
         }
-        entity::Color Material::getLightColor() {
-            return lightColor;
+        math::Vec4f Material::getCenter() {
+            return center;
+        }
+        entity::Color Material::getAlbedo() {
+            return albedo;
         }
         void Material::setInstanceGroup(unsigned int instanceGroup) {
             this->instanceGroup = instanceGroup;
@@ -149,16 +152,16 @@ namespace odfaeg {
         void Material::setSpecularIntensity(float specularIntensity) {
             this->specularIntensity = specularIntensity;
             maxSpecularIntensity = (specularIntensity > maxSpecularIntensity) ? specularIntensity : maxSpecularIntensity;
-            updateIds();
+            //updateIds();
         }
         void Material::setSpecularPower(float specularPower) {
             this->specularPower = specularPower;
             maxSpecularIntensity = (specularPower > maxSpecularIntensity) ? specularIntensity : maxSpecularPower;
-            updateIds();
+            //updateIds();
         }        
         void Material::setRefractionFactor(float refractionFactor) {
             this->refractionFactor = refractionFactor;
-            updateIds();
+            //updateIds();
         }
         float Material::getRefractionFactor() {
             return refractionFactor;
@@ -205,8 +208,8 @@ namespace odfaeg {
                 && reflectable == material.reflectable
                 && instanceGroup == material.instanceGroup
                 && layer == material.layer
-                && lightCenter == material.lightCenter
-                && lightColor == material.lightColor;
+                && center == center
+                && albedo == albedo;
         }
         bool Material::operator!= (const Material& material) {
             return !(*this == material);

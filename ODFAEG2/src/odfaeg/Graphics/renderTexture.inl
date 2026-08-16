@@ -28,7 +28,7 @@ namespace odfaeg {
             this->depthOnly = depthOnly;           
             //if (useDepthTest() || useDepthTest() || depthOnly) {
                       
-                getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, depth, layered);
+                getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, depth, device.getMsaaSamples(), layered);
             //}
             /*createRenderPass();
             createFramebuffers();*/
@@ -39,7 +39,7 @@ namespace odfaeg {
 
             return true;
         }
-        bool RenderTexture::createCubeMap(unsigned int size, bool depthOnly, bool layered) {
+        bool RenderTexture::createCubeMap(unsigned int size, unsigned int cubemapCount, unsigned int mipLevels, bool depthOnly, bool layered) {
             //std::cout<<"create!"<<std::endl;
             
             
@@ -50,7 +50,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < 1; i++) {
                     m_textures.emplace_back(device, NB_SWAPCHAIN_IMAGES);
                     m_textures.back().setTexType(10);
-                    m_textures.back().createCubeMap(size, layered, true);
+                    m_textures.back().createCubeMap(size, cubemapCount, mipLevels, layered, true);
                 }  
             }
             m_size[0] = size;
