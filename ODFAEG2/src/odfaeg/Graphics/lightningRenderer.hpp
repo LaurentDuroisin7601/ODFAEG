@@ -1,5 +1,30 @@
 #ifndef ODFAEG_LIGHTNING_RENDERER_HPP
 #define ODFAEG_LIGHTNING_RENDERER_HPP
+#include <deque>
+#include <string>
+#include <odfaeg/config.hpp>
+#include <condition_variable>
+#include <memory>
+#include <stdexcept>
+#include <vulkan/vulkan.hpp>
+#include "vk_mem_alloc.h"
+#include "odfaeg/config.hpp"
+#include "iRenderer.hpp"
+#include "renderTarget.hpp"
+#include "../Entity/primitiveType.hpp"
+#include "../Entity/vertex.hpp"
+#include "renderStates.hpp"
+#include "descriptor.hpp"
+#include "pipeline.hpp"
+#include "../Math/matrix.hpp"
+#include "../Math/vec.hpp"
+#include "buffer.hpp"
+#include "image.hpp"
+#include "vertexBuffer.hpp"
+#include "shader.hpp"
+#include "commandPool.hpp"
+#include "../Core/threadPool.hpp"
+#include "../Window/listener.hpp"
 namespace odfaeg {
     namespace graphic {
        class LightingRenderingComponent {
@@ -49,6 +74,7 @@ namespace odfaeg {
             VertexBuffer fullscreenQuad;
             PbrVertPC pbrVertPC;
             std::vector<Light> lights;
+            window::Listener listener;
        }; 
     }
 }
