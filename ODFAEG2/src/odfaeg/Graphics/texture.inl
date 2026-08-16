@@ -895,8 +895,8 @@ namespace odfaeg {
                     copyRegion.dstSubresource.layerCount = 1;
                     copyRegion.dstOffset = {0, 0, 0};
 
-                    copyRegion.extent.width  = texture.mipsInfos[mip].width;
-                    copyRegion.extent.height = texture.mipsInfos[mip].height;
+                    copyRegion.extent.width  = (mip == 0) ? texture.m_size.x() : texture.mipsInfos[mip].width;
+                    copyRegion.extent.height = (mip == 0) ? texture.m_size.y() : texture.mipsInfos[mip].height;
                     copyRegion.extent.depth  = 1;
                     
                     //std::cout<<"buffer : "<<texture.images.size()<<std::endl;
@@ -994,8 +994,8 @@ namespace odfaeg {
                 copyRegion.dstSubresource.layerCount = layerCount;
                 copyRegion.dstOffset = {0, 0, 0};
 
-                copyRegion.extent.width  = texture.m_size.x();
-                copyRegion.extent.height = texture.m_size.y();
+                copyRegion.extent.width  = (mip == 0) ? texture.m_size.x() : mipsInfos[mip].width;
+                copyRegion.extent.height = (mip == 0) ? texture.m_size.y() : mipsInfos[mip].height;
                 copyRegion.extent.depth  = 1;
                 for (unsigned int i = 0; i < nbBuffers; i++) {
                     VkImageLayout currentLayout = texture.images[imageIndex].getLayout();                
