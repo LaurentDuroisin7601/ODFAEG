@@ -17,6 +17,7 @@ namespace odfaeg {
         threadPool(6),
         typesToRenderExpression(typesToRenderExpression)
         {
+            rendererReady.store(false); 
             Camera camera = parentRenderer.getCamera();
             camera.setPerspective(90.0f, , 1.0f, 0.1f, 10.0f);
             camera.setViewport(physic::BoundingBox(0, 0, 0.1f, 32, 32, 10.f));            
@@ -90,10 +91,12 @@ namespace odfaeg {
                 lightsBuffer.back().create(sizeof(Light), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
             }
             setEnvironmentMap(environmentMap);
+            stop.store(false);
+            rendererReady.store(true);    
         }
         void LightningRenderer::addLight(Light light) {
             lights.push_back(light);
-            needToUpdateBuffers = true;
+            needToUpdateLightsBuffer = true;
         }
         void LightningRenderer::setEnvironmentMap(Texture& envMap) {
             environmentMap = envMap;
@@ -119,12 +122,15 @@ namespace odfaeg {
                             //std::cout<<"set : "<<linkedListSets[i][0].getHandle()<<std::endl;
                     sets.push_back(GPUContext::instance().getDescriptorSets(irrandianceShader)[i][0].getHandle());
                 }
+                float roughness = (float)mip / (float)(maxMipLevels - 1);
                 vkCmdBindPipeline(prefilterTexture.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(entity::Triangles, prefilterShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getHandle());
                 vkCmdBindDescriptorSets(prefilterTexture.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(entity::Triangles, prefilterShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
+                vkCmdPushConstants(prefilterTexture.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(entity::Triangles, prefilterShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(math::Matrix4f), &camera.getProjMatrix().getMatrix().transpose());
+                vkCmdPushConstants(prefilterTexture.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(entity::Triangles, prefilterShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(math::Matrix4f), sizeof(float), &roughness);
                 VkRenderingInfo renderingInfo = {};
                 VkRenderingAttachmentInfo depthAttachmentInfo = {
                     .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-                    .imageView = prefilterTexture.getDepthStencilTexture().getViews()[mip].getHandle(),
+                    .imageView = prefilterTexture.getDepthStencilTexture().getDepthViews()[mip].getHandle(),
                     .imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                     .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -289,7 +295,9 @@ namespace odfaeg {
             renderingCreateInfo.colorAttachmentCount = 1;
             renderingCreateInfo.pColorAttachmentFormats = &parentRenderer.getImageFormat();
             renderingCreateInfo.depthAttachmentFormat = parentRenderer.getDepthStencilTexture().getFormat();
-            GPUContext::instance().getGraphicsPipeline(entity::Triangles, pbrShader, blendMode,0).createGraphicPipeline(pbrShader, entity::Triangles, GPUContext::instance().getDescriptorSetLayout(pbrShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);           
+            for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
+                GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), pbrShader, blendMode,0).createGraphicPipeline(pbrShader, static_cast<entity::PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(pbrShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::DEPTHNOSTENCIL], blendMode, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants); 
+            }          
             
             DescriptorPool& irradiancePool = GPUContext::instance().getDescriptorPool(irrandianceShader, 2);
             irrandiancePool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1);
@@ -411,8 +419,102 @@ namespace odfaeg {
                emissiveDefaultRenderingSet.updateDescriptorSet();
            } 
         }
-        void LightingRenderer::drawNextFrame() {
+        void LightningRenderer::clear() {            
+            registerFramesJob[parentRenderer.getCurrentFrame()].store(true);
+            cv.notify_one();
+        }
+        void LightningRenderer::drawNextFrame() {
+             std::unique_lock<std::mutex> lock(mtx);
+            //std::cout<<"frame : "<<parentRenderer.getCurrentFrame()<<std::endl;
+            cv.wait(lock, [this] {
+                    //std::cout<<"draw frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
+                return registerFramesJob[parentRenderer.getCurrentFrame()].load() || stop.load();
+            });            
+            uint32_t renderFrame  = parentRenderer.getCurrentFrame();
+            //std::cout<<"draw!"<<std::endl;
+            registerFramesJob[renderFrame].store(false);
             
+            if (!stop.load()) {
+                if (needToUpdateLightsBuffer) {
+                    updateBuffers();
+                    needToUpdateLightsBuffer = false;
+                    needToUpdateDescriptorSets = true;
+                }
+                if (needToUpdateDescriptorSets) {
+                    //std::cout<<"update ds"<<std::endl;
+                    updateDescriptorSets();
+                    needToUpdateDescriptorSets = false;
+                }                         
+                jobFences[renderFrame].reset(1);                
+                threadPool.enqueue([this, renderFrame] {
+                    VkCommandBufferInheritanceRenderingInfo inheritanceRenderingInfo{};
+                    inheritanceRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
+                    inheritanceRenderingInfo.colorAttachmentCount = 1;
+                    inheritanceRenderingInfo.pColorAttachmentFormats = &parentRenderer.getFormat(); // tableau de VkFormat
+                    inheritanceRenderingInfo.depthAttachmentFormat = parentRenderer.getDepthStencilTexture().getFormat();    // VK_FORMAT_D32_SFLOAT, etc.                    
+                    inheritanceRenderingInfo.rasterizationSamples = GPUContext::instance().getDevice().getMsaaSamples();
+                    
+                    VkCommandBufferInheritanceInfo inheritanceInfo{};
+                    inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                    inheritanceInfo.pNext = &inheritanceRenderingInfo;
+                    inheritanceInfo.renderPass = VK_NULL_HANDLE;
+                    inheritanceInfo.subpass = 0;
+                    inheritanceInfo.framebuffer = VK_NULL_HANDLE;   
+                    inheritanceInfo.occlusionQueryEnable = VK_FALSE;
+                    inheritanceInfo.pipelineStatistics = 0;
+                    inheritanceInfo.queryFlags = 0; 
+                    RenderStates states;
+                    states.shader = &pbrShader;
+                    BlendMode blendMode;
+                    std::vector<VkDescriptorSet> sets;
+                    for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(pbrShader).size(); i++) {
+                        sets.push_back(GPUContext::instance().getDescriptorSets(pbrShader)[i][0].getHandle());
+                    }                    
+                    for (unsigned int l = 0; l < lights.size(); l++) {
+                        std::vector<uint32_t> offsetLights;
+                        for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
+                           offsetLights.push_back(l * lightSpaceMatrixAlignSize);
+                        } 
+                        for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
+                            vkCmdBindPipeline(pbrCommandPool.getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), pbrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
+                            //std::cout<<"registered bind pipeline"<<std::endl;
+                            pbrVertPC.projMatrix = parentRenderer.getProjMatrix().getMatrix().transpose();
+                            pbrVertPC.viewMatrix = parentRenderer.getViewMatrix().getMatrix().transpose();
+                            pbrVertPC.primitiveType = i;
+                            pbrVertPC.currentFrame = parentRenderer.getCurrentFrame();
+                            vkCmdPushConstants(pbrCommandPool.getHandle(renderFrame), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), pbrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PbrVertPC), &pbrVertPC);
+                            math::Vec4f cameraPos = parentRenderer.getCamera().getCenter();
+                            vkCmdPushConstants(pbrCommandPool.getHandle(renderFrame), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), pbrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(PbrVertPC), sizeof(math::Vec4f), &cameraPos);
+                            //std::cout<<"registed bind push constants"<<std::endl;
+                            vkCmdBindDescriptorSets(pbrCommandPool.getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), pbrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), offsetLights.size(), offsetLights.data());
+                            //std::cout<<"registered bind decriptor sets"<<std::endl;
+                            parentRenderer.draw(pbrCommandPool, static_cast<entity::PrimitiveType>(i), states);
+                        } 
+                    }
+                    jobFences[renderFrame].jobDone();
+                };
+                jobFences[renderFrame].wait();
+            }
+            commandBuffersReady[renderFrame].store(true);
+            cv.notify_all();
+        }
+        void LightningRenderer::draw() {
+            std::unique_lock<std::mutex> lock(mtx);
+            cv.wait(lock, [this] {
+                    //std::cout<<"draw frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
+                return commandBuffersReady[parentRenderer.getCurrentFrame()].load() || stop.load();
+            });
+            //std::cout<<"buffers ready!"<<std::endl;
+            commandBuffersReady[parentRenderer.getCurrentFrame()].store(false);
+            if (!stop.load()) {
+                parentRenderer.applyComputeGraphicsBarrier();
+                parentRenderer.beginRendering(true);
+                vkCmdExecuteCommands(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &pbrCommandPool.getHandle(parentRenderer.getCurrentFrame()));
+                parentRenderer.endRendering();
+            }
+        }
+        bool LightningRenderer::isRendererReady() {
+            return rendererReady.load();
         }
     }
 }
