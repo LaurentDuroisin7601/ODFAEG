@@ -665,7 +665,7 @@ namespace odfaeg {
                     inheritanceRenderingInfo.colorAttachmentCount = 0;
                     inheritanceRenderingInfo.pColorAttachmentFormats = nullptr; // tableau de VkFormat
                     inheritanceRenderingInfo.depthAttachmentFormat = shadowMap.getDepthStencilTexture().getFormat();    // VK_FORMAT_D32_SFLOAT, etc.                    
-                    inheritanceRenderingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+                    inheritanceRenderingInfo.rasterizationSamples = GPUContext::instance().getDevice().getMsaaSamples(); 
                     inheritanceRenderingInfo.viewMask = shadowMap.getViewMask();
                     VkCommandBufferInheritanceInfo inheritanceInfo{};
                     inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -721,7 +721,7 @@ namespace odfaeg {
                     inheritanceRenderingInfo.colorAttachmentCount = 0;
                     inheritanceRenderingInfo.pColorAttachmentFormats = nullptr; // tableau de VkFormat
                     inheritanceRenderingInfo.depthAttachmentFormat = shadowMapPL.getDepthStencilTexture().getFormat();    // VK_FORMAT_D32_SFLOAT, etc.                    
-                    inheritanceRenderingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+                    inheritanceRenderingInfo.rasterizationSamples = GPUContext::instance().getDevice().getMsaaSamples(); 
                     inheritanceRenderingInfo.viewMask = shadowMapPL.getViewMask();
                     VkCommandBufferInheritanceInfo inheritanceInfo{};
                     inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -779,7 +779,7 @@ namespace odfaeg {
                     inheritanceRenderingInfo.colorAttachmentCount = 1;
                     inheritanceRenderingInfo.pColorAttachmentFormats = &parentRenderer.getImageFormat(); // tableau de VkFormat
                     inheritanceRenderingInfo.depthAttachmentFormat = parentRenderer.getDepthStencilTexture().getFormat();    // VK_FORMAT_D32_SFLOAT, etc.                    
-                    inheritanceRenderingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+                    inheritanceRenderingInfo.rasterizationSamples = GPUContext::instance().getDevice().getMsaaSamples(); 
                     VkCommandBufferInheritanceInfo inheritanceInfo{};
                     inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
                     inheritanceInfo.pNext = &inheritanceRenderingInfo;
