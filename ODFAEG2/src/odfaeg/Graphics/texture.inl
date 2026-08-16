@@ -895,8 +895,8 @@ namespace odfaeg {
                     copyRegion.dstSubresource.layerCount = 1;
                     copyRegion.dstOffset = {0, 0, 0};
 
-                    copyRegion.extent.width  = texture.m_size.x();
-                    copyRegion.extent.height = texture.m_size.y();
+                    copyRegion.extent.width  = texture.mipsInfos[mip].width;
+                    copyRegion.extent.height = texture.mipsInfos[mip].height;
                     copyRegion.extent.depth  = 1;
                     
                     //std::cout<<"buffer : "<<texture.images.size()<<std::endl;
