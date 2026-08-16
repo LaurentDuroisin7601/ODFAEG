@@ -362,7 +362,7 @@ namespace odfaeg {
             createSwapchain();
             createImageViews();
             createColorResources();
-            getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, 1, device.getMsaaSamples());
+            getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, 1);
             /*createRenderPass();
             createFrameBuffers();*/
         }
@@ -395,7 +395,7 @@ namespace odfaeg {
             //std::cout<<"create image views!"<<std::endl;
             createImageViews();
             createColorResources();
-            getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, 1, device.getMsaaSamples());
+            getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, 1);
             //std::cout<<"create dp cmds"<<std::endl;
 
             //std::cout<<"create render pass!"<<std::endl;

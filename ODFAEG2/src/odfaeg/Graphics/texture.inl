@@ -261,13 +261,13 @@ namespace odfaeg {
                 if (FBOAttachment) {
                     //std::cout<<"create fbo image : "<<i<<"id : "<<id<<std::endl;
                     images[i].create(texWidth, texHeight, (layered) ? 1 : texDepth, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-                        VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
+                        VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, device.getMsaaSamples(), VK_IMAGE_TILING_OPTIMAL);
                 } else {
                     //std::cout<<"create image : "<<i<<","<<id<<std::endl;
                     images[i].create(texWidth, texHeight, (layered) ? 1 : texDepth, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                        VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
+                        VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, device.getMsaaSamples(), VK_IMAGE_TILING_OPTIMAL);
                 }
-                images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, mipLevels, (layered) ? texDepth : 1);
+                images[i].createImageView(viewType, m_format, device.getMsaaSamples(), 0, 0, mipLevels, (layered) ? texDepth : 1);
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
                 if (FBOAttachment) {                    
                     commandPool.beginRecordCommandBuffer(i);
@@ -300,7 +300,7 @@ namespace odfaeg {
             
             return true;
         }
-        bool Texture::createDepthTexture(uint32_t texWidth, uint32_t texHeight, uint32_t texDepth, VkSampleCountFlagBits sampleCount, bool layered) {
+        bool Texture::createDepthTexture(uint32_t texWidth, uint32_t texHeight, uint32_t texDepth, bool layered) {
             
             VkImageType imageType;
             VkImageViewType viewType;
@@ -357,7 +357,7 @@ namespace odfaeg {
             //std::cout<<"nb buffers : "<<nbBuffers<<std::endl;         
             for (unsigned int i = 0; i < nbBuffers; i++) {  
                 images[i].create(texWidth, texHeight, 1, imageType, m_format, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                    VMA_MEMORY_USAGE_GPU_ONLY, 1, (layered) ? texDepth : 1, sampleCount, VK_IMAGE_TILING_OPTIMAL);
+                    VMA_MEMORY_USAGE_GPU_ONLY, 1, (layered) ? texDepth : 1, device.getMsaaSamples(), VK_IMAGE_TILING_OPTIMAL);
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_DEPTH_BIT /*| VK_IMAGE_ASPECT_STENCIL_BIT*/, 0, 0, 1, (layered) ? texDepth : 1);
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
                 commandPool.beginRecordCommandBuffer(i);
@@ -410,7 +410,7 @@ namespace odfaeg {
             createCommandBuffers();
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 images[i].create(size, size, mipLevels, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-                    VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, layerCount, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
+                    VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, layerCount, device.getMsaaSamples(), VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, mipLevels, layerCount);
                 if (FBOAttachment) {
                     for (unsigned int c = 0; c < cubemapCount; c++) {
@@ -472,7 +472,7 @@ namespace odfaeg {
             createCommandBuffers();
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 images[i].create(size, size, 1, imageType, m_format, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT| VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                    VMA_MEMORY_USAGE_GPU_ONLY, 1, 6, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
+                    VMA_MEMORY_USAGE_GPU_ONLY, 1, 6, device.getMsaaSamples(), VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_DEPTH_BIT, 0, 0, 1, 6);
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
                 commandPool.beginRecordCommandBuffer(i);

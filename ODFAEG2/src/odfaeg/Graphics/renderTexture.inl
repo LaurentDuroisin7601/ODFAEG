@@ -28,7 +28,7 @@ namespace odfaeg {
             this->depthOnly = depthOnly;           
             //if (useDepthTest() || useDepthTest() || depthOnly) {
                       
-                getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, depth, device.getMsaaSamples(), layered);
+                getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, depth, layered);
             //}
             /*createRenderPass();
             createFramebuffers();*/

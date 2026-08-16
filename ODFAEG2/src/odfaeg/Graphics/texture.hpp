@@ -48,7 +48,7 @@ namespace odfaeg {
 			void setSize(math::Vector2u size);
 			void setSamplerAddressMode(VkSamplerAddressMode wrapU, VkSamplerAddressMode wrapV);
             bool create(uint32_t texWidth, uint32_t texHeight, uint32_t texDepth=1, unsigned int mipLevels = 1, bool layered=false, bool FBOAttachment=false);
-            bool createDepthTexture(uint32_t texWidth, uint32_t texHeight, uint32_t depth=1, VkSampleCountFlagBits sampleCount=VK_SAMPLE_COUNT_1_BIT, bool layered=false);
+            bool createDepthTexture(uint32_t texWidth, uint32_t texHeight, uint32_t depth=1, bool layered=false);
             bool createCubeMap(uint32_t size, unsigned int cubemapCount = 1, unsigned int mipLevels = 1, bool layered=false, bool FBOAttachment=false);
             std::deque<ImageView>& getImageViews();
             bool createDepthCubeMap(uint32_t size, bool layered=false);
