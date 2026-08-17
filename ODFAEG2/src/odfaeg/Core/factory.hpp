@@ -83,7 +83,7 @@ namespace odfaeg {
             *   \return B* a pointer of a base class which'll point to the allocated object.
             */
             template <class... Args>
-            static B* create(std::string typeName, Args&&... args);
+            static B* create(std::string typeName);
             /** \fn std::string getTypeName (B* type)
             *   \brief return the type name of a base object.
             *   \param B* type : a pointer to the type to check the dynamic type name.

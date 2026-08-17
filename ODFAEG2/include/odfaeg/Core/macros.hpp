@@ -5,21 +5,20 @@
 * \param BASE : the base type of the derived class.
 * \param DERIVED : the derived type of the derived class.
 */
-#define REGISTER_TYPE(ID, BASE, DERIVED, PARAMS, ARGS) \
-{ \
-    DERIVED *derived##ID = nullptr; \
-    odfaeg::core::Allocator<BASE> allocator##ID; \                      
-    BASE*(odfaeg::core::Allocator<BASE>::*f##ID)(DERIVED*, \
-    BOOST_PP_SEQ_ENUM(PARAMS)) = \
-    &odfaeg::core::Allocator<BASE>::allocate<DERIVED, \
-    BOOST_PP_SEQ_ENUM(PARAMS)>;                                         \
-    \
-    odfaeg::core::FastDelegate<BASE*> allocatorDelegate##ID(\
-        f##ID, &allocator##ID, derived##ID, BOOST_PP_SEQ_ENUM(ARGS));       \
-    \
-    odfaeg::core::BaseFactory<BASE>::register_type(\
-        typeid(DERIVED).name(), allocatorDelegate##ID);                     \
-}
+
+#define REGISTER_TYPE(ID, BASE, DERIVED)                                \
+{                                                                       \
+    odfaeg::core::FastDelegate<BASE*> allocatorDelegate##ID(            \
+        []() -> BASE* {                                                 \
+            return new DERIVED();                                       \
+        }                                                               \
+    );                                                                  \
+                                                                        \
+    odfaeg::core::BaseFactory<BASE>::register_type(                     \
+        typeid(DERIVED).name(),                                         \
+        allocatorDelegate##ID                                           \
+    );                                                                  \
+}                    \
 /**fn
 * \brief This is an helper function like macro which register a function in the dynamic factory.
 * \param ID : an ID which is associate to a derived type.
@@ -29,32 +28,36 @@
 * \param DERIVED : the derived type of the derived class.
 * \param SIGNATURE : the signature of the function to register.
 */
+#define MAKE_ARG(z, n, seq) \ 
+    odfaeg::core::ph<n, BOOST_PP_SEQ_ELEM(n, seq)>{} 
+#define MAKE_ARG_LIST(seq)  \
+    BOOST_PP_ENUM(BOOST_PP_SEQ_SIZE(seq), MAKE_ARG, seq) 
+#define REGISTER_FUNC(ID, funcName, SID, BASE, DERIVED, ARCHIVE)        \
+{                                                                       \
+    odfaeg::core::FastDelegate<void> delegate##ID##funcName##SID(      \
+        [](BASE* baseObj, ARCHIVE& ar) {                                \
+            auto* d = static_cast<DERIVED*>(baseObj);                   \
+            d->vt##funcName(ar);                                       \
+        }                                                               \
+    );                                                                  \
+                                                                        \
+    odfaeg::core::BaseFactory<BASE>::register_function(                \
+        typeid(DERIVED).name(),                                         \
+        #funcName,                                                      \
+        #SID,                                                           \
+        delegate##ID##funcName##SID                                     \
+    );                                                                  \
+}
+#define CAT(a,b) a##b 
+#define EXPAND(a,b) CAT(a,b) 
+#define OARCH(ARCH) EXPAND(O, ARCH) 
+#define IARCH(ARCH) EXPAND(I, ARCH) 
+#define EXPORT_CLASS_GUID(ID, BASE, DERIVED, ARCHIVE_TYPE) \
+REGISTER_TYPE(ID, BASE, DERIVED);                                   \
+REGISTER_FUNC(ID, serialize, OARCH(ARCHIVE_TYPE), BASE, DERIVED,    \
+            odfaeg::core::OARCH(ARCHIVE_TYPE));                   \
+REGISTER_FUNC(ID, serialize, IARCH(ARCHIVE_TYPE), BASE, DERIVED,    \
+            odfaeg::core::IARCH(ARCHIVE_TYPE));  
+    
 
-#define REGISTER_FUNC(ID, funcName, SID, BASE, TYPES_SEQ) \
-{ \
-    using DERIVED = BOOST_PP_SEQ_HEAD(TYPES_SEQ); \
-    using PARAM_TYPES = BOOST_PP_SEQ_TAIL(TYPES_SEQ); \
-    void(DERIVED::*f##ID##funcName##SID)(BOOST_PP_SEQ_ENUM(PARAM_TYPES)) = \
-        &DERIVED::vt##funcName; \
-    odfaeg::core::FastDelegate<void> delegate##ID##funcName##SID( \
-        f##ID##funcName##SID, \
-        MAKE_ARG_LIST(TYPES_SEQ) \
-    ); \
-\
-    odfaeg::core::BaseFactory<BASE>::register_function( \
-        typeid(DERIVED).name(), \
-        #funcName, \
-        #SID, \
-        delegate##ID##funcName##SID \
-    ); \
-}
-#define CAT(a,b) a##b
-#define EXPAND(a,b) CAT(a,b)
-#define OARCH(ARCH) odfaeg::core::EXPAND(O, ARCH)
-#define IARCH(ARCH) odfaeg::core::EXPAND(I, ARCH)
-#define EXPORT_CLASS_GUID(ID, BASE, DERIVED, ARCHIVE_TYPE, PARAMS, ARGS) \
-{ \
-    REGISTER_TYPE_(ID, BASE, DERIVED, PARAMS, ARGS); \    
-    REGISTER_FUNC(ID, serialize, OARCH(ARCHIVE_TYPE), BASE, (DERIVED)(OARCH(ARCHIVE_TYPE)&)); \
-    REGISTER_FUNC(ID, serialize, IARCH(ARCHIVE_TYPE), BASE, (DERIVED)(IARCH(ARCHIVE_TYPE)&)); \
-}
+ 

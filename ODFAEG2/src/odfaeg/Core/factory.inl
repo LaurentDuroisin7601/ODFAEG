@@ -39,7 +39,7 @@ namespace odfaeg {
         }  
         template <typename B>
         template <class... Args>
-        B* BaseFactory<B>::create(std::string typeName, Args&&... args) {
+        B* BaseFactory<B>::create(std::string typeName) {
             typename std::map<std::string, FastDelegate<B*>>::iterator it = types.find(typeName);
             if (it != types.end()) {                    
                 return (it->second)();
