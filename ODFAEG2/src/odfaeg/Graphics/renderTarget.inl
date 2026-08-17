@@ -900,7 +900,7 @@ namespace odfaeg {
 						/*blendMode = BlendAlpha;
 						blendMode.updateIds();
 						std::cout<<"pipeline  : "<<Triangles<<","<<defaultRenderingShader.getId()<<","<<blendMode.id<<","<<i<<std::endl;*/
-						GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, defaultRenderingShader, blendMode,i).createGraphicPipeline( defaultRenderingShader, GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
+						GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, defaultRenderingShader, blendMode,i).createGraphicPipeline( defaultRenderingShader, GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, device.getMsaaSamples(), VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
 					}
 				}
 				//std::cout<<"descriptor and pipelines created default render target"<<std::endl;
@@ -916,7 +916,7 @@ namespace odfaeg {
 				if (!isDepthOnly()) {
 					for (unsigned int i = 0; i < depthStencilInfos.size(); i++) {
 						for (unsigned int p = 0; p < NB_PRIMITIVE_TYPES; p++) {
-							GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(p), vertexBufferShader, blendMode,i).createGraphicPipeline( vertexBufferShader, static_cast<entity::PrimitiveType>(p),GPUContext::instance().getDescriptorSetLayout(vertexBufferShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
+							GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(p), vertexBufferShader, blendMode,i).createGraphicPipeline( vertexBufferShader, static_cast<entity::PrimitiveType>(p),GPUContext::instance().getDescriptorSetLayout(vertexBufferShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, device.getMsaaSamples(), VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
 						}
 					}
 				}
@@ -1068,7 +1068,7 @@ namespace odfaeg {
 				if (!isDepthOnly()) {
 					for (unsigned int i = 0; i < depthStencilInfos.size(); i++) {
 						for (unsigned int p = 0; p < NB_PRIMITIVE_TYPES; p++) {
-							GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(p), defaultRenderingShader, blendMode,i).createGraphicPipeline( defaultRenderingShader, static_cast<entity::PrimitiveType>(p),GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
+							GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(p), defaultRenderingShader, blendMode,i).createGraphicPipeline( defaultRenderingShader, static_cast<entity::PrimitiveType>(p),GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, device.getMsaaSamples(), VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
 							//std::cout<<"pipeline created in render target : "<<GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(p), defaultRenderingShader, blendMode,i).getHandle()<<std::endl;
 						}
 					}
@@ -1087,7 +1087,7 @@ namespace odfaeg {
 				if (!isDepthOnly()) {
 					for (unsigned int i = 0; i < depthStencilInfos.size(); i++) {
 						for (unsigned int p = 0; p < NB_PRIMITIVE_TYPES; p++) {
-							GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(p), vertexBufferShader, blendMode,i).createGraphicPipeline( vertexBufferShader, static_cast<entity::PrimitiveType>(p),GPUContext::instance().getDescriptorSetLayout(vertexBufferShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
+							GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(p), vertexBufferShader, blendMode,i).createGraphicPipeline( vertexBufferShader, static_cast<entity::PrimitiveType>(p),GPUContext::instance().getDescriptorSetLayout(vertexBufferShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, device.getMsaaSamples(), VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
 						}
 					}
 				}

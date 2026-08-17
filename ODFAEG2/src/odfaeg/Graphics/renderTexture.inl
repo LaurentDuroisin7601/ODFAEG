@@ -50,7 +50,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < 1; i++) {
                     m_textures.emplace_back(device, NB_SWAPCHAIN_IMAGES);
                     m_textures.back().setTexType(10);
-                    m_textures.back().createCubeMap(size, cubemapCount, layered, true);
+                    m_textures.back().createCubeMap(size, cubemapCount, mipLevels, layered, true);
                 }  
             }
             m_size[0] = size;

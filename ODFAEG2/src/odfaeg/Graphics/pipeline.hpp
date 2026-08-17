@@ -21,12 +21,12 @@ namespace odfaeg {
 			Pipeline(Pipeline&& pipeline) noexcept;
 			Pipeline& operator=(Pipeline&& pipeline) noexcept;			
 			void createGraphicPipeline(Shader& shader, entity::PrimitiveType primitveType, std::deque<DescriptorSetLayout>& setLayouts, RenderPass& renderPass, VkPipelineDepthStencilStateCreateInfo depthStencil, BlendMode blendMode,
-				VkCullModeFlags cullMode = VK_CULL_MODE_NONE, VkPolygonMode polygoneMode = VK_POLYGON_MODE_FILL, std::vector<VkPushConstantRange> pushConstants = std::vector<VkPushConstantRange>());
+				VkSampleCountFlagBits msaaSamples, VkCullModeFlags cullMode = VK_CULL_MODE_NONE, VkPolygonMode polygoneMode = VK_POLYGON_MODE_FILL, std::vector<VkPushConstantRange> pushConstants = std::vector<VkPushConstantRange>());
 			void createGraphicPipeline(Shader& shader, entity::PrimitiveType primitveType, std::deque<DescriptorSetLayout>& setLayouts, VkPipelineRenderingCreateInfo renderingCreateInfo, VkPipelineDepthStencilStateCreateInfo depthStencil, BlendMode blendMode,
-            				VkCullModeFlags cullMode = VK_CULL_MODE_NONE, VkPolygonMode polygoneMode = VK_POLYGON_MODE_FILL, std::vector<VkPushConstantRange> pushConstants = std::vector<VkPushConstantRange>());
+            				VkSampleCountFlagBits msaaSamples, VkCullModeFlags cullMode = VK_CULL_MODE_NONE, VkPolygonMode polygoneMode = VK_POLYGON_MODE_FILL, std::vector<VkPushConstantRange> pushConstants = std::vector<VkPushConstantRange>());
 			void createComputePipeline(Shader& shader, std::deque<DescriptorSetLayout>& setLayouts, std::vector<VkPushConstantRange> pushConstants = std::vector<VkPushConstantRange>());
 			void createGraphicPipeline(Shader& shader, std::deque<DescriptorSetLayout>& setLayouts, VkPipelineRenderingCreateInfo renderingCreateInfo, VkPipelineDepthStencilStateCreateInfo depthStencil, BlendMode blendMode,
-				VkCullModeFlags cullMode = VK_CULL_MODE_NONE, VkPolygonMode polygoneMode = VK_POLYGON_MODE_FILL, std::vector<VkPushConstantRange> pushConstants = std::vector<VkPushConstantRange>());
+				VkSampleCountFlagBits msaaSamples, VkCullModeFlags cullMode = VK_CULL_MODE_NONE, VkPolygonMode polygoneMode = VK_POLYGON_MODE_FILL, std::vector<VkPushConstantRange> pushConstants = std::vector<VkPushConstantRange>());
 			void cleanup();
 			VkPipeline getHandle();
 			VkPipelineLayout getLayout();			

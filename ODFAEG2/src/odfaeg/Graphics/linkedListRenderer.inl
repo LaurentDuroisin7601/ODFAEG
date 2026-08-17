@@ -113,7 +113,7 @@ namespace odfaeg {
             renderingCreateInfo.pColorAttachmentFormats = &parentRenderer.getImageFormat();
             renderingCreateInfo.depthAttachmentFormat = parentRenderer.getDepthStencilTexture().getFormat();
             for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
-                GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), linkedListShader, blendMode,0).createGraphicPipeline(linkedListShader, static_cast<entity::PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(linkedListShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);
+                GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), linkedListShader, blendMode,0).createGraphicPipeline(linkedListShader, static_cast<entity::PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(linkedListShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, GPUContext::instance().getDevice().getMsaaSamples(), VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);
             }
             DescriptorSetLayout& quadLinkedListLayout = GPUContext::instance().getDescriptorSetLayout(quadLinkedListShader, 2);
             quadLinkedListLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -126,7 +126,7 @@ namespace odfaeg {
             quadPushConstant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
             pushConstants.push_back(quadPushConstant);
             for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
-                GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), quadLinkedListShader, blendMode, 0).createGraphicPipeline(quadLinkedListShader, static_cast<entity::PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(quadLinkedListShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);
+                GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), quadLinkedListShader, blendMode, 0).createGraphicPipeline(quadLinkedListShader, static_cast<entity::PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(quadLinkedListShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, GPUContext::instance().getDevice().getMsaaSamples(), VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);
             }
             DescriptorPool& linkedListPool = GPUContext::instance().getDescriptorPool(linkedListShader, 7);
             linkedListPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES);

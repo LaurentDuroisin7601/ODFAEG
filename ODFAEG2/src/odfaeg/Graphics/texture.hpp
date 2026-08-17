@@ -89,7 +89,7 @@ namespace odfaeg {
             unsigned int getNbBuffers() const;
             unsigned int getLayerCount();  
             bool isCubeMapTex();  
-            void resolve(Texture& resolved, unsigned int imgIndex = 0);        
+            void resolve(Texture& resolved, VkCommandBuffer cmd, unsigned int imgIndex = 0);        
         private : 
             VkSampleCountFlagBits msaaSamples;
             std::deque<ImageView> views;           

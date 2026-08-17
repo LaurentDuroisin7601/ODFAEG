@@ -42,7 +42,7 @@ namespace odfaeg {
 			return *this;
 		}
 		void Pipeline::createGraphicPipeline(Shader& shader, entity::PrimitiveType primitveType, std::deque<DescriptorSetLayout>& setLayouts, VkPipelineRenderingCreateInfo renderingCreateInfo, VkPipelineDepthStencilStateCreateInfo depthStencil, BlendMode blendMode,
-			VkCullModeFlags cullMode, VkPolygonMode polygonMode, std::vector<VkPushConstantRange> pushConstants) {
+			VkSampleCountFlagBits msaaSamples, VkCullModeFlags cullMode, VkPolygonMode polygonMode, std::vector<VkPushConstantRange> pushConstants) {
 			if (pipeline != VK_NULL_HANDLE) {
 				cleanup();
 			}
@@ -120,11 +120,11 @@ namespace odfaeg {
 			VkPipelineMultisampleStateCreateInfo multisampling{};
 			multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 			multisampling.sampleShadingEnable = VK_FALSE;
-			if (GPUContext::instance().getDevice().getMsaaSamples() == VK_SAMPLE_COUNT_1_BIT) {
+			/*if (GPUContext::instance().getDevice().getMsaaSamples() == VK_SAMPLE_COUNT_1_BIT) {
 				std::cout<<"erreur!"<<std::endl;
 				system("PAUSE");
-			}
-			multisampling.rasterizationSamples = GPUContext::instance().getDevice().getMsaaSamples();
+			}*/
+			multisampling.rasterizationSamples = msaaSamples;
 			bool hasColorAttachment = renderingCreateInfo.colorAttachmentCount > 0;
 			/*if (hasColorAttachment)
 				std::cout<<"color attachment"<<std::endl;*/
@@ -194,7 +194,7 @@ namespace odfaeg {
 			shader.cleanupShaderModules();
 		}
 		void Pipeline::createGraphicPipeline(Shader& shader, entity::PrimitiveType primitveType, std::deque<DescriptorSetLayout>& setLayouts, RenderPass& renderPass, VkPipelineDepthStencilStateCreateInfo depthStencil, BlendMode blendMode,
-			VkCullModeFlags cullMode, VkPolygonMode polygonMode, std::vector<VkPushConstantRange> pushConstants) {
+			VkSampleCountFlagBits msaaSamples, VkCullModeFlags cullMode, VkPolygonMode polygonMode, std::vector<VkPushConstantRange> pushConstants) {
 			if (pipeline != VK_NULL_HANDLE) {
 				cleanup();
 			}
@@ -276,7 +276,7 @@ namespace odfaeg {
 				std::cout<<"r pass"<<std::endl;
 				system("PAUSE");
 			}*/
-			multisampling.rasterizationSamples = GPUContext::instance().getDevice().getMsaaSamples();
+			multisampling.rasterizationSamples = msaaSamples;
 
 			VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 			colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -341,7 +341,7 @@ namespace odfaeg {
 			shader.cleanupShaderModules();
 		}
 		void Pipeline::createGraphicPipeline(Shader& shader, std::deque<DescriptorSetLayout>& setLayouts, VkPipelineRenderingCreateInfo renderingCreateInfo, VkPipelineDepthStencilStateCreateInfo depthStencil, BlendMode blendMode,
-				VkCullModeFlags cullMode, VkPolygonMode polygonMode, std::vector<VkPushConstantRange> pushConstants) {
+				VkSampleCountFlagBits msaaSamples, VkCullModeFlags cullMode, VkPolygonMode polygonMode, std::vector<VkPushConstantRange> pushConstants) {
 			if (pipeline != VK_NULL_HANDLE) {
 				cleanup();
 			}
@@ -402,7 +402,7 @@ namespace odfaeg {
 			VkPipelineMultisampleStateCreateInfo multisampling{};
 			multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 			multisampling.sampleShadingEnable = VK_FALSE;
-			multisampling.rasterizationSamples = GPUContext::instance().getDevice().getMsaaSamples();
+			multisampling.rasterizationSamples = msaaSamples;
 
 			VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 			colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;

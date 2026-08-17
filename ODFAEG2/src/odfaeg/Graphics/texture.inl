@@ -15,7 +15,7 @@ namespace odfaeg {
             texType = 0;
             msaaSamples = VK_SAMPLE_COUNT_1_BIT;
         }  
-        void Texture::resolve(Texture& resolved, unsigned int i) {
+        void Texture::resolve(Texture& resolved, VkCommandBuffer cmd, unsigned int i) {
             VkImageResolve resolvedRegion;
             resolvedRegion.srcOffset = {0, 0, 0};
             resolvedRegion.extent = {m_size.x(), m_size.y(), 1};
@@ -29,13 +29,14 @@ namespace odfaeg {
             resolvedRegion.dstSubresource.baseArrayLayer = 0;
             resolvedRegion.dstSubresource.layerCount = layerCount;
             vkCmdResolveImage(
-                commandPool.getHandle(i),
+                cmd,
                 images[i].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                 resolved.images[i].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                 1, &resolvedRegion
             );
         }      
         void Texture::generateMipmaps() {
+            //system("PAUSE");
             VkFormatProperties formatProperties;
             vkGetPhysicalDeviceFormatProperties(device.getPhysicalDevice(), m_format, &formatProperties);
 
@@ -126,7 +127,7 @@ namespace odfaeg {
             isCubeMap = texture.isCubeMap;           
             if (isCubeMap) {
                 //std::cout<<"create cube map : "<<"nb buffers : "<<texture.nbBuffers<<"images size : "<<texture.images.size()<<std::endl;
-                createCubeMap(texture.m_size.x(), VK_SAMPLE_COUNT_1_BIT, layerCount / 6, texture.mipLevels);
+                createCubeMap(texture.m_size.x(), layerCount / 6, texture.mipLevels);
             } else {
                 create(texture.m_size.x(), texture.m_size.y(), VK_SAMPLE_COUNT_1_BIT, 1, texture.mipLevels);
             }
@@ -147,7 +148,7 @@ namespace odfaeg {
             layerCount = texture.layerCount;
             mipsInfos = texture.mipsInfos;
             isCubeMap = texture.isCubeMap;
-            create(texture.m_size.x(), texture.m_size.y(), device.getMsaaSamples(), 1, texture.mipLevels);
+            create(texture.m_size.x(), texture.m_size.y(), VK_SAMPLE_COUNT_1_BIT, 1, texture.mipLevels);
             for (unsigned int i = 0; i < mipLevels; i++) {
                 update(commandPool, texture, 0, 0, i);
             }
@@ -422,7 +423,11 @@ namespace odfaeg {
             layerCount = 6 * cubemapCount;
             this->mipLevels = mipLevels;
             VkImageType imageType = VK_IMAGE_TYPE_2D; 
-            VkImageViewType viewType;            
+            VkImageViewType viewType;  
+            if (layered) { 
+                std::cout<<"layred ? "<<layered<<std::endl;
+                system("PAUSE");
+            }         
             if (!layered) {
                 viewType = VK_IMAGE_VIEW_TYPE_CUBE;
             }
@@ -499,7 +504,7 @@ namespace odfaeg {
             createCommandBuffers();
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 images[i].create(size, size, 1, imageType, m_format, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT| VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                    VMA_MEMORY_USAGE_GPU_ONLY, 1, 6, device.getMsaaSamples(), VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
+                    VMA_MEMORY_USAGE_GPU_ONLY, 1, 6, msaaSamples, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_DEPTH_BIT, 0, 0, 1, 6);
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
                 commandPool.beginRecordCommandBuffer(i);
@@ -923,7 +928,7 @@ namespace odfaeg {
             vkDeviceWaitIdle(device.getDevice());*/
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 commandPool.beginRecordCommandBuffer(i);
-                for (unsigned int mip = 0; mip < mip; mip++) {
+                for (unsigned int mip = 0; mip < mipLevels; mip++) {
                     VkImageCopy copyRegion{};
                     copyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                     copyRegion.srcSubresource.mipLevel = mip;
@@ -943,9 +948,10 @@ namespace odfaeg {
                     
                     //std::cout<<"buffer : "<<texture.images.size()<<std::endl;
                     
-                    VkImageLayout currentLayout = texture.images[i].getLayout();                
-                    texture.transitionImageLayout(texture.images[i], commandPool.getHandle(i), currentLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, mip, 0, 1, layerCount);
-                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mip, 0, 1, layerCount);
+                    VkImageLayout currentLayout = texture.images[i].getLayout(); 
+                    
+                    transitionImageLayout(texture.images[i], commandPool.getHandle(i), currentLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, mip, 0, 1, layerCount);
+                    transitionImageLayout(images[i], commandPool.getHandle(i), images[i].getLayout(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mip, 0, 1, layerCount);
                     vkCmdCopyImage(
                         commandPool.getHandle(i),
                         texture.images[i].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
@@ -953,8 +959,8 @@ namespace odfaeg {
                         1,
                         &copyRegion
                     );
-                    texture.transitionImageLayout(texture.images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,currentLayout, mip, 0, 1, layerCount);
-                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mip, 0, 1, layerCount); 
+                    transitionImageLayout(texture.images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,currentLayout, mip, 0, 1, layerCount);
+                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, currentLayout, mip, 0, 1, layerCount); 
                 }
                 commandPool.endRecordCommandBuffer(i);
                 VkSubmitInfo submitInfo{};
@@ -1021,39 +1027,51 @@ namespace odfaeg {
                 throw std::runtime_error("�chec de l'envoi d'un command buffer!");
             }
             vkDeviceWaitIdle(device.getDevice());*/
-            for (unsigned int mip = 0; mip < mipLevels; mip++) {
-                VkImageCopy copyRegion{};
-
-                copyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                copyRegion.srcSubresource.mipLevel = mip;
-                copyRegion.srcSubresource.baseArrayLayer = 0;
-                copyRegion.srcSubresource.layerCount = texture.layerCount;
-                copyRegion.srcOffset = {0, 0, 0};
-
-                copyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                copyRegion.dstSubresource.mipLevel = mip;
-                copyRegion.dstSubresource.baseArrayLayer = 0;
-                copyRegion.dstSubresource.layerCount = layerCount;
-                copyRegion.dstOffset = {0, 0, 0};
-
-                copyRegion.extent.width  = (mip == 0) ? texture.m_size.x() : mipsInfos[mip].width;
-                copyRegion.extent.height = (mip == 0) ? texture.m_size.y() : mipsInfos[mip].height;
-                copyRegion.extent.depth  = 1;
+            if (msaaSamples != VK_SAMPLE_COUNT_1_BIT) {
+                //system("PAUSE");
                 for (unsigned int i = 0; i < nbBuffers; i++) {
                     VkImageLayout currentLayout = texture.images[imageIndex].getLayout();                
-                    texture.transitionImageLayout(texture.images[imageIndex], commandBuffer, currentLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,mip,0,1,texture.layerCount);
-                    transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,mip,0,1,layerCount);
-                    //std::cout<<"copy"<<std::endl;
-                    vkCmdCopyImage(
-                        commandBuffer,
-                        texture.images[imageIndex].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                        images[i].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                        1,
-                        &copyRegion
-                    );
-                    texture.transitionImageLayout(texture.images[imageIndex], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,currentLayout,mip,0,1,texture.layerCount);
-                    transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,mip,0,1,layerCount);
-                    
+                    transitionImageLayout(texture.images[imageIndex], commandBuffer, currentLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,0,0,1,texture.layerCount);
+                    transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,0,0,1,layerCount);
+                    texture.resolve(*this, commandBuffer, imageIndex);
+                    transitionImageLayout(texture.images[imageIndex], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,currentLayout,0,0,1,texture.layerCount);
+                    transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,0,0,1,layerCount);
+                }
+            } else {
+                for (unsigned int mip = 0; mip < mipLevels; mip++) {
+                    VkImageCopy copyRegion{};
+
+                    copyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    copyRegion.srcSubresource.mipLevel = mip;
+                    copyRegion.srcSubresource.baseArrayLayer = 0;
+                    copyRegion.srcSubresource.layerCount = texture.layerCount;
+                    copyRegion.srcOffset = {0, 0, 0};
+
+                    copyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    copyRegion.dstSubresource.mipLevel = mip;
+                    copyRegion.dstSubresource.baseArrayLayer = 0;
+                    copyRegion.dstSubresource.layerCount = layerCount;
+                    copyRegion.dstOffset = {0, 0, 0};
+
+                    copyRegion.extent.width  = (mip == 0) ? texture.m_size.x() : mipsInfos[mip].width;
+                    copyRegion.extent.height = (mip == 0) ? texture.m_size.y() : mipsInfos[mip].height;
+                    copyRegion.extent.depth  = 1;
+                    for (unsigned int i = 0; i < nbBuffers; i++) {
+                        VkImageLayout currentLayout = texture.images[imageIndex].getLayout();                
+                        transitionImageLayout(texture.images[imageIndex], commandBuffer, currentLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,mip,0,1,texture.layerCount);
+                        transitionImageLayout(images[i], commandBuffer, images[i].getLayout(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,mip,0,1,layerCount);
+                        //std::cout<<"copy"<<std::endl;
+                        vkCmdCopyImage(
+                            commandBuffer,
+                            texture.images[imageIndex].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                            images[i].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                            1,
+                            &copyRegion
+                        );
+                        transitionImageLayout(texture.images[imageIndex], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,currentLayout,mip,0,1,texture.layerCount);
+                        transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,images[i].getLayout(),mip,0,1,layerCount);
+                        
+                    }
                 }
             }
         }
