@@ -28,10 +28,6 @@
 * \param DERIVED : the derived type of the derived class.
 * \param SIGNATURE : the signature of the function to register.
 */
-#define MAKE_ARG(z, n, seq) \ 
-    odfaeg::core::ph<n, BOOST_PP_SEQ_ELEM(n, seq)>{} 
-#define MAKE_ARG_LIST(seq)  \
-    BOOST_PP_ENUM(BOOST_PP_SEQ_SIZE(seq), MAKE_ARG, seq) 
 #define REGISTER_FUNC(ID, funcName, SID, BASE, DERIVED, ARCHIVE)        \
 {                                                                       \
     odfaeg::core::FastDelegate<void> delegate##ID##funcName##SID(      \
