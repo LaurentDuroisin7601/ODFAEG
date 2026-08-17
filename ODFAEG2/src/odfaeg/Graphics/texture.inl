@@ -1078,8 +1078,8 @@ namespace odfaeg {
                     copyRegion.dstSubresource.layerCount = layerCount;
                     copyRegion.dstOffset = {0, 0, 0};
 
-                    copyRegion.extent.width  = (mip == 0) ? texture.m_size.x() : mipsInfos[mip].width;
-                    copyRegion.extent.height = (mip == 0) ? texture.m_size.y() : mipsInfos[mip].height;
+                    copyRegion.extent.width  = (mipLevels == 1) ? texture.m_size.x() : mipsInfos[mip].width;
+                    copyRegion.extent.height = (mipLevels == 1) ? texture.m_size.y() : mipsInfos[mip].height;
                     copyRegion.extent.depth  = 1;
                     for (unsigned int i = 0; i < nbBuffers; i++) {
                         VkImageLayout currentLayout = texture.images[imageIndex].getLayout();
