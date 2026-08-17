@@ -126,8 +126,43 @@ namespace odfaeg {
 
 
             firstSubmit = true;
-           
+            beginRecordCommandBuffer();
             VkClearColorValue clearValue = { clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f };
+            VkRenderingAttachmentInfo colorAttachmentInfo = {
+                .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+                .imageView = colorImage.getImageView().getHandle(),
+                .imageLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+                .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                .clearValue = clearValue,
+                // Résolution MSAA → mono-sample
+                .resolveMode = VK_RESOLVE_MODE_AVERAGE_BIT,
+                .resolveImageView = swapchain.getSwapchainImages()[imageIndex].getImageView().getHandle(),
+                .resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            };
+            VkRenderingAttachmentInfo depthAttachmentInfo = {
+                .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+                .imageView = getDepthStencilTexture().getImage().getImageView().getHandle(),
+                .imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                .clearValue = {.depthStencil{1.f, 0}}
+            };            
+            VkRenderingInfo renderingInfo = {
+                .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
+                .renderArea = {
+                    .offset { .x=0, .y=0 },
+                    .extent = getExtents()
+                },
+                .layerCount = getDepthStencilTexture().getLayerCount(),
+                .colorAttachmentCount = 1,
+                .pColorAttachments = &colorAttachmentInfo,
+                .pDepthAttachment = &depthAttachmentInfo
+            };            
+            vkCmdBeginRendering(getCommandPool().getHandle(getCurrentFrame()),&renderingInfo);
+            vkCmdEndRendering(getCommandPool().getHandle(getCurrentFrame()));
+           
+            /*VkClearColorValue clearValue = { clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f };
 
 
             VkImageSubresourceRange imageRange = {
@@ -147,7 +182,7 @@ namespace odfaeg {
                 .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                 .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                 .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .image = swapchain.getSwapchainImages()[imageIndex].getHandle(),
+                .image = colorImage.getHandle(),
                 .subresourceRange = imageRange
             };
             VkImageMemoryBarrier clearToPresentBarrier{
@@ -159,11 +194,11 @@ namespace odfaeg {
                 .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                 .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                 .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .image = swapchain.getSwapchainImages()[imageIndex].getHandle(),
+                .image = colorImage.getHandle(),
                 .subresourceRange = imageRange
             };
             //std::cout<<"begin record command buffer : "<<currentFrame<<std::endl;
-            beginRecordCommandBuffer();
+            
             vkCmdPipelineBarrier(getCommandPool().getHandle(currentFrame), VK_PIPELINE_STAGE_NONE, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentToClearBarrier);
             vkCmdClearColorImage(getCommandPool().getHandle(currentFrame), swapchain.getSwapchainImages()[imageIndex].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearValue, 1, &imageRange);
             vkCmdPipelineBarrier(getCommandPool().getHandle(currentFrame), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToPresentBarrier);
@@ -212,7 +247,7 @@ namespace odfaeg {
                 vkCmdClearDepthStencilImage(getCommandPool().getHandle(currentFrame), getDepthStencilTexture().getImage().getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearDepthStencilValue, 1, &imageRange2);
                 vkCmdPipelineBarrier(getCommandPool().getHandle(currentFrame), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
                     VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToDepthStencilBarrier);
-            }
+            }*/
         }       
         uint32_t RenderWindow::getImageIndex() {
             return imageIndex;
