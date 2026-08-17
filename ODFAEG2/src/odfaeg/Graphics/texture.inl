@@ -66,7 +66,7 @@ namespace odfaeg {
                     images[i].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                     1, &blit,
                     VK_FILTER_LINEAR);
-                    //std::cout<<"mip : "<<mip<<", mip levels  : "<<mipLevels<<std::endl;
+                    //std::cout<<"mip : "<<mip-1<<", mip levels  : "<<mipLevels<<std::endl;
                     transitionImageLayout(images[i], commandPool.getHandle(i), images[i].getLayout(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mip-1, 0, 1, layerCount);
                     if (i == 0) {
                         MipInfo mipInfo;
@@ -83,8 +83,8 @@ namespace odfaeg {
                     mipInfo.height = mipHeight;
                     mipsInfos.push_back(mipInfo);
                 }
-                
-                //transitionImageLayout(images[i], commandPool.getHandle(i), images[i].getLayout(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels-1, 0, 1, layerCount);
+                //std::cout<<"mip : "<<mipLevels-1<<std::endl;
+                transitionImageLayout(images[i], commandPool.getHandle(i), images[i].getLayout(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels-1, 0, 1, layerCount);
                 commandPool.endRecordCommandBuffer(i);
             }
             VkSubmitInfo submitInfo{};
