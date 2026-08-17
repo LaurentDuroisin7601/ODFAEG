@@ -364,7 +364,7 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <class O>
-            void operator() (O& object) requires (!IsDynamicObject<O>);
+            void operator() (O& object) requires (!IsFundamental<O> && !IsDynamicObject<O>);
             /**
             * \fn void operator(O& data, D...)
             * \brief read a static object from the archive.

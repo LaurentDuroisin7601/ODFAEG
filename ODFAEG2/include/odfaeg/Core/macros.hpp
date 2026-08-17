@@ -8,16 +8,22 @@
 
 #define REGISTER_TYPE(ID, BASE, DERIVED)                                \
 {                                                                       \
-    odfaeg::core::FastDelegate<BASE*> allocatorDelegate##ID(            \
-        []() -> BASE* {                                                 \
-            return new DERIVED();                                       \
-        }                                                               \
-    );                                                                  \
-                                                                        \
-    odfaeg::core::BaseFactory<BASE>::register_type(                     \
-        typeid(DERIVED).name(),                                         \
-        allocatorDelegate##ID                                           \
-    );                                                                  \
+    struct Wrapper##ID##funcName##SID {                                       \
+        static B* call() {                        \
+            return new Derived();               \
+        }                                                                     \
+    };                                                                        \
+                                                                            \
+    odfaeg::core::FastDelegate<void> delegate##ID##funcName##SID(             \
+        &Wrapper##ID##funcName##SID::call                                      \
+    );                                                                         \
+                                                                            \
+    odfaeg::core::BaseFactory<BASE>::register_function(                       \
+        typeid(DERIVED).name(),                                               \
+        #funcName,                                                            \
+        #SID,                                                                 \
+        delegate##ID##funcName##SID                                           \
+    );                                                          \
 }                    \
 /**fn
 * \brief This is an helper function like macro which register a function in the dynamic factory.
@@ -30,19 +36,23 @@
 */
 #define REGISTER_FUNC(ID, funcName, SID, BASE, DERIVED, ARCHIVE)        \
 {                                                                       \
-    odfaeg::core::FastDelegate<void> delegate##ID##funcName##SID(      \
-        [](BASE* baseObj, ARCHIVE& ar) {                                \
-            auto* d = static_cast<DERIVED*>(baseObj);                   \
-            d->vt##funcName(ar);                                       \
-        }                                                               \
-    );                                                                  \
-                                                                        \
-    odfaeg::core::BaseFactory<BASE>::register_function(                \
-        typeid(DERIVED).name(),                                         \
-        #funcName,                                                      \
-        #SID,                                                           \
-        delegate##ID##funcName##SID                                     \
-    );                                                                  \
+    /* wrapper statique compatible Clang/GCC/MSVC */                          \
+    struct Wrapper##ID##funcName##SID {                                       \
+        static void call(BASE* baseObj, ARCHIVE& ar) {                        \
+            static_cast<DERIVED*>(baseObj)->vt##funcName(ar);                 \
+        }                                                                     \
+    };                                                                        \
+                                                                            \
+    odfaeg::core::FastDelegate<void> delegate##ID##funcName##SID(             \
+        &Wrapper##ID##funcName##SID::call                                      \
+    );                                                                         \
+                                                                            \
+    odfaeg::core::BaseFactory<BASE>::register_function(                       \
+        typeid(DERIVED).name(),                                               \
+        #funcName,                                                            \
+        #SID,                                                                 \
+        delegate##ID##funcName##SID                                           \
+    );                                                                     \
 }
 #define CAT(a,b) a##b 
 #define EXPAND(a,b) CAT(a,b) 
@@ -50,10 +60,11 @@
 #define IARCH(ARCH) EXPAND(I, ARCH) 
 #define EXPORT_CLASS_GUID(ID, BASE, DERIVED, ARCHIVE_TYPE) \
 REGISTER_TYPE(ID, BASE, DERIVED);                                   \
-REGISTER_FUNC(ID, serialize, OARCH(ARCHIVE_TYPE), BASE, DERIVED,    \
-            odfaeg::core::OARCH(ARCHIVE_TYPE));                   \
-REGISTER_FUNC(ID, serialize, IARCH(ARCHIVE_TYPE), BASE, DERIVED,    \
-            odfaeg::core::IARCH(ARCHIVE_TYPE));  
+REGISTER_FUNC(ID, serialize, ARCHIVE_TYPE, BASE, DERIVED,    \
+            ARCHIVE_TYPE);                   \
+/*REGISTER_FUNC(ID, serialize, IARCH(ARCHIVE_TYPE), BASE, DERIVED,    \
+            ARCHIVE_TYPE); */
+    
     
 
  

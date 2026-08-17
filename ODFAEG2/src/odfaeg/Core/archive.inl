@@ -955,7 +955,7 @@ namespace odfaeg {
         * \param D... used for SFINAE.
         */
         template <class O>
-        void ITextArchive::operator() (O& object) requires (!IsDynamicObject<O>) {
+        void ITextArchive::operator() (O& object) requires (!IsFundamental<O> && !IsDynamicObject<O>) {
             /*long long int id;
             buffer>>id;
             char space;
