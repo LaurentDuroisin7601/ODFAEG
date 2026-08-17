@@ -48,10 +48,10 @@ namespace odfaeg {
         *  \brief get the name of the dynamic type of the polymorphic object.
         *  \return std::string : the dynamic type of the object.
         */
-        template <typename B>
+        /*template <typename B>
         std::string Serializer<B>::getTypeName() {
             return BaseFactory<B>::getTypeName(baseObject);
-        }
+        }*/
         
         template <typename Base>
         Registered<Base>::Key::Key() : Serializer<Base>() {}
@@ -69,8 +69,7 @@ namespace odfaeg {
         *  \brief get the dynamic type of the registered object.
         *  \return std::string the dynamic type of the registered object.
         */
-        template <typename Base>
-        std::string Registered<Base>::Key::getTypeName() { return Serializer<Base>::getTypeName(); }
+       
         /** \fn void serialize_object (std::string funcName, std::string funcArgs, Archive & ar)
         *   \brief serialize the registered object into the given archive.
         *   \param std::string funName : the name of the function which'll serialize the datas.

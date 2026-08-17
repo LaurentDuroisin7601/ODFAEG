@@ -99,4 +99,5 @@ namespace odfaeg {
         std::map<std::string, FastDelegate<void>> BaseFactory<B>::functions = std::map<std::string, FastDelegate<void>>();
     }
 }
+#include "factory.inl"
 #endif

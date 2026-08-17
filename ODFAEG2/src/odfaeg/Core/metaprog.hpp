@@ -170,7 +170,7 @@ namespace odfaeg {
             };
             template <typename Comp, typename T, std::size_t IH>
             struct sort_impl<Comp, T, IH, true, true> {
-                using f = typename swap_elements<Comp, T, IH - 1, IH, std::tuple_size<T>::value - 1>::f;
+                using f = typename swap_elements<Comp, T, IH, IH+1, std::tuple_size<T>::value - 1>::f;
             };
             template <typename Comp, typename T, std::size_t IH>
             struct sort_impl<Comp, T, IH, false, false> {

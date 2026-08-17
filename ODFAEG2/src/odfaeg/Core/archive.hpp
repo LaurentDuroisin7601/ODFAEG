@@ -450,5 +450,6 @@ namespace odfaeg {
         };
     }
 }
+#include "archive.inl"
 #endif
 

@@ -13,7 +13,7 @@ namespace odfaeg {
         void BaseFactory<B>::register_type(std::string typeName, FastDelegate<B*> allocatorDelegate) {
             typename std::map<std::string, FastDelegate<B*>>::iterator it = types.find(typeName);
             if (it == types.end()) {
-                types[typeName] = allocatorDelegate;
+                types.emplace(typeName, allocatorDelegate);
             }
         } 
         template <typename B>
@@ -21,7 +21,7 @@ namespace odfaeg {
             typename std::map<std::string, FastDelegate<void>>::iterator it = functions.find(typeName + funcName + funcArgs);
             if (it == functions.end()) {
                 
-                functions[typeName + funcName + funcArgs] = delegate;
+                functions.emplace(typeName + funcName + funcArgs, delegate);
             }
         }  
         template <typename B>
@@ -45,13 +45,6 @@ namespace odfaeg {
                 return (it->second)();
             }
             throw std::runtime_error("Unregistred type exception!" + typeName);
-        }
-        template <typename B> 
-        std::string BaseFactory<B>::getTypeName(B* type) {
-            typename std::map<std::string, FastDelegate<B*>>::iterator it = types.find(typeid(*type).name());
-            if (it != types.end())
-                return it->first;
-            return "";
         }
     }
 }
