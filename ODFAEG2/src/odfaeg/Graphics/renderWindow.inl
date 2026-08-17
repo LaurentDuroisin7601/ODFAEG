@@ -127,6 +127,21 @@ namespace odfaeg {
 
             firstSubmit = true;
             beginRecordCommandBuffer();
+            // Transition PRESENT → COLOR_ATTACHMENT_OPTIMAL
+            /*Texture::transitionImageLayout(
+                swapchain.getSwapchainImages()[imageIndex],
+                getCommandPool().getHandle(currentFrame),
+                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            );*/
+            if (colorImage.getLayout() == VK_IMAGE_LAYOUT_UNDEFINED) {
+                    Texture::transitionImageLayout(
+                    colorImage,
+                    getCommandPool().getHandle(currentFrame),
+                    VK_IMAGE_LAYOUT_UNDEFINED,
+                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+                );
+            }
             VkClearColorValue clearValue = { clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f };
             VkRenderingAttachmentInfo colorAttachmentInfo = {
                 .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
