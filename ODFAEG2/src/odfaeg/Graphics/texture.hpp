@@ -47,8 +47,8 @@ namespace odfaeg {
 			void setFormat(VkFormat format);
 			void setSize(math::Vector2u size);
 			void setSamplerAddressMode(VkSamplerAddressMode wrapU, VkSamplerAddressMode wrapV);
-            bool create(uint32_t texWidth, uint32_t texHeight, uint32_t texDepth=1, unsigned int mipLevels = 1, bool layered=false, bool FBOAttachment=false);
-            bool createDepthTexture(uint32_t texWidth, uint32_t texHeight, uint32_t depth=1, bool layered=false);
+            bool create(uint32_t texWidth, uint32_t texHeight, VkSampleCountFlagBits msaaSamples, uint32_t texDepth=1, unsigned int mipLevels = 1, bool layered=false, bool FBOAttachment=false);
+            bool createDepthTexture(uint32_t texWidth, uint32_t texHeight, VkSampleCountFlagBits msaaSamples, uint32_t depth=1, bool layered=false);
             bool createCubeMap(uint32_t size, unsigned int cubemapCount = 1, unsigned int mipLevels = 1, bool layered=false, bool FBOAttachment=false);
             std::deque<ImageView>& getImageViews();
             bool createDepthCubeMap(uint32_t size, bool layered=false);
@@ -88,8 +88,10 @@ namespace odfaeg {
             math::Vector2u getSize();
             unsigned int getNbBuffers() const;
             unsigned int getLayerCount();  
-            bool isCubeMapTex();          
+            bool isCubeMapTex();  
+            void resolve(Texture& resolved, unsigned int imgIndex = 0);        
         private : 
+            VkSampleCountFlagBits msaaSamples;
             std::deque<ImageView> views;           
             unsigned int texType, mipLevels;
             Device& device;

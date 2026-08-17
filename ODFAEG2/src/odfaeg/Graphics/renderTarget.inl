@@ -995,7 +995,8 @@ namespace odfaeg {
 				renderingCreateInfo.colorAttachmentCount = (isDepthOnly()) ? 0 : 1;
 				renderingCreateInfo.pColorAttachmentFormats = (isDepthOnly()) ? nullptr : &getImageFormat();
 				renderingCreateInfo.depthAttachmentFormat = getDepthStencilTexture().getFormat();
-				renderingCreateInfos.emplace_back(renderingCreateInfo);			
+				renderingCreateInfos.emplace_back(renderingCreateInfo);	
+						
 				DescriptorSetLayout& resetBuffersLayout = GPUContext::instance().getDescriptorSetLayout(resetBuffersShader, 7, false);
 				for (unsigned int i = 0; i < 7; i++) {
 					resetBuffersLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_COMPUTE_BIT);

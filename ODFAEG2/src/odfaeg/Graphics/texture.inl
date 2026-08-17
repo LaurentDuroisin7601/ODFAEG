@@ -13,7 +13,28 @@ namespace odfaeg {
             mipLevels = 1;
             layerCount = 1;
             texType = 0;
-        }        
+            msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+        }  
+        void Texture::resolve(Texture& resolved, unsigned int i) {
+            VkImageResolve resolvedRegion;
+            resolvedRegion.srcOffset = {0, 0, 0};
+            resolvedRegion.extent = {m_size.x(), m_size.y(), 1};
+            resolvedRegion.srcSubresource.aspectMask = images[i].getImageAspectFlags();
+            resolvedRegion.srcSubresource.mipLevel = 0;
+            resolvedRegion.srcSubresource.baseArrayLayer = 0;
+            resolvedRegion.srcSubresource.layerCount = layerCount;
+            resolvedRegion.dstOffset = {0, 0, 0};
+            resolvedRegion.dstSubresource.aspectMask = images[i].getImageAspectFlags();
+            resolvedRegion.dstSubresource.mipLevel = 0;
+            resolvedRegion.dstSubresource.baseArrayLayer = 0;
+            resolvedRegion.dstSubresource.layerCount = layerCount;
+            vkCmdResolveImage(
+                commandPool.getHandle(i),
+                images[i].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                resolved.images[i].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                1, &resolvedRegion
+            );
+        }      
         void Texture::generateMipmaps() {
             VkFormatProperties formatProperties;
             vkGetPhysicalDeviceFormatProperties(device.getPhysicalDevice(), m_format, &formatProperties);
@@ -24,9 +45,9 @@ namespace odfaeg {
             int32_t mipWidth = m_size.x();
             int32_t mipHeight = m_size.y();
             for (unsigned int i = 0; i < nbBuffers; i++) {
-                commandPool.beginRecordCommandBuffer(i);
-                for (unsigned int mip = 1; mip < mipLevels; mip++) {                    
-                    transitionImageLayout(images[i], commandPool.getHandle(i), images[i].getLayout(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, mip-1, 0, 1, layerCount);
+                commandPool.beginRecordCommandBuffer(i);                
+                for (unsigned int mip = 1; mip < mipLevels; mip++) {                                        
+                    transitionImageLayout(images[i], commandPool.getHandle(i), images[i].getLayout(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, mip-1, 0, 1, layerCount);                    
                     VkImageBlit blit{};
                     blit.srcOffsets[0] = {0, 0, 0};
                     blit.srcOffsets[1] = {mipWidth, mipHeight, 1};
@@ -45,6 +66,7 @@ namespace odfaeg {
                     images[i].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                     1, &blit,
                     VK_FILTER_LINEAR);
+                    //std::cout<<"mip : "<<mip<<", mip levels  : "<<mipLevels<<std::endl;
                     transitionImageLayout(images[i], commandPool.getHandle(i), images[i].getLayout(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mip-1, 0, 1, layerCount);
                     if (i == 0) {
                         MipInfo mipInfo;
@@ -61,7 +83,8 @@ namespace odfaeg {
                     mipInfo.height = mipHeight;
                     mipsInfos.push_back(mipInfo);
                 }
-                transitionImageLayout(images[i], commandPool.getHandle(i), images[i].getLayout(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels-1, 0, 1, layerCount);
+                
+                //transitionImageLayout(images[i], commandPool.getHandle(i), images[i].getLayout(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels-1, 0, 1, layerCount);
                 commandPool.endRecordCommandBuffer(i);
             }
             VkSubmitInfo submitInfo{};
@@ -102,9 +125,9 @@ namespace odfaeg {
             isCubeMap = texture.isCubeMap;           
             if (isCubeMap) {
                 //std::cout<<"create cube map : "<<"nb buffers : "<<texture.nbBuffers<<"images size : "<<texture.images.size()<<std::endl;
-                createCubeMap(texture.m_size.x(), layerCount / 6, texture.mipLevels);
+                createCubeMap(texture.m_size.x(), VK_SAMPLE_COUNT_1_BIT, layerCount / 6, texture.mipLevels);
             } else {
-                create(texture.m_size.x(), texture.m_size.y(), 1, texture.mipLevels);
+                create(texture.m_size.x(), texture.m_size.y(), VK_SAMPLE_COUNT_1_BIT, 1, texture.mipLevels);
             }
             update(texture, 0, 0);
         }
@@ -123,7 +146,7 @@ namespace odfaeg {
             layerCount = texture.layerCount;
             mipsInfos = texture.mipsInfos;
             isCubeMap = texture.isCubeMap;
-            create(texture.m_size.x(), texture.m_size.y(), 1, texture.mipLevels);
+            create(texture.m_size.x(), texture.m_size.y(), device.getMsaaSamples(), 1, texture.mipLevels);
             for (unsigned int i = 0; i < mipLevels; i++) {
                 update(commandPool, texture, 0, 0, i);
             }
@@ -181,8 +204,9 @@ namespace odfaeg {
 	    unsigned int Texture::getLayerCount() {
             return layerCount;
         }
-        bool Texture::create(uint32_t texWidth, uint32_t texHeight, uint32_t texDepth, unsigned int mipLevels, bool layered, bool FBOAttachment) {
+        bool Texture::create(uint32_t texWidth, uint32_t texHeight, VkSampleCountFlagBits msaaSamples, uint32_t texDepth, unsigned int mipLevels, bool layered, bool FBOAttachment) {
             //std::cout<<"fbo attachment ?"<<FBOAttachment<<std::endl;
+            this->msaaSamples = msaaSamples; 
             isCubeMap = false;
             m_size = math::Vector2u(texWidth, texHeight);
             this->mipLevels = mipLevels;
@@ -261,13 +285,13 @@ namespace odfaeg {
                 if (FBOAttachment) {
                     //std::cout<<"create fbo image : "<<i<<"id : "<<id<<std::endl;
                     images[i].create(texWidth, texHeight, (layered) ? 1 : texDepth, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-                        VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, device.getMsaaSamples(), VK_IMAGE_TILING_OPTIMAL);
+                        VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, msaaSamples, VK_IMAGE_TILING_OPTIMAL);
                 } else {
                     //std::cout<<"create image : "<<i<<","<<id<<std::endl;
                     images[i].create(texWidth, texHeight, (layered) ? 1 : texDepth, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                        VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, device.getMsaaSamples(), VK_IMAGE_TILING_OPTIMAL);
+                        VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, msaaSamples, VK_IMAGE_TILING_OPTIMAL);
                 }
-                images[i].createImageView(viewType, m_format, device.getMsaaSamples(), 0, 0, mipLevels, (layered) ? texDepth : 1);
+                images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, mipLevels, (layered) ? texDepth : 1);
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
                 if (FBOAttachment) {                    
                     commandPool.beginRecordCommandBuffer(i);
@@ -300,8 +324,8 @@ namespace odfaeg {
             
             return true;
         }
-        bool Texture::createDepthTexture(uint32_t texWidth, uint32_t texHeight, uint32_t texDepth, bool layered) {
-            
+        bool Texture::createDepthTexture(uint32_t texWidth, uint32_t texHeight, VkSampleCountFlagBits msaaSamples, uint32_t texDepth, bool layered) {
+            this->msaaSamples = msaaSamples; 
             VkImageType imageType;
             VkImageViewType viewType;
             layerCount = (layered) ? texDepth : 1;
@@ -392,6 +416,7 @@ namespace odfaeg {
         bool Texture::createCubeMap(uint32_t size, uint32_t cubemapCount, unsigned int mipLevels, bool layered, bool FBOAttachment) {
             //id = getUniqueId();
             isCubeMap = true;
+            msaaSamples = VK_SAMPLE_COUNT_1_BIT;
             m_size = math::Vector2u(size, size);
             layerCount = 6 * cubemapCount;
             this->mipLevels = mipLevels;
@@ -410,7 +435,7 @@ namespace odfaeg {
             createCommandBuffers();
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 images[i].create(size, size, mipLevels, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-                    VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, layerCount, device.getMsaaSamples(), VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
+                    VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, layerCount, msaaSamples, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, mipLevels, layerCount);
                 if (FBOAttachment) {
                     for (unsigned int c = 0; c < cubemapCount; c++) {
@@ -455,6 +480,7 @@ namespace odfaeg {
             return true;
         }
         bool Texture::createDepthCubeMap(uint32_t size, bool layered) {
+            msaaSamples = VK_SAMPLE_COUNT_1_BIT;
             m_size = math::Vector2u(size, size);
             VkFormat depthFormat = findDepthFormat();
             VkImageType imageType = VK_IMAGE_TYPE_2D; 
@@ -492,7 +518,7 @@ namespace odfaeg {
         }
         bool Texture::loadCubeMapFromFile(std::vector<std::string> filenames, const entity::IntRect& area) {
 
-            createCubeMap(imageLoader.getSize().x());
+            createCubeMap(imageLoader.getSize().x(), VK_SAMPLE_COUNT_1_BIT);
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 commandPool.beginRecordCommandBuffer(i);
                 transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 6);
@@ -516,7 +542,7 @@ namespace odfaeg {
             }
             vkDeviceWaitIdle(device.getDevice());
             //id = getUniqueId();
-            GPUContext::instance().getSharedTextures(0).push_back(std::move(*this));
+            //GPUContext::instance().getSharedTextures(0).push_back(std::move(*this));
 
             return true;
         }
@@ -554,13 +580,12 @@ namespace odfaeg {
             }            
             mipLevels = std::floor(std::log2(std::max(imageLoader.getSize().x(), imageLoader.getSize().y()))) + 1;
             m_DataSize = imageLoader.getDataSize();
-            create(imageLoader.getSize().x(), imageLoader.getSize().y(), 1, mipLevels);
+            create(imageLoader.getSize().x(), imageLoader.getSize().y(), VK_SAMPLE_COUNT_1_BIT, 1, mipLevels);
 
             //std::cout<<"data size : "<<m_DataSize<<std::endl;
 
             update(imageLoader.getPixelsPtr(), imageLoader.getSize().x(), imageLoader.getSize().y(), 0, 0);
-                      
-            generateMipmaps();            
+                        
             //std::cout<<"texture : "<<this<<std::endl;
 
 
@@ -611,11 +636,13 @@ namespace odfaeg {
                 throw std::runtime_error("Echec de l'envoi d'un command buffer!");
             }
             vkDeviceWaitIdle(device.getDevice());
+            generateMipmaps(); 
             auto& vec = GPUContext::instance().getSharedTextures(texType);
             id = vec.size()+1;
             //vec.push_back(std::move(*this));
             vec.emplace_back(device);
-            vec.back().copyFrom(*this);
+            vec.back().copyFrom(*this);           
+                       
         }
 	    void Texture::update(CommandPool& commandPool, Buffer& staggingBuffer, unsigned int texWidth, unsigned int texHeight, unsigned int x, unsigned int y, size_t srcStart, size_t mipLevel) {
             //std::cout<<"data size : "<<imageSize<<"image size : "<<texWidth<<","<<texHeight<<std::endl;
@@ -801,6 +828,9 @@ namespace odfaeg {
                 destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
             }
             else {
+                /*if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                    std::cout<<"ok!"<<std::endl;*/
+                //std::cout<<"mip : "<<mipLevel<<std::endl;
                 throw std::invalid_argument("unsupported layout transition!");
             }
             vkCmdPipelineBarrier(

@@ -95,7 +95,7 @@ namespace odfaeg {
                     texture->setFormat(VK_FORMAT_R8G8B8A8_SRGB);
                 }
                 texture->setSize(imageLoader.getSize());
-                texture->create(imageLoader.getSize().x(), imageLoader.getSize().y(),1, imageLoader.getMipLevels());
+                texture->create(imageLoader.getSize().x(), imageLoader.getSize().y(),VK_SAMPLE_COUNT_1_BIT,1, imageLoader.getMipLevels());
                 for (unsigned int j = 0; j < imageLoader.getMipLevels(); j++) {
                     totalImagesSize = (totalImagesSize + 15) & ~15;
                     totalImagesSize += imageLoader.getDataSize(j);

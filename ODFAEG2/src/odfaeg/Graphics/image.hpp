@@ -52,6 +52,7 @@ namespace odfaeg {
             VkImageLayout getLayout();
             VkFormat getFormat();
             VkImageAspectFlags getImageAspectFlags();
+            VkSampleCountFlagBits getMsaaSamples();
             ~Image();
         private:
 		    bool isSwapchainImage;
@@ -63,6 +64,7 @@ namespace odfaeg {
             VmaAllocation memory;
             VkFormat m_format;
             VkImageAspectFlags aspectFlags;
+            VkSampleCountFlagBits msaaSamples;
 		}; 
 	}
 }

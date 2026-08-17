@@ -52,7 +52,9 @@ namespace odfaeg {
             std::uint32_t getSwapchainMinImagesCount();
             std::uint32_t getSwapchainImagesCount();
             RenderPass& getRenderPass(unsigned int renderPassId);
-            VkSurfaceKHR getSurface();            
+            std::uint32_t getRenderPassesCount();
+            VkSurfaceKHR getSurface();
+            bool isDynamicRendering();            
         protected:
 
             ////////////////////////////////////////////////////////////
@@ -104,7 +106,8 @@ namespace odfaeg {
             std::uint32_t currentFrame=0;
             bool framebufferResized = false;
             std::uint32_t viewMask; 
-            Image colorImage;           
+            Image colorImage;   
+            bool dynamicRendering;        
         };			
 	}
 }

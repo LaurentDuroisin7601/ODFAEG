@@ -1,4 +1,3 @@
-#include "gpuContext.hpp"
 namespace odfaeg {
 	namespace graphic {	
 		namespace {
@@ -121,6 +120,10 @@ namespace odfaeg {
 			VkPipelineMultisampleStateCreateInfo multisampling{};
 			multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 			multisampling.sampleShadingEnable = VK_FALSE;
+			if (GPUContext::instance().getDevice().getMsaaSamples() == VK_SAMPLE_COUNT_1_BIT) {
+				std::cout<<"erreur!"<<std::endl;
+				system("PAUSE");
+			}
 			multisampling.rasterizationSamples = GPUContext::instance().getDevice().getMsaaSamples();
 			bool hasColorAttachment = renderingCreateInfo.colorAttachmentCount > 0;
 			/*if (hasColorAttachment)
@@ -269,6 +272,10 @@ namespace odfaeg {
 			VkPipelineMultisampleStateCreateInfo multisampling{};
 			multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 			multisampling.sampleShadingEnable = VK_FALSE;
+			/*if (GPUContext::instance().getDevice().getMsaaSamples() == VK_SAMPLE_COUNT_1_BIT) {
+				std::cout<<"r pass"<<std::endl;
+				system("PAUSE");
+			}*/
 			multisampling.rasterizationSamples = GPUContext::instance().getDevice().getMsaaSamples();
 
 			VkPipelineColorBlendAttachmentState colorBlendAttachment{};

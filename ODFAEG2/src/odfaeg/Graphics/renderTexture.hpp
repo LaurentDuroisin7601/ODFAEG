@@ -50,6 +50,8 @@ namespace odfaeg {
             std::deque<Texture>& getTextures();
             std::vector<Semaphore>& getSemaphores();
             std::uint32_t getSwapchainImagesCount();
+            std::uint32_t getRenderPassesCount();
+            bool isDynamicRendering();
             ~RenderTexture();
         private:
 

@@ -21,7 +21,7 @@ namespace odfaeg {
             }
             VkAttachmentDescription depthAttachment{};
             depthAttachment.format = depthStencilFormat;
-            depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            depthAttachment.samples = GPUContext::instance().getDevice().getMsaaSamples();
             depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
             depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
@@ -73,7 +73,7 @@ namespace odfaeg {
             }
             VkAttachmentDescription depthAttachment{};
             depthAttachment.format = depthStencilFormat;
-            depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            depthAttachment.samples = GPUContext::instance().getDevice().getMsaaSamples();
             depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
             depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
@@ -126,13 +126,13 @@ namespace odfaeg {
                 throw std::runtime_error("failed to create render pass!");
             }
         }
-        void RenderPass::create(VkFormat format, VkImageLayout layout, VkSampleCountFlagBits msaaSamples, bool resolvePass) {
+        void RenderPass::create(VkFormat format, VkImageLayout layout, bool resolvePass) {
             if (renderPass != VK_NULL_HANDLE) {
                 cleanup();
             }
             VkAttachmentDescription colorAttachment{};
             colorAttachment.format = format;
-            colorAttachment.samples = msaaSamples;
+            colorAttachment.samples = GPUContext::instance().getDevice().getMsaaSamples();
             colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
             colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -203,7 +203,7 @@ namespace odfaeg {
             }
             VkAttachmentDescription colorAttachment{};
             colorAttachment.format = format;
-            colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            colorAttachment.samples = GPUContext::instance().getDevice().getMsaaSamples();
             colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
             colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -251,13 +251,13 @@ namespace odfaeg {
                 throw std::runtime_error("failed to create render pass!");
             }
         }
-        void RenderPass::create(VkFormat format, VkFormat depthStencilFormat, VkImageLayout layout, VkSampleCountFlagBits msaaSamples, bool resolvePass) {
+        void RenderPass::create(VkFormat format, VkFormat depthStencilFormat, VkImageLayout layout, bool resolvePass) {
             if (renderPass != VK_NULL_HANDLE) {
                 cleanup();
             }
             VkAttachmentDescription colorAttachment{};
             colorAttachment.format = format;
-            colorAttachment.samples = msaaSamples;
+            colorAttachment.samples = GPUContext::instance().getDevice().getMsaaSamples();
             colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
             colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -281,7 +281,7 @@ namespace odfaeg {
 
             VkAttachmentDescription depthAttachment{};
             depthAttachment.format = depthStencilFormat;
-            depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            depthAttachment.samples = GPUContext::instance().getDevice().getMsaaSamples();
             depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
             depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
@@ -355,7 +355,7 @@ namespace odfaeg {
             }
             VkAttachmentDescription colorAttachment{};
             colorAttachment.format = format;
-            colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            colorAttachment.samples = GPUContext::instance().getDevice().getMsaaSamples();
             colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
             colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -365,7 +365,7 @@ namespace odfaeg {
 
             VkAttachmentDescription depthAttachment{};
             depthAttachment.format = depthStencilFormat;
-            depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            depthAttachment.samples = GPUContext::instance().getDevice().getMsaaSamples();
             depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
             depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;

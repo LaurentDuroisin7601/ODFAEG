@@ -218,6 +218,8 @@ namespace odfaeg {
 			void endRecordCommandBuffer();
 			virtual uint32_t getCurrentFrame() = 0;
 			virtual RenderPass& getRenderPass(unsigned int id=0) = 0;
+			virtual uint32_t getRenderPassesCount() = 0;
+			virtual bool isDynamicRendering() = 0;
 			virtual std::vector<FrameBuffer>& getFrameBuffers(unsigned int id=0) = 0;
 			virtual VkFormat& getImageFormat() = 0;
 			virtual VkExtent2D getExtents() = 0;

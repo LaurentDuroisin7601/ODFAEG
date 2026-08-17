@@ -19,7 +19,7 @@ namespace odfaeg {
                     //std::cout<<"create texture"<<std::endl;
                     m_textures.emplace_back(device, NB_SWAPCHAIN_IMAGES);
                     //std::cout<<"images : "<<m_textures.back().getImages().size()<<std::endl;
-                    m_textures.back().create(width, height, depth, 1, false, true);
+                    m_textures.back().create(width, height, device.getMsaaSamples(), depth, false, true);
                 }
             }
             //std::cout<<"images : "<<m_textures.back().getImages().size()<<std::endl;
@@ -28,7 +28,7 @@ namespace odfaeg {
             this->depthOnly = depthOnly;           
             //if (useDepthTest() || useDepthTest() || depthOnly) {
                       
-                getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, depth, layered);
+                getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, device.getMsaaSamples(), depth, layered);
             //}
             /*createRenderPass();
             createFramebuffers();*/
@@ -50,7 +50,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < 1; i++) {
                     m_textures.emplace_back(device, NB_SWAPCHAIN_IMAGES);
                     m_textures.back().setTexType(10);
-                    m_textures.back().createCubeMap(size, cubemapCount, mipLevels, layered, true);
+                    m_textures.back().createCubeMap(size, cubemapCount, layered, true);
                 }  
             }
             m_size[0] = size;
@@ -447,6 +447,12 @@ namespace odfaeg {
         }
         std::uint32_t RenderTexture::getSwapchainImagesCount() {
             return NB_SWAPCHAIN_IMAGES;
+        }
+        std::uint32_t RenderTexture::getRenderPassesCount() {
+            return renderPasses.size();
+        }
+        bool RenderTexture::isDynamicRendering() {
+            return true;
         }
 	}
 }

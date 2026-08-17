@@ -12,9 +12,9 @@ namespace odfaeg {
 			RenderPass& operator=(RenderPass&& other) noexcept;
 			void create(VkFormat format);
             void create(VkFormat format, std::uint32_t viewMask);
-			void create(VkFormat format, VkImageLayout layout, VkSampleCountFlagBits msaaSamples, bool resolvePass=false);
+			void create(VkFormat format, VkImageLayout layout, bool resolvePass=false);
 			void create(VkFormat format, VkImageLayout layout, std::uint32_t viewMask);
-			void create(VkFormat format, VkFormat depthStencilFormat, VkImageLayout layout,VkSampleCountFlagBits mesaaSamples, bool resolvePass = false);
+			void create(VkFormat format, VkFormat depthStencilFormat, VkImageLayout layout, bool resolvePass = false);
 			void create(VkFormat format, VkFormat depthStencilFormat, std::uint32_t viewMask);
 			void cleanup();
 			VkRenderPass getHandle();
