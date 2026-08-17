@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "factory.hpp"
+#include "serialization.hpp"
 #include "utilities.hpp"
 /**
   *\namespace odfaeg
@@ -17,7 +17,37 @@
   */
 namespace odfaeg {
     namespace core {
-        
+        /**
+        * \file archive.h
+        * \class has_typedef_key
+        * \brief this struct is used by SFINAE to check if a class has the special typedef KEYTYPE which is used to serialize polymorphic objects.
+        * \author Duroisin.L
+        * \version 1.0
+        * \date 1/02/2014
+        */
+        template <typename T>
+        struct has_typedef_key {
+            // Types "yes" and "no" are guaranteed to have different sizes,
+            // specifically sizeof(yes) == 1 and sizeof(no) == 2.
+            typedef char yes[1]; /**> yes type.*/
+            typedef char no[2]; /** no type.*/
+            /**\fn first case the compiler choose this function if the class C has the typedef KEYTYPE
+            *  \param C::KEYTYPE* the key type.
+            *  \return the yes type.
+            */
+            template <typename C>
+            static yes& test(typename C::KEYTYPE*);
+            /**\fn second case the compiler choose this function if the class C has no typedef KEYTYPE
+            *  \param ... (we can use a var arg here we don't matter of the params.)
+            *  \return the no type.
+            */
+            template <typename>
+            static no& test(...);
+
+            // If the "sizeof" of the result of calling test<T>(0) would be equal to sizeof(yes),
+            // the first overload worked and T has a nested type named foobar.
+            static const bool value = sizeof(test<T>(0)) == sizeof(yes); /**> if the class has a typedef named KEYTYPE.*/
+        };
 		template <typename T> 
 		concept IsFundamental = std::is_fundamental<T>::value;
 		template <typename T>
@@ -25,7 +55,7 @@ namespace odfaeg {
 		template <typename T>
 		concept IsString = std::is_same<T, std::string>::value || std::is_same<T, const std::string>::value;
         template <typename T>
-		concept IsDynamicObject = requires { typename T::KEYTYPE; };
+		concept IsDynamicObject = has_typedef_key<T>::value;
         /** \file archive.h
         * \class OTextArchive
         * \brief Write everything into the output archive's buffer in text format.
@@ -152,7 +182,7 @@ namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <class O>
-            void operator() (O& object) requires IsDynamicObject<O>;
+            void operator() (O& object) requires (!IsFundamental<O> && IsDynamicObject<O>);
             /**
             *\fn void operator(O& data, D...)
             *\brief register a dynamic object onto the archive.
@@ -160,7 +190,7 @@ namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <class O>
-            void operator() (std::reference_wrapper<O> ref) requires IsDynamicObject<O>;
+            void operator() (std::reference_wrapper<O> ref) requires (!IsFundamental<O> && IsDynamicObject<O>);
             /**
             *\fn void operator(O& data, D...)
             *\brief register pointer to a dynamic object onto the archive.
@@ -168,7 +198,7 @@ namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <class O>
-            void operator() (O* object) requires IsDynamicObject<O>;
+            void operator() (O* object) requires (!IsFundamental<O> && IsDynamicObject<O>);
             //std::vectors.
             /**
             *\fn void operator(std::vector<O>&, D...)
@@ -389,7 +419,7 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <class O>
-            void operator() (O& object) requires IsDynamicObject<O>;
+            void operator() (O& object) requires (!IsFundamental<O> && IsDynamicObject<O>);
             /**
             * \fn void operator(O* data, D...)
             * \brief read a dynamic object from the archive.
@@ -397,7 +427,7 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <class O>
-            void operator() (std::reference_wrapper<O> ref) requires IsDynamicObject<O>;
+            void operator() (std::reference_wrapper<O> ref) requires (!IsFundamental<O> && IsDynamicObject<O>);
             /**
             * \fn void operator(O* data, D...)
             * \brief read a pointer to a non abstract dynamic object from the archive.
@@ -405,7 +435,7 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <class O>
-            void operator() (O*& object) requires (IsDynamicObject<O> && !IsAbstractClass<O>);
+            void operator() (O*& object) requires (!IsFundamental<O> && IsDynamicObject<O> && !IsAbstractClass<O>);
             /**
             * \fn void operator(O* data, D...)
             * \brief read a pointer to an abstract dynamic object from the archive.

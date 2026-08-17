@@ -1,4 +1,4 @@
-#include <boost/preprocessor.hpp>
+#include <iostream>
 /**\fn
 * \brief This is an helper function like macro which register a derived type in the dynamic factory.
 * \param ID : an ID which is associate to a derived type.
@@ -32,7 +32,8 @@
 {                                                                       \
     odfaeg::core::FastDelegate<void> delegate##ID##funcName##SID(      \
         [](BASE* baseObj, ARCHIVE& ar) {                                \
-            auto* d = static_cast<DERIVED*>(baseObj);                   \
+            auto* d = static_cast<DERIVED*>(baseObj);   \
+            std::cout<<"d ser"<<std::endl;                \
             d->vt##funcName(ar);                                       \
         }, ph<0, BASE*>{}, ph<1, std::reference_wrapper<ARCHIVE>>{}                                                               \
     );                                                                  \

@@ -256,13 +256,13 @@ namespace odfaeg {
             std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
             if (it != adresses.end()) {
                 buffer << it->second << std::endl;
-                ////////std::cout<<"write ref to static object : "<<it->second<<std::endl;
+                //std::cout<<"write ref to static object : "<<it->second<<std::endl;
             }
             else {
                 std::pair<std::string, long long int> newAddress(oss.str(), nbSerialized);
                 adresses.insert(newAddress);
                 buffer << newAddress.second << std::endl;
-                ////////std::cout<<"write ref to static object : "<<newAddress.second<<std::endl;
+                std::cout<<"write ref to static object : "<<newAddress.second<<std::endl;
                 nbSerialized++;
                 object.vtserialize(*this);
             }
@@ -306,9 +306,9 @@ namespace odfaeg {
         *\param D... : used for SFINAE.
         */
         template <class O>
-        void OTextArchive::operator() (O& object) requires IsDynamicObject<O> {
+        void OTextArchive::operator() (O& object) requires (!IsFundamental<O> && IsDynamicObject<O>) {
             nbSerialized++;
-            ////////std::cout<<"write dynamic object"<<std::endl;
+            std::cout<<"write dynamic object"<<std::endl;
             //If the type at compile time is the same than the type at runtime.
             if (typeid(decltype(object)).name() == typeid(object).name()) {
                 //call the virtual template serialize function from the class.
@@ -327,7 +327,7 @@ namespace odfaeg {
         *\param D... : used for SFINAE.
         */
         template <class O>
-        void OTextArchive::operator() (std::reference_wrapper<O> ref) requires IsDynamicObject<O> {
+        void OTextArchive::operator() (std::reference_wrapper<O> ref) requires (!IsFundamental<O> && IsDynamicObject<O>) {
             O& object = ref.get();
             std::ostringstream oss;
             oss << typeid(object).name() << "*" << reinterpret_cast<unsigned long long int>(&object);
@@ -340,12 +340,13 @@ namespace odfaeg {
                 std::pair<std::string, long long int> newAddress(oss.str(), nbSerialized);
                 adresses.insert(newAddress);
                 buffer << newAddress.second << std::endl;
-                ////////std::cout<<"write ref to dynamic object : "<<newAddress.second<<std::endl;
+                
                 nbSerialized++;
                 if (typeid(decltype(object)).name() == typeid(object).name()) {
                     object.vtserialize(*this);
                 }
                 else {
+                    //std::cout<<"write ref to dynamic object : "<<newAddress.second<<std::endl;
                     object.key.register_object(&object);
                     object.key.serialize_object("serialize", "OTextArchive", *this);
                 }
@@ -358,7 +359,7 @@ namespace odfaeg {
         *\param D... : used for SFINAE.
         */
         template <class O>
-        void OTextArchive::operator() (O* object) requires IsDynamicObject<O> {
+        void OTextArchive::operator() (O* object) requires (!IsFundamental<O> && IsDynamicObject<O>) {
             if (object != nullptr) {
                 std::ostringstream oss;
                 oss << typeid(*object).name() << "*" << reinterpret_cast<unsigned long long int>(object);
@@ -846,7 +847,7 @@ namespace odfaeg {
         * \param D... used for SFINAE.
         */
         template <class O>
-        void ITextArchive::operator() (O& object) requires IsDynamicObject<O> {
+        void ITextArchive::operator() (O& object) requires (!IsFundamental<O> && IsDynamicObject<O>) {
             /*long long int id;
             buffer>>id;
             char space;
@@ -880,7 +881,7 @@ namespace odfaeg {
         * \param D... used for SFINAE.
         */
         template <class O>
-        void ITextArchive::operator() (std::reference_wrapper<O> ref) requires IsDynamicObject<O> {
+        void ITextArchive::operator() (std::reference_wrapper<O> ref) requires (!IsFundamental<O> && IsDynamicObject<O>) {
             O& object = ref.get();
             long long int id;
             buffer >> id;
@@ -915,7 +916,7 @@ namespace odfaeg {
         * \param D... used for SFINAE.
         */
         template <class O>
-        void ITextArchive::operator() (O*& object) requires (IsDynamicObject<O> && !IsAbstractClass<O>) {
+        void ITextArchive::operator() (O*& object) requires (!IsFundamental<O> && IsDynamicObject<O> && !IsAbstractClass<O>) {
             long long int id;
             buffer >> id;
             char space;

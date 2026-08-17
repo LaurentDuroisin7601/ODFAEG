@@ -22,6 +22,9 @@ namespace odfaeg {
         * \version 1.0
         * \date 1/02/2014
         */
+        class DynamicObject {
+
+        };
         template <class B>
         class Serializer : public BaseFactory<B> {
         public:
@@ -67,7 +70,7 @@ namespace odfaeg {
         * \date 1/02/2014
         */
         template <typename Base>
-        struct Registered {
+        struct Registered : DynamicObject {
             /**
             * \file serialization.h
             * \class Key
@@ -80,6 +83,7 @@ namespace odfaeg {
             * \version 1.0
             * \date 1/02/2014
             */
+            public:
             struct Key :
                 public Serializer<Base> {
             public:
@@ -106,8 +110,7 @@ namespace odfaeg {
                 */
                 template <typename Archive>
                 void serialize_object(std::string funcName, std::string funcArgs, Archive& ar);
-            };
-        public:
+            };        
             typedef Key KEYTYPE; /**> typedef to the type of the key, used for SFINAE.*/
             /** \fn Base* allocate (std::string typeName)
             *   \brief allocate an object of the given dynamic type, return a pointer to the static type.
