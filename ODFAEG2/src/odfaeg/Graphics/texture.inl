@@ -84,7 +84,7 @@ namespace odfaeg {
                     mipsInfos.push_back(mipInfo);
                 }
                 //std::cout<<"mip : "<<mipLevels-1<<std::endl;
-                transitionImageLayout(images[i], commandPool.getHandle(i), images[i].getLayout(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels-1, 0, 1, layerCount);
+                //transitionImageLayout(images[i], commandPool.getHandle(i), images[i].getLayout(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels-1, 0, 1, layerCount);
                 commandPool.endRecordCommandBuffer(i);
             }
             VkSubmitInfo submitInfo{};
