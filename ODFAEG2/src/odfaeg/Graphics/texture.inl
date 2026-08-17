@@ -437,6 +437,7 @@ namespace odfaeg {
             }  
             imageAspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             if (FBOAttachment) {
+                
                 m_format = VK_FORMAT_R8G8B8A8_UNORM;
             }
             createCommandBuffers();
@@ -453,7 +454,8 @@ namespace odfaeg {
                     }
                 }
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
-                if (FBOAttachment) {                   
+                if (FBOAttachment) { 
+                    //std::cout<<"transition!"<<std::endl;                  
                     commandPool.beginRecordCommandBuffer(i);
                     transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 0, 0, mipLevels, layerCount);
                     commandPool.endRecordCommandBuffer(i);
@@ -945,13 +947,13 @@ namespace odfaeg {
                     copyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                     copyRegion.srcSubresource.mipLevel = mip;
                     copyRegion.srcSubresource.baseArrayLayer = 0;
-                    copyRegion.srcSubresource.layerCount = 1;
+                    copyRegion.srcSubresource.layerCount = texture.layerCount;
                     copyRegion.srcOffset = {0, 0, 0};
 
                     copyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                     copyRegion.dstSubresource.mipLevel = mip;
                     copyRegion.dstSubresource.baseArrayLayer = 0;
-                    copyRegion.dstSubresource.layerCount = 1;
+                    copyRegion.dstSubresource.layerCount = layerCount;
                     copyRegion.dstOffset = {0, 0, 0};
 
                     copyRegion.extent.width  = (mipLevels == 1) ? texture.m_size.x() : texture.mipsInfos[mip].width;
@@ -968,6 +970,8 @@ namespace odfaeg {
                     } */
                     
                     transitionImageLayout(texture.images[i], commandPool.getHandle(i), currentLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, mip, 0, 1, layerCount);
+                    /*if (layerCount == 6)
+                        system("PAUSE");*/
                     transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mip, 0, 1, layerCount);
                     vkCmdCopyImage(
                         commandPool.getHandle(i),
@@ -1094,7 +1098,7 @@ namespace odfaeg {
                             &copyRegion
                         );
                         transitionImageLayout(texture.images[imageIndex], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,currentLayout,mip,0,1,texture.layerCount);
-                        transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,currentLayout,mip,0,1,layerCount);
+                        transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,mip,0,1,layerCount);
                         
                     }
                 }
