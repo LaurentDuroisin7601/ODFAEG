@@ -210,6 +210,7 @@ namespace odfaeg {
         bool Texture::create(uint32_t texWidth, uint32_t texHeight, VkSampleCountFlagBits msaaSamples, uint32_t texDepth, unsigned int mipLevels, bool layered, bool FBOAttachment) {
             //std::cout<<"fbo attachment ?"<<FBOAttachment<<std::endl;
             this->msaaSamples = msaaSamples; 
+            this->layered = layered;
             isCubeMap = false;
             m_size = math::Vector2u(texWidth, texHeight);
             this->mipLevels = mipLevels;
@@ -328,7 +329,8 @@ namespace odfaeg {
             return true;
         }
         bool Texture::createDepthTexture(uint32_t texWidth, uint32_t texHeight, VkSampleCountFlagBits msaaSamples, uint32_t texDepth, bool layered) {
-            this->msaaSamples = msaaSamples; 
+            this->msaaSamples = msaaSamples;
+            this->layered = layered; 
             VkImageType imageType;
             VkImageViewType viewType;
             layerCount = (layered) ? texDepth : 1;
@@ -420,15 +422,13 @@ namespace odfaeg {
             //id = getUniqueId();
             isCubeMap = true;
             msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+            this->layered = layered;
             m_size = math::Vector2u(size, size);
             layerCount = 6 * cubemapCount;
             this->mipLevels = mipLevels;
             VkImageType imageType = VK_IMAGE_TYPE_2D; 
-            VkImageViewType viewType;  
-            if (layered) { 
-                std::cout<<"layred ? "<<layered<<std::endl;
-                system("PAUSE");
-            }         
+            VkImageViewType viewType; 
+                 
             if (!layered) {
                 viewType = VK_IMAGE_VIEW_TYPE_CUBE;
             }
@@ -489,6 +489,7 @@ namespace odfaeg {
         bool Texture::createDepthCubeMap(uint32_t size, bool layered) {
             msaaSamples = VK_SAMPLE_COUNT_1_BIT;
             m_size = math::Vector2u(size, size);
+            this->layered = layered;
             VkFormat depthFormat = findDepthFormat();
             VkImageType imageType = VK_IMAGE_TYPE_2D; 
             m_format = depthFormat;
@@ -800,6 +801,12 @@ namespace odfaeg {
 
                 sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
                 destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+            } else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                barrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+
+                sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+                destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
             }
             else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
                 barrier.srcAccessMask = 0;
@@ -970,7 +977,7 @@ namespace odfaeg {
                         &copyRegion
                     );
                     transitionImageLayout(texture.images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,currentLayout, mip, 0, 1, layerCount);
-                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, currentLayout, mip, 0, 1, layerCount); 
+                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mip, 0, 1, layerCount); 
                     /*if (images[i].getLayout() ==  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
                         system("PAUSE");
                     }*/

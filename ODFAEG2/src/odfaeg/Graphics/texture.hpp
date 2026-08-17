@@ -91,6 +91,7 @@ namespace odfaeg {
             bool isCubeMapTex();  
             void resolve(Texture& resolved, VkCommandBuffer cmd, unsigned int imgIndex = 0);        
         private : 
+            bool layered;
             VkSampleCountFlagBits msaaSamples;
             std::deque<ImageView> views;           
             unsigned int texType, mipLevels;
