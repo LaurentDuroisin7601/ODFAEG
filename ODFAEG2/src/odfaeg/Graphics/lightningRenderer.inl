@@ -106,7 +106,8 @@ namespace odfaeg {
         }
         void LightningRenderer::setEnvironmentMap(Texture& envMap) {
             environmentMap = envMap;
-            updateDescriptorSet(0);
+            environmentMap.generateMipmaps();
+            updateDescriptorSet();
             irradianceTexture.clear();
             vkCmdBindPipeline(irradianceTexture.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(entity::Triangles, irradianceShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getHandle());
             vkCmdBindDescriptorSets(irradianceTexture.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(entity::Triangles, irradianceShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
@@ -122,7 +123,6 @@ namespace odfaeg {
             unsigned int maxMipLevels = 5;
             for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
             {
-                updateDescriptorSet(mip+1);
                 sets.clear();
                 for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(linkedListShader).size(); i++) {
                             //std::cout<<"set : "<<linkedListSets[i][0].getHandle()<<std::endl;
@@ -368,11 +368,11 @@ namespace odfaeg {
            irradianceDescriptorSet.updateDescriptorSet();
            DescriptorSet& prefilterDescriptorSet = GPUContext::instance(prefilterShader, 2, 1)[0];
            prefilterDescriptorSet.updateBufferInfos(0, viewsUBO, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-           if (imageViewIndex > 0) {
+           /*if (imageViewIndex > 0) {
                prefilterDescriptorSet.updateImageInfos(1, environmentMap.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, imageViewIndex-1);
-           } else {
+           /*} else {*/
                prefilterDescriptorSet.updateImageInfos(1, environmentMap.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-           }
+           /*}*/
            prefilterDescriptorSet.updateDescriptorSet(); 
            DescriptorSet& pbrDescriptorSet =  GPUContext::instance(pbrShader, 2, 1)[0];
            bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;

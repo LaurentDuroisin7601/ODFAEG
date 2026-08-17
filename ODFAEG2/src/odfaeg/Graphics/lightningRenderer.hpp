@@ -42,7 +42,7 @@ namespace odfaeg {
                LightningRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
                void createCommandPools();
                void createDescriptorsAndPipelines();
-               void updateDescriptorSets(unsigned int mipLayerIndex=0);
+               void updateDescriptorSets();
                void clear();
                void drawNextFrame();
                void draw();

@@ -43,7 +43,7 @@ layout (std430, set = 0, binding = 2) buffer LightMatricesSSBO {
     Light currentLight;   
 } lightData[MAX_FRAMES_IN_FLIGHT];
 layout(set = 0, binding = 3) uniform samplerCube irradianceMap;
-layout(set = 0, binding = 4) uniform samplerCube prefilterMap;
+layout(set = 0, binding = 4) uniform samplerCubeArray prefilterMap;
 layout(set = 0, binding = 5) uniform sampler2D brdfLUT;
 layout(set = 0, binding = 6) uniform sampler2D diffuseTextures[MAX_TEXTURES];
 layout(set = 1, binding = 0) uniform sampler2D specularTextures[MAX_TEXTURES];
@@ -202,7 +202,7 @@ void main() {
     
     // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
     const float MAX_REFLECTION_LOD = 4.0;
-    vec3 prefilteredColor = textureLod(prefilterMap, R,  roughness * MAX_REFLECTION_LOD).rgb;    
+    vec3 prefilteredColor = texture(prefilterMap, vec4(R,  roughness * MAX_REFLECTION_LOD)).rgb;    
     vec2 brdf  = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
     specular = prefilteredColor * (F * brdf.x + brdf.y);
 
