@@ -370,17 +370,17 @@ namespace odfaeg {
         void LightningRenderer::updateDescriptorSet() {
            DescriptorSet& irradianceDescriptorSet = GPUContext::instance(irradianceShader, 2, 1)[0];
            irradianceDescriptorSet.updateBufferInfos(0, viewsUBO, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-           irradianceDescriptorSet.updateImageInfos(1, environmentMap.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+           irradianceDescriptorSet.updateImageInfos(1, environmentMap, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
            irradianceDescriptorSet.updateDescriptorSet();
            DescriptorSet& prefilterDescriptorSet = GPUContext::instance(prefilterShader, 2, 1)[0];
            prefilterDescriptorSet.updateBufferInfos(0, viewsUBO, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-           prefilterDescriptorSet.updateImageInfos(1, environmentMap.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+           prefilterDescriptorSet.updateImageInfos(1, environmentMap, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
            prefilterDescriptorSet.updateDescriptorSet(); 
            DescriptorSet& pbrDescriptorSet =  GPUContext::instance(pbrShader, 2, 1)[0];
            bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
            pbrDescriptorSet.updateBufferInfos(0,  GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
            pbrDescriptorSet.updateBufferInfos(1,  GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-           pbrDescriptorSet.updateImageInfos(2, lightsBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC);
+           pbrDescriptorSet.updateBufferInfos(2, lightsBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC);
            pbrDescriptorSet.updateImageInfos(3, irradianceTexture.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
            pbrDescriptorSet.updateImageInfos(4, prefilterTexture.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
            pbrDescriptorSet.updateImageInfos(5, brdfLUTTexture.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
