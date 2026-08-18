@@ -367,7 +367,7 @@ namespace odfaeg {
             pbrCommandPool.create(queueFamilyIndices.graphicsFamily.value());
             pbrCommandPool.createCommandBuffers(false, MAX_FRAMES_IN_FLIGHT);
         }
-        void LightningRenderer::updateDescriptorSet(unsigned int imageViewIndex) {
+        void LightningRenderer::updateDescriptorSet() {
            DescriptorSet& irradianceDescriptorSet = GPUContext::instance(irradianceShader, 2, 1)[0];
            irradianceDescriptorSet.updateBufferInfos(0, viewsUBO, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
            irradianceDescriptorSet.updateImageInfos(1, environmentMap.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
