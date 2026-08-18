@@ -355,7 +355,7 @@ namespace odfaeg {
         void* FastDelegate<R>::bind_impl(std::index_sequence<Ints...>, Args&&... args)
         {
             //Alias to the placeholders's holder's type, we expand the parameter's packs, so the first argument is the type of placeholder 0, and so on.
-            using params_t = LateParameters<ph<Ints, ToStore_t<Args>>...>;
+            using params_t = LateParameters<ph<Ints, std::remove_reference_t<Args>>...>;
             void* params = new params_t{ std::forward<Args>(args)... };
             return params;
         }
