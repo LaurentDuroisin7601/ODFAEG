@@ -14,9 +14,9 @@ namespace odfaeg {
         */
         template <typename T>
         void OTextArchive::operator() (T& data) requires IsFundamental<T> {
-            std::cout<<"write fundamental : "<<data<<std::endl;
+            //std::cout<<"write fundamental : "<<data<<std::endl;
             buffer << data << std::endl;
-            std::cout<<"fundamental written "<<data<<std::endl;
+            //std::cout<<"fundamental written "<<data<<std::endl;
             nbSerialized++;
         }
         //Fundamentals.
@@ -288,7 +288,7 @@ namespace odfaeg {
                     std::pair<std::string, long long int> newAddress(oss.str(), nbSerialized);
                     adresses.insert(newAddress);
                     buffer << newAddress.second << std::endl;
-                    std::cout<<"write pointer static object : "<<newAddress.second<<std::endl;
+                    //std::cout<<"write pointer static object : "<<newAddress.second<<std::endl;
                     nbSerialized++;
                     object->vtserialize(*this);
                 }
@@ -306,7 +306,7 @@ namespace odfaeg {
         *\param O& the object to register.
         *\param D... : used for SFINAE.
         */
-        /*template <class O>
+        template <class O>
         void OTextArchive::operator() (O& object) requires (!IsFundamental<O> && IsDynamicObject<O>) {
             nbSerialized++;
             std::cout<<"write dynamic object"<<std::endl;
@@ -320,7 +320,7 @@ namespace odfaeg {
                 object.key.register_object(&object);
                 object.key.serialize_object("serialize", "OTextArchive", *this);
             }
-        }*/
+        }
         /**
         *\fn void operator(O& data, D...)
         *\brief register a dynamic object onto the archive.

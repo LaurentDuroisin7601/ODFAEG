@@ -251,6 +251,7 @@ else()
 			${SRCROOT}/iRenderer.hpp
 			${SRCROOT}/renderGraph.hpp
 			${SRCROOT}/componentManager.hpp
+			${SRCROOT}/lightningRenderer.hpp
 )
 	target_sources(odfaeg-graphics PRIVATE
 		${SRCROOT}/debug.inl
@@ -292,6 +293,7 @@ else()
 		${SRCROOT}/renderWindow.inl
 		${SRCROOT}/mesh.inl
 		${SRCROOT}/renderGraph.inl
+		${SRCROOT}/lightningRenderer.inl
 	)
 	target_sources(odfaeg-graphics PRIVATE
 		${SRCROOT}/debug.cpp
@@ -333,6 +335,7 @@ else()
 		${SRCROOT}/renderWindow.cpp
 		${SRCROOT}/mesh.cpp
 		${SRCROOT}/renderGraph.cpp
+		${SRCROOT}/lightningRenderer.cpp
 	)
 	target_include_directories(odfaeg-graphics PRIVATE
 		${PROJECT_SOURCE_DIR}/external/meshoptimizer/src

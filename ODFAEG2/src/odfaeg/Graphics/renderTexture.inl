@@ -63,7 +63,7 @@ namespace odfaeg {
             //createFramebuffers();
             ////std::cout<<"frame buffer created"<<std::endl;
             createSyncObjects();
-            getDepthStencilTexture().createDepthCubeMap(size, layered);
+            getDepthStencilTexture().createDepthCubeMap(size, cubemapCount, mipLevels, layered);
             
             currentFrame = imageIndex = 0;
             RenderTarget::initialize();

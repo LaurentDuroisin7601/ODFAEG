@@ -17,6 +17,7 @@
 #include "imageLoader.hpp"
 #include "instance.hpp"
 #include "iRenderer.hpp"
+#include "lightningRenderer.hpp"
 #include "linkedListRenderer.hpp"
 #include "material.hpp"
 #include "mesh.hpp"

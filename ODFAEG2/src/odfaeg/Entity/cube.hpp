@@ -8,7 +8,7 @@ namespace odfaeg {
     namespace entity {
         class Cube : public GameObject {
         public :
-            Cube (math::Vec3f position, float w, float h, float d, Color color);
+            Cube (math::Vec3f position, float w, float h, float d, Color color=Color::White);
             bool operator== (GameObject& other) {
                 if (!GameObject::operator==(other))
                     return false;

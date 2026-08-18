@@ -16,6 +16,7 @@
 #include "renderStates.hpp"
 #include "descriptor.hpp"
 #include "pipeline.hpp"
+#include "renderTexture.hpp"
 #include "../Math/matrix.hpp"
 #include "../Math/vec.hpp"
 #include "buffer.hpp"
@@ -25,9 +26,11 @@
 #include "commandPool.hpp"
 #include "../Core/threadPool.hpp"
 #include "../Window/listener.hpp"
+#include "../Entity/cube.hpp"
+#include "renderStates.hpp"
 namespace odfaeg {
     namespace graphic {
-       class LightingRenderingComponent {
+       class LightningRenderer {
            public :
                struct PbrVertPC{
                    math::Matrix4f projMatrix;
@@ -47,10 +50,13 @@ namespace odfaeg {
                void drawNextFrame();
                void draw();
                unsigned int getLayer();
-               bool isRendererReady();  
+               bool isRendererReady(); 
+               void setEnvironmentMap(Texture& environmentMap);
+               void addLight(Light light); 
            private : 
-            std::queue<Buffer> viewsUBO;
-            std::queue<LightBuffer> lightbuffer;      
+               void updateBuffers();
+            std::deque<Buffer> viewsUBO;
+            std::deque<Buffer> lightsBuffer;      
             Buffer lightStaggingBuffer;    
             std::string typesToRenderExpression;            
             Shader pbrShader, irradianceShader, prefilterShader, brdfShader, backgroundShader;
@@ -67,11 +73,11 @@ namespace odfaeg {
             std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> commandBuffersReady={};
             std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> registerFramesJob={};
             std::atomic<bool> stop= {};
-            std::atomic<bool> rendererReady;  
-            bool needToUpdateDescriptorSets;
+            std::atomic<bool> rendererReady;              
+            bool needToUpdateDescriptorSets, needToUpdateLightsBuffer;
             CommandPool commandPool, pbrCommandPool;
             VertexBuffer ndcCubeVB;
-            VertexBuffer fullscreenQuad;
+            VertexBuffer fullScreenQuad;
             PbrVertPC pbrVertPC;
             std::vector<Light> lights;
             window::Listener listener;

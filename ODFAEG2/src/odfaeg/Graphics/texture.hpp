@@ -51,7 +51,8 @@ namespace odfaeg {
             bool createDepthTexture(uint32_t texWidth, uint32_t texHeight, VkSampleCountFlagBits msaaSamples, uint32_t depth=1, bool layered=false);
             bool createCubeMap(uint32_t size, unsigned int cubemapCount = 1, unsigned int mipLevels = 1, bool layered=false, bool FBOAttachment=false);
             std::deque<ImageView>& getImageViews();
-            bool createDepthCubeMap(uint32_t size, bool layered=false);
+            std::deque<ImageView>& getDepthViews();
+            bool createDepthCubeMap(uint32_t size, unsigned int cubemapCount = 1, unsigned int mipLevels = 1, bool layered=false);
             bool loadCubeMapFromFile(std::vector<std::string> filenames, const entity::IntRect& area=entity::IntRect());
             bool loadCubeMapFromImage(const ImageLoader& image, uint32_t face, const entity::IntRect& area=entity::IntRect());
 			bool loadFromMemory(const void* data, std::size_t size, const entity::IntRect& area=entity::IntRect());
@@ -93,7 +94,8 @@ namespace odfaeg {
         private : 
             bool layered;
             VkSampleCountFlagBits msaaSamples;
-            std::deque<ImageView> views;           
+            std::deque<ImageView> views;  
+            std::deque<ImageView> depthViews;         
             unsigned int texType, mipLevels;
             Device& device;
             std::deque<Image> images;

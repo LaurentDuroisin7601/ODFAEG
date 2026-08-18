@@ -488,7 +488,7 @@ namespace odfaeg {
             isFBOTexture = FBOAttachment;
             return true;
         }
-        bool Texture::createDepthCubeMap(uint32_t size, bool layered) {
+        bool Texture::createDepthCubeMap(uint32_t size, unsigned int cubemapCount, unsigned int mipLevels, bool layered) {
             msaaSamples = VK_SAMPLE_COUNT_1_BIT;
             m_size = math::Vector2u(size, size);
             this->layered = layered;
@@ -511,6 +511,12 @@ namespace odfaeg {
                     VMA_MEMORY_USAGE_GPU_ONLY, 1, 6, msaaSamples, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_DEPTH_BIT, 0, 0, 1, 6);
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
+                for (unsigned int c = 0; c < cubemapCount; c++) {
+                    for (unsigned int m = 0; m < mipLevels; m++) {
+                        depthViews.emplace_back(device);
+                        depthViews.back().create(images[i].getHandle(), viewType, m_format, VK_IMAGE_ASPECT_COLOR_BIT, m, 6*c, 1, 6);                            
+                    }
+                }
                 commandPool.beginRecordCommandBuffer(i);
                 transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 0, 0, 1, 6);                
                 commandPool.endRecordCommandBuffer(i);
@@ -1250,6 +1256,9 @@ namespace odfaeg {
         }
         std::deque<ImageView>& Texture::getImageViews() {
             return views;
+        }
+        std::deque<ImageView>& Texture::getDepthViews() {
+            return depthViews;
         }
 	}
 }
