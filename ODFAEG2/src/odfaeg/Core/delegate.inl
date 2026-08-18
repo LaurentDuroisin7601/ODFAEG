@@ -7,6 +7,7 @@ namespace odfaeg {
         }
         template<class T, typename LateParamsT, bool isCopiable>
         T& Ref<T, LateParamsT, isCopiable>::bind(void* params) {
+            std::cout<<"get : "<<&ref.get()<<std::endl;
             return ref.get();
         }
         template<class T, typename LateParamsT, bool isCopiable>
@@ -93,7 +94,9 @@ namespace odfaeg {
             //We cast from void* to the placeholders's holder type.
             LateParamsT& paramsT = *static_cast<LateParamsT*>(params);
             //We cast from base type to the derived type to extract the placeholder's value.
+            //RefVal<T, LateParamsT, true> rv(static_cast<Parameter<I, T>&>(paramsT).value);
             RefVal<T, LateParamsT, true> rv(static_cast<Parameter<I, T>&>(paramsT).value);
+            //std::cout<<"get : "<<&rv.get()<<std::endl;
             return rv.get();
         }
         template<size_t I, class T, class LateParamsT>

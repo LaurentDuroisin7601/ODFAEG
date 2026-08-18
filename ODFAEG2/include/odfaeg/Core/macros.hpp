@@ -31,11 +31,11 @@
 #define REGISTER_FUNC(ID, funcName, SID, BASE, DERIVED, ARCHIVE)        \
 {                                                                       \
     odfaeg::core::FastDelegate<void> delegate##ID##funcName##SID(      \
-        [](BASE* baseObj, ARCHIVE& ar) {                                \
+        [](BASE* baseObj, ARCHIVE* ar) {                                \
             auto* d = static_cast<DERIVED*>(baseObj);   \
-            std::cout<<"d ser"<<std::endl;                \
-            d->vt##funcName(ar);                                       \
-        }, ph<0, BASE*>{}, ph<1, std::reference_wrapper<ARCHIVE>>{}                                                               \
+            std::cout<<"ar : "<<&ar<<" d : "<<d<<std::endl;                \
+            d->vt##funcName(*ar);                                       \
+        }, ph<0, BASE*>{}, ph<1, ARCHIVE*>{}                                                               \
     );                                                                  \
                                                                         \
     odfaeg::core::BaseFactory<BASE>::register_function(                \

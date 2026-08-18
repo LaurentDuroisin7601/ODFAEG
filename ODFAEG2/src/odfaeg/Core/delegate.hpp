@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include "metaprog.hpp"
+#include <iostream>
 namespace odfaeg {
     namespace core {
         template<std::size_t i, class T>

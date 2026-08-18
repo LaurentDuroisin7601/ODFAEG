@@ -33,7 +33,7 @@ namespace odfaeg {
         template <typename B>
         template <typename Archive>
         void Serializer<B>::serialize(std::string funcName, std::string funcArgs, Archive& ar) {
-            BaseFactory<B>::callFunction(typeid(*baseObject).name(), funcName, funcArgs, baseObject, std::ref(ar));
+            BaseFactory<B>::callFunction(typeid(*baseObject).name(), funcName, funcArgs, baseObject, &ar);
         }
         /**\fn B* sallocate (std::string typeName)
         *  \brief std::string typeName : allocate an object of the given dynamic type name.
