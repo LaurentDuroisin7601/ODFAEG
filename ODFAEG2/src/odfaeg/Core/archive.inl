@@ -14,8 +14,9 @@ namespace odfaeg {
         */
         template <typename T>
         void OTextArchive::operator() (T& data) requires IsFundamental<T> {
-            ////////std::cout<<"write fundamental : "<<data<<std::endl;
+            std::cout<<"write fundamental : "<<data<<std::endl;
             buffer << data << std::endl;
+            std::cout<<"fundamental written "<<data<<std::endl;
             nbSerialized++;
         }
         //Fundamentals.
@@ -35,7 +36,7 @@ namespace odfaeg {
             std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
             if (it != adresses.end()) {
                 //If the address of the data is already registered, we just write the address of the data to the buffer.
-                ////////std::cout<<"write ref to fundamental type : "<<it->second<<std::endl;
+                //std::cout<<"write ref to fundamental type : "<<it->second<<std::endl;
                 buffer << it->second << std::endl;
             }
             else {
@@ -45,7 +46,7 @@ namespace odfaeg {
                 buffer << newAddress.second << std::endl;
                 ////////std::cout<<"write ref to fundamental type : "<<it->second<<std::endl;
                 buffer << data << std::endl;
-                ////////std::cout<<"write ref to fundamental type : "<<data<<std::endl;
+                //std::cout<<"write ref to fundamental type : "<<data<<std::endl;
                 nbSerialized++;
             }
         }
