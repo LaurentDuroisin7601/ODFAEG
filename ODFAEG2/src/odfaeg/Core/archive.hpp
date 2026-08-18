@@ -181,8 +181,8 @@ namespace odfaeg {
             *\param O& the object to register.
             *\param D... : used for SFINAE.
             */
-            template <class O>
-            void operator() (O& object) requires (!IsFundamental<O> && IsDynamicObject<O>);
+            /*template <class O>
+            void operator() (O& object) requires (!IsFundamental<O> && IsDynamicObject<O>);*/
             /**
             *\fn void operator(O& data, D...)
             *\brief register a dynamic object onto the archive.

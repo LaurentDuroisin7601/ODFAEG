@@ -97,11 +97,7 @@ namespace odfaeg {
                 */
                 void register_object(Base* object);
                 Base* allocate_object(std::string typeName);
-                /**\fn std::string getTypeName ()
-                *  \brief get the dynamic type of the registered object.
-                *  \return std::string the dynamic type of the registered object.
-                */
-                std::string getTypeName();
+                
                 /** \fn void serialize_object (std::string funcName, std::string funcArgs, Archive & ar)
                 *   \brief serialize the registered object into the given archive.
                 *   \param std::string funName : the name of the function which'll serialize the datas.

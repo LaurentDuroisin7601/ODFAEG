@@ -237,7 +237,7 @@ namespace odfaeg {
         */
         template <class O>
         void OTextArchive::operator() (O& object) requires (!IsFundamental<O>) && (!IsDynamicObject<O>) {
-            ////////std::cout<<"write static object : "<<std::endl;
+            std::cout<<"write static object : "<<std::endl;
             nbSerialized++;
             object.vtserialize(*this);
         }
@@ -287,7 +287,7 @@ namespace odfaeg {
                     std::pair<std::string, long long int> newAddress(oss.str(), nbSerialized);
                     adresses.insert(newAddress);
                     buffer << newAddress.second << std::endl;
-                    ////////std::cout<<"write pointer static object : "<<newAddress.second<<std::endl;
+                    std::cout<<"write pointer static object : "<<newAddress.second<<std::endl;
                     nbSerialized++;
                     object->vtserialize(*this);
                 }
@@ -305,7 +305,7 @@ namespace odfaeg {
         *\param O& the object to register.
         *\param D... : used for SFINAE.
         */
-        template <class O>
+        /*template <class O>
         void OTextArchive::operator() (O& object) requires (!IsFundamental<O> && IsDynamicObject<O>) {
             nbSerialized++;
             std::cout<<"write dynamic object"<<std::endl;
@@ -319,7 +319,7 @@ namespace odfaeg {
                 object.key.register_object(&object);
                 object.key.serialize_object("serialize", "OTextArchive", *this);
             }
-        }
+        }*/
         /**
         *\fn void operator(O& data, D...)
         *\brief register a dynamic object onto the archive.
@@ -343,10 +343,11 @@ namespace odfaeg {
                 
                 nbSerialized++;
                 if (typeid(decltype(object)).name() == typeid(object).name()) {
+                    std::cout<<"write ref to dynamic object : "<<newAddress.second<<std::endl;
                     object.vtserialize(*this);
                 }
                 else {
-                    //std::cout<<"write ref to dynamic object : "<<newAddress.second<<std::endl;
+                    std::cout<<"write ref to dynamic object : "<<newAddress.second<<std::endl;
                     object.key.register_object(&object);
                     object.key.serialize_object("serialize", "OTextArchive", *this);
                 }
@@ -382,7 +383,7 @@ namespace odfaeg {
                     }
                     else {
                         object->key.register_object(object);
-                        typeName = object->key.getTypeName();
+                        typeName = typeid(*object).name();
                         buffer << typeName << std::endl;
                         ////////std::cout<<"type name : "<<typeName<<std::endl;
                         nbSerialized++;
