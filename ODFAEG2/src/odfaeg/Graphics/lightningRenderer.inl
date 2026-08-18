@@ -96,8 +96,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 lightsBuffer.emplace_back(GPUContext::instance().getDevice());
                 lightsBuffer.back().create(sizeof(Light), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-            }
-            setEnvironmentMap(environmentMap);
+            }            
             stop.store(false);
             rendererReady.store(true);    
         }
