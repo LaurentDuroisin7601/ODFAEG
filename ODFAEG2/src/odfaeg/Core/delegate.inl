@@ -94,10 +94,9 @@ namespace odfaeg {
             //We cast from void* to the placeholders's holder type.
             LateParamsT& paramsT = *static_cast<LateParamsT*>(params);
             //We cast from base type to the derived type to extract the placeholder's value.
-            //RefVal<T, LateParamsT, true> rv(static_cast<Parameter<I, T>&>(paramsT).value);
-            RefVal<T, LateParamsT, true> rv(static_cast<Parameter<I, T>&>(paramsT).value);
+            //RefVal<T, LateParamsT, true> rv(static_cast<Parameter<I, T>&>(paramsT).value);           
             //std::cout<<"get : "<<&rv.get()<<std::endl;
-            return rv.get();
+            return static_cast<Parameter<I, T>&>(paramsT).value;
         }
         template<size_t I, class T, class LateParamsT>
         T& Placeholder<I, T, LateParamsT, true>::get()
