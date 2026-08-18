@@ -360,6 +360,7 @@ namespace odfaeg {
 
         }
         void LightningRenderer::createCommandPools() {
+            Device::QueueFamilyIndices queueFamilyIndices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice());
             commandPool.create(queueFamilyIndices.graphicsFamily.value());
             commandPool.createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT);
             commandPool.beginRecordCommandBuffer(0);
