@@ -42,8 +42,7 @@ namespace odfaeg {
             LinkedListRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
             void createCommandPools();
             void createDescriptorsAndPipelines();
-            void updateDescriptorSets();
-            void updateTextures();
+            void updateDescriptorSets();            
             void clear();
             void drawNextFrame();
             void draw();

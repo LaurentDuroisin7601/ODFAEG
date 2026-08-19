@@ -39,9 +39,9 @@ namespace odfaeg {
             views[0] = camera.getViewMatrix().getMatrix().transpose();
             camera.lookAt(-1, 0, 0, math::Vec3f(0, -1, 0));
             views[1] = camera.getViewMatrix().getMatrix().transpose();
-            camera.lookAt(0, 1, 0, math::Vec3f(0, -1, 0));
+            camera.lookAt(0, 1, 0, math::Vec3f(0, 0, 1));
             views[2] = camera.getViewMatrix().getMatrix().transpose();
-            camera.lookAt(0, -1, 0, math::Vec3f(0, -1, 0));
+            camera.lookAt(0, -1, 0, math::Vec3f(0, 0, -1));
             views[3] = camera.getViewMatrix().getMatrix().transpose();
             camera.lookAt(0, 0, -1, math::Vec3f(0, 0, 1));
             views[4] = camera.getViewMatrix().getMatrix().transpose();
