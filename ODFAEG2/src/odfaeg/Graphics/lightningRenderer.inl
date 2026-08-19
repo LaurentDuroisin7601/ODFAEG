@@ -426,7 +426,9 @@ namespace odfaeg {
                emissivePbrSet.updateDescriptorSet();
            } 
         }
-        void LightningRenderer::clear() {            
+        void LightningRenderer::clear() {        
+            parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
+            parentRenderer.applyCullingAndBatching();    
             registerFramesJob[parentRenderer.getCurrentFrame()].store(true);
             cv.notify_one();
         }
