@@ -366,64 +366,64 @@ namespace odfaeg {
             pbrCommandPool.create(queueFamilyIndices.graphicsFamily.value());
             pbrCommandPool.createCommandBuffers(false, MAX_FRAMES_IN_FLIGHT);
         }
-        void LightningRenderer::updateDescriptorSet() {
-           DescriptorSet& irradianceDescriptorSet = GPUContext::instance(irradianceShader, 2, 1)[0];
+        void LightningRenderer::updateDescriptorSets() {
+           DescriptorSet& irradianceDescriptorSet = GPUContext::instance().getDescriptorSets(irradianceShader, 2, 1)[0];
            irradianceDescriptorSet.updateBufferInfos(0, viewsUBO, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
            irradianceDescriptorSet.updateImageInfos(1, environmentMap, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
            irradianceDescriptorSet.updateDescriptorSet();
-           DescriptorSet& prefilterDescriptorSet = GPUContext::instance(prefilterShader, 2, 1)[0];
+           DescriptorSet& prefilterDescriptorSet = GPUContext::instance().getDescriptorSets(prefilterShader, 2, 1)[0];
            prefilterDescriptorSet.updateBufferInfos(0, viewsUBO, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
            prefilterDescriptorSet.updateImageInfos(1, environmentMap, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
            prefilterDescriptorSet.updateDescriptorSet(); 
-           DescriptorSet& pbrDescriptorSet =  GPUContext::instance(pbrShader, 2, 1)[0];
+           DescriptorSet& pbrDescriptorSet =  GPUContext::instance().getDescriptorSets(pbrShader, 2, 1)[0];
            bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
            pbrDescriptorSet.updateBufferInfos(0,  GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
            pbrDescriptorSet.updateBufferInfos(1,  GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
            pbrDescriptorSet.updateBufferInfos(2, lightsBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC);
            pbrDescriptorSet.updateImageInfos(3, irradianceTexture.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
            pbrDescriptorSet.updateImageInfos(4, prefilterTexture.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-           pbrDescriptorSet.updateImageInfos(5, brdfLUTTexture.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-           if (hasDiffuseTextures) {
+           pbrDescriptorSet.updateImageInfos(5, brdfLUT.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+           if (hasDiffuseTexture) {
 					//std::cout<<"textures : "<<Texture::getAllTextures().size()<<std::endl;
 				pbrDescriptorSet.updateImageInfos(6, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
            }
            pbrDescriptorSet.updateDescriptorSet();
            bool hasSpecularTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR).size() != 0;
            if (hasSpecularTextures) {
-               DescriptorSet& specularDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 1)[0];
-               specularDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-               specularDefaultRenderingSet.updateDescriptorSet();
+               DescriptorSet& specularPbrSet = GPUContext::instance().getDescriptorSets(pbrShader, 1, 1, 1)[0];
+               specularPbrSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+               specularPbrSet.updateDescriptorSet();
            }
            bool hasNormalTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::NORMAL).size() != 0;
            if (hasNormalTextures) {
-               DescriptorSet& normalDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader,  1, 1, 2)[0];
-               normalDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::NORMAL), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-               normalDefaultRenderingSet.updateDescriptorSet();
+               DescriptorSet& normalPbrSet = GPUContext::instance().getDescriptorSets(pbrShader,  1, 1, 2)[0];
+               normalPbrSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::NORMAL), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+               normalPbrSet.updateDescriptorSet();
            }
 
            bool hasMetalnessTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::METALNESS).size() != 0;
            if (hasMetalnessTextures) {
-               DescriptorSet& metalnessDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader,  1, 1, 3)[0];
-               metalnessDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::METALNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-               metalnessDefaultRenderingSet.updateDescriptorSet();
+               DescriptorSet& metalnessPbrSet = GPUContext::instance().getDescriptorSets(pbrShader,  1, 1, 3)[0];
+               metalnessPbrSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::METALNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+               metalnessPbrSet.updateDescriptorSet();
            }
            bool hasRoughnessTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::ROUGHNESS).size() != 0;
            if (hasRoughnessTextures) {
-               DescriptorSet& roughnessDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader,  1, 1, 4)[0];
-               roughnessDefaultRenderingSet .updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::ROUGHNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-               roughnessDefaultRenderingSet .updateDescriptorSet();
+               DescriptorSet& roughnessPbrSet = GPUContext::instance().getDescriptorSets(pbrShader,  1, 1, 4)[0];
+               roughnessPbrSet .updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::ROUGHNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+               roughnessPbrSet .updateDescriptorSet();
            }
            bool hasAOTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::AO).size() != 0;
            if (hasAOTextures) {
-               DescriptorSet& aoDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 5)[0];
-               aoDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::AO), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-               aoDefaultRenderingSet.updateDescriptorSet();
+               DescriptorSet& aoPbrSet = GPUContext::instance().getDescriptorSets(pbrShader, 1, 1, 5)[0];
+               aoPbrSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::AO), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+               aoPbrSet.updateDescriptorSet();
            }
            bool hasEmissiveTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::EMISSIVE).size() != 0;
            if (hasEmissiveTextures) {
-               DescriptorSet& emissiveDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 6)[0];
-               emissiveDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::EMISSIVE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-               emissiveDefaultRenderingSet.updateDescriptorSet();
+               DescriptorSet& emissivePbrSet = GPUContext::instance().getDescriptorSets(pbrShader, 1, 1, 6)[0];
+               emissivePbrSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::EMISSIVE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+               emissivePbrSet.updateDescriptorSet();
            } 
         }
         void LightningRenderer::clear() {            
@@ -452,12 +452,12 @@ namespace odfaeg {
                     updateDescriptorSets();
                     needToUpdateDescriptorSets = false;
                 }                         
-                jobFences[renderFrame].reset(1);                
+                jobFence[renderFrame].reset(1);                
                 threadPool.enqueue([this, renderFrame] {
                     VkCommandBufferInheritanceRenderingInfo inheritanceRenderingInfo{};
                     inheritanceRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
                     inheritanceRenderingInfo.colorAttachmentCount = 1;
-                    inheritanceRenderingInfo.pColorAttachmentFormats = &parentRenderer.getFormat(); // tableau de VkFormat
+                    inheritanceRenderingInfo.pColorAttachmentFormats = &parentRenderer.getImageFormat(); // tableau de VkFormat
                     inheritanceRenderingInfo.depthAttachmentFormat = parentRenderer.getDepthStencilTexture().getFormat();    // VK_FORMAT_D32_SFLOAT, etc.                    
                     inheritanceRenderingInfo.rasterizationSamples = GPUContext::instance().getDevice().getMsaaSamples();
                     
@@ -476,17 +476,21 @@ namespace odfaeg {
                     std::vector<VkDescriptorSet> sets;
                     for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(pbrShader).size(); i++) {
                         sets.push_back(GPUContext::instance().getDescriptorSets(pbrShader)[i][0].getHandle());
-                    }                    
+                    } 
+                    VkPhysicalDeviceProperties props;
+                    vkGetPhysicalDeviceProperties(GPUContext::instance().getDevice().getPhysicalDevice(), &props); 
+                    uint32_t minAlign = props.limits.minStorageBufferOffsetAlignment;  
+                    uint32_t lightAlignSize = (sizeof(Light) + minAlign - 1) & ~(minAlign - 1);                      
                     for (unsigned int l = 0; l < lights.size(); l++) {
                         std::vector<uint32_t> offsetLights;
                         for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
-                           offsetLights.push_back(l * lightSpaceMatrixAlignSize);
+                           offsetLights.push_back(l * lightAlignSize);
                         } 
                         for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
                             vkCmdBindPipeline(pbrCommandPool.getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), pbrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
                             //std::cout<<"registered bind pipeline"<<std::endl;
-                            pbrVertPC.projMatrix = parentRenderer.getProjMatrix().getMatrix().transpose();
-                            pbrVertPC.viewMatrix = parentRenderer.getViewMatrix().getMatrix().transpose();
+                            pbrVertPC.projMatrix = parentRenderer.getCamera().getProjMatrix().getMatrix().transpose();
+                            pbrVertPC.viewMatrix = parentRenderer.getCamera().getViewMatrix().getMatrix().transpose();
                             pbrVertPC.primitiveType = i;
                             pbrVertPC.currentFrame = parentRenderer.getCurrentFrame();
                             vkCmdPushConstants(pbrCommandPool.getHandle(renderFrame), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), pbrShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PbrVertPC), &pbrVertPC);
@@ -498,9 +502,9 @@ namespace odfaeg {
                             parentRenderer.draw(pbrCommandPool, static_cast<entity::PrimitiveType>(i), states);
                         } 
                     }
-                    jobFences[renderFrame].jobDone();
-                };
-                jobFences[renderFrame].wait();
+                    jobFence[renderFrame].jobDone();
+                });
+                jobFence[renderFrame].wait();
             }
             commandBuffersReady[renderFrame].store(true);
             cv.notify_all();
