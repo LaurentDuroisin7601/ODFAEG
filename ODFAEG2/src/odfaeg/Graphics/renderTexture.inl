@@ -19,7 +19,7 @@ namespace odfaeg {
                     //std::cout<<"create texture"<<std::endl;
                     m_textures.emplace_back(device, NB_SWAPCHAIN_IMAGES);
                     //std::cout<<"images : "<<m_textures.back().getImages().size()<<std::endl;
-                    m_textures.back().create(width, height, device.getMsaaSamples(), depth, layered, true);
+                    m_textures.back().create(width, height, device.getMsaaSamples(), depth, 1, layered, true);
                 }
             }
             //std::cout<<"images : "<<m_textures.back().getImages().size()<<std::endl;
