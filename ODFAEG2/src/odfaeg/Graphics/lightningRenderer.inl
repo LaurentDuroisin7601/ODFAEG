@@ -27,7 +27,7 @@ namespace odfaeg {
             irradianceTexture.createCubeMap(32);
             irradianceTexture.setCamera(camera);
             camera.setViewport(physic::BoundingBox(0, 0, 0.1f, 128, 128, 10.f));
-            prefilterTexture.createCubeMap(128, 5);           
+            prefilterTexture.createCubeMap(128, 5, 1, false, true);           
             prefilterTexture.setCamera(camera);
             camera.setViewport(physic::BoundingBox(0, 0, 0.1f, 512, 512, 10.f));
             brdfLUT.create(512, 512);
