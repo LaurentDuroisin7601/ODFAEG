@@ -14,6 +14,7 @@ namespace odfaeg {
             layerCount = 1;
             texType = 0;
             msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+            m_format = VK_FORMAT_R8G8B8A8_UNORM;
         }  
         void Texture::resolve(Texture& resolved, VkCommandBuffer cmd, unsigned int i) {
             VkImageResolve resolvedRegion;
@@ -437,8 +438,11 @@ namespace odfaeg {
             }  
             imageAspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             if (FBOAttachment) {
-                
+               // system("PAUSE");
                 m_format = VK_FORMAT_R8G8B8A8_UNORM;
+            }
+            if (m_format == VK_FORMAT_UNDEFINED) {
+                system("PAUSE");
             }
             createCommandBuffers();
             for (unsigned int i = 0; i < nbBuffers; i++) {
