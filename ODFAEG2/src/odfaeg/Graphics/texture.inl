@@ -129,7 +129,7 @@ namespace odfaeg {
             isCubeMap = texture.isCubeMap;           
             if (isCubeMap) {
                 //std::cout<<"create cube map : "<<"nb buffers : "<<texture.nbBuffers<<"images size : "<<texture.images.size()<<std::endl;
-                createCubeMap(texture.m_size.x(), layerCount / 6, texture.mipLevels);
+                createCubeMap(texture.m_size.x(), layerCount / 6, texture.mipLevels, (layerCount / 6 > 1));
             } else {
                 create(texture.m_size.x(), texture.m_size.y(), VK_SAMPLE_COUNT_1_BIT, 1, texture.mipLevels);
             }
@@ -441,19 +441,17 @@ namespace odfaeg {
                // system("PAUSE");
                 m_format = VK_FORMAT_R8G8B8A8_UNORM;
             }
-            if (m_format == VK_FORMAT_UNDEFINED) {
-                system("PAUSE");
-            }
             createCommandBuffers();
             for (unsigned int i = 0; i < nbBuffers; i++) {
-                images[i].create(size, size, mipLevels, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+                //std::cout<<"layer count = "<<layerCount<<std::endl;
+                images[i].create(size, size, 1, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
                     VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, layerCount, msaaSamples, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, mipLevels, layerCount);
-                if (FBOAttachment) {
+                if (FBOAttachment && cubemapCount > 1) {
                     for (unsigned int c = 0; c < cubemapCount; c++) {
                         for (unsigned int m = 0; m < mipLevels; m++) {
                             views.emplace_back(device);
-                            views.back().create(images[i].getHandle(), viewType, m_format, VK_IMAGE_ASPECT_COLOR_BIT, m, 6*c, 1, 6);                            
+                            views.back().create(images[i].getHandle(), viewType, m_format, imageAspectMask, m, 6*c, 1, 6);                            
                         }
                     }
                 }
@@ -501,7 +499,7 @@ namespace odfaeg {
             m_format = depthFormat;
             imageAspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
             VkImageViewType viewType; 
-            layerCount = 6;           
+            layerCount = 6*cubemapCount;           
             if (!layered) {
                 viewType = VK_IMAGE_VIEW_TYPE_CUBE;
             }
@@ -515,10 +513,12 @@ namespace odfaeg {
                     VMA_MEMORY_USAGE_GPU_ONLY, 1, 6, msaaSamples, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_DEPTH_BIT, 0, 0, 1, 6);
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
-                for (unsigned int c = 0; c < cubemapCount; c++) {
-                    for (unsigned int m = 0; m < mipLevels; m++) {
-                        depthViews.emplace_back(device);
-                        depthViews.back().create(images[i].getHandle(), viewType, m_format, VK_IMAGE_ASPECT_COLOR_BIT, m, 6*c, 1, 6);                            
+                if (cubemapCount > 1) {
+                    for (unsigned int c = 0; c < cubemapCount; c++) {
+                        for (unsigned int m = 0; m < mipLevels; m++) {
+                            depthViews.emplace_back(device);
+                            depthViews.back().create(images[i].getHandle(), viewType, m_format,  imageAspectMask, m, 6*c, 1, 6);                            
+                        }
                     }
                 }
                 commandPool.beginRecordCommandBuffer(i);

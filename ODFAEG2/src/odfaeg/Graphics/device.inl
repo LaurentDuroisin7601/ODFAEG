@@ -301,6 +301,7 @@ namespace odfaeg {
                 // Features 1.0
                 VkPhysicalDeviceFeatures deviceFeatures{};
                 deviceFeatures.drawIndirectFirstInstance = VK_TRUE;
+                deviceFeatures.imageCubeArray = VK_TRUE;
 
 
                 if (features2.features.samplerAnisotropy)

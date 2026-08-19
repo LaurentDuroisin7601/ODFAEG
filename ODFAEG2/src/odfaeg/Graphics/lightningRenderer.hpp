@@ -55,32 +55,33 @@ namespace odfaeg {
                void addLight(Light light); 
            private : 
                void updateBuffers();
-            std::deque<Buffer> viewsUBO;
-            std::deque<Buffer> lightsBuffer;      
-            Buffer lightStaggingBuffer;    
-            std::string typesToRenderExpression;            
-            Shader pbrShader, irradianceShader, prefilterShader, brdfShader, backgroundShader;
-            Texture environmentMap;           
-            RenderTexture irradianceTexture, prefilterTexture, brdfLUT;
-            
-            core::ThreadPool threadPool;
-            std::array<core::JobFence, MAX_FRAMES_IN_FLIGHT> jobFence={};
-            int layer;
-            unsigned int maxNodes;
-            RenderTarget& parentRenderer;
-            std::mutex mtx;
-            std::condition_variable cv;
-            std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> commandBuffersReady={};
-            std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> registerFramesJob={};
-            std::atomic<bool> stop= {};
-            std::atomic<bool> rendererReady;              
-            bool needToUpdateDescriptorSets, needToUpdateLightsBuffer;
-            CommandPool commandPool, pbrCommandPool;
-            VertexBuffer ndcCubeVB;
-            VertexBuffer fullScreenQuad;
-            PbrVertPC pbrVertPC;
-            std::vector<Light> lights;
-            window::Listener listener;
+               void updateTextures();
+                std::deque<Buffer> viewsUBO;
+                std::deque<Buffer> lightsBuffer;      
+                Buffer lightStaggingBuffer;    
+                std::string typesToRenderExpression;            
+                Shader pbrShader, irradianceShader, prefilterShader, brdfShader, backgroundShader;
+                Texture environmentMap;           
+                RenderTexture irradianceTexture, prefilterTexture, brdfLUT;
+                
+                core::ThreadPool threadPool;
+                std::array<core::JobFence, MAX_FRAMES_IN_FLIGHT> jobFence={};
+                int layer;
+                unsigned int maxNodes;
+                RenderTarget& parentRenderer;
+                std::mutex mtx;
+                std::condition_variable cv;
+                std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> commandBuffersReady={};
+                std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> registerFramesJob={};
+                std::atomic<bool> stop= {};
+                std::atomic<bool> rendererReady;              
+                bool needToUpdateDescriptorSets, needToUpdateLightsBuffer, needToUpdateTextures;
+                CommandPool commandPool, pbrCommandPool;
+                VertexBuffer ndcCubeVB;
+                VertexBuffer fullScreenQuad;
+                PbrVertPC pbrVertPC;
+                std::vector<Light> lights;
+                window::Listener listener;
        }; 
     }
 }

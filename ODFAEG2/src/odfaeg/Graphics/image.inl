@@ -56,6 +56,7 @@ namespace odfaeg {
             vmaCreateImage(device.getAllocator(), &info, &alloc, &image, &memory, nullptr);
             m_format = format;
             msaaSamples = samples;
+            //std::cout<<"array layers : "<<arrayLayers<<std::endl;
             /*if (format == VK_FORMAT_R32_UINT)
                 std::cout<<"format : "<<m_format<<std::endl;*/
             //std::cout<<"size : "<<width<<","<<height<<"mip levels : "<<mipLevels<<",image : "<<image<<std::endl;

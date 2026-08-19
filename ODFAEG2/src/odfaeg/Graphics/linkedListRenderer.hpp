@@ -43,6 +43,7 @@ namespace odfaeg {
             void createCommandPools();
             void createDescriptorsAndPipelines();
             void updateDescriptorSets();
+            void updateTextures();
             void clear();
             void drawNextFrame();
             void draw();

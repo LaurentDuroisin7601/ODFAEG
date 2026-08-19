@@ -87,6 +87,7 @@ namespace odfaeg {
             fullScreenQuad.update();
             createDescriptorsAndPipelines();
             createCommandPools();
+            needToUpdateTextures = true;
             window::Command rendererReadyCmd(core::FastDelegate<bool>(&LightningRenderer::isRendererReady, this), core::FastDelegate<void>(&LightningRenderer::drawNextFrame, this));
             listener.connect("RendererReady",rendererReadyCmd); 
             if (useThread) {
@@ -106,6 +107,9 @@ namespace odfaeg {
         }
         void LightningRenderer::setEnvironmentMap(Texture& environmentMap) {
             this->environmentMap.copyFrom(environmentMap);
+            needToUpdateTextures = true;
+        }
+        void LightningRenderer::updateTextures() {
             updateDescriptorSets();
             std::vector<VkDescriptorSet> sets;
             for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(irradianceShader).size(); i++) {
@@ -444,6 +448,10 @@ namespace odfaeg {
             registerFramesJob[renderFrame].store(false);
             
             if (!stop.load()) {
+                if (needToUpdateTextures) {
+                    updateTextures();
+                    needToUpdateTextures = false;
+                }
                 if (needToUpdateLightsBuffer) {
                     updateBuffers();
                     needToUpdateLightsBuffer = false;
