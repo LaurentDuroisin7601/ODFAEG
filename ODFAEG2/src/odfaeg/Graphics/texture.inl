@@ -510,7 +510,7 @@ namespace odfaeg {
             createCommandBuffers();
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 images[i].create(size, size, 1, imageType, m_format, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT| VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                    VMA_MEMORY_USAGE_GPU_ONLY, 1, 6, msaaSamples, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
+                    VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, layerCount, msaaSamples, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_DEPTH_BIT, 0, 0, 1, 6);
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
                 if (cubemapCount > 1) {
