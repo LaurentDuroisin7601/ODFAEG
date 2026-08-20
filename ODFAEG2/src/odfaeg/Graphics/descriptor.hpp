@@ -38,7 +38,7 @@ namespace odfaeg {
 			DescriptorSetLayout(DescriptorSetLayout&& other) noexcept;
 			DescriptorSetLayout& operator= (DescriptorSetLayout&& other) noexcept;
 			void setNbBindings(unsigned int nbBindings, bool bindless);
- 			void updateLayout(unsigned int binding, VkDescriptorType descriptorType, unsigned int descriptorCount, VkShaderStageFlags, VkDescriptorBindingFlags bindlessFlags=0);
+ 			void updateLayout(unsigned int binding, VkDescriptorType descriptorType, unsigned int descriptorCount, VkShaderStageFlags shaderStageFlags, VkDescriptorBindingFlags bindlessFlags=0);
 			void update();
 			VkDescriptorSetLayout getHandle();
 			void cleanup();

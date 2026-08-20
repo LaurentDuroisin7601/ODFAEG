@@ -16,6 +16,14 @@ namespace odfaeg {
         	return computePipelines[shader.getId()];
 			//std::cout<<"compute : "<<computePipelines[shader.getId()].getHandle()<<","<<descriptorSetLayouts[shader.getId()][0].getHandle()<<std::endl;
 		}
+		Pipeline& GPUContext::getRTPipeline(Shader& shader) {
+			if (rtPipelines.size() <= shader.getId()) {
+				for (unsigned int i = rtPipelines.size(); i < shader.getId() + 1; i++) {
+					rtPipelines.emplace_back(device);
+				}
+			}
+        	return rtPipelines[shader.getId()];
+		}
     	std::deque<std::deque<Pipeline>>& GPUContext::getGraphicsPipeline(Shader& shader) {
         	//std::cout<<"shader id : "<<shader.getId()<<std::endl;
         	if (graphicsPipeline.size() <=  shader.getId()) {

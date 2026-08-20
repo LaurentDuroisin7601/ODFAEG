@@ -25,6 +25,7 @@ namespace odfaeg {
             std::deque<std::deque<Pipeline>>& getGraphicsPipeline(Shader& shader);
             Pipeline& getGraphicsPipeline(entity::PrimitiveType primType, Shader& shader, BlendMode blendMode, unsigned int depthStencilInfoId);
             Pipeline& getComputePipeline(Shader& shader);
+            Pipeline& getRtPipeline(Shader& shader);
             DescriptorPool& getDescriptorPool(Shader& shader, unsigned int nbShaderBindings, unsigned int setBinding=0);
             DescriptorSetLayout& getDescriptorSetLayout(Shader& shader, unsigned int nbShaderBindings, bool bindless=false, unsigned int setBinding=0);
             std::deque<DescriptorSetLayout>& getDescriptorSetLayout(Shader& shader);
@@ -51,6 +52,7 @@ namespace odfaeg {
             std::deque<std::deque<std::deque<DescriptorSet>>> descriptorSets;
             std::deque<std::deque<std::deque<Pipeline>>> graphicsPipeline;
             std::deque<Pipeline> computePipelines;
+            std::deque<Pipeline> rtPipelines;
             std::deque<std::deque<Fence>> sharedFences;
             std::deque<std::deque<Semaphore>> sharedSemaphores;
         };

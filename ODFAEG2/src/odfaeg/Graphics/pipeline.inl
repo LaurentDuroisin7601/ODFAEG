@@ -510,7 +510,7 @@ namespace odfaeg {
 				VkPipelineShaderStageCreateInfo shaderStageInfo{};
 				shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 				shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-				shaderStageInfo.module = shader..getRaygenShaderModule();
+				shaderStageInfo.module = shader.getRaygenShaderModule();
 				shaderStageInfo.pName = "main";
 				shaderStages.push_back(shaderStageInfo);
 				VRayTracingShaderGroupCreateInfoKHR shaderGroup{};
@@ -526,7 +526,7 @@ namespace odfaeg {
 				VkPipelineShaderStageCreateInfo shaderStageInfo{};
 				shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 				shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-				shaderStageInfo.module = shader..getRaymissShaderModule();
+				shaderStageInfo.module = shader.getRaymissShaderModule();
 				shaderStageInfo.pName = "main";
 				shaderStages.push_back(shaderStageInfo);
 				VRayTracingShaderGroupCreateInfoKHR shaderGroup{};
@@ -542,7 +542,7 @@ namespace odfaeg {
 				VkPipelineShaderStageCreateInfo shaderStageInfo{};
 				shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 				shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-				shaderStageInfo.module = shader..getRayhitShaderModule();
+				shaderStageInfo.module = shader.getRayhitShaderModule();
 				shaderStageInfo.pName = "main";
 				shaderStages.push_back(shaderStageInfo);
 				VRayTracingShaderGroupCreateInfoKHR shaderGroup{};
