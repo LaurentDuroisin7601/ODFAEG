@@ -421,7 +421,25 @@ namespace odfaeg {
             raymissShaderBT.update(shaderHandleStorage.data() + handleSizeAligned, handleSize);
             rayhitShaderBT.update(shaderHandleStorage.data() + handleSizeAligned*2, handleSize);
         }
+        void RTRenderer::clear () {
+            std::vector<VkCommandBuffer> commandBuffers = window.getCommandBuffers();
+            VkClearColorValue clearColor = {0.f, 0.f, 0.f, 0.f};
+            VkImageSubresourceRange subresRange = {};
+            subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            subresRange.levelCount = 1;
+            subresRange.layerCount = 1;
+            for (unsigned int i = 0; i < commandBuffers.size(); i++) {
+                vkCmdClearColorImage(commandBuffers[i], storageImage.image, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+                VkMemoryBarrier memoryBarrier;
+                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                memoryBarrier.pNext = VK_NULL_HANDLE;
+                memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+            }
+        }
         void RTRenderer::drawNextFrame() {
+        }
         void RTRenderer::draw() {
             if (needToUpdateBLAS) {
                 updateBLAS();
@@ -479,7 +497,7 @@ namespace odfaeg {
                 barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                 barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-                barrier.image = parentRenderer.getRenderingTexture()[parentRenderer.getImageIndex()];
+                barrier.image = parentRenderer.getRenderingImage()[parentRenderer.getImageIndex()];
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 barrier.subresourceRange.levelCount = 1;
                 barrier.subresourceRange.layerCount = 1;
@@ -504,7 +522,7 @@ namespace odfaeg {
 			copyRegion.srcOffset = { 0, 0, 0 };
 			copyRegion.dstSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
 			copyRegion.dstOffset = { 0, 0, 0 };
-			copyRegion.extent = { parentRenderer.getRenderingTexture().getSize().x(), parentRenderer.getRenderingTexture().getSize().y(), 1 };
+			copyRegion.extent = { parentRenderer.getRenderingImage()[parentRenderer.getImageIndex()].getSize().x(), parentRenderer.getRenderingImage()[parentRenderer.getImageIndex()].getSize().y(), 1 };
 			vkCmdCopyImage(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), storageImage.image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, window.getSwapchainImages()[window.getImageIndex()], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
 
 			{
@@ -513,7 +531,7 @@ namespace odfaeg {
                 barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                 barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
                 barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-                barrier.image = parentRenderer.getRenderingTexture()[parentRenderer.getImageIndex()];
+                barrier.image = parentRenderer.getRenderingImage()[parentRenderer.getImageIndex()];
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 barrier.subresourceRange.levelCount = 1;
                 barrier.subresourceRange.layerCount = 1;
