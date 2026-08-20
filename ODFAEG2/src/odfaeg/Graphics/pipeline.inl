@@ -578,37 +578,6 @@ namespace odfaeg {
             }
             raytracingShader.cleanupRaytracingShaderModules();		
 		}
-		 void RTPipeline::createShaderBindingTable() {
-            const uint32_t handleSize = rayTracingPipelineProperties.shaderGroupHandleSize;
-            const uint32_t handleSizeAligned = (rayTracingPipelineProperties.shaderGroupHandleSize + rayTracingPipelineProperties.shaderGroupHandleAlignment - 1) & ~(rayTracingPipelineProperties.shaderGroupHandleAlignment - 1);
-            const uint32_t groupCount = static_cast<uint32_t>(shaderGroups.size());
-            const uint32_t sbtSize = groupCount * handleSizeAligned;
-
-            std::vector<uint8_t> shaderHandleStorage(sbtSize);
-            if(vkGetRayTracingShaderGroupHandlesKHR(vkDevice.getDevice(), pipeline, 0, groupCount, sbtSize, shaderHandleStorage.data()) != VK_SUCCESS) {
-                throw std::runtime_error("failed to raytracing shader group handle!");
-            }
-
-            const VkBufferUsageFlags bufferUsageFlags = VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
-            const VkMemoryPropertyFlags memoryUsageFlags = VMA_MEMORY_USAGE_CPU_ONLY;
-            rayGenShaderBT.create(handleSize, bufferUsageFlags, memoryUsageFlags);
-            raymissShaderBT.create(handleSize, bufferUsageFlags, memoryUsageFlags);
-            rayhitShaderBT.create(handleSize, bufferUsageFlags, memoryUsageFlags);
-
-            // Copy handles
-            void* data;
-            vkMapMemory(vkDevice.getDevice(), raygenShaderBindingTableMemory, 0, handleSize, 0, &data);
-            memcpy(data, shaderHandleStorage.data(), handleSize);
-            vkUnmapMemory(vkDevice.getDevice(), instanceBufferMemory);
-
-            vkMapMemory(vkDevice.getDevice(), missShaderBindingTableMemory, 0, handleSize, 0, &data);
-            memcpy(data, shaderHandleStorage.data() + handleSizeAligned, handleSize);
-            vkUnmapMemory(vkDevice.getDevice(), missShaderBindingTableMemory);
-
-            vkMapMemory(vkDevice.getDevice(), hitShaderBindingTableMemory, 0, handleSize, 0, &data);
-            memcpy(data, shaderHandleStorage.data() + handleSizeAligned*2, handleSize);
-            vkUnmapMemory(vkDevice.getDevice(), hitShaderBindingTableMemory);
-        }
 		void Pipeline::cleanup() {
 			if (pipeline != VK_NULL_HANDLE) {
 				vkDestroyPipelineLayout(device.getDevice(), pipelineLayout, nullptr);
