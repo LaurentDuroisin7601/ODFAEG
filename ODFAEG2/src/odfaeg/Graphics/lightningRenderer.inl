@@ -124,7 +124,7 @@ namespace odfaeg {
                 sets.push_back(GPUContext::instance().getDescriptorSets(irradianceShader)[i][0].getHandle());
             }
 
-            /*irradianceTexture.clear();
+            irradianceTexture.clear();
             BlendMode blendMode;
             vkCmdBindPipeline(irradianceTexture.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(entity::Triangles, irradianceShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getHandle());
             vkCmdBindDescriptorSets(irradianceTexture.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(entity::Triangles, irradianceShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
@@ -160,15 +160,15 @@ namespace odfaeg {
                     .imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                     .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                    .clearValue = {.depthStencil{1.f, 0}}
+                    .clearValue = {.depthStencil{1.f, 0}}                    
                 };
                 renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
                 renderingInfo.renderArea = {
                     .offset { .x=0, .y=0 },
                     .extent = prefilterTexture.getExtents()
                 };
-                renderingInfo.pDepthAttachment = &depthAttachmentInfo;
-                renderingInfo.layerCount = prefilterTexture.getDepthStencilTexture().getLayerCount();
+                renderingInfo.pDepthAttachment = &depthAttachmentInfo;                
+                //std::cout<<"size : "<<prefilterTexture.getTexture().getImageViews().size()<<std::endl;
                 VkRenderingAttachmentInfo colorAttachmentInfo;
                 colorAttachmentInfo = {
                     .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
@@ -180,6 +180,7 @@ namespace odfaeg {
                 };
                 renderingInfo.colorAttachmentCount = 1;
                 renderingInfo.pColorAttachments = &colorAttachmentInfo;
+                renderingInfo.layerCount = 6;
                 renderingInfo.viewMask = prefilterTexture.getViewMask(); 
                 vkCmdBeginRendering(prefilterTexture.getCommandPool().getHandle(parentRenderer.getCurrentFrame()),&renderingInfo);
                 prefilterTexture.draw(prefilterTexture.getCommandPool(), ndcCubeVB, states);
@@ -197,7 +198,7 @@ namespace odfaeg {
             vkCmdBindDescriptorSets(brdfLUT.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(entity::Triangles, brdfShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr); 
             brdfLUT.beginRendering();
             brdfLUT.draw(brdfLUT.getCommandPool(), fullScreenQuad, states);
-            brdfLUT.submit(true);*/
+            brdfLUT.submit(true);
         }
         void LightningRenderer::updateBuffers() {
             VkPhysicalDeviceProperties props;

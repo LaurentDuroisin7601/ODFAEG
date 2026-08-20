@@ -128,7 +128,7 @@ namespace odfaeg {
             layerCount = texture.layerCount;
             isCubeMap = texture.isCubeMap;           
             if (isCubeMap) {
-                //std::cout<<"create cube map : "<<"nb buffers : "<<texture.nbBuffers<<"images size : "<<texture.images.size()<<std::endl;
+                //std::cout<<"create cube map : "<<layerCount / 6<<std::endl;
                 createCubeMap(texture.m_size.x(), layerCount / 6, texture.mipLevels, (layerCount / 6 > 1));
             } else {
                 create(texture.m_size.x(), texture.m_size.y(), VK_SAMPLE_COUNT_1_BIT, 1, texture.mipLevels);
@@ -447,9 +447,10 @@ namespace odfaeg {
                 images[i].create(size, size, 1, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
                     VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, layerCount, msaaSamples, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, mipLevels, layerCount);
-                if (FBOAttachment && cubemapCount > 1) {
+                if (cubemapCount > 1) {
                     for (unsigned int c = 0; c < cubemapCount; c++) {
                         for (unsigned int m = 0; m < mipLevels; m++) {
+                            //std::cout<<"create image view"<<std::endl;
                             views.emplace_back(device);
                             views.back().create(images[i].getHandle(), viewType, m_format, imageAspectMask, m, 6*c, 1, 6);                            
                         }
@@ -499,11 +500,12 @@ namespace odfaeg {
             m_format = depthFormat;
             imageAspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
             VkImageViewType viewType; 
-            layerCount = 6*cubemapCount;           
+            layerCount = 6*cubemapCount;                       
             if (!layered) {
-                viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+                viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
             }
             else {
+                //std::cout<<"cube view array"<<std::endl;
                 viewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
             }  
             imageAspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -511,7 +513,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 images[i].create(size, size, 1, imageType, m_format, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT| VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                     VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, layerCount, msaaSamples, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
-                images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_DEPTH_BIT, 0, 0, 1, 6);
+                images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_DEPTH_BIT, 0, 0, 1, layerCount);
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
                 if (cubemapCount > 1) {
                     for (unsigned int c = 0; c < cubemapCount; c++) {
@@ -1292,6 +1294,7 @@ namespace odfaeg {
             return images;
         }
         std::deque<ImageView>& Texture::getImageViews() {
+            //std::cout<<"get views : "<<views.size()<<std::endl;
             return views;
         }
         std::deque<ImageView>& Texture::getDepthViews() {
