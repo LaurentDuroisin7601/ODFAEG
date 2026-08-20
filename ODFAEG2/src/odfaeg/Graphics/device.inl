@@ -3,10 +3,18 @@ namespace odfaeg {
         const std::vector<const char*> Device::deviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
             VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME,
-            VK_EXT_FRAGMENT_SHADER_INTERLOCK_EXTENSION_NAME            
+            VK_EXT_FRAGMENT_SHADER_INTERLOCK_EXTENSION_NAME,            
+            VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+            VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
+            VK_KHR_SPIRV_1_4_EXTENSION_NAME,
+            VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME            
         };
         const std::vector<const char*> Device::deviceMeshExtensions = {            
             VK_EXT_MESH_SHADER_EXTENSION_NAME
+        };
+        const std::vector<const char*> Device::deviceRTExtensions = {
+            VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+            VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME
         };
         Device::Device(Instance& instance) : instance(instance) {
             //std::cout<<"instance in device: "<<instance.getInstance()<<std::endl;
@@ -25,6 +33,20 @@ namespace odfaeg {
             vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
             std::set<std::string> requiredExtensions(deviceMeshExtensions.begin(), deviceMeshExtensions.end());
+            for (const auto& extension : availableExtensions) {
+                requiredExtensions.erase(extension.extensionName);
+            }
+
+            return requiredExtensions.empty();
+        }
+        bool Device::checkDeviceRTExtensionSupport(VkPhysicalDevice device) {
+            uint32_t extensionCount;
+            vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+            std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+            vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+            std::set<std::string> requiredExtensions(deviceRTExtensions.begin(), deviceRTExtensions.end());
             for (const auto& extension : availableExtensions) {
                 requiredExtensions.erase(extension.extensionName);
             }
@@ -108,6 +130,8 @@ namespace odfaeg {
                 return false;
             if (checkDeviceMeshExtensionSupport(device))
                 meshSupported = true;
+            if (checkDeviceRTExtensionSupport(device))
+                rtSupported = true;
             //std::cout<<"mesh supported ? "<<meshSupported<<std::endl;  
             // --- 3. Vérifier le swapchain si surface fournie ---
             if (surface != VK_NULL_HANDLE)
@@ -278,6 +302,8 @@ namespace odfaeg {
                 meshFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT;
                 meshFeatures.pNext = &sync2Features;
 
+
+
                 VkPhysicalDeviceMaintenance4Features maintenance4Features{};
                 maintenance4Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES;
                 maintenance4Features.pNext = &meshFeatures;
@@ -292,9 +318,36 @@ namespace odfaeg {
                 features11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
                 features11.pNext = &features12;
 
+                VkPhysicalDeviceAccelerationStructureFeaturesKHR accelFeatures{
+                    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR                    
+                };
+
+                VkPhysicalDeviceRayTracingPipelineFeaturesKHR rtFeatures{
+                    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR
+
+                };      
+                VkPhysicalDeviceProperties2 props2{
+                    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2
+                };
+
+                VkPhysicalDeviceFloatControlsProperties floatControls{
+                    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FLOAT_CONTROLS_PROPERTIES
+                };
+
+                props2.pNext = &floatControls;
+
+                vkGetPhysicalDeviceProperties2(physicalDevice, &props2);
+                
+                accelFeatures.pNext = &features11;
+                rtFeatures.pNext = &accelFeatures;
+
+                
+                
+
                 VkPhysicalDeviceFeatures2 features2{};
                 features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-                features2.pNext = &features11;
+                features2.pNext = &rtFeatures;                
+
 
                 vkGetPhysicalDeviceFeatures2(physicalDevice, &features2);
 
@@ -302,6 +355,12 @@ namespace odfaeg {
                 VkPhysicalDeviceFeatures deviceFeatures{};
                 deviceFeatures.drawIndirectFirstInstance = VK_TRUE;
                 deviceFeatures.imageCubeArray = VK_TRUE;
+
+                features12.bufferDeviceAddress = VK_TRUE;
+                features12.descriptorBindingPartiallyBound = VK_TRUE;
+                features12.runtimeDescriptorArray = VK_TRUE;
+                features12.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+                features12.shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
 
 
                 if (features2.features.samplerAnisotropy)
@@ -311,7 +370,7 @@ namespace odfaeg {
 
                 if (features2.features.vertexPipelineStoresAndAtomics)
                     deviceFeatures.vertexPipelineStoresAndAtomics = VK_TRUE;
-
+                
                 // Features 1.1 / 1.2
                 if (features11.shaderDrawParameters)
                     features11.shaderDrawParameters = VK_TRUE;
@@ -333,6 +392,11 @@ namespace odfaeg {
                     meshFeatures.taskShader = VK_TRUE; 
                     // On ne veut PAS utiliser le shading rate via mesh shader pour l’instant
                     meshFeatures.primitiveFragmentShadingRateMeshShader = VK_FALSE;                   
+                }         
+                if (accelFeatures.accelerationStructure && rtFeatures.rayTracingPipeline) {       
+                    accelFeatures.accelerationStructure = VK_TRUE;
+                    rtFeatures.rayTracingPipeline = VK_TRUE;
+                    rtSupported = true;
                 }
                 // Maintenance4
                 if (maintenance4Features.maintenance4)

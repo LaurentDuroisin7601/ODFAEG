@@ -21,6 +21,7 @@ namespace odfaeg {
             };
             static const std::vector<const char*> deviceExtensions;
             static const std::vector<const char*> deviceMeshExtensions;
+            static const std::vector<const char*> deviceRTExtensions;
             struct QueueFamilyIndices {
                 std::optional<uint32_t> graphicsFamily, computeFamily, presentFamily;
                 bool isComplete() {
@@ -37,6 +38,7 @@ namespace odfaeg {
             QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface=VK_NULL_HANDLE);
             bool checkDeviceExtensionSupport(VkPhysicalDevice device);
             bool checkDeviceMeshExtensionSupport(VkPhysicalDevice device);
+            bool checkDeviceRTExtensionSupport(VkPhysicalDevice device);
             bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface);
             SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);
             void pickupPhysicalDevice(VkSurfaceKHR surface=VK_NULL_HANDLE);
@@ -65,7 +67,7 @@ namespace odfaeg {
             VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
             VkDevice device;
             std::vector<std::vector<VkQueue>> queues;
-            bool meshSupported;
+            bool meshSupported, rtSupported;
         };
     }
 }
