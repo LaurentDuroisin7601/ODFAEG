@@ -422,6 +422,8 @@ namespace odfaeg {
             rayhitShaderBT.update(shaderHandleStorage.data() + handleSizeAligned*2, handleSize);
         }
         void RTRenderer::clear () {
+            parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
+            parentRenderer.applyCullingAndBatching();
             VkClearColorValue clearColor = {0.f, 0.f, 0.f, 0.f};
             VkImageSubresourceRange subresRange = {};
             subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
