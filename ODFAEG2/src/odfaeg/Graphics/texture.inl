@@ -542,6 +542,7 @@ namespace odfaeg {
                 if (!imageLoader.loadFromMemory(data, size) || !loadCubeMapFromImage(imageLoader, i, area))
                     return false;
             }
+            generateMipmaps();
             //id = getUniqueId();
             //GPUContext::instance().getSharedTextures(0).push_back(std::move(*this));
 
@@ -553,6 +554,7 @@ namespace odfaeg {
                 if (!imageLoader.loadFromFile(filenames[i]) || !loadCubeMapFromImage(imageLoader, i, area))
                     return false;
             }
+            generateMipmaps();
             //id = getUniqueId();
             //GPUContext::instance().getSharedTextures(0).push_back(std::move(*this));
 
@@ -574,12 +576,15 @@ namespace odfaeg {
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 commandPool.beginRecordCommandBuffer(i);
                 transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, face, 1, 1);
-            }            
-            
-            for (unsigned int i = 0; i < nbBuffers; i++) {
-                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, face, 1, 1);
-                commandPool.endRecordCommandBuffer(i);
             }
+            const std::uint8_t* pixels = imageLoader.getPixelsPtr();
+            int texWidth = imageLoader.getSize().x();
+            int texHeight = imageLoader.getSize().y();
+            updateCubeMap(pixels, texWidth, texHeight, 0, 0, face);
+            for (unsigned int i = 0; i < nbBuffers; i++) {
+                //transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, face, 1, 1);
+                commandPool.endRecordCommandBuffer(i);
+            }    
             VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
             submitInfo.commandBufferCount = commandPool.getHandles().size();
@@ -588,11 +593,7 @@ namespace odfaeg {
             if (vkQueueSubmit(device.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {                
                 throw std::runtime_error("�chec de l'envoi d'un command buffer!");
             }
-            vkDeviceWaitIdle(device.getDevice());
-            const std::uint8_t* pixels = imageLoader.getPixelsPtr();
-            int texWidth = imageLoader.getSize().x();
-            int texHeight = imageLoader.getSize().y();
-            updateCubeMap(pixels, texWidth, texHeight, 0, 0, face);            
+            vkDeviceWaitIdle(device.getDevice());        
             return true;
         }
         bool Texture::loadFromFile(const std::string& filename, const entity::IntRect& area) {
@@ -639,7 +640,7 @@ namespace odfaeg {
             staggingBuffer.create(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
             staggingBuffer.update(pixels, imageSize);
             for (unsigned int i = 0; i < nbBuffers; i++) {
-                images[i].copyBufferToImage(commandPool.getHandle(i), staggingBuffer, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), static_cast<uint32_t>(x), static_cast<uint32_t>(y), face);
+                images[i].copyBufferToImage(commandPool.getHandle(i), staggingBuffer, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), static_cast<uint32_t>(x), static_cast<uint32_t>(y), 0, 0, face);
             }  
         }
         void Texture::update(const std::uint8_t* pixels, unsigned int texWidth, unsigned int texHeight, unsigned int x, unsigned int y) {

@@ -58,6 +58,7 @@ namespace odfaeg{
                     *ptr++ = color.b;
                     *ptr++ = color.a;
                 }
+                
                 m_pixels.clear();
                 m_pixels.resize(mipLevels);
                 dataSizes.clear();
@@ -65,7 +66,7 @@ namespace odfaeg{
                 dataSizes.resize(mipLevels);
                 m_sizes.resize(mipLevels);
                 // Commit the new pixel buffer
-                m_pixels[0].swap(newPixels);
+                m_pixels[0].swap(newPixels);                
                 size_t dataSize = width * height * 4;
 
                 // Assign the new size

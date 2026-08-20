@@ -25,7 +25,7 @@ namespace odfaeg {
             camera.setViewport(physic::BoundingBox(0, 0, 0.1f, 32, 32, 10.f));            
             ImageLoader imageLoader;
             imageLoader.create(1024, 1024, entity::Color::White);
-            std::cout<<"size : "<<imageLoader.getSize().x()<<std::endl;
+            //std::cout<<"size : "<<imageLoader.getSize().x()<<std::endl;
             for (unsigned int i = 0; i < 6; i++) {
                 environmentMap.loadCubeMapFromImage(imageLoader, i);
             }
