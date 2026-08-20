@@ -142,7 +142,7 @@ namespace odfaeg {
             sets.clear();
             for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(prefilterShader).size(); i++) {
                             //std::cout<<"set : "<<linkedListSets[i][0].getHandle()<<std::endl;
-                sets.push_back(GPUContext::instance().getDescriptorSets(irradianceShader)[i][0].getHandle());
+                sets.push_back(GPUContext::instance().getDescriptorSets(prefilterShader)[i][0].getHandle());
             }
             for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
             {
@@ -189,14 +189,7 @@ namespace odfaeg {
             prefilterTexture.submit(true);
             states.shader = &brdfShader;           
             brdfLUT.clear();  
-            sets.clear();
-            for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(brdfShader).size(); i++) {
-                        //std::cout<<"set : "<<linkedListSets[i][0].getHandle()<<std::endl;
-                sets.push_back(GPUContext::instance().getDescriptorSets(brdfShader)[i][0].getHandle());
-            }
             vkCmdBindPipeline(brdfLUT.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(entity::Triangles, brdfShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getHandle());
-            vkCmdBindDescriptorSets(brdfLUT.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(entity::Triangles, brdfShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr); 
-            brdfLUT.beginRendering();
             brdfLUT.draw(brdfLUT.getCommandPool(), fullScreenQuad, states);
             brdfLUT.endRendering();
             brdfLUT.submit(true);
