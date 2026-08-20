@@ -93,8 +93,7 @@ namespace odfaeg {
             fullScreenQuad.update();
             createDescriptorsAndPipelines();
             createCommandPools();
-            needToUpdateTextures = true;
-            updateTextures();
+            needToUpdateTextures = true;            
             window::Command rendererReadyCmd(core::FastDelegate<bool>(&LightningRenderer::isRendererReady, this), core::FastDelegate<void>(&LightningRenderer::drawNextFrame, this));
             listener.connect("RendererReady",rendererReadyCmd); 
             if (useThread) {
@@ -190,6 +189,7 @@ namespace odfaeg {
             states.shader = &brdfShader;           
             brdfLUT.clear();  
             vkCmdBindPipeline(brdfLUT.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(entity::Triangles, brdfShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getHandle());
+            brdfLUT.beginRendering();
             brdfLUT.draw(brdfLUT.getCommandPool(), fullScreenQuad, states);
             brdfLUT.endRendering();
             brdfLUT.submit(true);
@@ -485,7 +485,8 @@ namespace odfaeg {
                     inheritanceInfo.framebuffer = VK_NULL_HANDLE;   
                     inheritanceInfo.occlusionQueryEnable = VK_FALSE;
                     inheritanceInfo.pipelineStatistics = 0;
-                    inheritanceInfo.queryFlags = 0; 
+                    inheritanceInfo.queryFlags = 0;
+                    pbrCommandPool.beginRecordCommandBuffer(parentRenderer.getCurrentFrame(), inheritanceInfo); 
                     RenderStates states;
                     states.shader = &pbrShader;
                     BlendMode blendMode;
@@ -518,6 +519,7 @@ namespace odfaeg {
                             parentRenderer.draw(pbrCommandPool, static_cast<entity::PrimitiveType>(i), states);
                         } 
                     }
+                    pbrCommandPool.endRecordCommandBuffer(parentRenderer.getCurrentFrame());
                     jobFence[renderFrame].jobDone();
                 });
                 jobFence[renderFrame].wait();
