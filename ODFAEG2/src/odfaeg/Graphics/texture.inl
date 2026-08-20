@@ -524,7 +524,7 @@ namespace odfaeg {
                     }
                 }
                 commandPool.beginRecordCommandBuffer(i);
-                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 0, 0, 1, 6);                
+                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 0, 0, 1, layerCount);                
                 commandPool.endRecordCommandBuffer(i);
             }            
             VkSubmitInfo submitInfo{};
