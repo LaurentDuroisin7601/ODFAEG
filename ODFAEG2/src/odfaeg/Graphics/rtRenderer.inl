@@ -24,6 +24,7 @@ namespace odfaeg {
                 ubo.back().create(sizeof(UBODatas), VK_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
                 ubo.back().update(uboDatas.data(), sizeof(UBOData));  
             }
+            groupCount = 3;
         }   
         void RTRenderer::createDescriptorAndPipelines() {
             
@@ -40,10 +41,11 @@ namespace odfaeg {
                 0.0f, 1.0f, 0.0f, 0.0f,
                 0.0f, 0.0f, 1.0f, 0.0f
             };
-            transformMatrixBufferStaggingBuffer.create(sizeof(VkTransformMatrixKHR), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);         
-            transformMatrixBuffer.create(sizeof(VkTransformMatrixKHR), , VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+            transformMatrixStaggingBuffer.create(sizeof(VkTransformMatrixKHR), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);         
+            transformMatrixStaggingBuffer.update(&transformMatrix, sizeof(VkTransformMatrixKHR))
+            transformMatrixStaggingBuffer.create(sizeof(VkTransformMatrixKHR), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEVICE_ADDRESS_BIT);
             commandPool.beginRecordCommandBuffer(parentRenderer.getCurrentFrame());
-            Buffer::copyBuffer(transformMatrixStaggingBuffer, transformMatrixBuffer, sizeof(VkTransformMatrixKHR), commandPool.getHandle(parentRenderer.getHandel()));
+            Buffer::copyBuffer(transformMatrixStaggingBuffer, transformMatrixBuffer, sizeof(VkTransformMatrixKHR), commandPool.getHandle(parentRenderer.getHandle()));
             std::vector<VkTransformMatrixKHR> transformMatrices;
             instancesGroupCount = 0; 
             VkDeviceOrHostAddressConstKHR vertexBufferDeviceAddress{};
@@ -57,7 +59,7 @@ namespace odfaeg {
                 for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
                     entity::SubMesh sm = gameObjects[i]->getGameObject()->getSubMeshes()[j];
                     //Ensuite on parcours les matériaux à plusieurs instances.
-                    if (!gameObjects[i]->getMaterials()[0]->getInstanceGroupId != -1)
+                    if (!gameObjects[i]->getMaterials()[0]->getInstanceGroupId != -1) {
                         if (gameObjects[i]->getMaterials()[0]->materialSet == 0) {
                             gameObjects[i]->getMaterials()[0]->materialSet == 1;
                             VkAccelerationStructureGeometryKHR accelerationStructureGeometry{};
@@ -225,6 +227,12 @@ namespace odfaeg {
                     } 
                 } 
             }
+            VkDeviceSize bufferSize = geometryOffsets.size() * sizeof(GeometryOffset);
+            geometryOffsetStaggingBuffer.create(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);    
+            geometryOffsetStaggingBuffer.update(geometryOffsets.data(), bufferSize);         
+            geometryOffsetBuffer.create(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+            commandPool.beginRecordCommandBuffer(parentRenderer.getCurrentFrame());
+            Buffer::copyBuffer(geometryOffsetStaggingBuffer, geometryOffsetBuffer, deviceSize, commandPool.getHandle(parentRenderer.getHandel()));
             commandPool.endRecordCommandBuffer(parentRenderer.getCurrentBuffer());
             VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -342,6 +350,95 @@ namespace odfaeg {
                         &accelerationBuildGeometryInfo,
                         accelerationBuildStructureRangeInfos.data());
             }
+        }
+        void RTPipeline::createDescriptorsAndPipelines() {
+            std::vector<Texture*> Textures = Texture::getAllTextures();
+            VkDescriptorSetLayoutBinding accelerationStructureLayoutBinding{};
+            accelerationStructureLayoutBinding.binding = 0;
+            accelerationStructureLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+            accelerationStructureLayoutBinding.descriptorCount = 1;
+            accelerationStructureLayoutBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+
+            VkDescriptorSetLayoutBinding resultImageLayoutBinding{};
+            resultImageLayoutBinding.binding = 1;
+            resultImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            resultImageLayoutBinding.descriptorCount = 1;
+            resultImageLayoutBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+
+            VkDescriptorSetLayoutBinding uniformBufferBinding{};
+            uniformBufferBinding.binding = 2;
+            uniformBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            uniformBufferBinding.descriptorCount = 1;
+            uniformBufferBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+
+            VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+            samplerLayoutBinding.binding = 3;
+            samplerLayoutBinding.descriptorCount = allTextures.size();
+            samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            samplerLayoutBinding.pImmutableSamplers = nullptr;
+            samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+
+            VkDescriptorSetLayoutBinding triangleDataLayoutBinding{};
+            triangleDataLayoutBinding.binding = 4;
+            triangleDataLayoutBinding.descriptorCount = 1;
+            triangleDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            triangleDataLayoutBinding.pImmutableSamplers = nullptr;
+            triangleDataLayoutBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+
+            VkDescriptorSetLayoutBinding offsetDataLayoutBinding{};
+            offsetDataLayoutBinding.binding = 5;
+            offsetDataLayoutBinding.descriptorCount = 1;
+            offsetDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            offsetDataLayoutBinding.pImmutableSamplers = nullptr;
+            offsetDataLayoutBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+
+            VkDescriptorSetLayoutBinding indexDataLayoutBinding{};
+            offsetDataLayoutBinding.binding = 6;
+            offsetDataLayoutBinding.descriptorCount = 1;
+            offsetDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            offsetDataLayoutBinding.pImmutableSamplers = nullptr;
+            offsetDataLayoutBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+
+            VkDescriptorSetLayoutBinding materialDataLayoutBinding{};
+            materialDataLayoutBinding.binding = 7;
+            materialDataLayoutBinding.descriptorCount = 1;
+            materialDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            materialDataLayoutBinding.pImmutableSamplers = nullptr;
+            materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+
+            std::array<VkDescriptorSetLayoutBinding, 8> bindings = {accelerationStructureLayoutBinding, resultImageLayoutBinding, uniformBufferBinding, samplerLayoutBinding, triangleDataLayoutBinding, offsetDataLayoutBinding, indexDataLayoutBinding, materialDataLayoutBinding};
+
+            VkDescriptorSetLayoutCreateInfo layoutInfo{};
+            layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
+            layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
+            layoutInfo.pBindings = bindings.data();
+            if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create descriptor set layout!");
+            }
+        }
+        void RTPipeline::createShaderBindingTable() {
+            const uint32_t handleSize = rayTracingPipelineProperties.shaderGroupHandleSize;
+            const uint32_t handleSizeAligned = (rayTracingPipelineProperties.shaderGroupHandleSize + rayTracingPipelineProperties.shaderGroupHandleAlignment - 1) & ~(rayTracingPipelineProperties.shaderGroupHandleAlignment - 1);
+            const uint32_t groupCount = static_cast<uint32_t>(shaderGroups.size());
+            const uint32_t sbtSize = groupCount * handleSizeAligned;
+
+            std::vector<uint8_t> shaderHandleStorage(sbtSize);
+            if(vkGetRayTracingShaderGroupHandlesKHR(vkDevice.getDevice(), pipeline, 0, groupCount, sbtSize, shaderHandleStorage.data()) != VK_SUCCESS) {
+                throw std::runtime_error("failed to raytracing shader group handle!");
+            }
+
+            const VkBufferUsageFlags bufferUsageFlags = VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+            const VkMemoryPropertyFlags memoryUsageFlags = VMA_MEMORY_USAGE_CPU_ONLY;
+            rayGenShaderBT.create(handleSize, bufferUsageFlags, memoryUsageFlags);
+            raymissShaderBT.create(handleSize, bufferUsageFlags, memoryUsageFlags);
+            rayhitShaderBT.create(handleSize, bufferUsageFlags, memoryUsageFlags);
+
+            // Copy handles
+            rayGenShaderBT.update(shaderHandleStorage.data(), handleSize);
+            raymissShaderBT.update(shaderHandleStorage.data() + handleSizeAligned, handleSize);
+            rayhitShaderBT.update(shaderHandleStorage.data() + handleSizeAligned*2, handleSize);
+            vkUnmapMemory(vkDevice.getDevice(), hitShaderBindingTableMemory);
         }
     }
 }

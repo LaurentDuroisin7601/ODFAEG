@@ -27,6 +27,7 @@ namespace odfaeg {
 			void createComputePipeline(Shader& shader, std::deque<DescriptorSetLayout>& setLayouts, std::vector<VkPushConstantRange> pushConstants = std::vector<VkPushConstantRange>());
 			void createGraphicPipeline(Shader& shader, std::deque<DescriptorSetLayout>& setLayouts, VkPipelineRenderingCreateInfo renderingCreateInfo, VkPipelineDepthStencilStateCreateInfo depthStencil, BlendMode blendMode,
 				VkSampleCountFlagBits msaaSamples, VkCullModeFlags cullMode = VK_CULL_MODE_NONE, VkPolygonMode polygoneMode = VK_POLYGON_MODE_FILL, std::vector<VkPushConstantRange> pushConstants = std::vector<VkPushConstantRange>());
+			void createRTPipeline(Shader shader, std::deque<DescriptorSetLayout>& setLayouts, std::vector<VkPushConstantRange> pushConstants);
 			void cleanup();
 			VkPipeline getHandle();
 			VkPipelineLayout getLayout();			

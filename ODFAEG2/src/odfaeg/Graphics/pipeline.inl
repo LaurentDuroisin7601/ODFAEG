@@ -503,6 +503,112 @@ namespace odfaeg {
 			}
 			shader.cleanupComputeShaderModule();
 		}
+		std::vector< Pipeline::createRTPipeline(Shader shader, std::deque<DescriptorSetLayout>& setLayouts, std::vector<VkPushConstantRange> pushConstants) {
+			std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+			std::vector<VkRayTracingShaderGroupCreateInfoKH> shaderGroups;
+			{
+				VkPipelineShaderStageCreateInfo shaderStageInfo{};
+				shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+				shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+				shaderStageInfo.module = shader..getRaygenShaderModule();
+				shaderStageInfo.pName = "main";
+				shaderStages.push_back(shaderStageInfo);
+				VRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+				shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+				shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+				shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+				shaderGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
+				shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
+				shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+				shaderGroups.push_back(shaderGroup);
+			}
+			{
+				VkPipelineShaderStageCreateInfo shaderStageInfo{};
+				shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+				shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+				shaderStageInfo.module = shader..getRaymissShaderModule();
+				shaderStageInfo.pName = "main";
+				shaderStages.push_back(shaderStageInfo);
+				VRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+				shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+				shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+				shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+				shaderGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
+				shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
+				shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+				shaderGroups.push_back(shaderGroup);
+			}
+			{
+				VkPipelineShaderStageCreateInfo shaderStageInfo{};
+				shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+				shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+				shaderStageInfo.module = shader..getRayhitShaderModule();
+				shaderStageInfo.pName = "main";
+				shaderStages.push_back(shaderStageInfo);
+				VRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+				shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+				shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+				shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+				shaderGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
+				shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
+				shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+				shaderGroups.push_back(shaderGroup);
+			}
+			VkPipelineLayoutCreateInfo pipelineLayoutCI{};
+            pipelineLayoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            pipelineLayoutCI.setLayoutCount = setLayouts.size();
+            pipelineLayoutCI.pSetLayouts = setLayouts.data();
+			if (pushConstants.size() > 0) {
+				pipelineLayoutInfo.pPushConstantRanges = pushConstants.data();
+				pipelineLayoutInfo.pushConstantRangeCount = pushConstants.size();
+			}
+            if (vkCreatePipelineLayout(GPUContext::instance().getDevice().getDevice(), &pipelineLayoutCI, nullptr, &pipelineLayout) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create raytracing pipeline layout!");
+            }	
+			VkRayTracingPipelineCreateInfoKHR rayTracingPipelineCI{};
+            rayTracingPipelineCI.sType = VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR;
+            rayTracingPipelineCI.stageCount = static_cast<uint32_t>(shaderStages.size());
+            rayTracingPipelineCI.pStages = shaderStages.data();
+            rayTracingPipelineCI.groupCount = static_cast<uint32_t>(shaderGroups.size());
+            rayTracingPipelineCI.pGroups = shaderGroups.data();
+            rayTracingPipelineCI.maxPipelineRayRecursionDepth = 1;
+            rayTracingPipelineCI.layout = pipelineLayout;
+            if (vkCreateRayTracingPipelinesKHR(vkDevice.getDevice(), VK_NULL_HANDLE, VK_NULL_HANDLE, 1, &rayTracingPipelineCI, nullptr, &pipeline) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create raytracing pipeline!");
+            }
+            raytracingShader.cleanupRaytracingShaderModules();		
+		}
+		 void RTPipeline::createShaderBindingTable() {
+            const uint32_t handleSize = rayTracingPipelineProperties.shaderGroupHandleSize;
+            const uint32_t handleSizeAligned = (rayTracingPipelineProperties.shaderGroupHandleSize + rayTracingPipelineProperties.shaderGroupHandleAlignment - 1) & ~(rayTracingPipelineProperties.shaderGroupHandleAlignment - 1);
+            const uint32_t groupCount = static_cast<uint32_t>(shaderGroups.size());
+            const uint32_t sbtSize = groupCount * handleSizeAligned;
+
+            std::vector<uint8_t> shaderHandleStorage(sbtSize);
+            if(vkGetRayTracingShaderGroupHandlesKHR(vkDevice.getDevice(), pipeline, 0, groupCount, sbtSize, shaderHandleStorage.data()) != VK_SUCCESS) {
+                throw std::runtime_error("failed to raytracing shader group handle!");
+            }
+
+            const VkBufferUsageFlags bufferUsageFlags = VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+            const VkMemoryPropertyFlags memoryUsageFlags = VMA_MEMORY_USAGE_CPU_ONLY;
+            rayGenShaderBT.create(handleSize, bufferUsageFlags, memoryUsageFlags);
+            raymissShaderBT.create(handleSize, bufferUsageFlags, memoryUsageFlags);
+            rayhitShaderBT.create(handleSize, bufferUsageFlags, memoryUsageFlags);
+
+            // Copy handles
+            void* data;
+            vkMapMemory(vkDevice.getDevice(), raygenShaderBindingTableMemory, 0, handleSize, 0, &data);
+            memcpy(data, shaderHandleStorage.data(), handleSize);
+            vkUnmapMemory(vkDevice.getDevice(), instanceBufferMemory);
+
+            vkMapMemory(vkDevice.getDevice(), missShaderBindingTableMemory, 0, handleSize, 0, &data);
+            memcpy(data, shaderHandleStorage.data() + handleSizeAligned, handleSize);
+            vkUnmapMemory(vkDevice.getDevice(), missShaderBindingTableMemory);
+
+            vkMapMemory(vkDevice.getDevice(), hitShaderBindingTableMemory, 0, handleSize, 0, &data);
+            memcpy(data, shaderHandleStorage.data() + handleSizeAligned*2, handleSize);
+            vkUnmapMemory(vkDevice.getDevice(), hitShaderBindingTableMemory);
+        }
 		void Pipeline::cleanup() {
 			if (pipeline != VK_NULL_HANDLE) {
 				vkDestroyPipelineLayout(device.getDevice(), pipelineLayout, nullptr);
