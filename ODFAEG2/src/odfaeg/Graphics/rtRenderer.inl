@@ -422,21 +422,19 @@ namespace odfaeg {
             rayhitShaderBT.update(shaderHandleStorage.data() + handleSizeAligned*2, handleSize);
         }
         void RTRenderer::clear () {
-            std::vector<VkCommandBuffer> commandBuffers = window.getCommandBuffers();
             VkClearColorValue clearColor = {0.f, 0.f, 0.f, 0.f};
             VkImageSubresourceRange subresRange = {};
             subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             subresRange.levelCount = 1;
             subresRange.layerCount = 1;
-            for (unsigned int i = 0; i < commandBuffers.size(); i++) {
-                vkCmdClearColorImage(commandBuffers[i], storageImage.image, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
-                VkMemoryBarrier memoryBarrier;
-                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                memoryBarrier.pNext = VK_NULL_HANDLE;
-                memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-            }
+            
+            vkCmdClearColorImage(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), storageImage.back().getHandle(), VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+            VkMemoryBarrier memoryBarrier;
+            memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+            memoryBarrier.pNext = VK_NULL_HANDLE;
+            memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+            vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);            
         }
         void RTRenderer::drawNextFrame() {
         }
