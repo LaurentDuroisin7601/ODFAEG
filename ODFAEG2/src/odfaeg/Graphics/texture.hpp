@@ -54,6 +54,7 @@ namespace odfaeg {
             std::deque<ImageView>& getDepthViews();
             bool createDepthCubeMap(uint32_t size, unsigned int cubemapCount = 1, unsigned int mipLevels = 1, bool layered=false);
             bool loadCubeMapFromFile(std::vector<std::string> filenames, const entity::IntRect& area=entity::IntRect());
+            bool loadCubeMapFromMemory(const void* data, std::size_t size, const entity::IntRect& area);
             bool loadCubeMapFromImage(const ImageLoader& image, uint32_t face, const entity::IntRect& area=entity::IntRect());
 			bool loadFromMemory(const void* data, std::size_t size, const entity::IntRect& area=entity::IntRect());
             bool loadFromFile(const std::string& filename, const entity::IntRect& area=entity::IntRect());

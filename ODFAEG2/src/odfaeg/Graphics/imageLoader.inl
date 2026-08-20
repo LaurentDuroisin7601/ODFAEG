@@ -58,13 +58,19 @@ namespace odfaeg{
                     *ptr++ = color.b;
                     *ptr++ = color.a;
                 }
-
+                m_pixels.clear();
+                m_pixels.resize(mipLevels);
+                dataSizes.clear();
+                m_sizes.clear();
+                dataSizes.resize(mipLevels);
+                m_sizes.resize(mipLevels);
                 // Commit the new pixel buffer
                 m_pixels[0].swap(newPixels);
-                size_t dataSize = m_pixels[0].size();
+                size_t dataSize = width * height * 4;
 
                 // Assign the new size
                 dataSizes[0] = dataSize;
+                m_sizes[0] = math::Vector2u(width, height);
             }
             else
             {
@@ -88,10 +94,18 @@ namespace odfaeg{
                 std::vector<std::uint8_t> newPixels(pixels, pixels + width * height * 4);
 
                 // Commit the new pixel buffer
+                m_pixels.clear();
+                m_pixels.resize(mipLevels);
+                dataSizes.clear();
+                m_sizes.clear();
+                dataSizes.resize(mipLevels);
+                m_sizes.resize(mipLevels);
+                // Commit the new pixel buffer
                 m_pixels[0].swap(newPixels);
-                dataSizes[0] = width * height * 4;
+                size_t dataSize = width * height * 4;
 
                 // Assign the new size
+                dataSizes[0] = dataSize;
                 m_sizes[0] = math::Vector2u(width, height);
             }
             else

@@ -536,20 +536,47 @@ namespace odfaeg {
             vkDeviceWaitIdle(device.getDevice());
             return true;
         }
-        bool Texture::loadCubeMapFromFile(std::vector<std::string> filenames, const entity::IntRect& area) {
+        bool Texture::loadCubeMapFromMemory(const void* data, std::size_t size, const entity::IntRect& area) {
+             for (unsigned int i = 0; i < 6; i++) {
+                ImageLoader imageLoader;
+                if (!imageLoader.loadFromMemory(data, size) || !loadCubeMapFromImage(imageLoader, i, area))
+                    return false;
+            }
+            //id = getUniqueId();
+            //GPUContext::instance().getSharedTextures(0).push_back(std::move(*this));
 
-            createCubeMap(imageLoader.getSize().x(), VK_SAMPLE_COUNT_1_BIT);
-            for (unsigned int i = 0; i < nbBuffers; i++) {
-                commandPool.beginRecordCommandBuffer(i);
-                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 6);
-            }            
+            return true;
+        }
+        bool Texture::loadCubeMapFromFile(std::vector<std::string> filenames, const entity::IntRect& area) {
             for (unsigned int i = 0; i < 6; i++) {
                 ImageLoader imageLoader;
                 if (!imageLoader.loadFromFile(filenames[i]) || !loadCubeMapFromImage(imageLoader, i, area))
                     return false;
             }
+            //id = getUniqueId();
+            //GPUContext::instance().getSharedTextures(0).push_back(std::move(*this));
+
+            return true;
+        }
+        bool Texture::loadCubeMapFromImage(const ImageLoader& imageLoader, uint32_t face, const entity::IntRect& area) {
+            if (imageLoader.isCompressed()) {
+                m_format = imageLoader.getVkFormat();
+            }
+            else {
+                m_format = VK_FORMAT_R8G8B8A8_SRGB;
+            }
+            if (face == 0) {
+                std::cout<<"size : "<<imageLoader.getSize().x()<<std::endl;
+                createCubeMap(imageLoader.getSize().x());
+                std::cout<<"cm created"<<std::endl;
+            }
             for (unsigned int i = 0; i < nbBuffers; i++) {
-                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 6);
+                commandPool.beginRecordCommandBuffer(i);
+                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, face, 1, 6);
+            }            
+            
+            for (unsigned int i = 0; i < nbBuffers; i++) {
+                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, face, 1, 6);
                 commandPool.endRecordCommandBuffer(i);
             }
             VkSubmitInfo submitInfo{};
@@ -561,21 +588,9 @@ namespace odfaeg {
                 throw std::runtime_error("�chec de l'envoi d'un command buffer!");
             }
             vkDeviceWaitIdle(device.getDevice());
-            //id = getUniqueId();
-            //GPUContext::instance().getSharedTextures(0).push_back(std::move(*this));
-
-            return true;
-        }
-        bool Texture::loadCubeMapFromImage(const ImageLoader& image, uint32_t face, const entity::IntRect& area) {
-            if (imageLoader.isCompressed()) {
-                m_format = image.getVkFormat();
-            }
-            else {
-                m_format = VK_FORMAT_R8G8B8A8_SRGB;
-            }
-            const std::uint8_t* pixels = image.getPixelsPtr();
-            int texWidth = image.getSize().x();
-            int texHeight = image.getSize().y();
+            const std::uint8_t* pixels = imageLoader.getPixelsPtr();
+            int texWidth = imageLoader.getSize().x();
+            int texHeight = imageLoader.getSize().y();
             updateCubeMap(pixels, texWidth, texHeight, 0, 0, face);            
             return true;
         }

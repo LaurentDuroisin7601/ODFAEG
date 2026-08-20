@@ -23,7 +23,12 @@ namespace odfaeg {
             Camera camera = parentRenderer.getCamera();
             camera.setPerspective(90.0f, 1.0f, 0.1f, 10.0f);
             camera.setViewport(physic::BoundingBox(0, 0, 0.1f, 32, 32, 10.f));            
-            environmentMap.createCubeMap(1024);
+            ImageLoader imageLoader;
+            imageLoader.create(1024, 1024, entity::Color::White);
+            std::cout<<"size : "<<imageLoader.getSize().x()<<std::endl;
+            for (unsigned int i = 0; i < 6; i++) {
+                environmentMap.loadCubeMapFromImage(imageLoader, i);
+            }
             irradianceTexture.createCubeMap(32);
             irradianceTexture.setCamera(camera);
             camera.setViewport(physic::BoundingBox(0, 0, 0.1f, 128, 128, 10.f));
@@ -43,16 +48,16 @@ namespace odfaeg {
             views[2] = camera.getViewMatrix().getMatrix().transpose();
             camera.lookAt(0, -1, 0, math::Vec3f(0, 0, -1));
             views[3] = camera.getViewMatrix().getMatrix().transpose();
-            camera.lookAt(0, 0, -1, math::Vec3f(0, 0, 1));
+            camera.lookAt(0, 0, -1, math::Vec3f(0, -1, 0));
             views[4] = camera.getViewMatrix().getMatrix().transpose();
-            camera.lookAt(0, 0, 1, math::Vec3f(0, 0, -1));
+            camera.lookAt(0, 0, 1, math::Vec3f(0, -1, 0));
             views[5] = camera.getViewMatrix().getMatrix().transpose();
             viewsUBO.back().update(views.data(), views.size()*sizeof(math::Matrix4f));
             std::string shaderDir = std::string(ODFAEG_INSTALL_DIR) + "/Shader";
             if (!pbrShader.loadFromFile(shaderDir+"/pbr.vert", shaderDir+"/pbr.frag")) {
                 throw std::runtime_error("Failed to load pbr shader!");
             }
-            if (!irradianceShader.loadFromFile(shaderDir+"/cubemap.vert", shaderDir+"/irrandiance_convulsion.frag")) {
+            if (!irradianceShader.loadFromFile(shaderDir+"/cubemap.vert", shaderDir+"/irradiance_convulsion.frag")) {
                 throw std::runtime_error("Failed to load irrandiance shader!");
             }
             if (!prefilterShader.loadFromFile(shaderDir+"/cubemap.vert", shaderDir+"/prefilter.frag")) {
@@ -236,6 +241,7 @@ namespace odfaeg {
             renderingCreateInfo.colorAttachmentCount = 1;
             renderingCreateInfo.pColorAttachmentFormats = &irradianceTexture.getImageFormat();
             renderingCreateInfo.depthAttachmentFormat = irradianceTexture.getDepthStencilTexture().getFormat();
+            renderingCreateInfo.viewMask = irradianceTexture.getViewMask();
             GPUContext::instance().getGraphicsPipeline(entity::Triangles, irradianceShader, blendMode,0).createGraphicPipeline(irradianceShader, entity::Triangles, GPUContext::instance().getDescriptorSetLayout(irradianceShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, VK_SAMPLE_COUNT_1_BIT, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);
             
             DescriptorSetLayout& prefilterSetLayout = GPUContext::instance().getDescriptorSetLayout(prefilterShader, 2);
@@ -254,6 +260,7 @@ namespace odfaeg {
             renderingCreateInfo.colorAttachmentCount = 1;
             renderingCreateInfo.pColorAttachmentFormats = &prefilterTexture.getImageFormat();
             renderingCreateInfo.depthAttachmentFormat = prefilterTexture.getDepthStencilTexture().getFormat();
+            renderingCreateInfo.viewMask = prefilterTexture.getViewMask(); 
             GPUContext::instance().getGraphicsPipeline(entity::Triangles, prefilterShader, blendMode,0).createGraphicPipeline(prefilterShader, entity::Triangles, GPUContext::instance().getDescriptorSetLayout(prefilterShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, VK_SAMPLE_COUNT_1_BIT, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);
 
             
