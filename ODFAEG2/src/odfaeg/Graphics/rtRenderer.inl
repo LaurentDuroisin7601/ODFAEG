@@ -52,8 +52,8 @@ namespace odfaeg {
             VkDeviceOrHostAddressConstKHR indexBufferDeviceAddress{};
             VkDeviceOrHostAddressConstKHR transformBufferDeviceAddress{};
 
-            vertexBufferDeviceAddress.deviceAddress = GPUContext::instance().getSharedVertexBuffer(VERTEX_BUFFER).getVertexBuffer().getDeviceAddress();
-            indexBufferDeviceAddress.deviceAddress = GPUContext::instance().getSharedVertexBuffer(VERTEX_BUFFER).getIndexBuffer().getDeviceAddress();
+            vertexBufferDeviceAddress.deviceAddress = GPUContext::instance().getSharedVertexBuffer(VERTEX_BUFFER)[entity::Triangles].getVertexBuffer().getDeviceAddress();
+            indexBufferDeviceAddress.deviceAddress = GPUContext::instance().getSharedVertexBuffer(VERTEX_BUFFER)[entity::Triangles].getIndexBuffer().getDeviceAddress();
             transformBufferDeviceAddress.deviceAddress = transformBuffer.getDeviceAddress();
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
                 for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
@@ -381,6 +381,24 @@ namespace odfaeg {
             DescriptorSet::allocate(rtRaygenPool, rtRaygenLayout, GPUContext::instance().getDescriptorSets(rtShader, 3, 1), MAX_TLAS_STRUCTURES);
             DescriptorSet::allocate(rtRayhitPool, rtRayhitLayout, GPUContext::instance().getDescriptorSets(rtShader, 5, 1, 1), MAX_TEXTURES);
         }
+        void RTPipeline::updateDescriptorSets() {
+            bool hasTLASStructure = topLevelADBuffers.size() != 0;
+            bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
+            DescriptorSet& rtRaygenSet = GPUContext::instance().getDescriptorSets(rtShader, (hasTLASStrcture) ? 3 : 2, 1)[0];
+            rtRaygenSet.updateBufferInfos(0, ubos, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+            rtRaygenSet.updateBufferInfos(0, storageImage,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+            if (hasTLASStructure) {
+                rtRaygenSet.updateBufferInfos(0, topLevelASBuffers, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR);
+            }
+            DescriptorSet& rtRayhitSet = GPUContext::instance().getDescriptorSets(rtShader, (hasDiffuseTexture) ? 5 : 4, 1)[0];
+            rtRayhitSet.updateBufferInfos(0, true, GPUContext::instance().getSharedVertexBuffers(RenderTarget::VERTEX_BUFFER)[entity::Triangles], VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            rtRayhitSet.updateBufferInfos(1, false, GPUContext::instance().getSharedVertexBuffers(RenderTarget::VERTEX_BUFFER)[entity::Triangles], VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            rtRayhitSet.updateBufferInfos(2, geometryOffsetBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            rtRayhitSet.updateBufferInfos(3, GPUContext::instance().getSharedBuffers(RenderTarget::MATERIAL_DATA_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            if (hasDiffuseTexture) {
+                rtRayhitSet.updatePoolSize(4, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLE);
+            }
+        }
         void RTPipeline::createShaderBindingTable() {
             const uint32_t handleSize = rayTracingPipelineProperties.shaderGroupHandleSize;
             const uint32_t handleSizeAligned = (rayTracingPipelineProperties.shaderGroupHandleSize + rayTracingPipelineProperties.shaderGroupHandleAlignment - 1) & ~(rayTracingPipelineProperties.shaderGroupHandleAlignment - 1);
@@ -403,5 +421,5 @@ namespace odfaeg {
             raymissShaderBT.update(shaderHandleStorage.data() + handleSizeAligned, handleSize);
             rayhitShaderBT.update(shaderHandleStorage.data() + handleSizeAligned*2, handleSize);
         }
-    }
+    }    
 }
