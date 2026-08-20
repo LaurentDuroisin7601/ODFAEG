@@ -1133,7 +1133,7 @@ namespace odfaeg {
                             system("PAUSE");
                         }*/                
                         transitionImageLayout(texture.images[imageIndex], commandBuffer, currentLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,mip,0,1,texture.layerCount);
-                        transitionImageLayout(images[i], commandBuffer, images[i].getLayout(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,mip,0,1,layerCount);
+                        transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,mip,0,1,layerCount);
                         //std::cout<<"copy"<<std::endl;
                         vkCmdCopyImage(
                             commandBuffer,

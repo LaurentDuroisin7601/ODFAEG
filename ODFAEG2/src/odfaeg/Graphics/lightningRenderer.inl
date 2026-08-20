@@ -198,6 +198,7 @@ namespace odfaeg {
             vkCmdBindDescriptorSets(brdfLUT.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(entity::Triangles, brdfShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr); 
             brdfLUT.beginRendering();
             brdfLUT.draw(brdfLUT.getCommandPool(), fullScreenQuad, states);
+            brdfLUT.endRendering();
             brdfLUT.submit(true);
         }
         void LightningRenderer::updateBuffers() {
@@ -269,8 +270,9 @@ namespace odfaeg {
             
             
             renderingCreateInfo.colorAttachmentCount = 1;
-            renderingCreateInfo.pColorAttachmentFormats = &parentRenderer.getImageFormat();
-            renderingCreateInfo.depthAttachmentFormat = parentRenderer.getDepthStencilTexture().getFormat();
+            renderingCreateInfo.pColorAttachmentFormats = &brdfLUT.getImageFormat();
+            renderingCreateInfo.depthAttachmentFormat = brdfLUT.getDepthStencilTexture().getFormat();
+            renderingCreateInfo.viewMask = 0;
             GPUContext::instance().getGraphicsPipeline(entity::Triangles, brdfShader, blendMode,0).createGraphicPipeline(brdfShader, entity::Triangles, GPUContext::instance().getDescriptorSetLayout(brdfShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, GPUContext::instance().getDevice().getMsaaSamples(), VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL);
             DescriptorSetLayout& pbrDescriptorLayout = GPUContext::instance().getDescriptorSetLayout(pbrShader, 7, true);
             pbrDescriptorLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_VERTEX_BIT);
@@ -319,6 +321,7 @@ namespace odfaeg {
             renderingCreateInfo.colorAttachmentCount = 1;
             renderingCreateInfo.pColorAttachmentFormats = &parentRenderer.getImageFormat();
             renderingCreateInfo.depthAttachmentFormat = parentRenderer.getDepthStencilTexture().getFormat();
+            
             for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
                 GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), pbrShader, blendMode,0).createGraphicPipeline(pbrShader, static_cast<entity::PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(pbrShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::DEPTHNOSTENCIL], blendMode, GPUContext::instance().getDevice().getMsaaSamples(), VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants); 
             }          
