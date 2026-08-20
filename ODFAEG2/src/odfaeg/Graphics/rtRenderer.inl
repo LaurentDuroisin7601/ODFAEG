@@ -351,71 +351,19 @@ namespace odfaeg {
                         accelerationBuildStructureRangeInfos.data());
             }
         }
-        void RTPipeline::createDescriptorsAndPipelines() {
-            std::vector<Texture*> Textures = Texture::getAllTextures();
-            VkDescriptorSetLayoutBinding accelerationStructureLayoutBinding{};
-            accelerationStructureLayoutBinding.binding = 0;
-            accelerationStructureLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
-            accelerationStructureLayoutBinding.descriptorCount = 1;
-            accelerationStructureLayoutBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
-
-            VkDescriptorSetLayoutBinding resultImageLayoutBinding{};
-            resultImageLayoutBinding.binding = 1;
-            resultImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-            resultImageLayoutBinding.descriptorCount = 1;
-            resultImageLayoutBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
-
-            VkDescriptorSetLayoutBinding uniformBufferBinding{};
-            uniformBufferBinding.binding = 2;
-            uniformBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            uniformBufferBinding.descriptorCount = 1;
-            uniformBufferBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
-
-            VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-            samplerLayoutBinding.binding = 3;
-            samplerLayoutBinding.descriptorCount = allTextures.size();
-            samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            samplerLayoutBinding.pImmutableSamplers = nullptr;
-            samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
-
-            VkDescriptorSetLayoutBinding triangleDataLayoutBinding{};
-            triangleDataLayoutBinding.binding = 4;
-            triangleDataLayoutBinding.descriptorCount = 1;
-            triangleDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            triangleDataLayoutBinding.pImmutableSamplers = nullptr;
-            triangleDataLayoutBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
-
-            VkDescriptorSetLayoutBinding offsetDataLayoutBinding{};
-            offsetDataLayoutBinding.binding = 5;
-            offsetDataLayoutBinding.descriptorCount = 1;
-            offsetDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            offsetDataLayoutBinding.pImmutableSamplers = nullptr;
-            offsetDataLayoutBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
-
-            VkDescriptorSetLayoutBinding indexDataLayoutBinding{};
-            offsetDataLayoutBinding.binding = 6;
-            offsetDataLayoutBinding.descriptorCount = 1;
-            offsetDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            offsetDataLayoutBinding.pImmutableSamplers = nullptr;
-            offsetDataLayoutBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
-
-            VkDescriptorSetLayoutBinding materialDataLayoutBinding{};
-            materialDataLayoutBinding.binding = 7;
-            materialDataLayoutBinding.descriptorCount = 1;
-            materialDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            materialDataLayoutBinding.pImmutableSamplers = nullptr;
-            materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
-
-            std::array<VkDescriptorSetLayoutBinding, 8> bindings = {accelerationStructureLayoutBinding, resultImageLayoutBinding, uniformBufferBinding, samplerLayoutBinding, triangleDataLayoutBinding, offsetDataLayoutBinding, indexDataLayoutBinding, materialDataLayoutBinding};
-
-            VkDescriptorSetLayoutCreateInfo layoutInfo{};
-            layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
-            layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
-            layoutInfo.pBindings = bindings.data();
-            if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
-                throw std::runtime_error("failed to create descriptor set layout!");
-            }
+        void RTPipeline::createDescriptorsAndPipelines() {            
+            DescriptorSetLayout rtSetLayout = GPUContext::instance().getDescriptorSetLayout(shader, 8, true); 
+            rtSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
+            rtSetLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
+            rtSetLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_RAYGEN_BIT_KHR);            
+            rtSetLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR); 
+            rtSetLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
+            rtSetLayout.updateLayout(5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
+            rtSetLayout.updateLayout(6, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
+            rtSetLayout.updateLayout(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
+            rtSetLayout.update();
+            rtPipleline.createRTPipeline(shader, GPUContext::instance().getDescriptorSetLayout(shader));
+            
         }
         void RTPipeline::createShaderBindingTable() {
             const uint32_t handleSize = rayTracingPipelineProperties.shaderGroupHandleSize;
