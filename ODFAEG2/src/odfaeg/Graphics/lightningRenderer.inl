@@ -94,6 +94,7 @@ namespace odfaeg {
             createDescriptorsAndPipelines();
             createCommandPools();
             needToUpdateTextures = true;
+            updateTextures();
             window::Command rendererReadyCmd(core::FastDelegate<bool>(&LightningRenderer::isRendererReady, this), core::FastDelegate<void>(&LightningRenderer::drawNextFrame, this));
             listener.connect("RendererReady",rendererReadyCmd); 
             if (useThread) {
@@ -122,7 +123,8 @@ namespace odfaeg {
                             //std::cout<<"set : "<<linkedListSets[i][0].getHandle()<<std::endl;
                 sets.push_back(GPUContext::instance().getDescriptorSets(irradianceShader)[i][0].getHandle());
             }
-            irradianceTexture.clear();
+
+            /*irradianceTexture.clear();
             BlendMode blendMode;
             vkCmdBindPipeline(irradianceTexture.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(entity::Triangles, irradianceShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getHandle());
             vkCmdBindDescriptorSets(irradianceTexture.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(entity::Triangles, irradianceShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
@@ -195,7 +197,7 @@ namespace odfaeg {
             vkCmdBindDescriptorSets(brdfLUT.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(entity::Triangles, brdfShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr); 
             brdfLUT.beginRendering();
             brdfLUT.draw(brdfLUT.getCommandPool(), fullScreenQuad, states);
-            brdfLUT.submit(true);
+            brdfLUT.submit(true);*/
         }
         void LightningRenderer::updateBuffers() {
             VkPhysicalDeviceProperties props;
