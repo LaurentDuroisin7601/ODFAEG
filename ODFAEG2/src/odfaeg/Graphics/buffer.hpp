@@ -20,6 +20,7 @@ namespace odfaeg {
 			size_t getOffset();
 			void cleanup();
 			VkBuffer getHandle();
+			uint64_t getDeviceAddress();
 			~Buffer();
 			static void copyBuffer(Buffer& srcBuffer, Buffer& dstBuffer, VkDeviceSize size, VkCommandBuffer& cmd);
 		private :			
@@ -27,7 +28,8 @@ namespace odfaeg {
 			VmaAllocation memory;
 			VkBuffer buffer;
 			size_t range;
-			size_t offset;			
+			size_t offset;
+			uint64_t deviceAddress;			
 		};
 		void swap(Buffer& a, Buffer& b) noexcept;
 	}

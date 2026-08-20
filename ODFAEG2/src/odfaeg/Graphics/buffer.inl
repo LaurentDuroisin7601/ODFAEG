@@ -4,6 +4,7 @@ namespace odfaeg {
 			buffer = VK_NULL_HANDLE;
 			range = 0;
 			offset = 0;
+			deviceAddress = 0;
 		}
 		Buffer::Buffer(Buffer&& other) noexcept {
 			allocator = other.allocator;
@@ -43,7 +44,7 @@ namespace odfaeg {
 			vmaCreateBuffer(allocator, &info, &alloc, &buffer, &memory, nullptr);
 			//std::cout<<"create buffer : "<<buffer<<std::endl;
 			range = size;
-		}
+		}		
 		void Buffer::update(const void* srcData, size_t srcDataSize, size_t dstStart) {
 			if (buffer != VK_NULL_HANDLE && srcDataSize > 0) {
 				void* data;
@@ -90,6 +91,12 @@ namespace odfaeg {
 		}
 		void swap(Buffer& a, Buffer& b) noexcept {
 			a.swap(b);
+		}
+		uint64_t Buffer::getDeviceAddress() {
+			VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{};
+            bufferDeviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+            bufferDeviceAddressInfo.buffer = buffer;
+            return vkGetBufferDeviceAddressKHR(vkDevice.getDevice(), &bufferDeviceAddressInfo);            
 		}
 	}
 }
