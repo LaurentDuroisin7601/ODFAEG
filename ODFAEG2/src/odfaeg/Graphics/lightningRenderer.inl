@@ -29,6 +29,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < 6; i++) {
                 environmentMap.loadCubeMapFromImage(imageLoader, i);
             }
+            environmentMap.generateMipmaps();
             irradianceTexture.createCubeMap(32);
             irradianceTexture.setCamera(camera);
             camera.setViewport(physic::BoundingBox(0, 0, 0.1f, 128, 128, 10.f));
@@ -133,7 +134,7 @@ namespace odfaeg {
             irradianceTexture.draw(irradianceTexture.getCommandPool(), ndcCubeVB, states);
             irradianceTexture.endRendering();
             irradianceTexture.submit(true);                    
-            //prefilterTexture.clear(); 
+            prefilterTexture.clear(); 
             states.shader = &prefilterShader;        
             unsigned int maxMipLevels = 5;
             sets.clear();
