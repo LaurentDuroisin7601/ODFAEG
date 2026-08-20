@@ -133,7 +133,7 @@ namespace odfaeg {
             irradianceTexture.draw(irradianceTexture.getCommandPool(), ndcCubeVB, states);
             irradianceTexture.endRendering();
             irradianceTexture.submit(true);                    
-            prefilterTexture.clear(); 
+            //prefilterTexture.clear(); 
             states.shader = &prefilterShader;        
             unsigned int maxMipLevels = 5;
             sets.clear();
@@ -233,8 +233,7 @@ namespace odfaeg {
             vsPushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
             pushConstants.push_back(vsPushConstant);
             VkPushConstantRange fsPushConstant;            
-            fsPushConstant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-            pushConstants.push_back(vsPushConstant);
+            fsPushConstant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;            
             BlendMode blendMode;
             VkPipelineRenderingCreateInfo renderingCreateInfo = {};
             renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;

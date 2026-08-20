@@ -4,7 +4,7 @@ layout (location = 0) in vec3 worldPos;
 
 layout (set = 0, binding = 1) uniform samplerCube environmentMap;
 layout (push_constant) uniform PushConstant {
-    float roughness;
+    layout (offset = 64) float roughness;
 } pc;
 const float PI = 3.14159265359;
 // ----------------------------------------------------------------------------

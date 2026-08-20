@@ -55,7 +55,7 @@ namespace odfaeg {
             VmaAllocationCreateInfo alloc{};
             alloc.usage = memoryUsage;
             vmaCreateImage(device.getAllocator(), &info, &alloc, &image, &memory, nullptr);
-            std::cout<<"image : "<<image<<std::endl;
+            //std::cout<<"image : "<<image<<std::endl;
             m_format = format;
             msaaSamples = samples;
             //std::cout<<"array layers : "<<arrayLayers<<std::endl;

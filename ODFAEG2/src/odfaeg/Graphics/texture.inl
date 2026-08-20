@@ -565,18 +565,19 @@ namespace odfaeg {
             else {
                 m_format = VK_FORMAT_R8G8B8A8_SRGB;
             }
+            m_DataSize = imageLoader.getDataSize();
             if (face == 0) {
-                std::cout<<"size : "<<imageLoader.getSize().x()<<std::endl;
+                //std::cout<<"size : "<<imageLoader.getSize().x()<<std::endl;
                 createCubeMap(imageLoader.getSize().x());
-                std::cout<<"cm created"<<std::endl;
+                //std::cout<<"cm created"<<std::endl;
             }
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 commandPool.beginRecordCommandBuffer(i);
-                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, face, 1, 6);
+                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, face, 1, 1);
             }            
             
             for (unsigned int i = 0; i < nbBuffers; i++) {
-                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, face, 1, 6);
+                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, face, 1, 1);
                 commandPool.endRecordCommandBuffer(i);
             }
             VkSubmitInfo submitInfo{};
@@ -629,7 +630,7 @@ namespace odfaeg {
             return true;
         }
         void Texture::updateCubeMap(const std::uint8_t* pixels, unsigned int texWidth, unsigned int texHeight, unsigned int x, unsigned int y, uint32_t face) {
-            VkDeviceSize imageSize = texWidth * texHeight * 4;
+            VkDeviceSize imageSize = m_DataSize;
             if (!pixels) {
                 throw std::runtime_error("�chec du chargement d'une image!");
             }

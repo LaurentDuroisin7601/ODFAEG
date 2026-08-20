@@ -174,12 +174,38 @@ namespace odfaeg {
         void RenderTexture::clear(const entity::Color& clearColor) {
             firstSubmit = true;
             beginRecordCommandBuffer();
-            if (!isDepthOnly()) {
-                /*std::cout<<"clear"<<std::endl;
-                system("PAUSE");*/
-                /*std::cout<<"texture size : "<<m_textures.size()<<std::endl;
-                std::cout<<"nb images : "<<m_textures[0].getImages().size()<<std::endl;
-                system("PAUSE");*/
+            VkClearColorValue clearValue = { clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f };
+            VkRenderingAttachmentInfo colorAttachmentInfo = {
+                .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+                .imageView = m_textures[0].getImage(imageIndex).getImageView().getHandle(),
+                .imageLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+                .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                .clearValue = clearValue 
+            };
+            VkRenderingAttachmentInfo depthAttachmentInfo = {
+                .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+                .imageView = getDepthStencilTexture().getImage().getImageView().getHandle(),
+                .imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                .clearValue = {.depthStencil{1.f, 0}}
+            };            
+            VkRenderingInfo renderingInfo = {
+                .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
+                .renderArea = {
+                    .offset { .x=0, .y=0 },
+                    .extent = getExtents()
+                },
+                .layerCount = getDepthStencilTexture().getLayerCount(),
+                .colorAttachmentCount = 1,
+                .pColorAttachments = &colorAttachmentInfo,
+                .pDepthAttachment = &depthAttachmentInfo
+            };            
+            vkCmdBeginRendering(getCommandPool().getHandle(getCurrentFrame()),&renderingInfo);
+            vkCmdEndRendering(getCommandPool().getHandle(getCurrentFrame()));
+            /*if (!isDepthOnly()) {
+                
                 VkClearColorValue clearValue = { clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f };
 
                 VkImageSubresourceRange imageRange = {
@@ -261,7 +287,7 @@ namespace odfaeg {
                     VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &depthStencilToClearBarrier);
             vkCmdClearDepthStencilImage(getCommandPool().getHandle(currentFrame), getDepthStencilTexture().getImage(0).getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearDepthStencilValue, 1, &imageRange2);
             vkCmdPipelineBarrier(getCommandPool().getHandle(currentFrame), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
-                    VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToDepthStencilBarrier);
+                    VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToDepthStencilBarrier);*/
         }        
         uint32_t RenderTexture::getImageIndex() {
             return imageIndex;

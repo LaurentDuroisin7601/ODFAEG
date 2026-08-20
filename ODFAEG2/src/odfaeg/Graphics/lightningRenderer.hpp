@@ -37,6 +37,7 @@ namespace odfaeg {
                    math::Matrix4f viewMatrix;
                    int primitiveType;
                    int currentFrame;
+                   int pad[2];
                };
                struct Light {
                    alignas(16) math::Vec3f lightPos;

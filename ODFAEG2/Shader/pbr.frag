@@ -7,7 +7,7 @@ struct Light {
     vec3 lightColor;
 };
 layout (push_constant) uniform PushConstant {
-    vec4 camPos;        
+    layout (offset = 144) vec4 camPos;        
 } pc;
 struct MaterialData {
     uint diffuseTextureIndex;
