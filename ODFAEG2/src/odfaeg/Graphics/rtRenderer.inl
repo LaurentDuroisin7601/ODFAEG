@@ -247,7 +247,8 @@ namespace odfaeg {
         void RTRenderer::updateTLAS() {
             std::vector<std::vector<VkAccelerationStructureInstanceKHR>> instances;
             unsigned int singleInstancesIndex = 0;
-            instancesId.resize(singleInstancesCount+instancesId+1);
+            instancesId.resize(singleInstancesCount+instancesGroupCount+1);
+            unsigned int totalInstancesCount = 0;
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
                 for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
                     unsigned int instancesID;
@@ -266,25 +267,17 @@ namespace odfaeg {
                     instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
                     instance.accelerationStructureReference = bottomLevelASBuffers[instanceID].getDeviceAddress();                    
                     instances[instancesId].push_back(instance);
+                    totalInstancesCount++;
                 }
-            } 
-            std::vector<uint32_t> instancesOffsets;
-            std::vector<VkAccelerationStructureInstanceKHR> bInstances;
-            unsigned int currentOffset = 0;
-            for (unsigned int i = 0; i < instances.size(); i++) {
-                InstanceData instancesData;
-                instanceOffsets.offset = currentOffset; 
-                instancesOffsets.push_back(currentOffset);
-                currentOffset += instances[i].size();                
-                bInstances.insert(bInstances.end(), instances[i].begin(), instances[i].end());                
             }
-            staggingInstancesBuffer.create(sizeof(VkAccelerationStructureInstanceKHR)*bInstances.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
-            staggingInstancesBuffer.update(bInstances.data(), sizeof(VkAccelerationStructureInstanceKHR)*bInstances.size());
-            instancesBuffer.back().create(sizeof(VkAccelerationStructureInstanceKHR)*bInstances.size(), VK_BUFFER_USAGE_STORAGE_BUFFER | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEVICE_ADDRESS_BIT);
-            Buffer::copyBuffer(staggingInstanceBuffer, instancesBuffer.back(), sizeof(VkAccelerationStructureInstanceKHR)*bInstances.size(), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()));
+            staggingInstancesBuffer.create(sizeof(VkAccelerationStructureInstanceKHR)*totalInstancesCount, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+            staggingInstancesBuffer.update(instances.data(), sizeof(VkAccelerationStructureInstanceKHR)*totalInstancesCount);
+            instancesBuffer.back().create(sizeof(VkAccelerationStructureInstanceKHR)*totalInstancesCount, VK_BUFFER_USAGE_STORAGE_BUFFER | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEVICE_ADDRESS_BIT);
+            Buffer::copyBuffer(staggingInstanceBuffer, instancesBuffer.back(), sizeof(VkAccelerationStructureInstanceKHR)**totalInstancesCount, parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()));
             VkDeviceOrHostAddressConstKHR instanceDataDeviceAddress{};
             instanceDataDeviceAddress.deviceAddress = instanceBuffer.back().getDeviceAddress();
-            for (unsigned int i = 0; i < instancesOffsets.size(); i++) {
+            unsigned int currentInstancesOffset = 0;
+            for (unsigned int i = 0; i < instances.size(); i++) {
             
                 VkAccelerationStructureGeometryKHR accelerationStructureGeometry{};
                 accelerationStructureGeometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
@@ -305,7 +298,7 @@ namespace odfaeg {
                 accelerationStructureBuildGeometryInfo.geometryCount = 1;
                 accelerationStructureBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
 
-                uint32_t primitive_count = 1;
+                uint32_t primitive_count = instances[i].size();
 
                 VkAccelerationStructureBuildSizesInfoKHR accelerationStructureBuildSizesInfo{};
                 accelerationStructureBuildSizesInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
@@ -339,8 +332,8 @@ namespace odfaeg {
                 accelerationBuildGeometryInfo.scratchData.deviceAddress = scratchBuffer.getDeviceAddress();
 
                 VkAccelerationStructureBuildRangeInfoKHR accelerationStructureBuildRangeInfo{};
-                accelerationStructureBuildRangeInfo.primitiveCount = 1;
-                accelerationStructureBuildRangeInfo.primitiveOffset = instancesDatas[i].offset;
+                accelerationStructureBuildRangeInfo.primitiveCount = primitiveCount;
+                accelerationStructureBuildRangeInfo.primitiveOffset = currentInstancesOffset;
                 accelerationStructureBuildRangeInfo.firstVertex = 0;
                 accelerationStructureBuildRangeInfo.transformOffset = 0;
                 std::vector<VkAccelerationStructureBuildRangeInfoKHR*> accelerationBuildStructureRangeInfos = { &accelerationStructureBuildRangeInfo };
@@ -349,6 +342,7 @@ namespace odfaeg {
                         1,
                         &accelerationBuildGeometryInfo,
                         accelerationBuildStructureRangeInfos.data());
+                currentInstancesOffset += instances[i].size();
             }
         }
         void RTPipeline::createDescriptorsAndPipelines() {            
