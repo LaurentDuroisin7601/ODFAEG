@@ -172,7 +172,7 @@ namespace odfaeg {
                 VkRenderingAttachmentInfo colorAttachmentInfo;
                 colorAttachmentInfo = {
                     .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-                    .imageView = prefilterTexture.getTexture().getImageViews()[mip].getHandle(),
+                    .imageView = prefilterTexture.getRenderingView(mip).getHandle(),
                     .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                     .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,

@@ -35,13 +35,15 @@ namespace odfaeg {
             RenderPass& getRenderPass(unsigned int renderPassId);
             void clear(const entity::Color& color = entity::Color(0, 0, 0, 255));
             void beginRendering(bool secondaryCommandBuffers=false);
+            
             void endRendering();
             void beginRenderPass(bool secondaryCommandBuffers=false);
 			void endRenderPass();
             void submit(bool lastSubmit = false, std::vector<VkSemaphore> signalSemaphores = std::vector<VkSemaphore>(),
-                                                                                                       std::vector<VkSemaphore> waitSemaphores = std::vector<VkSemaphore>(), std::vector<VkPipelineStageFlags> waitStages = std::vector<VkPipelineStageFlags>(),
+                                                                                                      std::vector<VkSemaphore> waitSemaphores = std::vector<VkSemaphore>(), std::vector<VkPipelineStageFlags> waitStages = std::vector<VkPipelineStageFlags>(),
                                                                                                        std::vector<uint64_t> signalValues = std::vector<uint64_t>(),
                                                                                                        std::vector<uint64_t> waitValues = std::vector<uint64_t>(), std::vector<VkFence>fences = std::vector<VkFence>(), unsigned int queueIndex = 0, bool resetFence = true, bool resetFences = true, VkFence fenceToSubmit = nullptr);
+            ImageView& getRenderingView(int viewIndex); 
             void display();  
             //std::vector<Image>& getImages();            
             VkFormat& getImageFormat();

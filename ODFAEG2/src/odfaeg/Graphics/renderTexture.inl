@@ -468,6 +468,10 @@ namespace odfaeg {
 	    void RenderTexture::endRendering() {
             vkCmdEndRendering(getCommandPool().getHandle(currentFrame));
         }
+        ImageView& RenderTexture::getRenderingView(int viewIndex) {
+            unsigned int viewCount = m_textures[0].getLayerCount();
+            return (viewIndex == -1) ? m_textures[0].getImage(imageIndex).getImageView() : m_textures[0].getImageViews()[imageIndex*viewCount+viewIndex];
+        }
         std::vector<Semaphore>& RenderTexture::getSemaphores() {
             return imageAvailableSemaphores;
         }
