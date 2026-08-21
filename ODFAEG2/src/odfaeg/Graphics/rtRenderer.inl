@@ -12,9 +12,9 @@ namespace odfaeg {
         materialStaggingBuffer(GPUContext::instance().getDevice()),
         geometryOffsetStaggingBuffer(GPUContext::instance().getDevice()),
         instancesStaggingBuffer(GPUContext::instance().getDevice()),
-        raygenBindingTable(GPUContext::instance().getDevice()),
-        raymissBindingTable(GPUContext::instance().getDevice()),
-        rayhitBindingTable(GPUContext::instance().getDevice()),
+        raygenShaderBT(GPUContext::instance().getDevice()),
+        raymissShaderBT(GPUContext::instance().getDevice()),
+        rayhitShaderBT(GPUContext::instance().getDevice()),
         typesToRenderExpression(typesToRenderExpression)        
         {
 
@@ -540,17 +540,17 @@ namespace odfaeg {
             }
             const uint32_t handleSizeAligned = (rayTracingPipelineProperties.shaderGroupHandleSize + rayTracingPipelineProperties.shaderGroupHandleAlignment - 1) & ~(rayTracingPipelineProperties.shaderGroupHandleAlignment - 1);
             VkStridedDeviceAddressRegionKHR raygenShaderSbtEntry{};
-			raygenShaderSbtEntry.deviceAddress = raygenShaderBindingTable.getDeviceAddress();
+			raygenShaderSbtEntry.deviceAddress = raygenShaderBT.getDeviceAddress();
 			raygenShaderSbtEntry.stride = handleSizeAligned;
 			raygenShaderSbtEntry.size = handleSizeAligned;
 
 			VkStridedDeviceAddressRegionKHR missShaderSbtEntry{};
-			missShaderSbtEntry.deviceAddress = missShaderBindingTable.getDeviceAddress();
+			missShaderSbtEntry.deviceAddress = raymissShaderBT.getDeviceAddress();
 			missShaderSbtEntry.stride = handleSizeAligned;
 			missShaderSbtEntry.size = handleSizeAligned;
 
 			VkStridedDeviceAddressRegionKHR hitShaderSbtEntry{};
-			hitShaderSbtEntry.deviceAddress = hitShaderBindingTable.getDeviceAddress();
+			hitShaderSbtEntry.deviceAddress = rayhitShaderBT.getDeviceAddress();
 			hitShaderSbtEntry.stride = handleSizeAligned;
 			hitShaderSbtEntry.size = handleSizeAligned;
 
@@ -566,7 +566,7 @@ namespace odfaeg {
             }
 			vkCmdBindPipeline(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, GPUContext::instance().getRTPipeline(rtShader).getHandle());
 			vkCmdBindDescriptorSets(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, GPUContext::instance().getRTPipeline(rtShader).getLayout(), 0, sets.size(), sets.data(), 0, 0);
-            vkCmdPushConstants(parentRenderer.getCommandPool().getHandle(envMap.getCurrentFrame()), GPUContext::instance().getRTPipeline(rtShader).getLayout(), VK_SHADER_STAGE_RAYGEN_BIT_KHR, 0, sizeof(RayGenPC), &raygenPC);
+            vkCmdPushConstants(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getRTPipeline(rtShader).getLayout(), VK_SHADER_STAGE_RAYGEN_BIT_KHR, 0, sizeof(RayGenPC), &rayGenPC);
 			vkCmdTraceRaysKHR(
 				parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()),
 				&raygenShaderSbtEntry,
@@ -595,7 +595,7 @@ namespace odfaeg {
                 barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
                 barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
                 barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-                barrier.image = storageImage.back().getHandle();
+                barrier.image = storageImage[parentRenderer.getCurrentFrame()].getHandle();
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 barrier.subresourceRange.levelCount = 1;
                 barrier.subresourceRange.layerCount = 1;
@@ -607,8 +607,8 @@ namespace odfaeg {
 			copyRegion.srcOffset = { 0, 0, 0 };
 			copyRegion.dstSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
 			copyRegion.dstOffset = { 0, 0, 0 };
-			copyRegion.extent = { parentRenderer.getRenderingImage().getSize().x(), parentRenderer.getRenderingImage().getSize().y(), 1 };
-			vkCmdCopyImage(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), storageImage.image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, window.getSwapchainImages()[window.getImageIndex()], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
+			copyRegion.extent = { parentRenderer.getSize().x(), parentRenderer.getSize().y(), 1 };
+			vkCmdCopyImage(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), storageImage[parentRenderer.getCurrentFrame()].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, parentRenderer.getRenderingImage().getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
 
 			{
                 VkImageMemoryBarrier barrier = {};
@@ -629,7 +629,7 @@ namespace odfaeg {
                 barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
                 barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
                 barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
-                barrier.image = storageImage.back.getHandle();
+                barrier.image = storageImage[parentRenderer.getCurrentFrame()].getHandle();
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 barrier.subresourceRange.levelCount = 1;
                 barrier.subresourceRange.layerCount = 1;
