@@ -1,6 +1,6 @@
 namespace odfaeg {
     namespace graphic {
-        RTRenderer::RTRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true) :
+        RTRenderer::RTRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId, bool usethread) :
         parentRenderer(parentRenderer),
         rtShader(GPUContext::instance().getDeive()) {
             rayTracingPipelineProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
@@ -236,7 +236,9 @@ namespace odfaeg {
                         accelerationStructureCreateInfo.buffer = bottomLevelASBuffes.back().getHandel();
                         accelerationStructureCreateInfo.size = accelerationStructureBuildSizesInfo.accelerationStructureSize;
                         accelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
-                        vkCreateAccelerationStructureKHR(GPUContext::instance().getDevice().getDevice(), &accelerationStructureCreateInfo, nullptr, &bottomLevelASBuffers.back().getHandle());
+                        VkAccelerationStructureKHR handle;
+                        vkCreateAccelerationStructureKHR(GPUContext::instance().getDevice().getDevice(), &accelerationStructureCreateInfo, nullptr, &handle));
+                        bottomLevelAS.emplace_back(handle);
 
                         // Create a small scratch buffer used during build of the bottom level acceleration structure
                         Buffer scratchBuffer.create(accelerationStructureBuildSizesInfo.buildScratchSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_CPU_ONLY, VMA_ALLOCATION_CREATE_DEVICE_ADDRESS_BIT);
@@ -363,8 +365,9 @@ namespace odfaeg {
                 accelerationStructureCreateInfo.buffer = topLevelASBuffers.back().getHandle();
                 accelerationStructureCreateInfo.size = accelerationStructureBuildSizesInfo.accelerationStructureSize;
                 accelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
-                vkCreateAccelerationStructureKHR(GPUContext::instance().getDevice().getDevice(), &accelerationStructureCreateInfo, nullptr, &topLevelASBuffers.back().getHandle());
-
+                VkAccelerationStructureKHR handle;
+                vkCreateAccelerationStructureKHR(GPUContext::instance().getDevice().getDevice(), &accelerationStructureCreateInfo, nullptr, &handle);
+                topLevelAS.emplace_back(handle);    
                 // Create a small scratch buffer used during build of the top level acceleration structure
                 Buffer scratchBuffer.create(accelerationStructureBuildSizesInfo.buildScratchSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEVICE_ADDRESS_BIT);
 
@@ -389,7 +392,7 @@ namespace odfaeg {
                         1,
                         &accelerationBuildGeometryInfo,
                         accelerationBuildStructureRangeInfos.data());
-                currentInstancesOffset += instances[i].size();
+                currentInstancesOffset += instances[i].size();                
             }
         }
         void RTPipeline::createDescriptorsAndPipelines() {            
