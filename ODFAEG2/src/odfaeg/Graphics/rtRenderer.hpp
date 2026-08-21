@@ -63,6 +63,7 @@ namespace odfaeg {
                 void updateBLAS();
                 void updateTLAS();
             private :
+                VkTransformMatrixKHR toVulkanMatrix (math::Matrix4f matrix);
                 RayGenPC rayGenPC;
                 void updateDescriptorSets();
                 void createCommandPool();

@@ -69,6 +69,13 @@ namespace odfaeg {
             commandPool.create(queueFamilyIndices.graphicsFamily.value());
             commandPool.createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT);
         }
+        VkTransformMatrixKHR RTRenderer::toVulkanMatrix (math::Matrix4f matrix) {
+            VkTransformMatrixKHR transformMatrix = {
+                    matrix[0][0], matrix[0][1], matrix[0][2], matrix[0][3],
+                    matrix[1][0], matrix[1][1], matrix[1][2], matrix[1][3],
+                    matrix[2][0], matrix[2][1], matrix[2][2], matrix[2][3] };
+            return transformMatrix;
+        }
         void RTRenderer::updateBLAS() { 
             VkTransformMatrixKHR transformMatrix = {
                 1.0f, 0.0f, 0.0f, 0.0f,
@@ -564,6 +571,7 @@ namespace odfaeg {
                 //std::cout<<"set : "<<linkedListSets[i][0].getHandle()<<std::endl;
                 sets.push_back(GPUContext::instance().getDescriptorSets(rtShader)[i][0].getHandle());
             }
+            rayGenPC.currentFrame = parentRenderer.getCurrentFrame();
 			vkCmdBindPipeline(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, GPUContext::instance().getRTPipeline(rtShader).getHandle());
 			vkCmdBindDescriptorSets(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, GPUContext::instance().getRTPipeline(rtShader).getLayout(), 0, sets.size(), sets.data(), 0, 0);
             vkCmdPushConstants(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getRTPipeline(rtShader).getLayout(), VK_SHADER_STAGE_RAYGEN_BIT_KHR, 0, sizeof(RayGenPC), &rayGenPC);
