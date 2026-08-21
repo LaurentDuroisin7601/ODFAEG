@@ -1,0 +1,56 @@
+#version 460
+#extension GL_EXT_ray_tracing : enable
+#extension GL_EXT_nonuniform_qualifier : enable
+struct Vertex {
+    vec3 position;
+    vec4 color;
+    vec2 texCoords;
+    vec3 normal;
+};
+struct GeometryOffset {
+    uint vertexOffset;
+    uint indexOffset;
+};
+struct MaterialData {
+    mat4 textureMatrix;
+    uint textureIndex;
+};
+layout (location = 3) uniform sampler2D textures[];
+layout (location = 4) uniform buffer vertexBuffer {
+    Vertex vertices[];
+};
+layout (location = 5) uniform buffer geomBuffer {
+    GeometryOffset geomOffsets[];
+};
+layout (location = 6) uniform buffer indexBuffer {
+    uint indexes[];
+};
+layout (location = 7) uniform buffer materialBuffer {
+    uint materials[];
+};
+struct RayPayload {
+    vec4 color;
+};
+layout(location = 0) rayPayloadInEXT RayPayload payload;
+hitAttributeEXT vec2 baryCoords;
+void main() {
+    GeometryOffset geomOffs = geomOffsets[gl_InstanceCustomIndexEXT];
+    int primID = gl_PrimitiveID;
+    uint i1 = indexes[geomOffs.indexOffset + primId * 3 + 0];
+    uint i2 = indexes[geomOffs.indexOffset + primId * 3 + 1];
+    uint i3 = indexes[geomOffs.indexOffset + primId * 3 + 2];
+    vec4 c1 = vertices[geomOffs.vertexOffset + i1].color;
+    vec4 c2 = vertices[geomOffs.vertexOffset + i2].color;
+    vec4 c3 = vertices[geomOffs.vertexOffset + i3].color;
+    mat4 textureMatrix = materials[gl_InstanceCustomIndexEXT].textureMatrix;
+    vec2 ct1 = (vec4(vertices[geomOffs.vertexOffset + i1].texCoords.xy, 0, 1) * textureMatrix).xy;
+    vec2 ct2 = (vec4(vertices[geomOffs.vertexOffset + i2].texCoords.xy, 0, 1) * textureMatrix).xy;
+    vec2 ct3 = (vec4(vertices[geomOffs.vertexOffset + i3].texCoords.xy, 0, 1) * textureMatrix).xy;
+    float u = baryCoord.x;
+    float v = baryCoord.y;
+    float w = 1.0 - u - v;
+    vec4 color = w * c1 + u * c2 + v * c3;
+    vec2 tc = w * ct1 + u * ct2 + v * ct3;
+    uint textureIndex = materials[gl_InstanceCustomIndexEXT].textureIndex;
+    payload.color = (textureIndex > 0) ? color * texture(textures[textureIndex-1], ct) : color;
+}

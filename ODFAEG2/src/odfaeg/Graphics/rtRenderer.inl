@@ -1,7 +1,8 @@
 namespace odfaeg {
     namespace graphic {
         RTRenderer::RTRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true) :
-        parentRenderer(parentRenderer) {
+        parentRenderer(parentRenderer),
+        rtShader(GPUContext::instance().getDeive()) {
             rayTracingPipelineProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
             VkPhysicalDeviceProperties2 deviceProperties2{};
             deviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
