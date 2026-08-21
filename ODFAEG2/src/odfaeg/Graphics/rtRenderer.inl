@@ -21,12 +21,16 @@ namespace odfaeg {
                 storageImage.back().createImage(size.x(), size.y(), 1, VK_IMAGE_TYPE_2D, parentRenderer.getImageFormat(), VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY,
                         1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
                 headPtrsStorageImage.back().createImageView(VK_IMAGE_VIEW_TYPE_2D, parentRenderer.getImageFormat(), VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
-            }            
+            } 
+            UBOData uboDatas;
+            uboDatas.projInverse = parentRenderer.getCamera().getProjMatrix().getMatrix().inverse().transpose(); 
+            uboDatas.viewInverse = parentRenderer.getCamera().getViewMatrix().getMatrix().inverse().transpose();          
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 ubo.emplace_back(GPUContext::instance().getDevice());
-                ubo.back().create(sizeof(UBODatas), VK_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+                ubo.back().create(sizeof(UBOData), VK_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
                 ubo.back().update(uboDatas.data(), sizeof(UBOData));  
             }
+            
             std::string shaderDir = std::string(ODFAEG_INSTALL_DIR) + "/Shader";
             if (!rtShader.loadRaytracingFromFileSpv(shaderDir + "/raygenShader.raygen", shaderDir + "/raymissShader.raymiss", shaderDir+"/rayhitShader.rayhit")) {
                 throw std::runtime_error("Could not load env map shader");
