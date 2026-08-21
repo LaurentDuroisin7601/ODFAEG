@@ -50,7 +50,8 @@ namespace odfaeg {
             }
             shaderGroupCount = 3;
             createDescriptorAndPipelines();
-            createShaderBindingTable(); 
+            createShaderBindingTable();
+            needToUpdateBLAS = needToUpdateTLAS = needToUpdateDescriptorSets = true; 
         } 
         void RTRenderer::createCommandPool() {
             Device::QueueFamilyIndices queueFamilyIndices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice());
@@ -117,6 +118,7 @@ namespace odfaeg {
             materialBuffer.create(ssizeof(Material)*materials.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEVICE_ADDRESS_BIT);
             
             Buffer::copyBuffer(materialStaggingBuffer, materialBuffer, sizeof(Material)*materials.size(), commandPool.getHandle(parentRenderer.getHandle()));
+            std::vector<GameObject*> gameObjects = RenderTarget::getGameObjects();
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
                 for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
                     entity::SubMesh sm = gameObjects[i]->getGameObject()->getSubMeshes()[j];
@@ -315,6 +317,7 @@ namespace odfaeg {
             unsigned int singleInstancesIndex = 0;
             instancesId.resize(singleInstancesCount+instancesGroupCount+1);
             unsigned int totalInstancesCount = 0;
+            std::vector<GameObject*> gameObjects = RenderTarget::getGameObjects();
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
                 for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
                     unsigned int instancesID;
