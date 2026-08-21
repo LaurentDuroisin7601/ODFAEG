@@ -2,7 +2,6 @@
 #extension GL_EXT_ray_tracing : enable
 #extension GL_EXT_nonuniform_qualifier : enable
 #define MAX_FRAMES_IN_FLIGHT 2
-#define NB_PRIMITIVE_TYPES 3
 #define MAX_TEXTURES 1024
 struct Vertex {
     vec3 position;
@@ -14,9 +13,26 @@ struct GeometryOffset {
     uint vertexOffset;
     uint indexOffset;
 };
-struct MaterialData {
-    mat4 textureMatrix;
-    uint textureIndex;
+struct MaterialData {   
+    /*vec2 uvScale;
+    vec2 uvOffset;*/
+    uint diffuseTextureIndex;
+    uint specularTextureIndex;
+    uint normalTextureIndex;
+    uint metalnessTextureIndex;
+    uint roughnessTextureIndex;
+    uint aoTextureIndex;
+    uint emissiveTextureIndex;
+    uint materialType;
+    uint materialSet;   
+    uint nbVertices;
+    uint nbIndexes;
+    int instanceGroupId;
+    uint vertsInstanceSet;
+    uint materialId;
+    uint nbBuffers;  
+    int reflectable;
+    int refractable;  
 };
 layout (binding = 0, set = 1) uniform sampler2D textures[];
 layout (binding = 1, set =  1) uniform buffer vertexBuffer {

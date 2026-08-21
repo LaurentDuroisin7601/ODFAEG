@@ -398,7 +398,7 @@ namespace odfaeg {
             rtRayhitSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR); 
             rtRayhitSetLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
             rtRayhitSetLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
-            rtRayhitSetLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
+            rtRayhitSetLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
             rtRayhitSetLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, , VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
             rtRayhitSetLayout.update();
@@ -412,7 +412,7 @@ namespace odfaeg {
             rtRayhitPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
             rtRayhitPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
             rtRayhitPool.updatePoolSize(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
-            rtRayhitPool.updatePoolSize(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES);
+            rtRayhitPool.updatePoolSize(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
             rtRayhitPool.updatePoolSize(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLE, MAX_TEXTURES);
             rtRayhitPool.update();
             DescriptorSet::allocate(rtRaygenPool, rtRaygenLayout, GPUContext::instance().getDescriptorSets(rtShader, 3, 1), MAX_TLAS_STRUCTURES);
