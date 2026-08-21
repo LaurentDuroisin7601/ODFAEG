@@ -21,6 +21,10 @@ namespace odfaeg {
     namespace graphic {
         class RTRenderer {
             public :
+                struct RayGenPC {
+                    unsigned int currentFrame;
+                    unsigned int tlasCount;
+                };
                 struct GeometryOffset {
                     uint32_t vertexOffset;
                     uint32_t indexOffset;
@@ -59,6 +63,8 @@ namespace odfaeg {
                 void updateBLAS();
                 void updateTLAS();
             private :
+                RayGenPC rayGenPC;
+                void updateDescriptorSets();
                 void createCommandPool();
                 void loadExtensionsFuncPtr();
                 std::deque<Image> storageImage;
@@ -66,7 +72,7 @@ namespace odfaeg {
                 Buffer transformMatrixBuffer, materialBuffer, geometryOffsetBuffer;
                 Buffer transformMatrixStaggingBuffer, materialStaggingBuffer, geometryOffsetStaggingBuffer;
                 Buffer instancesBuffer, instancesStaggingBuffer;
-                Buffer raygenBindingTable, raymissBindingTable, rayhitBindingTable;
+                Buffer raygenShaderBT, raymissShaderBT, rayhitShaderBT;
                 std::deque<Buffer> bottomLevelASBuffers, topLevelASBuffers;
                 std::deque<Buffer> ubo;
                 std::vector<VkAccelerationStructureKHR> bottomLevelAS, topLevelAS; 
@@ -74,6 +80,7 @@ namespace odfaeg {
                 Shader rtShader;
                 CommandPool commandPool;
                 RenderTarget& parentRenderer;
+                std::string typesToRenderExpression;
                 int instancesGroupCount, singleInstancesCount, shaderGroupCount;                     
                 PFN_vkCreateAccelerationStructureKHR vkCreateAccelerationStructureKHR{ nullptr };
                 PFN_vkDestroyAccelerationStructureKHR vkDestroyAccelerationStructureKHR{ nullptr };

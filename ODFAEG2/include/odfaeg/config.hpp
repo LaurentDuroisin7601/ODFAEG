@@ -51,6 +51,7 @@ static const unsigned int NB_PRIMITIVE_TYPES = 6;
 static const unsigned int MAX_FRAMES_IN_FLIGHT = 2;
 static const unsigned int MAX_SCISSORS_AND_VIEWPORTS = 1;
 static const unsigned int NB_CASCADES = 4;
+static const unsigned int MAX_TLAS_STRUCTURES = 100;
 ////////////////////////////////////////////////////////////
 // Identify the operating system
 ////////////////////////////////////////////////////////////

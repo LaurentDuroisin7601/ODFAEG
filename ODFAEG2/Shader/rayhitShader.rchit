@@ -2,6 +2,7 @@
 #extension GL_EXT_ray_tracing : enable
 #extension GL_EXT_nonuniform_qualifier : enable
 #define MAX_FRAMES_IN_FLIGHT 2
+#define MAX_PRIMITIVE_TYPES 6
 #define MAX_TEXTURES 1024
 #define MAX_BONES_INFLUENCE 4
 struct Vertex {
@@ -43,10 +44,10 @@ struct MaterialData {
 };
 layout (binding = 0, set =  1) buffer vertexBuffer {
     Vertex vertices[];
-};
+} verticesData[MAX_PRIMITIVE_TYPES];
 layout (binding = 1, set = 1) buffer indexBuffer {
     uint indexes[];
-};
+} indexesData[MAX_PRIMITIVE_TYPES];
 layout (binding = 2, set = 1) buffer geomBuffer {
     GeometryOffset geomOffsets[];
 };
@@ -70,16 +71,16 @@ vec4 unpackColor(uint color) {
 void main() {
     GeometryOffset geomOffs = geomOffsets[gl_InstanceCustomIndexEXT];
     int primID = gl_PrimitiveID;
-    uint i1 = indexes[geomOffs.indexOffset + primID * 3 + 0];
-    uint i2 = indexes[geomOffs.indexOffset + primID * 3 + 1];
-    uint i3 = indexes[geomOffs.indexOffset + primID * 3 + 2];
-    vec4 c1 = unpackColor(vertices[geomOffs.vertexOffset + i1].color);
-    vec4 c2 = unpackColor(vertices[geomOffs.vertexOffset + i2].color);
-    vec4 c3 = unpackColor(vertices[geomOffs.vertexOffset + i3].color);
+    uint i1 = indexesData[3].indexes[geomOffs.indexOffset + primID * 3 + 0];
+    uint i2 = indexesData[3].indexes[geomOffs.indexOffset + primID * 3 + 1];
+    uint i3 = indexesData[3].indexes[geomOffs.indexOffset + primID * 3 + 2];
+    vec4 c1 = unpackColor(verticesData[3].vertices[geomOffs.vertexOffset + i1].color);
+    vec4 c2 = unpackColor(verticesData[3].vertices[geomOffs.vertexOffset + i2].color);
+    vec4 c3 = unpackColor(verticesData[3].vertices[geomOffs.vertexOffset + i3].color);
     MaterialData material = materials[geomOffs.materialOffset];
-    vec2 ct1 = vertices[geomOffs.vertexOffset + i1].texCoords.xy;
-    vec2 ct2 = vertices[geomOffs.vertexOffset + i2].texCoords.xy;
-    vec2 ct3 = vertices[geomOffs.vertexOffset + i3].texCoords.xy;
+    vec2 ct1 = verticesData[3].vertices[geomOffs.vertexOffset + i1].texCoords.xy;
+    vec2 ct2 = verticesData[3].vertices[geomOffs.vertexOffset + i2].texCoords.xy;
+    vec2 ct3 = verticesData[3].vertices[geomOffs.vertexOffset + i3].texCoords.xy;
     float u = baryCoords.x;
     float v = baryCoords.y;
     float w = 1.0 - u - v;
