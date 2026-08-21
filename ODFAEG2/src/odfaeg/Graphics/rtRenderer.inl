@@ -45,7 +45,7 @@ namespace odfaeg {
             }
             
             std::string shaderDir = std::string(ODFAEG_INSTALL_DIR) + "/Shader";
-            if (!rtShader.loadRaytracingFromFileSpv(shaderDir + "/raygenShader.raygen", shaderDir + "/raymissShader.raymiss", shaderDir+"/rayhitShader.rayhit")) {
+            if (!rtShader.loadRaytracingFromFileSpv(shaderDir + "/raygenShader.rgen", shaderDir + "/raymissShader.rmiss", shaderDir+"/rayhitShader.rchit")) {
                 throw std::runtime_error("Could not load env map shader");
             }
             shaderGroupCount = 3;
