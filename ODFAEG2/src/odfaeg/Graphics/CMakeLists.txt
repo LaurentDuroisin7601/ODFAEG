@@ -8,7 +8,10 @@ file(GLOB_RECURSE SHADERC_SRC CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/Shader/*.frag"
     "${CMAKE_SOURCE_DIR}/Shader/*.comp"
     "${CMAKE_SOURCE_DIR}/Shader/*.mesh"
-    "${CMAKE_SOURCE_DIR}/Shader/*.task")
+    "${CMAKE_SOURCE_DIR}/Shader/*.task"
+	"${CMAKE_SOURCE_DIR}/Shader/*.raygen"
+	"${CMAKE_SOURCE_DIR}/Shader/*.raymiss"
+	"${CMAKE_SOURCE_DIR}/Shader/*.rayhit")
 file(GLOB_RECURSE SHADERC_SPV CONFIGURE_DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/Shader/*.spv")
 set(SPV_OUTPUTS "")
 foreach(SHADER_SRC ${SHADERC_SRC})
