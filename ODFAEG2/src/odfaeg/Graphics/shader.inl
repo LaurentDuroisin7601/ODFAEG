@@ -40,6 +40,27 @@ namespace odfaeg {
                     buffer.push_back('\0');
                     return success;
                 }
+                bool loadspv(const std::string& path, std::vector<uint32_t>& out) {
+                    std::ifstream file(path, std::ios::ate | std::ios::binary);
+                    if (!file.is_open()) {
+                        std::cerr << "Failed to open SPIR-V file \"" << path << "\"" << std::endl;
+                        return false;
+                    }
+
+                    size_t fileSize = (size_t)file.tellg();
+                    if (fileSize % 4 != 0) {
+                        std::cerr << "SPIR-V file size is not aligned to 4 bytes: " << path << std::endl;
+                        return false;
+                    }
+
+                    out.resize(fileSize / sizeof(uint32_t));
+
+                    file.seekg(0);
+                    file.read(reinterpret_cast<char*>(out.data()), fileSize);
+                    file.close();
+
+                    return true;
+                }
             }      
             Shader::Shader(Device& vkDevice) : device(vkDevice), fragmentShaderModule(nullptr), geometryShaderModule(nullptr), computeShaderModule(nullptr), taskShaderModule(nullptr), meshShaderModule(nullptr) {
                 id = nbShaders;
@@ -82,32 +103,11 @@ namespace odfaeg {
                 // Compile the shader program
                 return compile(&vertexShader[0], &fragmentShader[0]);
             }
+            
             bool Shader::loadMeshFromFileSpv(const std::string& meshShaderFileName,
                                  const std::string& fragmentShaderFileName,
                                  const std::string& taskShaderFileName)
-{
-                auto loadSpv = [](const std::string& path, std::vector<uint32_t>& out) -> bool {
-                    std::ifstream file(path, std::ios::ate | std::ios::binary);
-                    if (!file.is_open()) {
-                        std::cerr << "Failed to open SPIR-V file \"" << path << "\"" << std::endl;
-                        return false;
-                    }
-
-                    size_t fileSize = (size_t)file.tellg();
-                    if (fileSize % 4 != 0) {
-                        std::cerr << "SPIR-V file size is not aligned to 4 bytes: " << path << std::endl;
-                        return false;
-                    }
-
-                    out.resize(fileSize / sizeof(uint32_t));
-
-                    file.seekg(0);
-                    file.read(reinterpret_cast<char*>(out.data()), fileSize);
-                    file.close();
-
-                    return true;
-                };
-
+            {
                 // Mesh shader
                 if (!loadSpv(meshShaderFileName, spvMeshShaderCode))
                     return false;
@@ -134,6 +134,26 @@ namespace odfaeg {
             }
             bool Shader::loadRaytracingFromMemory(const std::string& raygenShader, const std::string& raymissShader, const std::string& rayhitShader) {
                 return compileRaytracing(raygenShader.c_str(), raymissShader.c_str(), rayhitShader.c_str());
+            }
+            bool Shader::loadRaytracingFromFileSpv(const std::string& raygenShaderFileName,
+                                 const std::string& raymissShaderFileName,
+                                 const std::string& rayhitFileName)
+            {
+                // Mesh shader
+                if (!loadSpv(raygenShaderFileName, spvRaygenShaderCode))
+                    return false;
+
+                // Fragment shader
+                if (!loadSpv(raymissShaderFileName, spvRaymissShaderCode))
+                    return false;
+
+                // Task shader (optionnel)
+                if (!rayhitShaderFileName.empty()) {
+                    if (!loadSpv(taskShaderFileName, spvRayhitShaderCode))
+                        return false;
+                }
+
+                return true;
             }
             ////////////////////////////////////////////////////////////
             bool Shader::loadFromStream(core::InputStream& vertexShaderStream, core::InputStream& fragmentShaderStream)
@@ -250,8 +270,8 @@ namespace odfaeg {
                     case COMPUTE_SHADER : {
                          module = compiler.CompileGlslToSpv(shaderCode, shaderc_glsl_compute_shader, "shader_src", options); 
                          if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
-                            std::cerr << "Failed to compile compute shader :  " << module.GetErrorMessage();
-                            return false;
+                                std::cerr << "Failed to compile compute shader :  " << module.GetErrorMessage();
+                                return false;
                             }
                             else {
                                 spvComputeShaderCode = { module.cbegin(), module.cend() };                    
