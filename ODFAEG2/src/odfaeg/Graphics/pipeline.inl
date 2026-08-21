@@ -504,6 +504,10 @@ namespace odfaeg {
 			shader.cleanupComputeShaderModule();
 		}
 		std::vector< Pipeline::createRTPipeline(Shader shader, std::deque<DescriptorSetLayout>& setLayouts, std::vector<VkPushConstantRange> pushConstants) {
+			if (pipeline != VK_NULL_HANDLE) {
+				cleanup();
+			}
+			shader.createRayShaderModule();
 			std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 			std::vector<VkRayTracingShaderGroupCreateInfoKH> shaderGroups;
 			{

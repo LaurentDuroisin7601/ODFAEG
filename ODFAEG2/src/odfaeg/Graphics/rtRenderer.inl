@@ -402,7 +402,13 @@ namespace odfaeg {
             rtRayhitSetLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, , VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
             rtRayhitSetLayout.update();
-            GPUContext::instance().getRTPipeline(rtShader).createRTPipeline(rtShader, GPUContext::instance().getDescriptorSetLayout(rtShader));
+            std::vector<VkPushConstantRange> pushConstants;
+            VkPushConstantRange vertexPCRange;
+            vertexPCRange.offset = 0;
+            vertexPCRange.size = sizeof(RayGenPC);
+            vertexPCRange.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+            pushConstants.push_back(vertexPCRange);
+            GPUContext::instance().getRTPipeline(rtShader).createRTPipeline(rtShader, GPUContext::instance().getDescriptorSetLayout(rtShader), pushConstants);
             DescriptorPool& rtRaygenPool = GPUContext::instance().getDescriptorPool(rtShader, 3);
             rtRaygenPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT);
             rtRaygenPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT);
@@ -516,9 +522,9 @@ namespace odfaeg {
                 //std::cout<<"set : "<<linkedListSets[i][0].getHandle()<<std::endl;
                 sets.push_back(GPUContext::instance().getDescriptorSets(rtShader)[i][0].getHandle());
             }
-			vkCmdBindPipeline(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pipeline);
-			vkCmdBindDescriptorSets(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pipelineLayout, 0, sets.size(), sets.data(), 0, 0);
-
+			vkCmdBindPipeline(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, GPUContext::instance().getRtPipeline(rtShader).getHandle());
+			vkCmdBindDescriptorSets(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, GPUContext::instance().getRtPipeline(rtShader).getLayout(), 0, sets.size(), sets.data(), 0, 0);
+            vkCmdPushConstants(envMapCmdPools[cmp].getHandle(envMap.getCurrentFrame()), GPUContext::instance().getRTPipeline(rtShader).getLayout(), VK_SHADER_STAGE_RAYGEN_BIT_KHR, 0, sizeof(RayGenPC), &raygenPC);
 			vkCmdTraceRaysKHR(
 				parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()),
 				&raygenShaderSbtEntry,
