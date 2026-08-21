@@ -322,6 +322,21 @@ namespace odfaeg {
 			descriptorWrites[binding].descriptorCount = imageInfos[binding].size();
 			descriptorWrites[binding].pImageInfo = imageInfos[binding].data();
 		}
+		void DescriptorSet::updateAccelerationStructureInfos(unsigned int binding, std::deque<VkAccelerationStructureKHR> handles) {
+			VkWriteDescriptorSetAccelerationStructureKHR descriptorAccelerationStructureInfo{};
+			descriptorAccelerationStructureInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
+			descriptorAccelerationStructureInfo.accelerationStructureCount = handles.size();
+			descriptorAccelerationStructureInfo.pAccelerationStructures = handles.data();
+
+			VkWriteDescriptorSet accelerationStructureWrite{};
+			descriptorWrites[binding].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			// The specialized acceleration structure descriptor has to be chained
+			descriptorWrites[binding].pNext = &descriptorAccelerationStructureInfo;
+			descriptorWrites[binding].dstSet = descriptorSet;
+			descriptorWrites[binding].dstBinding = binding;
+			descriptorWrites[binding].descriptorCount = handles.size();
+			descriptorWrites[binding].descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+		}
 		void DescriptorSet::updateDescriptorSet() {
 			//std::cout<<"update sets : "<<descriptorWrites.size()<<std::endl;
 			vkUpdateDescriptorSets(device.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(),0, nullptr);

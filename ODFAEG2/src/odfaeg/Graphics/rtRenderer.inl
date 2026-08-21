@@ -438,7 +438,7 @@ namespace odfaeg {
             rtRaygenSet.updateBufferInfos(0, ubos, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
             rtRaygenSet.updateBufferInfos(0, storageImage,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
             if (hasTLASStructure) {
-                rtRaygenSet.updateBufferInfos(0, topLevelASBuffers, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR);
+                rtRaygenSet.updateAccelerationStructureInfos(0, topLevelAS);
             }
             DescriptorSet& rtRayhitSet = GPUContext::instance().getDescriptorSets(rtShader, (hasDiffuseTexture) ? 5 : 4, 1)[0];
             rtRayhitSet.updateBufferInfos(0, true, GPUContext::instance().getSharedVertexBuffers(RenderTarget::VERTEX_BUFFER)[entity::Triangles], VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
