@@ -249,7 +249,7 @@ namespace odfaeg {
                         accelerationBuildGeometryInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
                         accelerationBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
                         accelerationBuildGeometryInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
-                        accelerationBuildGeometryInfo.dstAccelerationStructure = bottomLevelASBuffers.back().getHandle();
+                        accelerationBuildGeometryInfo.dstAccelerationStructure = handle;
                         accelerationBuildGeometryInfo.geometryCount = 1;
                         accelerationBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
                         accelerationBuildGeometryInfo.scratchData.deviceAddress = scratchBuffer.getDeviceAddress();
@@ -376,7 +376,7 @@ namespace odfaeg {
                 accelerationBuildGeometryInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
                 accelerationBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
                 accelerationBuildGeometryInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
-                accelerationBuildGeometryInfo.dstAccelerationStructure = topLevelASBuffers.getHandle();
+                accelerationBuildGeometryInfo.dstAccelerationStructure = handle;
                 accelerationBuildGeometryInfo.geometryCount = 1;
                 accelerationBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
                 accelerationBuildGeometryInfo.scratchData.deviceAddress = scratchBuffer.getDeviceAddress();
