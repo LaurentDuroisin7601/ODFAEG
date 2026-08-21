@@ -12,7 +12,7 @@ namespace odfaeg {
 			Buffer(Device& device);	
 			Buffer(Buffer&& other) noexcept;
 			Buffer& operator= (Buffer&& other) noexcept;
-			void create(VkDeviceSize size, VkBufferUsageFlags, VmaMemoryUsage memoryUsage, VmaAllocationCreateFlags flags=0);
+			void create(VkDeviceSize size, VkBufferUsageFlags, VmaMemoryUsage memoryUsage, VmaAllocationCreateFlags flags=0, bool dedicatedMemory = false);
 			void update(const void* srcData, size_t srcDataSize, size_t dstStart = 0);
 			void swap(Buffer& buffer);
 			size_t getRange();
@@ -23,13 +23,17 @@ namespace odfaeg {
 			uint64_t getDeviceAddress();
 			~Buffer();
 			static void copyBuffer(Buffer& srcBuffer, Buffer& dstBuffer, VkDeviceSize size, VkCommandBuffer& cmd);
-		private :			
+		private :
+			uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);			
 			VmaAllocator allocator;
 			VmaAllocation memory;
 			VkBuffer buffer;
+			VkDeviceMemory deviceMemory;
 			size_t range;
 			size_t offset;
-			uint64_t deviceAddress;			
+			uint64_t deviceAddress;
+			bool dedicatedMemory;
+			Device& device;			
 		};
 		void swap(Buffer& a, Buffer& b) noexcept;
 	}
