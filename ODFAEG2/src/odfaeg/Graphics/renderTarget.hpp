@@ -34,12 +34,12 @@
 #include "viewportMatrix.hpp"
 namespace odfaeg {
 	namespace graphic {		
-		class RenderTarget {
-		static std::vector<Mesh*>& getGameObjects() {
-			static std::vector<Mesh*> gameObjects;
-			return gameObjects;
-		}
+		class RenderTarget {		
 		public:
+			static std::vector<Mesh*>& getGameObjects() {
+				static std::vector<Mesh*> gameObjects;
+				return gameObjects;
+			}
 			enum BufferID {
 				OBJECT_BUFFER, OBJECT_STAGGING_BUFFER, SUBMESHES_BUFFER, SUBMESHES_STAGGING_BUFFER, LOD_BUFFER, LOD_STAGGING_BUFFER, MODEL_DATA_BUFFER,
 				STAGGING_MODEL_DATA_BUFFER, MATERIAL_DATA_BUFFER, STAGGING_MATERIAL_DATA_BUFFER, VERTEX_BUFFER, OUTPUT_MESHES, OUTPUT_MODELS, OUTPUT_MATERIALS, LINKED_LISTS, NB_BUFFERS

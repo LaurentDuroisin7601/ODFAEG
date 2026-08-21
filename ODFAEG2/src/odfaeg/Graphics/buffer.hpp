@@ -33,7 +33,8 @@ namespace odfaeg {
 			size_t offset;
 			uint64_t deviceAddress;
 			bool dedicatedMemory;
-			Device& device;			
+			Device& device;	
+			PFN_vkGetBufferDeviceAddressKHR vkGetBufferDeviceAddressKHR{ nullptr };		
 		};
 		void swap(Buffer& a, Buffer& b) noexcept;
 	}

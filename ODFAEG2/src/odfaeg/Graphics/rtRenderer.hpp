@@ -25,10 +25,8 @@ namespace odfaeg {
                     uint32_t vertexOffset;
                     uint32_t indexOffset;
                     uint32_t materialOffset;
-                }
+                };
                 struct MaterialData {
-                    math::Vec2f uvScale;
-                    math::Vec2f uvOffset;
                     unsigned int diffuseTextureIndex;
                     unsigned int specularTextureIndex;
                     unsigned int normalTextureIndex;
@@ -44,7 +42,8 @@ namespace odfaeg {
                     unsigned int vertsInstanceSet;
                     unsigned int materialId;
                     unsigned int nbBuffers;
-                    unsigned int padding;
+                    int reflectable;
+                    int refractable;
                 };	
                 struct UBOData {
                     math::Matrix4f viewInverse;
@@ -59,18 +58,33 @@ namespace odfaeg {
                 void createShaderBindingTable();
                 void updateBLAS();
                 void updateTLAS();
-                private :
-                    std::deque<Buffer> transformMatrixBuffer, materialBuffer, geometryOffsetBuffer;
-                    Buffer transformMatrixStaggingBuffer, materialStaggingBuffer, geometryOffsetStaggingBuffer;
-                    Buffer raygenBindingTable, raymissBindingTable, rayhitBindingTable;
-                    Buffer bottomLevelASBuffers, topLevelASBuffers;
-                    std::deque<VkAccelerationStructureKHR> bottomLevelAS, topLevelAS; 
-                    bool needToUpdateDS, needToUpdateTLAS, needToUpdateBuffers;
-                    Shader rtShader;
-                    CommandPool commandPool;
-                    RenderTarget& parentRenderer;                                       
-            };
-        };
+            private :
+                void createCommandPool();
+                void loadExtensionsFuncPtr();
+                std::deque<Image> storageImage;
+                VkPhysicalDeviceRayTracingPipelinePropertiesKHR  rayTracingPipelineProperties{};
+                Buffer transformMatrixBuffer, materialBuffer, geometryOffsetBuffer;
+                Buffer transformMatrixStaggingBuffer, materialStaggingBuffer, geometryOffsetStaggingBuffer;
+                Buffer instancesBuffer, instancesStaggingBuffer;
+                Buffer raygenBindingTable, raymissBindingTable, rayhitBindingTable;
+                std::deque<Buffer> bottomLevelASBuffers, topLevelASBuffers;
+                std::deque<Buffer> ubo;
+                std::vector<VkAccelerationStructureKHR> bottomLevelAS, topLevelAS; 
+                bool needToUpdateBLAS, needToUpdateTLAS, needToUpdateDescriptorSets;
+                Shader rtShader;
+                CommandPool commandPool;
+                RenderTarget& parentRenderer;
+                int instancesGroupCount, singleInstancesCount, shaderGroupCount;                     
+                PFN_vkCreateAccelerationStructureKHR vkCreateAccelerationStructureKHR{ nullptr };
+                PFN_vkDestroyAccelerationStructureKHR vkDestroyAccelerationStructureKHR{ nullptr };
+                PFN_vkGetAccelerationStructureBuildSizesKHR vkGetAccelerationStructureBuildSizesKHR{ nullptr };
+                PFN_vkGetAccelerationStructureDeviceAddressKHR vkGetAccelerationStructureDeviceAddressKHR{ nullptr };
+                PFN_vkCmdBuildAccelerationStructuresKHR vkCmdBuildAccelerationStructuresKHR{ nullptr };
+                PFN_vkBuildAccelerationStructuresKHR vkBuildAccelerationStructuresKHR{ nullptr };
+                PFN_vkCmdTraceRaysKHR vkCmdTraceRaysKHR{ nullptr };
+                PFN_vkGetRayTracingShaderGroupHandlesKHR vkGetRayTracingShaderGroupHandlesKHR{ nullptr };
+                PFN_vkCreateRayTracingPipelinesKHR vkCreateRayTracingPipelinesKHR{ nullptr };                                     
+        };        
     }
 }
 #endif

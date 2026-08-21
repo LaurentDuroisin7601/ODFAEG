@@ -49,7 +49,8 @@ namespace odfaeg {
             }
             bool operator==(SubMesh& other);
             bool operator!=(SubMesh& other);        	
-        	unsigned int verticesOffset;
+        	unsigned int vertexOffset;
+            unsigned int indexOffset;
         	unsigned int id;
             unsigned int materialId;            
         protected :

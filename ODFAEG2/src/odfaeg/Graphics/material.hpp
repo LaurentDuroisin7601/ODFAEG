@@ -156,12 +156,13 @@ namespace odfaeg {
                 }
             }     
             static std::deque<Material*> getAllMaterials();
-		    int getInstanceGroup();
+		    int getInstanceGroupId();
             ~Material();
             std::string name;
             static unsigned int getMaxSpecularIntensity();
             static unsigned int getMaxSpecularPower();
             static unsigned int getNbLayers();
+            unsigned int materialSet;
         private:
             Material(const Material&) = delete;
             Material& operator=(const Material&) = delete;

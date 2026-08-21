@@ -410,7 +410,7 @@ namespace odfaeg {
 					material.nbIndexes = 0;
 					material.materialId = materials[i]->getId();
 					
-					material.instanceGroupId = materials[i]->getInstanceGroup();
+					material.instanceGroupId = materials[i]->getInstanceGroupId();
 					material.reflectable = (materials[i]->isReflectable()) ? 1 : 0;
 					material.refractable = (materials[i]->isRefractable()) ? 1 : 0;
 					/*std::cout<<"id : "<<material.materialId<<", reflectable : "<<material.reflectable<<"refractable : "<<material.refractable<<std::endl;
@@ -450,7 +450,8 @@ namespace odfaeg {
 					for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
 						//std::cout<<"add subMesh : "<<j<<std::endl;
 						entity::SubMesh& subMesh = gameObjects[i]->getGameObject()->getSubMeshes()[j];						
-						gameObjects[i]->getGameObject()->getSubMeshes()[j].verticesOffset = currentVertexOffset[subMesh.getVertexArray().getPrimitiveType()];
+						gameObjects[i]->getGameObject()->getSubMeshes()[j].vertexOffset = currentVertexOffset[subMesh.getVertexArray().getPrimitiveType()];
+						gameObjects[i]->getGameObject()->getSubMeshes()[j].indexOffset = currentIndexOffset[subMesh.getVertexArray().getPrimitiveType()];
 						SubMeshData subMeshData;
 						physic::BoundingBox subMeshGlobalBounds = subMesh.getVertexArray().getGlobalBounds(gameObjects[i]->getGameObject()->getTransform());
 						/*if (!subMeshGlobalBounds.intersects(m_camera.getViewVolume())) {

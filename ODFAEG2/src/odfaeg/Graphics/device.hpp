@@ -59,6 +59,7 @@ namespace odfaeg {
             ~Device();
 
         private:
+            void loadExtensionsFunc();
             VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
             VkPhysicalDevicePushDescriptorPropertiesKHR pushDescriptorProps{};
             VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragmentShaderInterlockProps;

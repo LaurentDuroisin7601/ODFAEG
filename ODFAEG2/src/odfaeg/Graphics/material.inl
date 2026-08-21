@@ -236,7 +236,7 @@ namespace odfaeg {
                 }
             }
         }
-	    int Material::getInstanceGroup() {
+	    int Material::getInstanceGroupId() {
             return instanceGroup;
         }
         Material::~Material() {
