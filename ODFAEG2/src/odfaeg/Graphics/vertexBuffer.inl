@@ -260,7 +260,7 @@ namespace odfaeg {
                 if (bufferSize > maxVerticesSize[currentFrame]) {
                     //std::cout<<"update!"<<std::endl;
                     vertexStaggingBuffer[currentFrame].create(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
-                    vertexBuffer[currentFrame].create(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEVICE_ADDRESS_BIT);
+                    vertexBuffer[currentFrame].create(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
                     maxVerticesSize[currentFrame] = bufferSize;
                 }
                 /*std::vector<VulkanVertex> vulkanVertices;
@@ -296,7 +296,7 @@ namespace odfaeg {
                 if (bufferSize > maxIndexSize[currentFrame]) {
                     //std::cout<<"update index buffer!"<<std::endl;
                     indexStaggingBuffer[currentFrame].create(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
-                    indexBuffer[currentFrame].create(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEVICE_ADDRESS_BIT);
+                    indexBuffer[currentFrame].create(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
                     maxIndexSize[currentFrame] = bufferSize;
                 }
                 needToUpdateIndexBuffer[currentFrame] = false;

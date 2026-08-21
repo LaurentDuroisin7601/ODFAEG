@@ -1,4 +1,3 @@
-#include "gpuContext.hpp"
 namespace odfaeg {
 	namespace graphic {
 		Buffer::Buffer(Device& device) : allocator(device.getAllocator()) {	
@@ -42,6 +41,10 @@ namespace odfaeg {
 			VmaAllocationCreateInfo alloc{};
 			alloc.usage = memoryUsage;
 			alloc.flags = flags;
+			VkMemoryAllocateFlagsInfo flagsInfo{};
+			flagsInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO;
+			flagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
+			alloc.pNext = &flagsInfo;
 			vmaCreateBuffer(allocator, &info, &alloc, &buffer, &memory, nullptr);
 			//std::cout<<"create buffer : "<<buffer<<std::endl;
 			range = size;

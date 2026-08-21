@@ -507,7 +507,7 @@ namespace odfaeg {
 			if (pipeline != VK_NULL_HANDLE) {
 				cleanup();
 			}
-			shader.createRaytracingShaderModule();
+			shader.createRaytracingShaderModules();
 			std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 			std::vector<VkRayTracingShaderGroupCreateInfoKHR> shaderGroups;
 			{
@@ -558,10 +558,14 @@ namespace odfaeg {
 				shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
 				shaderGroups.push_back(shaderGroup);
 			}
+			std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+			for (unsigned int i = 0; i < setLayouts.size(); i++) {
+				descriptorSetLayouts.push_back(setLayouts[i].getHandle());
+			}
 			VkPipelineLayoutCreateInfo pipelineLayoutCI{};
             pipelineLayoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            pipelineLayoutCI.setLayoutCount = setLayouts.size();
-            pipelineLayoutCI.pSetLayouts = setLayouts.data();
+            pipelineLayoutCI.setLayoutCount = descriptorSetLayouts.size();
+            pipelineLayoutCI.pSetLayouts = descriptorSetLayouts.data();
 			if (pushConstants.size() > 0) {
 				pipelineLayoutCI.pPushConstantRanges = pushConstants.data();
 				pipelineLayoutCI.pushConstantRangeCount = pushConstants.size();

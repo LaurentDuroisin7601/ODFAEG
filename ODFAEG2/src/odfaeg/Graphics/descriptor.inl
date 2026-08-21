@@ -322,11 +322,11 @@ namespace odfaeg {
 			descriptorWrites[binding].descriptorCount = imageInfos[binding].size();
 			descriptorWrites[binding].pImageInfo = imageInfos[binding].data();
 		}
-		void DescriptorSet::updateAccelerationStructureInfos(unsigned int binding, std::deque<VkAccelerationStructureKHR> handles) {
+		void DescriptorSet::updateAccelerationStructureInfos(unsigned int binding, std::vector<VkAccelerationStructureKHR> handles) {
 			VkWriteDescriptorSetAccelerationStructureKHR descriptorAccelerationStructureInfo{};
 			descriptorAccelerationStructureInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
 			descriptorAccelerationStructureInfo.accelerationStructureCount = handles.size();
-			descriptorAccelerationStructureInfo.pAccelerationStructures = &handles[0];
+			descriptorAccelerationStructureInfo.pAccelerationStructures = handles.data();
 
 			VkWriteDescriptorSet accelerationStructureWrite{};
 			descriptorWrites[binding].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
