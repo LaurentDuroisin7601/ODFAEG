@@ -484,5 +484,8 @@ namespace odfaeg {
         bool RenderTexture::isDynamicRendering() {
             return true;
         }
+        Image& RenderWindow::getRenderingImage() {
+            return m_textures[0].getImage(imageIndex);
+        }   
 	}
 }

@@ -54,7 +54,8 @@ namespace odfaeg {
             RenderPass& getRenderPass(unsigned int renderPassId);
             std::uint32_t getRenderPassesCount();
             VkSurfaceKHR getSurface();
-            bool isDynamicRendering();            
+            bool isDynamicRendering();
+            Image& getRenderingImage();            
         protected:
 
             ////////////////////////////////////////////////////////////

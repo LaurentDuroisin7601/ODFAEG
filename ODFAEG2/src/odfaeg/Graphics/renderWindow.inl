@@ -564,6 +564,9 @@ namespace odfaeg {
         }        
 	    void RenderWindow::endRendering() {
             vkCmdEndRendering(getCommandPool().getHandle(getCurrentFrame()));            
-        }       
+        } 
+        Image& RenderWindow::getRenderingImage() {
+            return swapchain.getSwapchainImages()[imageIndex];
+        }      
 	}
 }

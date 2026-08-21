@@ -16,21 +16,25 @@ namespace odfaeg {
             deviceFeatures2.pNext = &accelerationStructureFeatures;
             vkGetPhysicalDeviceFeatures2(GPUContext::instance().getDevice().getPhysicalDevice(), &deviceFeatures2);
             math::Vector2u size = parentRenderer.getSize();
-            storageImage.emplace_back(GPUContext::instance().getDevice());
-            storageImage.back().createImage(size.x(), size.y(), 1, VK_IMAGE_TYPE_2D, parentRenderer.getImageFormat(), VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY,
-                    1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
-            headPtrsStorageImage.back().createImageView(VK_IMAGE_VIEW_TYPE_2D, parentRenderer.getImageFormat(), VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
-            ubo.emplace_back(GPUContext::instance().getDevice());
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                storageImage.emplace_back(GPUContext::instance().getDevice());
+                storageImage.back().createImage(size.x(), size.y(), 1, VK_IMAGE_TYPE_2D, parentRenderer.getImageFormat(), VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY,
+                        1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
+                headPtrsStorageImage.back().createImageView(VK_IMAGE_VIEW_TYPE_2D, parentRenderer.getImageFormat(), VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
+            }            
+            for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                ubo.emplace_back(GPUContext::instance().getDevice());
                 ubo.back().create(sizeof(UBODatas), VK_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
                 ubo.back().update(uboDatas.data(), sizeof(UBOData));  
             }
-            groupCount = 3;
-        }   
-        void RTRenderer::createDescriptorAndPipelines() {
-            
-
-        }     
+            std::string shaderDir = std::string(ODFAEG_INSTALL_DIR) + "/Shader";
+            if (!rtShader.loadRaytracingFromFileSpv(shaderDir + "/raygenShader.raygen", shaderDir + "/raymissShader.raymiss", shaderDir+"/rayhitShader.rayhit")) {
+                throw std::runtime_error("Could not load env map shader");
+            }
+            shaderGroupCount = 3;
+            createDescriptorAndPipelines();
+            createShaderBindingTable(); 
+        } 
         void RTRenderer::createCommandPool() {
             Device::QueueFamilyIndices queueFamilyIndices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice());
             commandPool.create(queueFamilyIndices.graphicsFamily.value());
@@ -540,7 +544,7 @@ namespace odfaeg {
                 barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                 barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-                barrier.image = parentRenderer.getRenderingImage()[parentRenderer.getImageIndex()];
+                barrier.image = parentRenderer.getRenderingImage().getHandle();
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 barrier.subresourceRange.levelCount = 1;
                 barrier.subresourceRange.layerCount = 1;
@@ -565,7 +569,7 @@ namespace odfaeg {
 			copyRegion.srcOffset = { 0, 0, 0 };
 			copyRegion.dstSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
 			copyRegion.dstOffset = { 0, 0, 0 };
-			copyRegion.extent = { parentRenderer.getRenderingImage()[parentRenderer.getImageIndex()].getSize().x(), parentRenderer.getRenderingImage()[parentRenderer.getImageIndex()].getSize().y(), 1 };
+			copyRegion.extent = { parentRenderer.getRenderingImage().getSize().x(), parentRenderer.getRenderingImage().getSize().y(), 1 };
 			vkCmdCopyImage(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), storageImage.image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, window.getSwapchainImages()[window.getImageIndex()], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
 
 			{
@@ -574,7 +578,7 @@ namespace odfaeg {
                 barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                 barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
                 barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-                barrier.image = parentRenderer.getRenderingImage()[parentRenderer.getImageIndex()];
+                barrier.image = parentRenderer.getRenderingImage().getHandle();
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 barrier.subresourceRange.levelCount = 1;
                 barrier.subresourceRange.layerCount = 1;

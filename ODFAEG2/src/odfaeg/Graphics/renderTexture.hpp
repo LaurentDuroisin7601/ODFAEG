@@ -42,7 +42,7 @@ namespace odfaeg {
             void submit(bool lastSubmit = false, std::vector<VkSemaphore> signalSemaphores = std::vector<VkSemaphore>(),
                                                                                                       std::vector<VkSemaphore> waitSemaphores = std::vector<VkSemaphore>(), std::vector<VkPipelineStageFlags> waitStages = std::vector<VkPipelineStageFlags>(),
                                                                                                        std::vector<uint64_t> signalValues = std::vector<uint64_t>(),
-                                                                                                       std::vector<uint64_t> waitValues = std::vector<uint64_t>(), std::vector<VkFence>fences = std::vector<VkFence>(), unsigned int queueIndex = 0, bool resetFence = true, bool resetFences = true, VkFence fenceToSubmit = nullptr);
+            Image& getRenderingImage();                                                                                           std::vector<uint64_t> waitValues = std::vector<uint64_t>(), std::vector<VkFence>fences = std::vector<VkFence>(), unsigned int queueIndex = 0, bool resetFence = true, bool resetFences = true, VkFence fenceToSubmit = nullptr);
             ImageView& getRenderingView(int viewIndex); 
             void display();  
             //std::vector<Image>& getImages();            
