@@ -2,7 +2,20 @@ namespace odfaeg {
     namespace graphic {
         RTRenderer::RTRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId, bool usethread) :
         parentRenderer(parentRenderer),
-        rtShader(GPUContext::instance().getDeive()) {
+        rtShader(GPUContext::instance().getDevice()),
+        commandPool(GPUContext::instance().getDevice()),
+        transformMatrixBuffer(GPUContext::instance().getDevice()),
+        materialBuffer(GPUContext::instance().getDevice()),
+        geometryOffsetBuffer(GPUContext::instance().getDevice()),
+        transformMatrixStaggingBuffer(GPUContext::instance().getDevice())
+        materialStaggingBuffer(GPUContext::instance().getDevice()),
+        geometryOffsetStaggingBuffer(GPUContext::instance().getDevice()),
+        raygenBindingTable(GPUContext::instance().getDevice()
+        raymissBindingTable(GPUContext::instance().getDevice()),
+        rayhitBindingTable(GPUContext::instance().getDevice())
+        bottomLevelASBuffers(GPUContext::instance().getDevice()),
+        topLevelASBuffers(GPUContext::instance().getDevice());
+        {
             rayTracingPipelineProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
             VkPhysicalDeviceProperties2 deviceProperties2{};
             deviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
