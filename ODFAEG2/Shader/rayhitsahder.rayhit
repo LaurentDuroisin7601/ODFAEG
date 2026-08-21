@@ -4,14 +4,20 @@
 #define MAX_FRAMES_IN_FLIGHT 2
 #define MAX_TEXTURES 1024
 struct Vertex {
-    vec3 position;
-    vec4 color;
-    vec2 texCoords;
+    vec3 position; ///< 3D position of the vertex
+    uint color; ///< Color of the vertex
+    vec2 texCoords; ///< Coordinates of the texture's pixel to map to the vertex
     vec3 normal;
+    //bone indexes which will influence this vertex
+    int m_BoneIDs[MAX_BONES_INFLUENCE];
+    //weights from each bone
+    float m_Weights[MAX_BONES_INFLUENCE];
+    int submeshId;
 };
 struct GeometryOffset {
     uint vertexOffset;
     uint indexOffset;
+    uint materialOffset;
 };
 struct MaterialData {   
     /*vec2 uvScale;
@@ -34,20 +40,19 @@ struct MaterialData {
     int reflectable;
     int refractable;  
 };
-layout (binding = 0, set = 1) uniform sampler2D textures[];
-layout (binding = 1, set =  1) uniform buffer vertexBuffer {
+layout (binding = 0, set =  1) uniform buffer vertexBuffer {
     Vertex vertices[];
 };
-layout (binding = 2, set = 1) uniform buffer indexBuffer {
+layout (binding = 1, set = 1) uniform buffer indexBuffer {
     uint indexes[];
 };
-layout (bindint = 3, set = 1) uniform buffer geomBuffer {
+layout (bindint = 2, set = 1) uniform buffer geomBuffer {
     GeometryOffset geomOffsets[];
 };
-layout (location = 4, set = 1) uniform buffer materialBuffer {
-    uint materials[];
+layout (location = 3, set = 1) uniform buffer materialBuffer {
+    MaterialData materials[];
 };
-layout (location = 5, set = 1) uniform sampler2D diffuseTextures[MAX_TEXTURES];
+layout (location = 4, set = 1) uniform sampler2D diffuseTextures[MAX_TEXTURES];
 struct RayPayload {
     vec4 color;
 };
@@ -62,7 +67,7 @@ void main() {
     vec4 c1 = vertices[geomOffs.vertexOffset + i1].color;
     vec4 c2 = vertices[geomOffs.vertexOffset + i2].color;
     vec4 c3 = vertices[geomOffs.vertexOffset + i3].color;
-    mat4 textureMatrix = materials[gl_InstanceCustomIndexEXT].textureMatrix;
+    MaterialData material = materials[geomOffs.materialOffset].textureMatrix;
     vec2 ct1 = (vec4(vertices[geomOffs.vertexOffset + i1].texCoords.xy, 0, 1) * textureMatrix).xy;
     vec2 ct2 = (vec4(vertices[geomOffs.vertexOffset + i2].texCoords.xy, 0, 1) * textureMatrix).xy;
     vec2 ct3 = (vec4(vertices[geomOffs.vertexOffset + i3].texCoords.xy, 0, 1) * textureMatrix).xy;
@@ -71,6 +76,6 @@ void main() {
     float w = 1.0 - u - v;
     vec4 color = w * c1 + u * c2 + v * c3;
     vec2 tc = w * ct1 + u * ct2 + v * ct3;
-    uint textureIndex = materials[gl_InstanceCustomIndexEXT].textureIndex;
+    uint textureIndex = material.diffuseTextureIndex;
     payload.color = (textureIndex > 0) ? color * texture(textures[textureIndex-1], ct) : color;
 }
