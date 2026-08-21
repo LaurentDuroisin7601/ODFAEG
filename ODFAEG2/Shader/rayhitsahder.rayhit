@@ -1,6 +1,9 @@
 #version 460
 #extension GL_EXT_ray_tracing : enable
 #extension GL_EXT_nonuniform_qualifier : enable
+#define MAX_FRAMES_IN_FLIGHT 2
+#define NB_PRIMITIVE_TYPES 3
+#define MAX_TEXTURES 1024
 struct Vertex {
     vec3 position;
     vec4 color;
@@ -15,19 +18,20 @@ struct MaterialData {
     mat4 textureMatrix;
     uint textureIndex;
 };
-layout (location = 3) uniform sampler2D textures[];
-layout (location = 4) uniform buffer vertexBuffer {
+layout (binding = 0, set = 1) uniform sampler2D textures[];
+layout (binding = 1, set =  1) uniform buffer vertexBuffer {
     Vertex vertices[];
 };
-layout (location = 5) uniform buffer geomBuffer {
-    GeometryOffset geomOffsets[];
-};
-layout (location = 6) uniform buffer indexBuffer {
+layout (binding = 2, set = 1) uniform buffer indexBuffer {
     uint indexes[];
 };
-layout (location = 7) uniform buffer materialBuffer {
+layout (bindint = 3, set = 1) uniform buffer geomBuffer {
+    GeometryOffset geomOffsets[];
+};
+layout (location = 4, set = 1) uniform buffer materialBuffer {
     uint materials[];
 };
+layout (location = 5, set = 1) uniform sampler2D diffuseTextures[MAX_TEXTURES];
 struct RayPayload {
     vec4 color;
 };

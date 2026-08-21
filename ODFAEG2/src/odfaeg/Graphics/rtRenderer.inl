@@ -44,7 +44,7 @@ namespace odfaeg {
             };
             transformMatrixStaggingBuffer.create(sizeof(VkTransformMatrixKHR), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);         
             transformMatrixStaggingBuffer.update(&transformMatrix, sizeof(VkTransformMatrixKHR))
-            transformMatrixStaggingBuffer.create(sizeof(VkTransformMatrixKHR), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEVICE_ADDRESS_BIT);
+            transformMatrixBuffer.create(sizeof(VkTransformMatrixKHR), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEVICE_ADDRESS_BIT);
             commandPool.beginRecordCommandBuffer(parentRenderer.getCurrentFrame());
             Buffer::copyBuffer(transformMatrixStaggingBuffer, transformMatrixBuffer, sizeof(VkTransformMatrixKHR), commandPool.getHandle(parentRenderer.getHandle()));
             std::vector<VkTransformMatrixKHR> transformMatrices;
@@ -56,6 +56,46 @@ namespace odfaeg {
             vertexBufferDeviceAddress.deviceAddress = GPUContext::instance().getSharedVertexBuffer(VERTEX_BUFFER)[entity::Triangles].getVertexBuffer().getDeviceAddress();
             indexBufferDeviceAddress.deviceAddress = GPUContext::instance().getSharedVertexBuffer(VERTEX_BUFFER)[entity::Triangles].getIndexBuffer().getDeviceAddress();
             transformBufferDeviceAddress.deviceAddress = transformBuffer.getDeviceAddress();
+            std::deque<Material*> materials = Material::getAllMaterials();
+            std::vector<MaterialData> materialDatas;
+            //std::cout<<"material : "<<materials.size()<<std::endl;
+            for (unsigned int i = 0; i < materials.size(); i++) {
+                //std::cout<<"texture id : "<<materials[i]->getTexture(entity::SubMesh::DIFFUSE)->getId()<<std::endl;
+                MaterialData material;
+                //std::cout<<"material : "<<materials[i]<<std::endl;
+                material.diffuseTextureIndex = (materials[i]->getTexture(entity::SubMesh::DIFFUSE) != nullptr) ? materials[i]->getTexture(entity::SubMesh::DIFFUSE)->getId() : 0;
+                //std::cout<<"diffuse texture index : "<<material.diffuseTextureIndex<<std::endl;
+                //system("PAUSE");
+                material.specularTextureIndex = (materials[i]->getTexture(entity::SubMesh::SPECULAR) != nullptr) ? materials[i]->getTexture(entity::SubMesh::SPECULAR)->getId() : 0;
+                material.normalTextureIndex = (materials[i]->getTexture(entity::SubMesh::NORMAL) != nullptr) ? materials[i]->getTexture(entity::SubMesh::NORMAL)->getId() : 0;
+                material.metalnessTextureIndex = (materials[i]->getTexture(entity::SubMesh::METALNESS) != nullptr) ? materials[i]->getTexture(entity::SubMesh::METALNESS)->getId() : 0;
+                material.roughnessTextureIndex = (materials[i]->getTexture(entity::SubMesh::ROUGHNESS) != nullptr) ? materials[i]->getTexture(entity::SubMesh::ROUGHNESS)->getId() : 0;
+                material.aoTextureIndex = (materials[i]->getTexture(entity::SubMesh::AO) != nullptr) ? materials[i]->getTexture(entity::SubMesh::AO)->getId() : 0;
+                material.emissiveTextureIndex = (materials[i]->getTexture(entity::SubMesh::EMISSIVE) != nullptr) ? materials[i]->getTexture(entity::SubMesh::EMISSIVE)->getId() : 0;
+                /*material.uvScale = /*(materials[i]->getTexture(Material::DIFFUSE) != nullptr) ? math::Vec2f(1.f / materials[i]->getTexture(Material::DIFFUSE)->getSize().x(), 1.f / materials[i]->getTexture(Material::DIFFUSE)->getSize().y()) :*/ /*math::Vec2f(1.f, 1.f);
+                material.uvOffset = math::Vec2f(0.f, 0.f);*/
+                material.materialType = materials[i]->getType();
+                material.nbBuffers = (materials[i]->getTexture(entity::SubMesh::DIFFUSE) != nullptr) ? materials[i]->getTexture(entity::SubMesh::DIFFUSE)->getNbBuffers() : 0;
+                material.vertsInstanceSet  = 0;
+                material.nbVertices = 0;
+                material.nbIndexes = 0;
+                material.materialId = materials[i]->getId();
+                
+                material.instanceGroupId = materials[i]->getInstanceGroup();
+                material.reflectable = (materials[i]->isReflectable()) ? 1 : 0;
+                material.refractable = (materials[i]->isRefractable()) ? 1 : 0;
+                /*std::cout<<"id : "<<material.materialId<<", reflectable : "<<material.reflectable<<"refractable : "<<material.refractable<<std::endl;
+                system("PAUSE");*/
+                /*if (material.instanceGroupId != -1)
+                    system("PAUSE");**/
+                materialDatas.push_back(material);
+
+            }
+            materialStaggingBuffer.create(sizeof(Material)*materials.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);         
+            materialStaggingBuffer.update(&transformMatrix, sizeof(Material)*materials.size())
+            materialBuffer.create(ssizeof(Material)*materials.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VMA_ALLOCATION_CREATE_DEVICE_ADDRESS_BIT);
+            
+            Buffer::copyBuffer(materialStaggingBuffer, materialBuffer, sizeof(Material)*materials.size(), commandPool.getHandle(parentRenderer.getHandle()));
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
                 for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
                     entity::SubMesh sm = gameObjects[i]->getGameObject()->getSubMeshes()[j];
@@ -133,6 +173,7 @@ namespace odfaeg {
                             GeometryOffset geometryOffset;
                             geometryOffset.vertexOffset = sm.vertexOffset;
                             geometryOffset.indexOffset = sm.indexOffset + lods[0].indexOffset;   
+                            geometryOffset.materialOffset = submesh.materialId;
                             unsigned instanceID = gameObjects[i]->getMaterials()[0]->getInstanceGroupId();
                             if (instanceID >= geometryOffsets.size())
                                 geometryOffsets.resize(instanceID);          
@@ -222,12 +263,13 @@ namespace odfaeg {
                         
                         GeometryOffset geometryOffset;
                         geometryOffset.vertexOffset = sm.vertexOffset;
-                        geometryOffset.indexOffset = sm.indexOffset + lods[0].indexOffset;                        
+                        geometryOffset.indexOffset = sm.indexOffset + lods[0].indexOffset;
+                        geometryOffset.materialOffset = submesh.materialId;                        
                         geometryOffsets.push_back(geometryOffset);                        
                         singleInstancesCount++;                         
                     } 
                 } 
-            }
+            }            
             VkDeviceSize bufferSize = geometryOffsets.size() * sizeof(GeometryOffset);
             geometryOffsetStaggingBuffer.create(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);    
             geometryOffsetStaggingBuffer.update(geometryOffsets.data(), bufferSize);         
