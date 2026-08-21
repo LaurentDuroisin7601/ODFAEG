@@ -503,13 +503,13 @@ namespace odfaeg {
 			}
 			shader.cleanupComputeShaderModule();
 		}
-		std::vector< Pipeline::createRTPipeline(Shader shader, std::deque<DescriptorSetLayout>& setLayouts, std::vector<VkPushConstantRange> pushConstants) {
+		void Pipeline::createRTPipeline(Shader& shader, std::deque<DescriptorSetLayout>& setLayouts, std::vector<VkPushConstantRange> pushConstants) {
 			if (pipeline != VK_NULL_HANDLE) {
 				cleanup();
 			}
-			shader.createRayShaderModule();
+			shader.createRaytracingShaderModule();
 			std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-			std::vector<VkRayTracingShaderGroupCreateInfoKH> shaderGroups;
+			std::vector<VkRayTracingShaderGroupCreateInfoKHR> shaderGroups;
 			{
 				VkPipelineShaderStageCreateInfo shaderStageInfo{};
 				shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -517,7 +517,7 @@ namespace odfaeg {
 				shaderStageInfo.module = shader.getRaygenShaderModule();
 				shaderStageInfo.pName = "main";
 				shaderStages.push_back(shaderStageInfo);
-				VRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+				VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
 				shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
 				shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
 				shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
@@ -533,7 +533,7 @@ namespace odfaeg {
 				shaderStageInfo.module = shader.getRaymissShaderModule();
 				shaderStageInfo.pName = "main";
 				shaderStages.push_back(shaderStageInfo);
-				VRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+				VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
 				shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
 				shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
 				shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
@@ -549,7 +549,7 @@ namespace odfaeg {
 				shaderStageInfo.module = shader.getRayhitShaderModule();
 				shaderStageInfo.pName = "main";
 				shaderStages.push_back(shaderStageInfo);
-				VRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+				VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
 				shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
 				shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
 				shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
@@ -563,10 +563,10 @@ namespace odfaeg {
             pipelineLayoutCI.setLayoutCount = setLayouts.size();
             pipelineLayoutCI.pSetLayouts = setLayouts.data();
 			if (pushConstants.size() > 0) {
-				pipelineLayoutInfo.pPushConstantRanges = pushConstants.data();
-				pipelineLayoutInfo.pushConstantRangeCount = pushConstants.size();
+				pipelineLayoutCI.pPushConstantRanges = pushConstants.data();
+				pipelineLayoutCI.pushConstantRangeCount = pushConstants.size();
 			}
-            if (vkCreatePipelineLayout(GPUContext::instance().getDevice().getDevice(), &pipelineLayoutCI, nullptr, &pipelineLayout) != VK_SUCCESS) {
+            if (vkCreatePipelineLayout(device.getDevice(), &pipelineLayoutCI, nullptr, &pipelineLayout) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create raytracing pipeline layout!");
             }	
 			VkRayTracingPipelineCreateInfoKHR rayTracingPipelineCI{};
@@ -577,10 +577,10 @@ namespace odfaeg {
             rayTracingPipelineCI.pGroups = shaderGroups.data();
             rayTracingPipelineCI.maxPipelineRayRecursionDepth = 1;
             rayTracingPipelineCI.layout = pipelineLayout;
-            if (vkCreateRayTracingPipelinesKHR(vkDevice.getDevice(), VK_NULL_HANDLE, VK_NULL_HANDLE, 1, &rayTracingPipelineCI, nullptr, &pipeline) != VK_SUCCESS) {
+            if (vkCreateRayTracingPipelinesKHR(device.getDevice(), VK_NULL_HANDLE, VK_NULL_HANDLE, 1, &rayTracingPipelineCI, nullptr, &pipeline) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create raytracing pipeline!");
             }
-            raytracingShader.cleanupRaytracingShaderModules();		
+            shader.cleanupRaytracingShaderModules();		
 		}
 		void Pipeline::cleanup() {
 			if (pipeline != VK_NULL_HANDLE) {

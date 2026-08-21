@@ -64,7 +64,7 @@ namespace odfaeg {
 			void updateImageInfos(unsigned int binding, std::deque<Texture>& images, VkDescriptorType descriptorType);
 			void updateImageInfos(unsigned int binding, Texture& images, VkDescriptorType descriptorType);
 			void updateImageInfos(unsigned int binding, Texture& images, VkDescriptorType descriptorType, unsigned int imageViewIndex);
-			void updateAccelerationStructureInfos(unsigned int binding, std::deque<VkAccelerationStructureKHR> handles);
+			void updateAccelerationStructureInfos(unsigned int binding, std::vector<VkAccelerationStructureKHR> handles);
 			void updateDescriptorSet();
 			VkDescriptorSet getHandle();
 			void setHandle(VkDescriptorSet descriptorSet);

@@ -196,7 +196,7 @@ namespace odfaeg {
 			void draw(entity::PrimitiveType primitiveType, RenderStates states = RenderStates::Default);
 			void draw(CommandPool& commandPool, entity::PrimitiveType primitiveType, RenderStates states);
 			void setCamera(Camera camera);
-			Image& getRenderingImage() = 0;
+			virtual Image& getRenderingImage() = 0;
 			Camera& getCamera();
 			Camera& getDefaultCamera();
 			std::vector<VkPipelineDepthStencilStateCreateInfo> getDepthStencilInfos();

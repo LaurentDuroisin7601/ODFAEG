@@ -326,7 +326,7 @@ namespace odfaeg {
 			VkWriteDescriptorSetAccelerationStructureKHR descriptorAccelerationStructureInfo{};
 			descriptorAccelerationStructureInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
 			descriptorAccelerationStructureInfo.accelerationStructureCount = handles.size();
-			descriptorAccelerationStructureInfo.pAccelerationStructures = handles.data();
+			descriptorAccelerationStructureInfo.pAccelerationStructures = &handles[0];
 
 			VkWriteDescriptorSet accelerationStructureWrite{};
 			descriptorWrites[binding].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

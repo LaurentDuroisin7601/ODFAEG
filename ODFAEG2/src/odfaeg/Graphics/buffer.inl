@@ -1,3 +1,4 @@
+#include "gpuContext.hpp"
 namespace odfaeg {
 	namespace graphic {
 		Buffer::Buffer(Device& device) : allocator(device.getAllocator()) {	
@@ -96,7 +97,7 @@ namespace odfaeg {
 			VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{};
             bufferDeviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
             bufferDeviceAddressInfo.buffer = buffer;
-            return vkGetBufferDeviceAddressKHR(vkDevice.getDevice(), &bufferDeviceAddressInfo);            
+            return vkGetBufferDeviceAddressKHR(GPUContext::instance().getDevice().getDevice(), &bufferDeviceAddressInfo);            
 		}
 	}
 }

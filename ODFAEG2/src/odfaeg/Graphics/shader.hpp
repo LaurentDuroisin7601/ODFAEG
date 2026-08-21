@@ -116,7 +116,7 @@ namespace odfaeg{
             bool loadMeshFromFileSpv(const std::string& meshShaderFileName, const std::string& fragmentShaderFileName, const std::string& taskShaderFileName="");
             bool loadFromMemory(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader);
             bool loadRaytracingFromMemory(const std::string& raygenShader, const std::string& raymissShader, const std::string& rayhitShader);
-            bool Shader::loadRaytracingFromFileSpv(const std::string& raygenShaderFileName,
+            bool loadRaytracingFromFileSpv(const std::string& raygenShaderFileName,
                                  const std::string& raymissShaderFileName,
                                  const std::string& rayhitFileName);
             bool loadFromStream(core::InputStream& vertexShaderStream, core::InputStream& fragmentShaderStream, core::InputStream& geometryShaderStream);

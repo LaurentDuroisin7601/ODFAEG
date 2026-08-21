@@ -40,7 +40,7 @@ namespace odfaeg {
                     buffer.push_back('\0');
                     return success;
                 }
-                bool loadspv(const std::string& path, std::vector<uint32_t>& out) {
+                bool loadSpv(const std::string& path, std::vector<uint32_t>& out) {
                     std::ifstream file(path, std::ios::ate | std::ios::binary);
                     if (!file.is_open()) {
                         std::cerr << "Failed to open SPIR-V file \"" << path << "\"" << std::endl;
@@ -137,7 +137,7 @@ namespace odfaeg {
             }
             bool Shader::loadRaytracingFromFileSpv(const std::string& raygenShaderFileName,
                                  const std::string& raymissShaderFileName,
-                                 const std::string& rayhitFileName)
+                                 const std::string& rayhitShaderFileName)
             {
                 // Mesh shader
                 if (!loadSpv(raygenShaderFileName, spvRaygenShaderCode))
@@ -149,7 +149,7 @@ namespace odfaeg {
 
                 // Task shader (optionnel)
                 if (!rayhitShaderFileName.empty()) {
-                    if (!loadSpv(taskShaderFileName, spvRayhitShaderCode))
+                    if (!loadSpv(rayhitShaderFileName, spvRayhitShaderCode))
                         return false;
                 }
 
