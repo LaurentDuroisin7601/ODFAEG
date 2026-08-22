@@ -234,7 +234,7 @@ namespace odfaeg {
                             VkAccelerationStructureBuildRangeInfoKHR accelerationStructureBuildRangeInfo{};
                             accelerationStructureBuildRangeInfo.primitiveCount = numTriangles;
                             accelerationStructureBuildRangeInfo.primitiveOffset = sm.indexOffset * sizeof(std::uint32_t);
-                            accelerationStructureBuildRangeInfo.firstVertex = sm.vertexOffset;
+                            accelerationStructureBuildRangeInfo.firstVertex = sm.vertexOffset * sizeof(entity::Vertex);
                             accelerationStructureBuildRangeInfo.transformOffset = 0;
                             
                             std::vector<VkAccelerationStructureBuildRangeInfoKHR*> accelerationBuildStructureRangeInfos = { &accelerationStructureBuildRangeInfo };                      
@@ -402,7 +402,7 @@ namespace odfaeg {
             //std::cout<<"instance device adr : "<<instanceDataDeviceAddress.deviceAddress<<std::endl;
             unsigned int currentInstancesOffset = 0;
             std::deque<Buffer> scratchBuffers;
-            for (unsigned int i = 0; i < instances.size(); i++) {
+            //for (unsigned int i = 0; i < instances.size(); i++) {
             
                 VkAccelerationStructureGeometryKHR accelerationStructureGeometry{};
                 accelerationStructureGeometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
@@ -423,7 +423,7 @@ namespace odfaeg {
                 accelerationStructureBuildGeometryInfo.geometryCount = 1;
                 accelerationStructureBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
 
-                uint32_t primitive_count = 1;
+                uint32_t primitive_count = instances.size();
 
                 VkAccelerationStructureBuildSizesInfoKHR accelerationStructureBuildSizesInfo{};
                 accelerationStructureBuildSizesInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
@@ -460,7 +460,7 @@ namespace odfaeg {
 
                 VkAccelerationStructureBuildRangeInfoKHR accelerationStructureBuildRangeInfo{};
                 accelerationStructureBuildRangeInfo.primitiveCount = primitive_count;
-                accelerationStructureBuildRangeInfo.primitiveOffset = currentInstancesOffset * 16;
+                accelerationStructureBuildRangeInfo.primitiveOffset = 0;
                 accelerationStructureBuildRangeInfo.firstVertex = 0;
                 accelerationStructureBuildRangeInfo.transformOffset = 0;
                 std::vector<VkAccelerationStructureBuildRangeInfoKHR*> accelerationBuildStructureRangeInfos = { &accelerationStructureBuildRangeInfo };
@@ -470,7 +470,7 @@ namespace odfaeg {
                         &accelerationBuildGeometryInfo,
                         accelerationBuildStructureRangeInfos.data()),
                 currentInstancesOffset ++;                
-            }
+            //}
             rayGenPC.tlasCount = topLevelAS.size();
             commandPool.endRecordCommandBuffer(parentRenderer.getCurrentFrame());
             VkSubmitInfo submitInfo{};
