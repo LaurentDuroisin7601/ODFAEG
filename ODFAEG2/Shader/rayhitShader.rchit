@@ -91,7 +91,7 @@ void main() {
     vec2 tc = w * ct1 + u * ct2 + v * ct3;
     uint textureIndex = material.diffuseTextureIndex;
     
-    payload.color = /*(textureIndex > 0) ? color * texture(diffuseTextures[textureIndex-1], tc) :*/ color;
+    payload.color = (textureIndex > 0) ? color * texture(diffuseTextures[textureIndex-1], tc) : color;
     /*if (payload.color.r > 1 || payload.color.g > 1 || payload.color.b > 1 || payload.color.a > 1
     || payload.color.r < 0 || payload.color.g < 0 || payload.color.b < 0 || payload.color.a < 0) {
         debugPrintfEXT("color : %v4f, %v4f, %v4f, %v4f %v4f", c1, c2, c3, color, texture(diffuseTextures[textureIndex-1], tc));
