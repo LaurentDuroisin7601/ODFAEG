@@ -34,6 +34,7 @@ namespace odfaeg {
                 storageFormat = parentRenderer.getImageFormat();
             }
             math::Vector2u size = parentRenderer.getSize();
+            //std::cout<<"size : "<<size<<std::endl;
             createCommandPool();
             commandPool.beginRecordCommandBuffer(0);
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
@@ -619,7 +620,10 @@ namespace odfaeg {
 			vkCmdBindPipeline(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, GPUContext::instance().getRTPipeline(rtShader).getHandle());
 			vkCmdBindDescriptorSets(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, GPUContext::instance().getRTPipeline(rtShader).getLayout(), 0, sets.size(), sets.data(), 0, 0);
             vkCmdPushConstants(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getRTPipeline(rtShader).getLayout(), VK_SHADER_STAGE_RAYGEN_BIT_KHR, 0, sizeof(RayGenPC), &rayGenPC);
-			vkCmdTraceRaysKHR(
+			/*std::cout << "TraceRays size = " 
+          << parentRenderer.getSize().x() << " x " 
+          << parentRenderer.getSize().y() << "\n";*/
+            vkCmdTraceRaysKHR(
 				parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()),
 				&raygenShaderSbtEntry,
 				&missShaderSbtEntry,
@@ -644,6 +648,7 @@ namespace odfaeg {
             {
                 VkImageMemoryBarrier barrier = {};
                 barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
                 barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
                 barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
                 barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
@@ -651,7 +656,7 @@ namespace odfaeg {
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 barrier.subresourceRange.levelCount = 1;
                 barrier.subresourceRange.layerCount = 1;
-                vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+                vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()),  VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
             }
 
             VkImageCopy copyRegion{};

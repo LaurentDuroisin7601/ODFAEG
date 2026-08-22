@@ -39,7 +39,9 @@ void main() {
     if (payload.color.r != 0 || payload.color.g != 0 || payload.color.b != 0 || payload.color.a != 0) {
         if (payload.color.r > 1 || payload.color.g > 1 || payload.color.b > 1 || payload.color.a > 1) {        
             debugPrintfEXT("color : %v4f", payload.color);
-        }
+        } /*else {
+            debugPrintfEXT("color : %v4f", payload.color);
+        }*/
     }
     imageStore(image[pc.currentFrame], ivec2(gl_LaunchIDEXT.xy), payload.color);
 }
