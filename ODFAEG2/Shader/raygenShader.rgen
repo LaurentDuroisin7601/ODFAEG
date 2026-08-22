@@ -18,10 +18,13 @@ layout (push_constant) uniform PushConstant {
 // Dans le shader commun
 struct RayPayload {
     vec4 color;
+    bool hit;
 };
 layout(location = 0) rayPayloadEXT RayPayload payload; // ray generation
 void main() {
     //debugPrintfEXT("current frame index : %i", pc.currentFrame);
+    payload.hit = false;
+    payload.color = vec4(0);
     const vec2 pixelCenter = vec2(gl_LaunchIDEXT.xy) + vec2(0.5);
     const vec2 inUV = pixelCenter/vec2(gl_LaunchSizeEXT.xy);
     vec2 d = inUV * 2.0 - 1.0;
