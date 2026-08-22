@@ -27,6 +27,7 @@ namespace odfaeg {
 		}
 		Pipeline::Pipeline(Device& device) : device(device) {
 			pipeline = VK_NULL_HANDLE;
+			vkCreateRayTracingPipelinesKHR = reinterpret_cast<PFN_vkCreateRayTracingPipelinesKHR>(vkGetDeviceProcAddr(device.getDevice(), "vkCreateRayTracingPipelinesKHR"));
 		}
 		Pipeline::Pipeline(Pipeline&& other) noexcept : device(other.device) {			
 			pipeline = other.pipeline;

@@ -33,6 +33,7 @@ namespace odfaeg {
 			VkPipelineLayout getLayout();			
 			~Pipeline();
 		private:
+			PFN_vkCreateRayTracingPipelinesKHR vkCreateRayTracingPipelinesKHR{ nullptr };                                     
 			VkPipeline pipeline;
 			Device& device;
 			VkPipelineLayout pipelineLayout;
