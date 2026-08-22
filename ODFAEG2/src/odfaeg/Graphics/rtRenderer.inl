@@ -72,8 +72,8 @@ namespace odfaeg {
             createShaderBindingTable();
             
             needToUpdateBLAS = needToUpdateTLAS = needToUpdateDescriptorSets = true; 
-            updateBLAS();
-            updateTLAS();
+            /*updateBLAS();
+            updateTLAS();*/
         } 
         void RTRenderer::loadExtensionsFuncPtr() {
             VkDevice device = GPUContext::instance().getDevice().getDevice();
@@ -521,9 +521,9 @@ namespace odfaeg {
             bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
             DescriptorSet& rtRaygenSet = GPUContext::instance().getDescriptorSets(rtShader, (hasTLASStructure) ? 3 : 2, 1)[0];
             rtRaygenSet.updateBufferInfos(0, ubo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-            rtRaygenSet.updateImageInfos(0, storageImage,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+            rtRaygenSet.updateImageInfos(1, storageImage,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
             if (hasTLASStructure) {
-                rtRaygenSet.updateAccelerationStructureInfos(0, topLevelAS);
+                rtRaygenSet.updateAccelerationStructureInfos(2, topLevelAS);
             }
             DescriptorSet& rtRayhitSet = GPUContext::instance().getDescriptorSets(rtShader, (hasDiffuseTexture) ? 5 : 4, 1)[0];
             rtRayhitSet.updateBufferInfos(0, true, GPUContext::instance().getSharedVertexBuffer(RenderTarget::VERTEX_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
