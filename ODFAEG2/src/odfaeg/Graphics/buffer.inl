@@ -148,6 +148,7 @@ namespace odfaeg {
         }
 		uint64_t Buffer::getDeviceAddress() {
 			if (dedicatedMemory) {
+				//std::cout<<"get device adr"<<std::endl;
 				VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{};
 				bufferDeviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
 				bufferDeviceAddressInfo.buffer = buffer;
