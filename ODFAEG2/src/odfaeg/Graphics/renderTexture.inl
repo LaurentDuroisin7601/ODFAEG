@@ -292,7 +292,26 @@ namespace odfaeg {
         uint32_t RenderTexture::getImageIndex() {
             return imageIndex;
         }        
-        void RenderTexture::display() {            
+        void RenderTexture::display() {
+            beginRecordCommandBuffer(); 
+            if (!isDepthOnly()) {
+                getTexture().update(getCommandPool().getHandle(currentFrame), m_textures[0], imageIndex);
+            }           
+            endRecordCommandBuffer();
+            VkSubmitInfo submitInfo{};
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = 1;
+            submitInfo.pCommandBuffers = &getCommandPool().getHandle(currentFrame);
+                        
+
+            Device::QueueFamilyIndices indices = device.findQueueFamilies(device.getPhysicalDevice(), nullptr);
+            //std::cout<<"render texture submit on frame : "<<currentFrame<<std::endl;
+            if (vkQueueSubmit(device.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, inFlightFences[currentFrame].getHandle()) != VK_SUCCESS) {
+                throw std::runtime_error("�chec de l'envoi d'un graphic command buffer! ");
+            }
+            VkResult r2 = vkWaitForFences(device.getDevice(), 1, &inFlightFences[currentFrame].getHandle(), VK_TRUE, UINT64_MAX);
+            if (r2 == -4)
+                printf("wait for fence result : %d\n", r2);
             currentFrame = (currentFrame + 1) % RT_MAX_FRAMES_IN_FLIGHT;
             imageIndex = (imageIndex + 1) % NB_SWAPCHAIN_IMAGES;
         }        
@@ -320,9 +339,7 @@ namespace odfaeg {
                             signalValues.push_back(0);
                         }
                     }
-                    if (!isDepthOnly()) {
-                        getTexture().update(getCommandPool().getHandle(currentFrame), m_textures[0], imageIndex);
-                    }
+                    
                     /*VkImageMemoryBarrier barrier{};
                     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                     barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
