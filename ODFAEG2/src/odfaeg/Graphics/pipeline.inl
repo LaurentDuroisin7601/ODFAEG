@@ -514,7 +514,7 @@ namespace odfaeg {
 			{
 				VkPipelineShaderStageCreateInfo shaderStageInfo{};
 				shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-				shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+				shaderStageInfo.stage = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
 				shaderStageInfo.module = shader.getRaygenShaderModule();
 				shaderStageInfo.pName = "main";
 				shaderStages.push_back(shaderStageInfo);
@@ -530,7 +530,7 @@ namespace odfaeg {
 			{
 				VkPipelineShaderStageCreateInfo shaderStageInfo{};
 				shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-				shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+				shaderStageInfo.stage = VK_SHADER_STAGE_MISS_BIT_KHR;
 				shaderStageInfo.module = shader.getRaymissShaderModule();
 				shaderStageInfo.pName = "main";
 				shaderStages.push_back(shaderStageInfo);
@@ -546,13 +546,13 @@ namespace odfaeg {
 			{
 				VkPipelineShaderStageCreateInfo shaderStageInfo{};
 				shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-				shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+				shaderStageInfo.stage = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
 				shaderStageInfo.module = shader.getRayhitShaderModule();
 				shaderStageInfo.pName = "main";
 				shaderStages.push_back(shaderStageInfo);
 				VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
 				shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
-				shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+				shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
 				shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
 				shaderGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
 				shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
