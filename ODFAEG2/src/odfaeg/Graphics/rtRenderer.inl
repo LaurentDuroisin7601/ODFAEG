@@ -41,9 +41,9 @@ namespace odfaeg {
                 ubo.back().update(&uboDatas, sizeof(UBOData));  
             }
             
-            std::string shaderDir = std::string(ODFAEG_INSTALL_DIR) + "/Shader";
-            if (!rtShader.loadRaytracingFromFileSpv(shaderDir + "/raygenShader.rgen", shaderDir + "/raymissShader.rmiss", shaderDir+"/rayhitShader.rchit")) {
-                throw std::runtime_error("Could not load env map shader");
+            std::string shaderDir = std::string(ODFAEG_INSTALL_DIR) + "/Shaders";
+            if (!rtShader.loadRaytracingFromFileSpv(shaderDir + "/raygenShader.rgen.spv", shaderDir + "/raymissShader.rmiss.spv", shaderDir+"/rayhitShader.rchit.spv")) {
+                throw std::runtime_error("Could not load rt shader");
             }
             shaderGroupCount = 3;
             loadExtensionsFuncPtr();

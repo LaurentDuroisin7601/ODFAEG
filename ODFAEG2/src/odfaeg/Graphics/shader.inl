@@ -147,12 +147,8 @@ namespace odfaeg {
                 if (!loadSpv(raymissShaderFileName, spvRaymissShaderCode))
                     return false;
 
-                // Task shader (optionnel)
-                if (!rayhitShaderFileName.empty()) {
-                    if (!loadSpv(rayhitShaderFileName, spvRayhitShaderCode))
-                        return false;
-                }
-
+                if (!loadSpv(rayhitShaderFileName, spvRayhitShaderCode))
+                    return false;
                 return true;
             }
             ////////////////////////////////////////////////////////////

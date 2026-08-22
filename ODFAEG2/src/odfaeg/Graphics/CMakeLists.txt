@@ -205,6 +205,7 @@ if(ODFAEG_USE_MODULES)
 			DESTINATION share/odfaeg/pcm/Graphics
 			FILES_MATCHING PATTERN "*.pcm" PATTERN "*.modmap"
 	)
+	install(FILES ${SPV_OUTPUTS} DESTINATION Shader)
 else()	
 	target_sources(odfaeg-graphics PRIVATE ${SPV_OUTPUTS})
 	target_sources(odfaeg-graphics
@@ -415,6 +416,7 @@ else()
 		DESTINATION include/odfaeg/Graphics
 		FILES_MATCHING PATTERN "*.hpp" PATTERN "*.inl"
 	)
+	install(FILES ${SPV_OUTPUTS} DESTINATION Shader)
 endif()
 
 

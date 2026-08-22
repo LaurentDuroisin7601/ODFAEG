@@ -33,6 +33,7 @@
 #include "renderTarget.hpp"
 #include "renderTexture.hpp"
 #include "renderWindow.hpp"
+#include "rtRenderer.hpp"
 #include "semaphore.hpp"
 #include "shader.hpp"
 #include "shadowRenderer.hpp"
