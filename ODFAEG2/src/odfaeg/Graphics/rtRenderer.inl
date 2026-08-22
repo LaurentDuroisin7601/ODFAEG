@@ -38,7 +38,7 @@ namespace odfaeg {
             commandPool.beginRecordCommandBuffer(0);
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 storageImage.emplace_back(GPUContext::instance().getDevice());
-                storageImage.back().create(size.x(), size.y(), 1, VK_IMAGE_TYPE_2D, storageFormat, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY,
+                storageImage.back().create(size.x(), size.y(), 1, VK_IMAGE_TYPE_2D, storageFormat, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY,
                         1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
                 storageImage.back().createImageView(VK_IMAGE_VIEW_TYPE_2D, storageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
                 Texture::transitionImageLayout(storageImage.back(), commandPool.getHandle(0), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
@@ -525,7 +525,8 @@ namespace odfaeg {
             if (hasTLASStructure) {
                 rtRaygenSet.updateAccelerationStructureInfos(2, topLevelAS);
             }
-            DescriptorSet& rtRayhitSet = GPUContext::instance().getDescriptorSets(rtShader, (hasDiffuseTexture) ? 5 : 4, 1)[0];
+            rtRaygenSet.updateDescriptorSet();
+            DescriptorSet& rtRayhitSet = GPUContext::instance().getDescriptorSets(rtShader, (hasDiffuseTexture) ? 5 : 4, 1, 1)[0];
             rtRayhitSet.updateBufferInfos(0, true, GPUContext::instance().getSharedVertexBuffer(RenderTarget::VERTEX_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             rtRayhitSet.updateBufferInfos(1, false, GPUContext::instance().getSharedVertexBuffer(RenderTarget::VERTEX_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             rtRayhitSet.updateBufferInfos(2, geometryOffsetBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -533,6 +534,7 @@ namespace odfaeg {
             if (hasDiffuseTexture) {
                 rtRayhitSet.updateImageInfos(4, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             }
+            rtRayhitSet.updateDescriptorSet();
         }
         void RTRenderer::createShaderBindingTable() {
             const uint32_t handleSize = rayTracingPipelineProperties.shaderGroupHandleSize;
@@ -546,9 +548,9 @@ namespace odfaeg {
             }
 
          
-            raygenShaderBT.create(handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR, VMA_MEMORY_USAGE_CPU_ONLY, true);
-            raymissShaderBT.create(handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR, VMA_MEMORY_USAGE_CPU_ONLY, true);
-            rayhitShaderBT.create(handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR, VMA_MEMORY_USAGE_CPU_ONLY, true);
+            raygenShaderBT.create(handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR, VMA_MEMORY_USAGE_CPU_ONLY, 0, true);
+            raymissShaderBT.create(handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR, VMA_MEMORY_USAGE_CPU_ONLY, 0, true);
+            rayhitShaderBT.create(handleSize, VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR, VMA_MEMORY_USAGE_CPU_ONLY, 0, true);
 
             // Copy handles
             raygenShaderBT.update(shaderHandleStorage.data(), handleSize);
@@ -564,7 +566,7 @@ namespace odfaeg {
             subresRange.levelCount = 1;
             subresRange.layerCount = 1;
             
-            vkCmdClearColorImage(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), storageImage.back().getHandle(), VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+            vkCmdClearColorImage(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), storageImage[parentRenderer.getCurrentFrame()].getHandle(), VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
             VkMemoryBarrier memoryBarrier;
             memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
             memoryBarrier.pNext = VK_NULL_HANDLE;

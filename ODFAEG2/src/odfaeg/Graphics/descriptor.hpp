@@ -71,7 +71,8 @@ namespace odfaeg {
 		private:
 			std::vector<std::vector<VkDescriptorBufferInfo>> bufferInfos;
 			std::vector<std::vector<VkDescriptorImageInfo>>	imageInfos;
-			std::vector<VkWriteDescriptorSet> descriptorWrites;			
+			std::vector<VkWriteDescriptorSet> descriptorWrites;
+			VkWriteDescriptorSetAccelerationStructureKHR descriptorAccelerationStructureInfo={};			
 			VkDescriptorSet descriptorSet;
 			Device& device;
 		};

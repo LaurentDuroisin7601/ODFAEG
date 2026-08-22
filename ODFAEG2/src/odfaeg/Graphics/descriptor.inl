@@ -323,11 +323,11 @@ namespace odfaeg {
 			descriptorWrites[binding].pImageInfo = imageInfos[binding].data();
 		}
 		void DescriptorSet::updateAccelerationStructureInfos(unsigned int binding, std::vector<VkAccelerationStructureKHR> handles) {
-			VkWriteDescriptorSetAccelerationStructureKHR descriptorAccelerationStructureInfo{};
+			
 			descriptorAccelerationStructureInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
 			descriptorAccelerationStructureInfo.accelerationStructureCount = handles.size();
 			descriptorAccelerationStructureInfo.pAccelerationStructures = handles.data();
-
+			//std::cout<<"size : "<<handles.size()<<std::endl;
 			VkWriteDescriptorSet accelerationStructureWrite{};
 			descriptorWrites[binding].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			// The specialized acceleration structure descriptor has to be chained

@@ -70,7 +70,7 @@ namespace odfaeg {
 				memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 				memoryAllocateInfo.pNext = &memoryAllocateFlagsInfo;
 				memoryAllocateInfo.allocationSize = memoryRequirements.size;
-				memoryAllocateInfo.memoryTypeIndex = findMemoryType(memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+				memoryAllocateInfo.memoryTypeIndex = findMemoryType(memoryRequirements.memoryTypeBits, (memoryUsage == VMA_MEMORY_USAGE_CPU_ONLY) ? VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT : VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 				if(vkAllocateMemory(device.getDevice(), &memoryAllocateInfo, nullptr, &deviceMemory) != VK_SUCCESS) {
 					throw std::runtime_error("failed to allocate dedicated buffer memory");
 				}
@@ -82,11 +82,20 @@ namespace odfaeg {
 			range = size;
 		}		
 		void Buffer::update(const void* srcData, size_t srcDataSize, size_t dstStart) {
-			if (buffer != VK_NULL_HANDLE && srcDataSize > 0) {
-				void* data;
-				vmaMapMemory(allocator, memory, &data);
-				memcpy(static_cast<std::uint8_t*>(data) + dstStart, srcData, srcDataSize);
-				vmaUnmapMemory(allocator, memory);
+			if (!dedicatedMemory) {
+				if (buffer != VK_NULL_HANDLE && srcDataSize > 0) {
+					void* data;
+					vmaMapMemory(allocator, memory, &data);
+					memcpy(static_cast<std::uint8_t*>(data) + dstStart, srcData, srcDataSize);
+					vmaUnmapMemory(allocator, memory);
+				}
+			} else {
+				if (buffer != VK_NULL_HANDLE && srcDataSize > 0) {
+					void* data;
+					vkMapMemory(device.getDevice(), deviceMemory, 0, srcDataSize, 0, &data);
+					memcpy(static_cast<std::uint8_t*>(data) + dstStart, srcData, srcDataSize);
+					vkUnmapMemory(device.getDevice(), deviceMemory);
+				}
 			}
 		}
 		void Buffer::swap(Buffer& b) {
