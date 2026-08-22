@@ -310,6 +310,7 @@ namespace odfaeg {
             VkResult r2 = vkWaitForFences(device.getDevice(), 1, &inFlightFences[currentFrame].getHandle(), VK_TRUE, UINT64_MAX);
             if (r2 == -4)
                 printf("wait for fence result : %d\n", r2);
+            vkResetFences(device.getDevice(), 1, &inFlightFences[currentFrame].getHandle());
             currentFrame = (currentFrame + 1) % RT_MAX_FRAMES_IN_FLIGHT;
             imageIndex = (imageIndex + 1) % NB_SWAPCHAIN_IMAGES;
         }        
