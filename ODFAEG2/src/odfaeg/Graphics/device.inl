@@ -412,17 +412,17 @@ namespace odfaeg {
                 createInfo.pEnabledFeatures = nullptr; // on utilise Features2
                 std::vector<const char*> allExtensions = deviceExtensions; 
                 if (meshSupported) {
-                    //std::cout<<"mesh supported!"<<std::endl;
-                                       
+                    //std::cout<<"mesh supported!"<<std::endl;                                       
                     allExtensions.insert(allExtensions.end(), deviceMeshExtensions.begin(), deviceMeshExtensions.end());
-                    createInfo.enabledExtensionCount = static_cast<uint32_t>(allExtensions.size());                    
-                    createInfo.ppEnabledExtensionNames = allExtensions.data();
-                }
-                else {
-                    //std::cout<<"mesh not supported!"<<std::endl;
-                    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-                    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
-                }
+                    
+                }       
+                if (rtSupported) {
+                    allExtensions.insert(allExtensions.end(), deviceRTExtensions.begin(), deviceRTExtensions.end());
+                }  
+                //std::cout<<"mesh not supported!"<<std::endl;
+                createInfo.enabledExtensionCount = static_cast<uint32_t>(allExtensions.size());
+                createInfo.ppEnabledExtensionNames = allExtensions.data();
+                
                 //Device VL deprecated features
                 createInfo.enabledLayerCount = 0;
                 createInfo.ppEnabledLayerNames = nullptr;                
