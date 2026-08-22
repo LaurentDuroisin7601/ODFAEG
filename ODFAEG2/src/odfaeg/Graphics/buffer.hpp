@@ -30,8 +30,7 @@ namespace odfaeg {
 			VkBuffer buffer;
 			VkDeviceMemory deviceMemory;
 			size_t range;
-			size_t offset;
-			uint64_t deviceAddress;
+			size_t offset;			
 			bool dedicatedMemory;
 			Device& device;	
 			PFN_vkGetBufferDeviceAddressKHR vkGetBufferDeviceAddressKHR{ nullptr };		

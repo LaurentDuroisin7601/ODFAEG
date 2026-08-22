@@ -3,9 +3,9 @@ namespace odfaeg {
 		Buffer::Buffer(Device& device) : allocator(device.getAllocator()), device(device) {	
 			buffer = VK_NULL_HANDLE;
 			range = 0;
-			offset = 0;
-			deviceAddress = 0;
+			offset = 0;			
 			deviceMemory = VK_NULL_HANDLE;
+			dedicatedMemory = false;
 			vkGetBufferDeviceAddressKHR = reinterpret_cast<PFN_vkGetBufferDeviceAddressKHR>(vkGetDeviceProcAddr(device.getDevice(), "vkGetBufferDeviceAddressKHR"));
 		}
 		Buffer::Buffer(Buffer&& other) noexcept : device(other.device) {
@@ -15,8 +15,9 @@ namespace odfaeg {
 			allocator = other.allocator;
 			range = other.range;
 			offset = other.offset;
+			dedicatedMemory = other.dedicatedMemory;
 			other.buffer = VK_NULL_HANDLE;
-			other.memory = VK_NULL_HANDLE;
+			other.memory = VK_NULL_HANDLE;			
 			vkGetBufferDeviceAddressKHR = reinterpret_cast<PFN_vkGetBufferDeviceAddressKHR>(vkGetDeviceProcAddr(device.getDevice(), "vkGetBufferDeviceAddressKHR"));
 		}
 		Buffer& Buffer::operator= (Buffer&& other) noexcept {
@@ -28,6 +29,7 @@ namespace odfaeg {
 				allocator = other.allocator;
 				range = other.range;
 				offset = other.offset;
+				dedicatedMemory = other.dedicatedMemory;
 				other.buffer = VK_NULL_HANDLE;
 				other.memory = VK_NULL_HANDLE;
 			}
