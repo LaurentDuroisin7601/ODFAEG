@@ -559,8 +559,9 @@ namespace odfaeg {
 				shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
 				shaderGroups.push_back(shaderGroup);
 			}
-			std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
-			for (unsigned int i = 0; i < setLayouts.size(); i++) {
+			std::vector<VkDescriptorSetLayout> descriptorSetLayouts;			
+			for (unsigned int i = 0; i < setLayouts.size(); i++) {	
+				std::cout<<"handle : "<<setLayouts[i].getHandle()<<std::endl;	
 				descriptorSetLayouts.push_back(setLayouts[i].getHandle());
 			}
 			VkPipelineLayoutCreateInfo pipelineLayoutCI{};

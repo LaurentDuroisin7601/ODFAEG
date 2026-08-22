@@ -443,7 +443,8 @@ namespace odfaeg {
             rtRaygenSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
             rtRaygenSetLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
             rtRaygenSetLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, MAX_TLAS_STRUCTURES, VK_SHADER_STAGE_RAYGEN_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
-            VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);            
+            VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);   
+            rtRaygenSetLayout.update();         
             DescriptorSetLayout& rtRayhitSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 5, true, 1); 
             rtRayhitSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR); 
             rtRayhitSetLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
