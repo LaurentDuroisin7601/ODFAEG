@@ -61,14 +61,16 @@ struct RayPayload {
 };
 layout(location = 0) rayPayloadInEXT RayPayload payload;
 hitAttributeEXT vec2 baryCoords;
-vec4 unpackColor(uint color) {
-    vec4 ucolor;
-    ucolor.r = color & 0x000000FF;
-    ucolor.g = color & 0x0000FF00;
-    ucolor.b = color & 0x00FF0000;
-    ucolor.a = color & 0xFF000000;
-    return ucolor; 
+vec4 unpackColor(uint c)
+{
+    float r = float((c >> 0)  & 0xFFu) / 255.0;
+    float g = float((c >> 8)  & 0xFFu) / 255.0;
+    float b = float((c >> 16) & 0xFFu) / 255.0;
+    float a = float((c >> 24) & 0xFFu) / 255.0;
+
+    return vec4(r, g, b, a);
 }
+
 void main() {
     GeometryOffset geomOffs = geomOffsets[gl_InstanceCustomIndexEXT];
     int primID = gl_PrimitiveID;
@@ -88,6 +90,7 @@ void main() {
     vec4 color = w * c1 + u * c2 + v * c3;
     vec2 tc = w * ct1 + u * ct2 + v * ct3;
     uint textureIndex = material.diffuseTextureIndex;
-    //debugPrintfEXT("texture index : %i", textureIndex);
+    
     payload.color = (textureIndex > 0) ? color * texture(diffuseTextures[textureIndex-1], tc) : color;
+    //debugPrintfEXT("color : %v4f", payload.color);
 }

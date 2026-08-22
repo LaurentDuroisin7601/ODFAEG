@@ -1,6 +1,6 @@
 namespace odfaeg {
     namespace graphic {
-        RTRenderer::RTRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId, bool usethread) :
+        RTRenderer::RTRenderer(RenderTexture& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId, bool usethread) :
         parentRenderer(parentRenderer),
         rtShader(GPUContext::instance().getDevice()),
         commandPool(GPUContext::instance().getDevice()),
@@ -634,7 +634,7 @@ namespace odfaeg {
                 barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                 barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-                barrier.image = parentRenderer.getRenderingImage().getHandle();
+                barrier.image = parentRenderer.getTexture().getImage().getHandle();
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 barrier.subresourceRange.levelCount = 1;
                 barrier.subresourceRange.layerCount = 1;
@@ -660,15 +660,15 @@ namespace odfaeg {
 			copyRegion.dstSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
 			copyRegion.dstOffset = { 0, 0, 0 };
 			copyRegion.extent = { parentRenderer.getSize().x(), parentRenderer.getSize().y(), 1 };
-			vkCmdCopyImage(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), storageImage[parentRenderer.getCurrentFrame()].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, parentRenderer.getRenderingImage().getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
+			vkCmdCopyImage(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), storageImage[parentRenderer.getCurrentFrame()].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, parentRenderer.getTexture().getImage().getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
 
 			{
                 VkImageMemoryBarrier barrier = {};
                 barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                 barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                 barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-                barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-                barrier.image = parentRenderer.getRenderingImage().getHandle();
+                barrier.newLayout = parentRenderer.getTexture().getImage().getLayout();
+                barrier.image = parentRenderer.getTexture().getImage().getHandle();
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 barrier.subresourceRange.levelCount = 1;
                 barrier.subresourceRange.layerCount = 1;

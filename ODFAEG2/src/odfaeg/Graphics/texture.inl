@@ -32,7 +32,7 @@ namespace odfaeg {
             vkCmdResolveImage(
                 cmd,
                 images[i].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                resolved.images[i].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                resolved.images[0].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                 1, &resolvedRegion
             );
         }      
@@ -131,6 +131,9 @@ namespace odfaeg {
                 //std::cout<<"create cube map : "<<layerCount / 6<<std::endl;
                 createCubeMap(texture.m_size.x(), layerCount / 6, texture.mipLevels, (layerCount / 6 > 1));
             } else {
+                /*if (texture.isFBOTexture)
+                std::cout<<"create"<<std::endl;*/
+                
                 create(texture.m_size.x(), texture.m_size.y(), VK_SAMPLE_COUNT_1_BIT, 1, texture.mipLevels);
             }
             update(texture, 0, 0);
@@ -1104,7 +1107,7 @@ namespace odfaeg {
                     transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,0,0,1,layerCount);
                     texture.resolve(*this, commandBuffer, imageIndex);
                     transitionImageLayout(texture.images[imageIndex], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,currentLayout,0,0,1,texture.layerCount);
-                    transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,0,0,1,layerCount);
+                    transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,0,0,1,layerCount);
                 }
             } else {
                
