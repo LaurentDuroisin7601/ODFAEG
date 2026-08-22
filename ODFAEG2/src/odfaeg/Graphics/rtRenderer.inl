@@ -24,13 +24,21 @@ namespace odfaeg {
             deviceProperties2.pNext = &rayTracingPipelineProperties;
             vkGetPhysicalDeviceProperties2(GPUContext::instance().getDevice().getPhysicalDevice(), &deviceProperties2);
 
-            
+            VkFormatProperties props;
+            vkGetPhysicalDeviceFormatProperties(GPUContext::instance().getDevice().getPhysicalDevice(), parentRenderer.getImageFormat(), &props);
+            VkFormat storageFormat;
+            if (!(props.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)) {
+                // Choisir un format compatible
+                storageFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
+            } else {
+                storageFormat = parentRenderer.getImageFormat();
+            }
             math::Vector2u size = parentRenderer.getSize();
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 storageImage.emplace_back(GPUContext::instance().getDevice());
-                storageImage.back().create(size.x(), size.y(), 1, VK_IMAGE_TYPE_2D, parentRenderer.getImageFormat(), VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY,
+                storageImage.back().create(size.x(), size.y(), 1, VK_IMAGE_TYPE_2D, storageFormat, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY,
                         1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
-                storageImage.back().createImageView(VK_IMAGE_VIEW_TYPE_2D, parentRenderer.getImageFormat(), VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
+                storageImage.back().createImageView(VK_IMAGE_VIEW_TYPE_2D, storageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
             } 
             UBOData uboDatas;
             uboDatas.projInverse = parentRenderer.getCamera().getProjMatrix().getMatrix().inverse().transpose(); 

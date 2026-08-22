@@ -561,7 +561,7 @@ namespace odfaeg {
 			}
 			std::vector<VkDescriptorSetLayout> descriptorSetLayouts;			
 			for (unsigned int i = 0; i < setLayouts.size(); i++) {	
-				std::cout<<"handle : "<<setLayouts[i].getHandle()<<std::endl;	
+				//std::cout<<"handle : "<<setLayouts[i].getHandle()<<std::endl;	
 				descriptorSetLayouts.push_back(setLayouts[i].getHandle());
 			}
 			VkPipelineLayoutCreateInfo pipelineLayoutCI{};
