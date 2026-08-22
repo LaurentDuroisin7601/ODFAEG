@@ -5,7 +5,7 @@ namespace odfaeg {
             firstSubmit = true;
             depthOnly = false;
             viewMask = 0;
-            imageFormat = VK_FORMAT_R8G8B8A8_UNORM;
+            imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
         }
         bool RenderTexture::create(unsigned int width, unsigned int height, unsigned int depth, bool layered, bool depthOnly) {
             //std::cout<<"create!"<<std::endl; 

@@ -15,6 +15,7 @@ namespace odfaeg {
         raygenShaderBT(GPUContext::instance().getDevice()),
         raymissShaderBT(GPUContext::instance().getDevice()),
         rayhitShaderBT(GPUContext::instance().getDevice()),
+        staggingBuffer(GPUContext::instance().getDevice()),
         typesToRenderExpression(typesToRenderExpression)        
         {
 
@@ -29,10 +30,12 @@ namespace odfaeg {
             VkFormat storageFormat;
             if (!(props.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)) {
                 // Choisir un format compatible
+                
                 storageFormat = VK_FORMAT_R8G8B8A8_UNORM;
             } else {
                 storageFormat = parentRenderer.getImageFormat();
             }
+            //storageFormat = VK_FORMAT_R8G8B8A8_SRGB;
             math::Vector2u size = parentRenderer.getSize();
             //std::cout<<"size : "<<size<<std::endl;
             createCommandPool();
@@ -632,6 +635,41 @@ namespace odfaeg {
 				parentRenderer.getSize().x(),
 				parentRenderer.getSize().y(),
 				1);
+            /*uint32_t width  = parentRenderer.getSize().x();
+            uint32_t height = parentRenderer.getSize().y();
+
+            std::vector<uint8_t> cpuPixels(width * height * 4);
+
+            for (uint32_t y = 0; y < height; y++) {
+                for (uint32_t x = 0; x < width; x++) {
+                    float u = float(x) / float(width);
+
+                    cpuPixels[(y * width + x) * 4 + 0] = uint8_t(u * 255); // R
+                    cpuPixels[(y * width + x) * 4 + 1] = 0;               // G
+                    cpuPixels[(y * width + x) * 4 + 2] = 0;               // B
+                    cpuPixels[(y * width + x) * 4 + 3] = 255;             // A
+                }
+            }
+            VkBufferImageCopy region{};
+            region.bufferOffset = 0;
+            region.bufferRowLength = 0;
+            region.bufferImageHeight = 0;
+            region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            region.imageSubresource.mipLevel = 0;
+            region.imageSubresource.baseArrayLayer = 0;
+            region.imageSubresource.layerCount = 1;
+            region.imageOffset = {0, 0, 0};
+            region.imageExtent = {width, height, 1};
+            
+            staggingBuffer.create(cpuPixels.size(), 
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+            staggingBuffer.update(cpuPixels.data(), cpuPixels.size());
+            vkCmdCopyBufferToImage(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()),
+            staggingBuffer.getHandle(),
+            storageImage[parentRenderer.getCurrentFrame()].getHandle(),
+            VK_IMAGE_LAYOUT_GENERAL,
+            1,
+            &region);*/
             {
                 VkImageMemoryBarrier barrier = {};
                 barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -656,41 +694,44 @@ namespace odfaeg {
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 barrier.subresourceRange.levelCount = 1;
                 barrier.subresourceRange.layerCount = 1;
-                vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()),  VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+                vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
             }
-
+            
             VkImageCopy copyRegion{};
 			copyRegion.srcSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
 			copyRegion.srcOffset = { 0, 0, 0 };
 			copyRegion.dstSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
 			copyRegion.dstOffset = { 0, 0, 0 };
 			copyRegion.extent = { parentRenderer.getSize().x(), parentRenderer.getSize().y(), 1 };
-			vkCmdCopyImage(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), storageImage[parentRenderer.getCurrentFrame()].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, parentRenderer.getTexture().getImage().getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
+			
+            vkCmdCopyImage(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), storageImage[parentRenderer.getCurrentFrame()].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, parentRenderer.getTexture().getImage().getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
 
 			{
                 VkImageMemoryBarrier barrier = {};
                 barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
                 barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
                 barrier.newLayout = parentRenderer.getTexture().getImage().getLayout();
                 barrier.image = parentRenderer.getTexture().getImage().getHandle();
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 barrier.subresourceRange.levelCount = 1;
                 barrier.subresourceRange.layerCount = 1;
-                vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+                vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 			}
 
             {
                 VkImageMemoryBarrier barrier = {};
                 barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                 barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
                 barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
                 barrier.image = storageImage[parentRenderer.getCurrentFrame()].getHandle();
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 barrier.subresourceRange.levelCount = 1;
                 barrier.subresourceRange.layerCount = 1;
-                vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+                vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
             }
         }
     }    

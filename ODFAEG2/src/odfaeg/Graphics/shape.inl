@@ -17,7 +17,7 @@ namespace odfaeg
             {
                 // Recompute the texture area if requested, or if there was no texture & rect before
                 if (resetRect || (!m_texture && (m_textureRect == entity::IntRect())))
-                    setTextureRect(entity::IntRect(0, 0, texture->getSize().x(), texture->getSize().y()));
+                    setTextureRect(entity::IntRect(0, 0, 1, 1));
             }
 
             // Assign the new texture

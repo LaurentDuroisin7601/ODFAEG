@@ -73,7 +73,7 @@ namespace odfaeg {
                 Buffer transformMatrixBuffer, materialBuffer, geometryOffsetBuffer;
                 Buffer transformMatrixStaggingBuffer, materialStaggingBuffer, geometryOffsetStaggingBuffer;
                 Buffer instancesBuffer, instancesStaggingBuffer;
-                Buffer raygenShaderBT, raymissShaderBT, rayhitShaderBT;
+                Buffer raygenShaderBT, raymissShaderBT, rayhitShaderBT, staggingBuffer;
                 std::deque<Buffer> bottomLevelASBuffers, topLevelASBuffers;
                 std::deque<Buffer> ubo;
                 std::vector<VkAccelerationStructureKHR> bottomLevelAS, topLevelAS; 

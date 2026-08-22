@@ -14,7 +14,7 @@ namespace odfaeg {
             layerCount = 1;
             texType = 0;
             msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-            m_format = VK_FORMAT_R8G8B8A8_UNORM;
+            m_format = VK_FORMAT_R8G8B8A8_SRGB;
         }  
         void Texture::resolve(Texture& resolved, VkCommandBuffer cmd, unsigned int i) {
             VkImageResolve resolvedRegion;
@@ -223,7 +223,7 @@ namespace odfaeg {
             //id = getUniqueId();
             isFBOTexture = FBOAttachment;
             if (FBOAttachment) {
-                m_format = VK_FORMAT_R8G8B8A8_UNORM;
+                m_format = VK_FORMAT_R8G8B8A8_SRGB;
             } 
             bool isCompressed =
                 m_format == VK_FORMAT_BC1_RGBA_UNORM_BLOCK ||

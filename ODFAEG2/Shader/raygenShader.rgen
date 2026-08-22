@@ -38,13 +38,17 @@ void main() {
     //payload.color = vec4(1, 1, 1, 1);
     for (uint i = 0; i < pc.tlasCount; i++) {
         traceRayEXT(topLevelAS[i], gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, origin.xyz, tmin, direction.xyz, tmax, 0);
+        if (payload.hit) {
+            break; // on a trouvé un hit, inutile de tester les autres TLAS
+        }
     }
     if (payload.color.r != 0 || payload.color.g != 0 || payload.color.b != 0 || payload.color.a != 0) {
         if (payload.color.r > 1 || payload.color.g > 1 || payload.color.b > 1 || payload.color.a > 1) {        
             debugPrintfEXT("color : %v4f", payload.color);
         } /*else {
-            debugPrintfEXT("color : %v4f", payload.color);
+            //debugPrintfEXT("color : %v4f", payload.color);
         }*/
     }
+    
     imageStore(image[pc.currentFrame], ivec2(gl_LaunchIDEXT.xy), payload.color);
 }
