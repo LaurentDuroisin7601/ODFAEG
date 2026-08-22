@@ -2,6 +2,7 @@
 #extension GL_EXT_ray_tracing : require
 #extension GL_EXT_ray_query : enable
 #extension GL_EXT_nonuniform_qualifier : enable
+#extension GL_EXT_debug_printf : enable
 #define MAX_TLAS_STRUCTURES 100
 #define MAX_FRAMES_IN_FLIGHT 2
 layout(binding = 0, set = 0) uniform CameraProperties {
@@ -20,6 +21,7 @@ struct RayPayload {
 };
 layout(location = 0) rayPayloadEXT RayPayload payload; // ray generation
 void main() {
+    //debugPrintfEXT("current frame index : %i", pc.currentFrame);
     const vec2 pixelCenter = vec2(gl_LaunchIDEXT.xy) + vec2(0.5);
     const vec2 inUV = pixelCenter/vec2(gl_LaunchSizeEXT.xy);
     vec2 d = inUV * 2.0 - 1.0;

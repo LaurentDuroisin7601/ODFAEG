@@ -1,6 +1,7 @@
 #version 460
 #extension GL_EXT_ray_tracing : enable
 #extension GL_EXT_nonuniform_qualifier : enable
+#extension GL_EXT_debug_printf : enable
 #define MAX_FRAMES_IN_FLIGHT 2
 #define MAX_PRIMITIVE_TYPES 6
 #define MAX_TEXTURES 1024
@@ -87,5 +88,6 @@ void main() {
     vec4 color = w * c1 + u * c2 + v * c3;
     vec2 tc = w * ct1 + u * ct2 + v * ct3;
     uint textureIndex = material.diffuseTextureIndex;
+    //debugPrintfEXT("texture index : %i", textureIndex);
     payload.color = (textureIndex > 0) ? color * texture(diffuseTextures[textureIndex-1], tc) : color;
 }

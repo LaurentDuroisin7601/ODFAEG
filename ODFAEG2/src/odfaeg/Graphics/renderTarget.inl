@@ -476,6 +476,7 @@ namespace odfaeg {
 								}*/
 								//std::cout<<"reflectable  "<<materials[m]->isReflectable()<<"refractable : "<<materials[m]->isRefractable()<<std::endl;
 								subMeshData.materialId = gameObjects[i]->getMaterials()[j]->getId();
+								subMesh.materialId = gameObjects[i]->getMaterials()[j]->getId();
 								/*if (materials[m]->isReflectable())
 									std::cout<<"material id : "<<subMeshData.materialId<<std::endl;
 								system("PAUSE");*/

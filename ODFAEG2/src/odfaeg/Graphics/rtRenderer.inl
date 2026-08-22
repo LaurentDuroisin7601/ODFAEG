@@ -29,7 +29,7 @@ namespace odfaeg {
             VkFormat storageFormat;
             if (!(props.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)) {
                 // Choisir un format compatible
-                storageFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
+                storageFormat = VK_FORMAT_R8G8B8A8_UNORM;
             } else {
                 storageFormat = parentRenderer.getImageFormat();
             }
@@ -126,7 +126,7 @@ namespace odfaeg {
             std::deque<Buffer> scratchBuffers;
             //std::cout<<"material : "<<materials.size()<<std::endl;
             for (unsigned int i = 0; i < materials.size(); i++) {
-                //std::cout<<"texture id : "<<materials[i]->getTexture(entity::SubMesh::DIFFUSE)->getId()<<std::endl;
+               
                 MaterialData material;
                 //std::cout<<"material : "<<materials[i]<<std::endl;
                 material.diffuseTextureIndex = (materials[i]->getTexture(entity::SubMesh::DIFFUSE) != nullptr) ? materials[i]->getTexture(entity::SubMesh::DIFFUSE)->getId() : 0;
@@ -157,11 +157,11 @@ namespace odfaeg {
                 materialDatas.push_back(material);
 
             }
-            materialStaggingBuffer.create(sizeof(MaterialData)*materials.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);         
-            materialStaggingBuffer.update(&transformMatrix, sizeof(MaterialData)*materials.size());
-            materialBuffer.create(sizeof(MaterialData)*materials.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+            materialStaggingBuffer.create(sizeof(MaterialData)*materialDatas.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);         
+            materialStaggingBuffer.update(materialDatas.data(), sizeof(MaterialData)*materialDatas.size());
+            materialBuffer.create(sizeof(MaterialData)*materialDatas.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
             
-            Buffer::copyBuffer(materialStaggingBuffer, materialBuffer, sizeof(MaterialData)*materials.size(), commandPool.getHandle(parentRenderer.getCurrentFrame()));
+            Buffer::copyBuffer(materialStaggingBuffer, materialBuffer, sizeof(MaterialData)*materialDatas.size(), commandPool.getHandle(parentRenderer.getCurrentFrame()));
             std::vector<Mesh*>& gameObjects = RenderTarget::getGameObjects();
             std::vector<GeometryOffset> geometryOffsets;
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
