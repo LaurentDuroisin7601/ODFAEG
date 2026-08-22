@@ -473,15 +473,15 @@ namespace odfaeg {
                 }
                 VkShaderModuleCreateInfo createRMInfo{};
                 createRMInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-                createRMInfo.codeSize = 4 * spvFragmentShaderCode.size();
-                createRMInfo.pCode = spvFragmentShaderCode.data();
+                createRMInfo.codeSize = 4 * spvRaymissShaderCode.size();
+                createRMInfo.pCode = spvRaymissShaderCode.data();
                 if (vkCreateShaderModule(device.getDevice(), &createRMInfo, nullptr, &raymissShaderModule) != VK_SUCCESS) {
                     throw std::runtime_error("Failed to create raymiss shader module");
                 }
                 VkShaderModuleCreateInfo createRHInfo{};
                 createRHInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-                createRHInfo.codeSize = 4 * spvGeometryShaderCode.size();
-                createRHInfo.pCode = spvGeometryShaderCode.data();
+                createRHInfo.codeSize = 4 * spvRayhitShaderCode.size();
+                createRHInfo.pCode = spvRayhitShaderCode.data();
                 if (vkCreateShaderModule(device.getDevice(), &createRHInfo, nullptr, &rayhitShaderModule) != VK_SUCCESS) {
                     throw std::runtime_error("Failed to create rayhit shader module");
                 }
