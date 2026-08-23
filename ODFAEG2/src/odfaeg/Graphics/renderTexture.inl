@@ -7,7 +7,7 @@ namespace odfaeg {
             viewMask = 0;
             imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
         }
-        bool RenderTexture::create(unsigned int width, unsigned int height, unsigned int depth, bool layered, bool depthOnly) {
+        bool RenderTexture::create(unsigned int width, unsigned int height, unsigned int depth, bool layered, bool depthOnly, bool multisample) {
             //std::cout<<"create!"<<std::endl; 
             device.createInstance();
             device.pickupPhysicalDevice(VK_NULL_HANDLE);
@@ -19,7 +19,7 @@ namespace odfaeg {
                     //std::cout<<"create texture"<<std::endl;
                     m_textures.emplace_back(device, NB_SWAPCHAIN_IMAGES);
                     //std::cout<<"images : "<<m_textures.back().getImages().size()<<std::endl;
-                    m_textures.back().create(width, height, device.getMsaaSamples(), depth, 1, layered, true);
+                    m_textures.back().create(width, height, (multisample) ? device.getMsaaSamples() : VK_SAMPLE_COUNT_1_BIT, depth, 1, layered, true);
                 }
             }
             //std::cout<<"images : "<<m_textures.back().getImages().size()<<std::endl;
@@ -28,7 +28,7 @@ namespace odfaeg {
             this->depthOnly = depthOnly;           
             //if (useDepthTest() || useDepthTest() || depthOnly) {
                       
-                getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, device.getMsaaSamples(), depth, layered);
+                getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, (multisample) ? device.getMsaaSamples() : VK_SAMPLE_COUNT_1_BIT, depth, layered);
             //}
             /*createRenderPass();
             createFramebuffers();*/

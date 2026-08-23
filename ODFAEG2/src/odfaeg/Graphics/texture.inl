@@ -390,7 +390,7 @@ namespace odfaeg {
             //std::cout<<"nb buffers : "<<nbBuffers<<std::endl;         
             for (unsigned int i = 0; i < nbBuffers; i++) {  
                 images[i].create(texWidth, texHeight, 1, imageType, m_format, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                    VMA_MEMORY_USAGE_GPU_ONLY, 1, (layered) ? texDepth : 1, device.getMsaaSamples(), VK_IMAGE_TILING_OPTIMAL);
+                    VMA_MEMORY_USAGE_GPU_ONLY, 1, (layered) ? texDepth : 1, msaaSamples, VK_IMAGE_TILING_OPTIMAL);
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_DEPTH_BIT /*| VK_IMAGE_ASPECT_STENCIL_BIT*/, 0, 0, 1, (layered) ? texDepth : 1);
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
                 commandPool.beginRecordCommandBuffer(i);

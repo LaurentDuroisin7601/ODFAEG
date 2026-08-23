@@ -53,7 +53,7 @@ namespace odfaeg {
                     math::Matrix4f viewInverse;
                     math::Matrix4f projInverse;
                 };
-                RTRenderer(RenderTexture& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId=-1, bool usethread = false);
+                RTRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId=-1, bool usethread = false);
                 void clear();
                 void drawNextFrame();
                 void draw();
@@ -80,7 +80,7 @@ namespace odfaeg {
                 bool needToUpdateBLAS, needToUpdateTLAS, needToUpdateDescriptorSets;
                 Shader rtShader;
                 CommandPool commandPool;
-                RenderTexture& parentRenderer;
+                RenderTarget& parentRenderer;
                 std::string typesToRenderExpression;
                 int instancesGroupCount, singleInstancesCount, shaderGroupCount;                     
                 PFN_vkCreateAccelerationStructureKHR vkCreateAccelerationStructureKHR{ nullptr };

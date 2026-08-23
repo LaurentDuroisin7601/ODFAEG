@@ -21,7 +21,7 @@ namespace odfaeg {
             inline static const unsigned int NB_SWAPCHAIN_IMAGES = 3;
             inline static const unsigned int RT_MAX_FRAMES_IN_FLIGHT = 2;
             RenderTexture(Device& device, bool useDepthTest = false, bool useStencilTest = false);
-            bool create(unsigned int width, unsigned int height, unsigned int depth=1, bool layered=false, bool depthOnly=false);
+            bool create(unsigned int width, unsigned int height, unsigned int depth=1, bool layered=false, bool depthOnly=false, bool multisample=false);
             bool createCubeMap(unsigned int size, bool depthOnly = false, bool layered = false);
             uint32_t getImageIndex();
             VkSurfaceKHR getSurface();
