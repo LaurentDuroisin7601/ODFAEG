@@ -4,7 +4,7 @@ namespace ofdaeg {
             OCTREE, BSP
         };
         template <typename Volume>
-        BoundingVolumeTree<Volume>::BoundingVolumeTree() {
+        BoundingVolumeTree<Volume>::BoundingVolumeTree(unsigned int maxObjectsPerNodes) {
             
         }
         template <typename Volume, typename Object>
@@ -43,12 +43,12 @@ namespace ofdaeg {
         }
         void template <typename Volume, typename Object>
         void BoundingVolumeTree<Volume>::build(Node& node) {
-            if (node.objects.size() > 1) {
+            if (node.objects.size() > maxObjectsPerNode) {
                 node.leaf = false;    
                 Volume volume = node.volume;
                 std::vector<Volume> volumes;
                 if (BSP) {
-                    volumes = volume.subDivide(2);   
+                    volumes = volume.subDivide(2);  
                                   
                 } else {
                     volumes = volume.subDivide(8); 
@@ -76,7 +76,7 @@ namespace ofdaeg {
             for (unsigned int i = 0; i < nodes.size(); i++) {
                 if (nodes[i].leaf && nodes[i].volume.intersects(object)) {
                     nodes[i].objects.clear();
-                    Node& parent = nodes[i].parent;
+                    Node& parent = *nodes[i].parent;
                     parent.removeChild(nodes[i]);
                     std::vector<Node>::iterator it;
                     for (it = nodes.begin(); it != nodes.end(); it++) {
@@ -88,7 +88,7 @@ namespace ofdaeg {
             }
         }
         template <typename Volume, typename Object>
-        void BoundingVolumeTree<Volume>::updateObject(Object object) {
+        void BoundingVolumeTree<Volume>::update(Object object) {
             removeObject(object);
             addObject(object);
         }
