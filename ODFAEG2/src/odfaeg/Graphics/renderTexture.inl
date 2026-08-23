@@ -294,7 +294,9 @@ namespace odfaeg {
         }        
         void RenderTexture::display() {
             beginRecordCommandBuffer(); 
-                     
+            if (!isDepthOnly()) {
+                getTexture().update(getCommandPool().getHandle(currentFrame), m_textures[0], imageIndex);
+            } 
             endRecordCommandBuffer();
             VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -338,9 +340,7 @@ namespace odfaeg {
                             signalValues.push_back(0);
                         }
                     }
-                    if (!isDepthOnly()) {
-                        getTexture().update(getCommandPool().getHandle(currentFrame), m_textures[0], imageIndex);
-                    }  
+                     
                     /*VkImageMemoryBarrier barrier{};
                     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                     barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
