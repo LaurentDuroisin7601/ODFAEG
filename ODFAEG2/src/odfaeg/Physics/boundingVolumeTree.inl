@@ -3,12 +3,12 @@ namespace ofdaeg {
         enum Type {
             OCTREE, BSP
         };
-        template <typename Volume>
-        BoundingVolumeTree<Volume>::BoundingVolumeTree(unsigned int maxObjectsPerNodes) {
+        template <typename Volume, typename Object>
+        BoundingVolumeTree<Volume, Object>::BoundingVolumeTree(unsigned int maxObjectsPerNodes) {
             
         }
         template <typename Volume, typename Object>
-        void BoundingVolumeTree::addObject(Object object) {
+        void BoundingVolumeTree<Volume, Object>::addObject(Object object) {
             bool needToRebuild = false;
             math::Vec3f treeSize = globalVolume.getSize();
             if (object.getPosition().x() + object.getSize().x > treeSize.x()) {
@@ -42,7 +42,7 @@ namespace ofdaeg {
             build<Object>(nodes[0]);            
         }
         void template <typename Volume, typename Object>
-        void BoundingVolumeTree<Volume>::build(Node& node) {
+        void BoundingVolumeTree<Volume, Object>::build(Node& node) {
             if (node.objects.size() > maxObjectsPerNode) {
                 node.leaf = false;    
                 Volume volume = node.volume;
@@ -72,7 +72,7 @@ namespace ofdaeg {
             }
         }
         template <typename Volume, typename Object>
-        void BoundingVolumeTree<Volume>::removeObject(Object object) {
+        void BoundingVolumeTree<Volume, Object>::removeObject(Object object) {
             for (unsigned int i = 0; i < nodes.size(); i++) {
                 if (nodes[i].leaf && nodes[i].volume.intersects(object)) {
                     nodes[i].objects.clear();
@@ -88,9 +88,36 @@ namespace ofdaeg {
             }
         }
         template <typename Volume, typename Object>
+        void BoundingVolumeTree<Volume, Object>::update(Object object) {
+            removeObject(object);
+            addObject(object);
+        }
+        template <typename Volume, typename Object>        
         void BoundingVolumeTree<Volume>::update(Object object) {
             removeObject(object);
             addObject(object);
+        }
+        template <typename Volume, typename Object>
+        std::vector<Object> BoundingVolumeTree<Volume, Object>::getObjects(Volume volume) {
+            std::vector<Object> objects;
+            if (nodes.size() == 0)
+                return objects;
+            Node node = nodes[0];
+            if (node.volume.intersects(volume)) {
+                getObjects(objects, node, volume)
+            }
+            return objects;
+        }
+        template <typename Volume, typename Object>
+        void BoundingVolumeTree<Volume, Object>::getObjects(std::vector<Object>& objects, Node node, Volume volume) {
+            for (unsigned int i = 0; < node.objects.size(); i++) {
+                objects.push_back(node.objects[i]);                
+            }
+            for (unsigned int c = 0; c < node.children.size(); c++) {
+                if (node.children[c].volume.intersects(volume)) {
+                    getObjects(objects, *node.children[c], volume);
+                }
+            }
         }
     }
 }
