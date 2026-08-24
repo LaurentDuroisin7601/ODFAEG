@@ -103,6 +103,14 @@ namespace odfaeg {
             this->aspectFlags = aspectFlags;
             imageView.create(image, viewType, format, aspectFlags, baseMipLevel, baseArrayLayer, levelCount, layerCount);
         }
+        void Image::addSubView(VkImageViewType viewType, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t baseMipLevel, uint32_t baseArrayLayer, uint32_t levelCount, uint32_t layerCount) {
+            this->aspectFlags = aspectFlags;
+            subViews.emplace_back(GPUContext::instance().getDevice());
+            subViews.back().create(image, viewType, format, aspectFlags, baseMipLevel, baseArrayLayer, levelCount, layerCount);
+        }
+        std::deque<ImageView>& Image::getSubViews() {
+            return subViews;
+        }
         void Image::copyBufferToImage(VkCommandBuffer cmd, Buffer& buffer, uint32_t width, uint32_t height, uint32_t x, uint32_t y, size_t srcStart, size_t mipLevel, uint32_t face) {
             VkBufferImageCopy region{};
             region.bufferOffset = srcStart;
@@ -146,6 +154,7 @@ namespace odfaeg {
             if (imageView != VK_NULL_HANDLE) {
                 cleanup();
             }
+            this->layerCount = layerCount;
             VkImageViewCreateInfo viewInfo{};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             viewInfo.image = image;
@@ -160,6 +169,9 @@ namespace odfaeg {
                 throw std::runtime_error("failed to create texture image view!");
             }
         }   
+        uint32_t ImageView::getLayerCount() {
+            return layerCount;
+        }
         VkImageView ImageView::getHandle() {
             return imageView;
         }

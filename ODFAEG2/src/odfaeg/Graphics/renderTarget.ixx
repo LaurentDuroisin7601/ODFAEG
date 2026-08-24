@@ -206,7 +206,7 @@ namespace odfaeg {
 			math::Vec4f mapCoordsToPixel(math::Vec4f point, Camera& view);
 			virtual void beginRenderPass(bool secondaryCommandBuffers=false) = 0;
 			virtual void endRenderPass() = 0;
-			virtual void beginRendering(bool secondaryCommandBuffers=false) = 0;
+			virtual void beginRendering(bool secondaryCommandBuffers=false, int viewIndex = -1) = 0;
 			virtual void endRendering() = 0;
 			virtual std::uint32_t getSwapchainImagesCount() = 0;
 			void beginRecordCommandBuffer();

@@ -51,7 +51,7 @@ layout(set = 0, binding = 4) buffer PointLightSSBO {
     PointLight pointLights[];
 } pointLightData[MAX_FRAMES_IN_FLIGHT];
 layout(set = 0, binding = 5) uniform sampler2DArray shadowMap;
-layout(set = 0, binding = 6) uniform samplerCube depthMap;
+layout(set = 0, binding = 6) uniform samplerCubeArray depthMap;
 layout(set = 0, binding = 7) uniform sampler2D sceneColorTextures;
 layout(set = 0, binding = 8, r32ui) uniform coherent uimage2D headPointersDir[MAX_FRAMES_IN_FLIGHT*(NB_CASCADES+1)];
 layout(set = 0, binding = 9) buffer LinkedListDirBufferSSBO {
@@ -117,7 +117,7 @@ float shadowCalculationDir(vec3 fragPosWorldSpace)
         {
             for(int y = -1; y <= 1; ++y)
             {
-                float pcfDepth = texture(shadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;               
+                float pcfDepth = texture(shadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, l*(NB_CASCADES+1)+layer)).r;               
                 currentLightShadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
             }
         }
@@ -136,7 +136,7 @@ float shadowCalculationPoint(vec3 fragPos)
         vec3 fragToLight = fragPos - pointLightData[currentFrame].pointLights[l].lightPos;
         //debugPrintfEXT("Frag to light %v3f", fragToLight);
         // use the light to fragment vector to sample from the depth map    
-        float closestDepth = texture(depthMap, fragToLight).r;
+        float closestDepth = texture(depthMap, vec4(fragToLight, float(l))).r;
         vec3 ad = abs(fragToLight);
         int face; 
         vec3 d =  fragToLight;      

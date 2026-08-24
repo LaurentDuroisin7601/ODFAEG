@@ -100,8 +100,8 @@ namespace odfaeg {
             RenderTexture shadowMapPL;
             RenderTexture shadowMap;            
             Shader shadowPassCSMShader, shadowPassPLShader, shadowMappingShader;            
-            
-            CommandPool shadowPassCommandPool, shadowPassPLCommandPool, shadowMappingCommandPool;            
+            CommandPool shadowPassCommandPool;
+            std::deque<CommandPool> shadowPassPLCommandPool, shadowMappingCommandPool;            
             std::deque<Buffer> lightSpaceMatricesBuffer, lightSpaceMatricesBufferFinal, cascadePlaneDistancesBuffer,
             lightViewsPLMatricesBuffer, dirLightsBufferFinal, pointLightsBufferFinal;
             Buffer lightSpaceMatricesStaggingBuffer, lightViewsPLMatricesStaggingBuffer,

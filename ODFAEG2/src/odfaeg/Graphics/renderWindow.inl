@@ -553,7 +553,7 @@ namespace odfaeg {
         void RenderWindow::endRenderPass() {
             vkCmdEndRenderPass(getCommandPool().getHandle(getCurrentFrame()));
         }
-	    void RenderWindow::beginRendering(bool secondaryCommandBuffers) {
+	    void RenderWindow::beginRendering(bool secondaryCommandBuffers, int viewIndex) {
             dynamicRendering = true;
             VkRenderingAttachmentInfo colorAttachmentInfo = {
                 .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,

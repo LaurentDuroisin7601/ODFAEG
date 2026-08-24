@@ -7,7 +7,7 @@ namespace odfaeg {
             viewMask = 0;
             imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
         }
-        bool RenderTexture::create(unsigned int width, unsigned int height, unsigned int depth, bool layered, bool depthOnly, bool multisample) {
+        bool RenderTexture::create(unsigned int width, unsigned int height, unsigned int depth, unsigned int layersPerView, bool layered, bool depthOnly, bool multisample) {
             //std::cout<<"create!"<<std::endl; 
             device.createInstance();
             device.pickupPhysicalDevice(VK_NULL_HANDLE);
@@ -28,7 +28,7 @@ namespace odfaeg {
             this->depthOnly = depthOnly;           
             //if (useDepthTest() || useDepthTest() || depthOnly) {
                       
-                getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, (multisample) ? device.getMsaaSamples() : VK_SAMPLE_COUNT_1_BIT, depth, layered);
+                getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, (multisample) ? device.getMsaaSamples() : VK_SAMPLE_COUNT_1_BIT, depth, layersPerView, layered);
             //}
             /*createRenderPass();
             createFramebuffers();*/
@@ -447,11 +447,11 @@ namespace odfaeg {
         void RenderTexture::endRenderPass() {
             vkCmdEndRenderPass(getCommandPool().getHandle(getCurrentFrame()));
         }
-	    void RenderTexture::beginRendering(bool secondaryCommandBuffers) {
+	    void RenderTexture::beginRendering(bool secondaryCommandBuffers, int viewIndex) {
             VkRenderingInfo renderingInfo = {};
             VkRenderingAttachmentInfo depthAttachmentInfo = {
                 .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-                .imageView = getDepthStencilTexture().getImage().getImageView().getHandle(),
+                .imageView = (viewIndex == -1) ? getDepthStencilTexture().getImage().getImageView().getHandle() : getDepthStencilTexture().getImage().getSubViews()[viewIndex].getHandle(),
                 .imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                 .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
                 .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -463,12 +463,12 @@ namespace odfaeg {
                 .extent = getExtents()
             };
             renderingInfo.pDepthAttachment = &depthAttachmentInfo;
-            renderingInfo.layerCount = getDepthStencilTexture().getLayerCount();
+            renderingInfo.layerCount = (viewIndex == -1) ? getDepthStencilTexture().getLayerCount() : getDepthStencilTexture().getImage().getSubViews()[viewIndex].getLayerCount();
             VkRenderingAttachmentInfo colorAttachmentInfo;
             if (!depthOnly) {
                 colorAttachmentInfo = {
                     .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-                    .imageView = m_textures[0].getImage(imageIndex).getImageView().getHandle(),
+                    .imageView = (viewIndex == -1) ? m_textures[0].getImage(imageIndex).getImageView().getHandle() : m_textures[0].getImage(imageIndex).getSubViews()[viewIndex],
                     .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                     .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,

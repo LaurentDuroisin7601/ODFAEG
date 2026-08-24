@@ -45,7 +45,7 @@ namespace odfaeg {
 			VkFormat& getImageFormat();
 			bool isDepthOnly();
 			std::uint32_t& getViewMask();
-			void beginRendering(bool secondaryCommandBuffers=false);
+			void beginRendering(bool secondaryCommandBuffers=false, int viewIndex=-1);
 			void endRendering();
             void beginRenderPass(bool secondaryCommandBuffers=false);
 			void endRenderPass();

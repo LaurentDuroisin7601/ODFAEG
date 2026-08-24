@@ -23,9 +23,7 @@ namespace odfaeg {
             shadowMappingFragPC.resolution = math::Vector2i(parentRenderer.getSize().x(), parentRenderer.getSize().y());   
             //shadowMapPL.createCubeMap(std::max(parentRenderer.getSize().x(), parentRenderer.getSize().y()), true, false);              
             //std::cout<<"pl created"<<std::endl;
-            //std::cout<<"addess : "<<&parentRenderer<<std::endl;
-            shadowMap.create(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, NB_CASCADES+1, true, true);
-            shadowMapPL.createCubeMap(SHADOW_MAP_SIZE, true, false);  
+            //std::cout<<"addess : "<<&parentRenderer<<std::endl;            
             physic::BoundingBox viewport = physic::BoundingBox(0, 0, parentRenderer.getCamera().getViewport().getPosition().z(), SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, parentRenderer.getCamera().getViewport().getSize().z());
             physic::BoundingBox viewportPL = physic::BoundingBox(0, 0, parentRenderer.getCamera().getViewport().getSize().z(), SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, parentRenderer.getCamera().getViewport().getSize().z());
             shadowMap.getCamera().setViewport(viewport);
@@ -132,8 +130,8 @@ namespace odfaeg {
             stop.store(false);
             rendererReady.store(true);            
         }          
-        void ShadowRenderer::addDirectionnalLight(DirLight dirLight) {
-            dirLights.push_back(dirLight);
+        void ShadowRenderer::addDirectionnalLight(DirLight dirLight) {            
+            dirLights.push_back(dirLight);            
             needToUpdateDirLightsMatrices = true;
         }
         void ShadowRenderer::addPonctualLight(PointLight pointLight) {
@@ -523,14 +521,18 @@ namespace odfaeg {
         }
         void ShadowRenderer::createCommandPools() {
             Device::QueueFamilyIndices queueFamilyIndices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice());
-            commandPool.create(queueFamilyIndices.graphicsFamily.value());
-            commandPool.createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT);
-            shadowPassCommandPool.create(queueFamilyIndices.graphicsFamily.value());
-            shadowPassCommandPool.createCommandBuffers(false, MAX_FRAMES_IN_FLIGHT);
+            if (commandPool.getHandles().size() == 0) {
+                commandPool.create(queueFamilyIndices.graphicsFamily.value());
+                commandPool.createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT);
+                shadowMappingCommandPool.create(queueFamilyIndices.graphicsFamily.value());
+                shadowMappingCommandPool.createCommandBuffers(false, MAX_FRAMES_IN_FLIGHT);
+            }
+            shadowPassPLCommandPool.resize(pointLights.size());   
             shadowPassPLCommandPool.create(queueFamilyIndices.graphicsFamily.value());
             shadowPassPLCommandPool.createCommandBuffers(false, MAX_FRAMES_IN_FLIGHT);
-            shadowMappingCommandPool.create(queueFamilyIndices.graphicsFamily.value());            
-            shadowMappingCommandPool.createCommandBuffers(false, MAX_FRAMES_IN_FLIGHT);
+            shadowPassCommandPool.resize(dirLights.size());
+            shadowPassCommandPool.create(queueFamilyIndices.graphicsFamily.value());            
+            shadowPassCommandPool.createCommandBuffers(false, MAX_FRAMES_IN_FLIGHT);
         }
         void ShadowRenderer::updateDescriptorSets() {
             //std::cout<<"update descriptor sets"<<std::endl;
@@ -643,12 +645,17 @@ namespace odfaeg {
                 semaphoreWaitInfo.pValues = waitValues.data();
                 //vkWaitSemaphores(GPUContext::instance().getDevice().getDevice(), &semaphoreWaitInfo, UINT64_MAX);
                 //std::cout<<"frame : "<<renderFrame<<" ready!"<<std::endl;
-                if (needToUpdateDirLightsMatrices) {
+                if (needToUpdateDirLightsMatrices || needToUpdatePointLightsMatrices)
+                    createCommandPool();
+                if (needToUpdateDirLightsMatrices) {                    
+                    shadowMap.create(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, (NB_CASCADES+1)*dirLights.size(), NB_CASCADES+1, true, true);
                     computeDirLightMatrices();
                     needToUpdateDirLightsMatrices = false;
                     needToUpdateDescriptorSets = true;
                 }
                 if (needToUpdatePointLightsMatrices) {
+                    createCommandPool();
+                    shadowMapPL.createCubeMap(SHADOW_MAP_SIZE, pointLights.size(), true, false);  
                     computePointLightMatrices();
                     needToUpdatePointLightsMatrices = false;
                     needToUpdateDescriptorSets = true;
@@ -658,96 +665,97 @@ namespace odfaeg {
                     updateDescriptorSets();
                     needToUpdateDescriptorSets = false;
                 }                         
-                jobFences[renderFrame].reset(3);                
-                threadPool.enqueue([this, renderFrame] {
-                    VkCommandBufferInheritanceRenderingInfo inheritanceRenderingInfo{};
-                    inheritanceRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
-                    inheritanceRenderingInfo.colorAttachmentCount = 0;
-                    inheritanceRenderingInfo.pColorAttachmentFormats = nullptr; // tableau de VkFormat
-                    inheritanceRenderingInfo.depthAttachmentFormat = shadowMap.getDepthStencilTexture().getFormat();    // VK_FORMAT_D32_SFLOAT, etc.                    
-                    inheritanceRenderingInfo.rasterizationSamples = GPUContext::instance().getDevice().getMsaaSamples(); 
-                    inheritanceRenderingInfo.viewMask = shadowMap.getViewMask();
-                    VkCommandBufferInheritanceInfo inheritanceInfo{};
-                    inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-                    inheritanceInfo.pNext = &inheritanceRenderingInfo;
-                    inheritanceInfo.renderPass = VK_NULL_HANDLE;
-                    inheritanceInfo.subpass = 0;
-                    inheritanceInfo.framebuffer = VK_NULL_HANDLE;   
-                    inheritanceInfo.occlusionQueryEnable = VK_FALSE;
-                    inheritanceInfo.pipelineStatistics = 0;
-                    inheritanceInfo.queryFlags = 0;                 
-                    RenderStates states;
-                    states.shader = &shadowPassCSMShader;
-                    BlendMode blendMode;
-                    std::vector<VkDescriptorSet> sets;
-                    for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(shadowPassCSMShader).size(); i++) {
-                        sets.push_back(GPUContext::instance().getDescriptorSets(shadowPassCSMShader)[i][0].getHandle());
-                    }
-                    blendMode.updateIds();
-                    //std::cout<<"begin record cmd : "<<renderFrame<<std::endl;
-                    shadowPassCommandPool.beginRecordCommandBuffer(renderFrame, inheritanceInfo);
-                    shadowPassCSMVertPC.currentFrame = renderFrame;
-                    VkPhysicalDeviceProperties props;
-                    vkGetPhysicalDeviceProperties(GPUContext::instance().getDevice().getPhysicalDevice(), &props); 
-                    uint32_t minAlign = props.limits.minStorageBufferOffsetAlignment;  
-                    uint32_t lightSpaceMatrixAlignSize = (sizeof(LightSpaceMatrix) + minAlign - 1) & ~(minAlign - 1);   
-                    for (unsigned int l = 0; l < dirLights.size(); l++) {
+                jobFences[renderFrame].reset(dirLights.size()+pointLights.size()+1);  
+                for (unsigned int l = 0; l < dirLights.size(); l++) {              
+                    threadPool.enqueue([this, renderFrame] {
+                        VkCommandBufferInheritanceRenderingInfo inheritanceRenderingInfo{};
+                        inheritanceRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
+                        inheritanceRenderingInfo.colorAttachmentCount = 0;
+                        inheritanceRenderingInfo.pColorAttachmentFormats = nullptr; // tableau de VkFormat
+                        inheritanceRenderingInfo.depthAttachmentFormat = shadowMap.getDepthStencilTexture().getFormat();    // VK_FORMAT_D32_SFLOAT, etc.                    
+                        inheritanceRenderingInfo.rasterizationSamples = GPUContext::instance().getDevice().getMsaaSamples(); 
+                        inheritanceRenderingInfo.viewMask = shadowMap.getViewMask();
+                        VkCommandBufferInheritanceInfo inheritanceInfo{};
+                        inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                        inheritanceInfo.pNext = &inheritanceRenderingInfo;
+                        inheritanceInfo.renderPass = VK_NULL_HANDLE;
+                        inheritanceInfo.subpass = 0;
+                        inheritanceInfo.framebuffer = VK_NULL_HANDLE;   
+                        inheritanceInfo.occlusionQueryEnable = VK_FALSE;
+                        inheritanceInfo.pipelineStatistics = 0;
+                        inheritanceInfo.queryFlags = 0;                 
+                        RenderStates states;
+                        states.shader = &shadowPassCSMShader;
+                        BlendMode blendMode;
+                        std::vector<VkDescriptorSet> sets;
+                        for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(shadowPassCSMShader).size(); i++) {
+                            sets.push_back(GPUContext::instance().getDescriptorSets(shadowPassCSMShader)[i][0].getHandle());
+                        }
+                        blendMode.updateIds();
+                        //std::cout<<"begin record cmd : "<<renderFrame<<std::endl;
+                        shadowPassCommandPool[l].beginRecordCommandBuffer(renderFrame, inheritanceInfo);
+                        shadowPassCSMVertPC.currentFrame = renderFrame;
+                        VkPhysicalDeviceProperties props;
+                        vkGetPhysicalDeviceProperties(GPUContext::instance().getDevice().getPhysicalDevice(), &props); 
+                        uint32_t minAlign = props.limits.minStorageBufferOffsetAlignment;  
+                        uint32_t lightSpaceMatrixAlignSize = (sizeof(LightSpaceMatrix) + minAlign - 1) & ~(minAlign - 1);   
                         for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
                             shadowPassCSMVertPC.primitiveType = i;
                             //std::cout<<"ids : "<<i<<","<<shadowPassCSMShader.getId()<<","<<RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id<<std::endl;
                             std::vector<uint32_t> offsetLightSpaceMats;
                             for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
-                              offsetLightSpaceMats.push_back(l * lightSpaceMatrixAlignSize);
+                                offsetLightSpaceMats.push_back(l * lightSpaceMatrixAlignSize);
                             }                            
                             //std::cout<<"register binds"<<std::endl;
-                            vkCmdBindPipeline(shadowPassCommandPool.getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
+                            vkCmdBindPipeline(shadowPassCommandPool[l].getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
                             //std::cout<<"registered bind pipeline"<<std::endl;
-                            vkCmdPushConstants(shadowPassCommandPool.getHandle(renderFrame), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ShadowPassCSMVertPC), &shadowPassCSMVertPC);
-                            vkCmdPushConstants(shadowPassCommandPool.getHandle(renderFrame), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(ShadowPassCSMVertPC), sizeof(ShadowPassCSMFragPC), &shadowPassCSMFragPC);
+                            vkCmdPushConstants(shadowPassCommandPool[l].getHandle(renderFrame), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ShadowPassCSMVertPC), &shadowPassCSMVertPC);
+                            vkCmdPushConstants(shadowPassCommandPool[l].getHandle(renderFrame), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(ShadowPassCSMVertPC), sizeof(ShadowPassCSMFragPC), &shadowPassCSMFragPC);
                             //std::cout<<"registed bind push constants"<<std::endl;
-                            vkCmdBindDescriptorSets(shadowPassCommandPool.getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), offsetLightSpaceMats.size(), offsetLightSpaceMats.data());
+                            vkCmdBindDescriptorSets(shadowPassCommandPool[l].getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), offsetLightSpaceMats.size(), offsetLightSpaceMats.data());
                             //std::cout<<"registered bind decriptor sets"<<std::endl;
-                            shadowMap.draw(shadowPassCommandPool, static_cast<entity::PrimitiveType>(i), states);
+                            shadowMap.draw(shadowPassCommandPool[l], static_cast<entity::PrimitiveType>(i), states);
                             //std::cout<<"registered"<<std::endl;
+                        }                        
+                        shadowPassCommandPool[l].endRecordCommandBuffer(renderFrame);
+                        //std::cout<<"render frame : "<<renderFrame<<std::endl;
+                        jobFences[renderFrame].jobDone();
+                    }); 
+                }
+                for (unsigned int l = 0; l < pointLights.size(); l++) {              
+                    threadPool.enqueue([this, renderFrame] {
+                        VkCommandBufferInheritanceRenderingInfo inheritanceRenderingInfo{};
+                        inheritanceRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
+                        inheritanceRenderingInfo.colorAttachmentCount = 0;
+                        inheritanceRenderingInfo.pColorAttachmentFormats = nullptr; // tableau de VkFormat
+                        inheritanceRenderingInfo.depthAttachmentFormat = shadowMapPL.getDepthStencilTexture().getFormat();    // VK_FORMAT_D32_SFLOAT, etc.                    
+                        inheritanceRenderingInfo.rasterizationSamples = GPUContext::instance().getDevice().getMsaaSamples(); 
+                        inheritanceRenderingInfo.viewMask = shadowMapPL.getViewMask();
+                        VkCommandBufferInheritanceInfo inheritanceInfo{};
+                        inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                        inheritanceInfo.pNext = &inheritanceRenderingInfo;
+                        inheritanceInfo.renderPass = VK_NULL_HANDLE;
+                        inheritanceInfo.subpass = 0;
+                        inheritanceInfo.framebuffer = VK_NULL_HANDLE;   
+                        inheritanceInfo.occlusionQueryEnable = VK_FALSE;
+                        inheritanceInfo.pipelineStatistics = 0;
+                        inheritanceInfo.queryFlags = 0;                 
+                        RenderStates states;
+                        states.shader = &shadowPassPLShader;
+                        BlendMode blendMode;
+                        std::vector<VkDescriptorSet> sets;
+                        for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(shadowPassPLShader).size(); i++) {
+                            sets.push_back(GPUContext::instance().getDescriptorSets(shadowPassPLShader)[i][0].getHandle());
                         }
-                    }
-                    shadowPassCommandPool.endRecordCommandBuffer(renderFrame);
-                    //std::cout<<"render frame : "<<renderFrame<<std::endl;
-                    jobFences[renderFrame].jobDone();
-                });               
-                threadPool.enqueue([this, renderFrame] {
-                    VkCommandBufferInheritanceRenderingInfo inheritanceRenderingInfo{};
-                    inheritanceRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
-                    inheritanceRenderingInfo.colorAttachmentCount = 0;
-                    inheritanceRenderingInfo.pColorAttachmentFormats = nullptr; // tableau de VkFormat
-                    inheritanceRenderingInfo.depthAttachmentFormat = shadowMapPL.getDepthStencilTexture().getFormat();    // VK_FORMAT_D32_SFLOAT, etc.                    
-                    inheritanceRenderingInfo.rasterizationSamples = GPUContext::instance().getDevice().getMsaaSamples(); 
-                    inheritanceRenderingInfo.viewMask = shadowMapPL.getViewMask();
-                    VkCommandBufferInheritanceInfo inheritanceInfo{};
-                    inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-                    inheritanceInfo.pNext = &inheritanceRenderingInfo;
-                    inheritanceInfo.renderPass = VK_NULL_HANDLE;
-                    inheritanceInfo.subpass = 0;
-                    inheritanceInfo.framebuffer = VK_NULL_HANDLE;   
-                    inheritanceInfo.occlusionQueryEnable = VK_FALSE;
-                    inheritanceInfo.pipelineStatistics = 0;
-                    inheritanceInfo.queryFlags = 0;                 
-                    RenderStates states;
-                    states.shader = &shadowPassPLShader;
-                    BlendMode blendMode;
-                    std::vector<VkDescriptorSet> sets;
-                    for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(shadowPassPLShader).size(); i++) {
-                        sets.push_back(GPUContext::instance().getDescriptorSets(shadowPassPLShader)[i][0].getHandle());
-                    }
-                    
-                    //std::cout<<"begin record cmd : "<<renderFrame<<std::endl;
-                    shadowPassPLCommandPool.beginRecordCommandBuffer(renderFrame, inheritanceInfo);
-                    shadowPassPLVertPC.currentFrame = renderFrame;  
-                    VkPhysicalDeviceProperties props;
-                    vkGetPhysicalDeviceProperties(GPUContext::instance().getDevice().getPhysicalDevice(), &props); 
-                    uint32_t minAlign = props.limits.minStorageBufferOffsetAlignment;  
-                    uint32_t lightViewPLMatrixAlignSize = (sizeof(ViewPLMatrix) + minAlign - 1) & ~(minAlign - 1); 
-                    for (unsigned int l = 0; l < pointLights.size(); l++) { 
+                        
+                        //std::cout<<"begin record cmd : "<<renderFrame<<std::endl;
+                        shadowPassPLCommandPool[l].beginRecordCommandBuffer(renderFrame, inheritanceInfo);
+                        shadowPassPLVertPC.currentFrame = renderFrame;  
+                        VkPhysicalDeviceProperties props;
+                        vkGetPhysicalDeviceProperties(GPUContext::instance().getDevice().getPhysicalDevice(), &props); 
+                        uint32_t minAlign = props.limits.minStorageBufferOffsetAlignment;  
+                        uint32_t lightViewPLMatrixAlignSize = (sizeof(ViewPLMatrix) + minAlign - 1) & ~(minAlign - 1); 
+                        
                         shadowPassPLFragPC.lightPos = pointLights[l].pos;
                         shadowPassPLFragPC.far_plane = pointLights[l].far_plane;
                         
@@ -758,21 +766,21 @@ namespace odfaeg {
                             for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
                                 offsetLightViewMatPLs.push_back(l * lightViewPLMatrixAlignSize);
                             }
-                            vkCmdBindPipeline(shadowPassPLCommandPool.getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassPLShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
+                            vkCmdBindPipeline(shadowPassPLCommandPool[l].getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassPLShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
                             //std::cout<<"registered bind pipeline"<<std::endl;
-                            vkCmdPushConstants(shadowPassPLCommandPool.getHandle(renderFrame), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassPLShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ShadowPassPLVertPC), &shadowPassPLVertPC);
-                            vkCmdPushConstants(shadowPassPLCommandPool.getHandle(renderFrame), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassPLShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(ShadowPassPLVertPC), sizeof(ShadowPassPLFragPC), &shadowPassPLFragPC);
+                            vkCmdPushConstants(shadowPassPLCommandPool[l].getHandle(renderFrame), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassPLShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ShadowPassPLVertPC), &shadowPassPLVertPC);
+                            vkCmdPushConstants(shadowPassPLCommandPool[l].getHandle(renderFrame), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassPLShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(ShadowPassPLVertPC), sizeof(ShadowPassPLFragPC), &shadowPassPLFragPC);
                             //std::cout<<"registed bind push constants"<<std::endl;
-                            vkCmdBindDescriptorSets(shadowPassPLCommandPool.getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassPLShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), offsetLightViewMatPLs.size(), offsetLightViewMatPLs.data());
+                            vkCmdBindDescriptorSets(shadowPassPLCommandPool[l].getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassPLShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), offsetLightViewMatPLs.size(), offsetLightViewMatPLs.data());
                             //std::cout<<"registered bind decriptor sets"<<std::endl;
-                            shadowMapPL.draw(shadowPassPLCommandPool, static_cast<entity::PrimitiveType>(i), states);
+                            shadowMapPL.draw(sshadowPassPLCommandPool[l], static_cast<entity::PrimitiveType>(i), states);
                             //std::cout<<"registered"<<std::endl;
-                        }
-                    }
-                    shadowPassPLCommandPool.endRecordCommandBuffer(renderFrame);
-                    //std::cout<<"render frame : "<<renderFrame<<std::endl;
-                    jobFences[renderFrame].jobDone();
-                });                     
+                        }                        
+                        shadowPassPLCommandPool[l].endRecordCommandBuffer(renderFrame);
+                        //std::cout<<"render frame : "<<renderFrame<<std::endl;
+                        jobFences[renderFrame].jobDone();
+                    }); 
+                }                    
                 threadPool.enqueue([this, renderFrame] {
                     VkCommandBufferInheritanceRenderingInfo inheritanceRenderingInfo{};
                     inheritanceRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
@@ -837,19 +845,23 @@ namespace odfaeg {
             if (!stop.load()) {
                 
                 //std::cout<<"commands : !"<<parentRenderer.getCurrentFrame()<<" registered!"<<std::endl;
-                //std::cout<<"draw shadow map"<<std::endl;
+                //std::cout<<"draw shadow map"<<std::endl;                
                 shadowMap.applyComputeGraphicsBarrier();
-                shadowMap.beginRendering(true);
-                vkCmdExecuteCommands(shadowMap.getCommandPool().getHandle(shadowMap.getCurrentFrame()), 1, &shadowPassCommandPool.getHandle(parentRenderer.getCurrentFrame()));
-                shadowMap.endRendering(); 
+                for (unsigned int i = 0; i < dirLightsSize(); i++) {
+                    shadowMap.beginRendering(true, i);
+                    vkCmdExecuteCommands(shadowMap.getCommandPool().getHandle(shadowMap.getCurrentFrame()), 1, &shadowPassCommandPool[i].getHandle(parentRenderer.getCurrentFrame()));
+                    shadowMap.endRendering();
+                } 
                 //std::cout<<"submit shadow map"<<std::endl;
                 shadowMap.submit(true); 
                 //std::cout<<"shadow map curent frame : "<<shadowMap.getCurrentFrame()<<"window current frame : "<<parentRenderer.getCurrentFrame()<<std::endl;
                 shadowMap.display();
                 shadowMapPL.applyComputeGraphicsBarrier();
-                shadowMapPL.beginRendering(true);
-                vkCmdExecuteCommands(shadowMapPL.getCommandPool().getHandle(shadowMapPL.getCurrentFrame()), 1, &shadowPassPLCommandPool.getHandle(parentRenderer.getCurrentFrame()));
-                shadowMapPL.endRendering(); 
+                for (unsigned int i = 0; i < pointLightsSize(); i++) {
+                    shadowMapPL.beginRendering(true);
+                    vkCmdExecuteCommands(shadowMapPL.getCommandPool().getHandle(shadowMapPL.getCurrentFrame()), 1, &shadowPassPLCommandPool[i].getHandle(parentRenderer.getCurrentFrame()));
+                    shadowMapPL.endRendering(); 
+                }
                 shadowMapPL.submit(true);
                 shadowMapPL.display();
                 sceneColorTexture.submit(true);

@@ -152,38 +152,10 @@ namespace odfaeg {
                 projMatrix = prefilterTexture.getCamera().getProjMatrix().getMatrix().transpose();
                 vkCmdPushConstants(prefilterTexture.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(entity::Triangles, prefilterShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(math::Matrix4f), &projMatrix);
                 vkCmdPushConstants(prefilterTexture.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(entity::Triangles, prefilterShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(math::Matrix4f), sizeof(float), &roughness);
-                VkRenderingInfo renderingInfo = {};
-                VkRenderingAttachmentInfo depthAttachmentInfo = {
-                    .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-                    .imageView = prefilterTexture.getDepthStencilTexture().getDepthViews()[mip].getHandle(),
-                    .imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                    .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
-                    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                    .clearValue = {.depthStencil{1.f, 0}}                    
-                };
-                renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-                renderingInfo.renderArea = {
-                    .offset { .x=0, .y=0 },
-                    .extent = prefilterTexture.getExtents()
-                };
-                renderingInfo.pDepthAttachment = &depthAttachmentInfo;                
-                //std::cout<<"size : "<<prefilterTexture.getTexture().getImageViews().size()<<std::endl;
-                VkRenderingAttachmentInfo colorAttachmentInfo;
-                colorAttachmentInfo = {
-                    .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-                    .imageView = prefilterTexture.getRenderingView(mip).getHandle(),
-                    .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                    .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
-                    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                    .clearValue = {.color = {0.0f, 0.0f, 0.0f, 1.0f}}
-                };
-                renderingInfo.colorAttachmentCount = 1;
-                renderingInfo.pColorAttachments = &colorAttachmentInfo;
-                renderingInfo.layerCount = 6;
-                renderingInfo.viewMask = prefilterTexture.getViewMask(); 
-                vkCmdBeginRendering(prefilterTexture.getCommandPool().getHandle(parentRenderer.getCurrentFrame()),&renderingInfo);
+                prefilterTexture.beginRendering(false, mip);
                 prefilterTexture.draw(prefilterTexture.getCommandPool(), ndcCubeVB, states);
-                vkCmdEndRendering(prefilterTexture.getCommandPool().getHandle(parentRenderer.getCurrentFrame())); 
+                vkCmdEndRendering(prefilterTexture.getCommandPool().getHandle(parentRenderer.getCurrentFrame()));
+                prefilterTexture.endRendering(); 
             }
             prefilterTexture.submit(true);
             states.shader = &brdfShader;           

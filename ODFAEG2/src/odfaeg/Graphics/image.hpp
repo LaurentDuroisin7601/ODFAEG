@@ -14,9 +14,11 @@ namespace odfaeg {
             ImageView& operator=(ImageView&& imageView) noexcept;
             void create(VkImage image, VkImageViewType viewType, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t baseMipLevel, uint32_t baseArrayLayer, uint32_t levelCount, uint32_t layerCount);
             void cleanup();
+            uint32_t getLayerCount();
             VkImageView getHandle();
             ~ImageView();
         private:
+            uint32_t layerCount;
             Device& device;
             VkImageView imageView;
         };
@@ -40,9 +42,12 @@ namespace odfaeg {
             Image& operator= (Image&& image) noexcept;
             void setHandle(VkImage image);
             void create(uint32_t width, uint32_t height, uint32_t depth, VkImageType type, VkFormat format, VkImageUsageFlags usage, VmaMemoryUsage memoryUsage,
-                unsigned int mipLevels, unsigned int arrayLayers, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageCreateFlags flags=0);                
+                unsigned int mipLevels, unsigned int arrayLayers, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageCreateFlags flags=0);  
+            void addSubView(uint32_t width, uint32_t height, uint32_t depth, VkImageType type, VkFormat format, VkImageUsageFlags usage, VmaMemoryUsage memoryUsage,
+                unsigned int mipLevels, unsigned int arrayLayers, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageCreateFlags flags=0);              
             void createSampler(VkSamplerAddressMode wrapU, VkSamplerAddressMode wrapV, unsigned int mipLevels, bool smooth, bool unormalized);
             ImageView& getImageView();
+            std::deque<ImageView>& getImageSubViews();
             Sampler& getSampler();
             void cleanup();
             void createImageView(VkImageViewType viewType, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t baseMipLevel, uint32_t baseArrayLayer, uint32_t levelCount, uint32_t layerCount);
@@ -60,6 +65,7 @@ namespace odfaeg {
             VkImage image;
             VkImageLayout layout;
             ImageView imageView;
+            std::vector<ImageView> subViews;
             Sampler sampler;
             VmaAllocation memory;
             VkFormat m_format;
