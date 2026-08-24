@@ -38,7 +38,7 @@ layout (push_constant) uniform PushConstant {
 } pc;
 struct TransportRayPayload {
     bool lastBounce;
-    int raytype;
+    int raytype;    
     vec4 finalColor;
     vec4 primaryColor;
     vec4 secondaryColor;
@@ -49,10 +49,12 @@ struct TransportRayPayload {
     vec3 direction;
     vec3 R;
     vec3 T; 
+    bool transmissive;
     bool reflectable;
-    bool refractable;
-    bool transmissive;  
-    int localADID;  
+    bool refractable;  
+    int localADID; 
+    vec3 normal;
+    Material parentMaterial; 
 };
 struct ShadowRayPayload {
     vec4 localLightning;
@@ -62,6 +64,8 @@ struct ShadowRayPayload {
     vec4 lightColor; 
     vec4 shadowColor; 
     mat4 lightSpace[6];
+    vec3 normal;
+    Material parentMaterial;
 };
 layout(location = 0) rayPayloadEXT TransportRayPayload transportpayload; // ray generation
 layout(location = 1) rayPayloadEXT ShadowRayPayload shadow; // shadow ray generation
@@ -92,7 +96,7 @@ void main() {
             traceRayEXT(localAS[payload.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, transport.origin, tmin, transport.direction, tmax, 0);            
         }   
         //Objet translucide réflectable touché traçage du rayon de rélfection.
-        if (transport.transmissive) {
+        if (transport.reflectalbe) {
             transport.rayType = 2;
             traceRayEXT(localAS[payload.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, transport.origin, tmin, transport.direction, tmax, 0);            
         }      
@@ -101,14 +105,15 @@ void main() {
             transport.raytype = 3;
             traceRayEXT(localAS[payload.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, transport.origin, tmin, transport.T, tmax, 0);            
         }
+        shadow.normal = transport.normal;
+        shadow.parentMaterial = transport.parentMaterial;
         //Calcul et projection du shadow ray (pour rayons déviés ou non)
         for (uint l = 0; l < pc.directionnalLightCount; l++) {
             vec3 invLightDir = -directionnalLights[l].dir;
             transport.rayType = 4;
             shadowpayload.lightId = directionnalLights[l].id;
             shadowpayLoad.lightColor = directionnalLights[l].color;
-            shadowpayLoad.lightSpace[0] = directionnalLights[l].lightSpace;
-            payload.raytype == 0;            
+            shadowpayLoad.lightSpace[0] = directionnalLights[l].lightSpace;                        
             traceRayEXT(localAS[payload.localASID], gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, transportpay.origin, tmin, invLightdir.xyz, tmax, 1);           
         }
         
@@ -118,8 +123,7 @@ void main() {
             shadowpayLoad.lightId = pointLights[l].id;
             shadowpayLoad.lightPos = pointLights[l].position;
             shadowpayload.lightColor = pointLights[l].color;
-            shadowpayLoad.lightSpace = pointLights[l].lightSpace;
-            payload.raytype == 0;
+            shadowpayLoad.lightSpace = pointLights[l].lightSpace;            
             traceRayEXT(localAS[payload.localASID], gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, transposrt.origin, tmin, invLightdir.xyz, tmax, 1);                
         }
         vec3 finalColor = vec3(0);

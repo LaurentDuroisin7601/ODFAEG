@@ -24,7 +24,9 @@ struct TransportRayPayload {
     bool reflectable;
     bool refractable;
     bool transmissive;  
-    int localADID;  
+    int localADID; 
+    vec3 normal;
+    Material parentMaterial; 
 };
 struct ShadowRayPayload {    
     vec4 localLightning;
@@ -33,11 +35,19 @@ struct ShadowRayPayload {
     vec4 lightColor; 
     vec4 shadowColor; 
     mat4 lightSpace[6];
+    vec3 normal;
+    Material parentMaterial;
 };
 layout (binding = 5, set = 1) samplerCube skybox;
 layout (binding = 6, set = 1) sampler2DArray csmShadowMaps;
 layout (binding = 7, set = 1) samplerCubeArray pointShadowMaps; 
 layout (binding = 8, set = 1) sampler2D frameBuffer;
+layout(set = 2, binding = 0) uniform sampler2D specularTextures[MAX_TEXTURES];
+layout(set = 3, binding = 0) uniform sampler2D normalTextures[MAX_TEXTURES];
+layout(set = 4, binding = 0) uniform sampler2D metalnessTextures[MAX_TEXTURES];
+layout(set = 5, binding = 0) uniform sampler2D roughnessTextures[MAX_TEXTURES];
+layout(set = 6, binding = 0) uniform sampler2D aoTextures[MAX_TEXTURES];
+layout(set = 7, binding = 0) uniform sampler2D emissiveTextures[MAX_TEXTURES];
 layout(location = 0) rayPayloadInEXT TrasportPayload transport;
 layout(location = 1) rayPayloadInEXT ShadowRayPayload shadow;
 void main()
@@ -82,6 +92,7 @@ void main()
        proj.xyz = proj.xyz / w;
        float depth = texture(cmsShadowMaps, vec4(vec3(proj.xy, face), float(shadow.lightId)));
        bool inShadow = (proj.z < depth);
-       shadow.localLighthing = (inShadow) ? vec4(0.5, 0.5, 0.5, 1) * shadow.lightColor : shadow.lightColor;
+       if (parentMaterial.)
+       shadow.localLighthing = (inShadow) ? vec4(0.5, 0.5, 0.5, 1) * shadow.lightColor * normal : shadow.lightColor * normal;
     }
 }

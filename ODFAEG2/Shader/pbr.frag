@@ -215,6 +215,6 @@ void main() {
     // gamma correct
     color = pow(color, vec3(1.0/2.2));
     color += emissive; 
-
-    outColor = vec4(color , 1.0);
+    imageStore(worldNormals, ivec2(gl_FragCoord.xy), normal);
+    outColor = vec4(color , 1.0);    
 }

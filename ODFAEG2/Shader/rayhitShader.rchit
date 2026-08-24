@@ -58,6 +58,12 @@ layout (binding = 3, set = 1) buffer materialBuffer {
     MaterialData materials[];
 };
 layout (binding = 8, set = 1) uniform sampler2D diffuseTextures[MAX_TEXTURES];
+layout(set = 2, binding = 0) uniform sampler2D specularTextures[MAX_TEXTURES];
+layout(set = 3, binding = 0) uniform sampler2D normalTextures[MAX_TEXTURES];
+layout(set = 4, binding = 0) uniform sampler2D metalnessTextures[MAX_TEXTURES];
+layout(set = 5, binding = 0) uniform sampler2D roughnessTextures[MAX_TEXTURES];
+layout(set = 6, binding = 0) uniform sampler2D aoTextures[MAX_TEXTURES];
+layout(set = 7, binding = 0) uniform sampler2D emissiveTextures[MAX_TEXTURES];
 struct TransportRayPayload {
     bool lastBounce;
     int raytype;
@@ -74,15 +80,19 @@ struct TransportRayPayload {
     bool reflectable;
     bool refractable;
     bool transmissive;  
-    int localADID;  
+    int localADID;
+    vec3 normal;  
+    Material parentMaterial;
 };
 struct ShadowRayPayload {
-    vec4 localLightning;
+    vec4 localLightning;    
     vec3 lightPos;
     int lightId;        
     vec4 lightColor; 
     vec4 shadowColor; 
     mat4 lightSpace[6];
+    vec3 normal;
+    Material parentMaterial;
 };
 layout(location = 0) rayPayloadInEXT TransportPayload transport;
 layout(location = 1) rayPayloadInEXT ShadowPayload shadow;
@@ -132,6 +142,8 @@ void main() {
     vec3 I = normalize(-gl_WorldRayDirectionEXT);
     //Si ce n'est pas un shadow ray, on met à jour le transport du rayon pour le rayon suivant. 
     if (transport.raytype < 4) {
+        transport.normal = N;
+        transport.parentMaterial = material;
         transport.localASID = geomOffs.tlasID;
         transport.origin = hitpos + N * espilon;
         transport.direction = raydir;
