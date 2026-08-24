@@ -61,12 +61,16 @@ void main()
        vec4 proj = shadow.lightSpace * hitPos;
        proj.xyz = proj.xyz / w;
        float depth = texture(cmsShadowMaps, vec3(proj.xy, shadow.lightId));
-       bool inShadow =  (hitPos.z < depth);
+       bool inShadow =  (proj.z < depth);
        shadow.localLighthing = (inShadow) ? vec4(0.5, 0.5, 0.5, 1) * shadow.lightColor : shadow.lightColor;
     } else if (payload.raytype == 5) {
+       vec3 rayDir = gl_WorldRayDirectionEXT; 
+       vec3 hitPos = gl_WorldRayOriginEXT + rayDir * gl_HitTEXT;
+       vec4 proj = shadow.lightSpace * hitPos;
+       proj.xyz = proj.xyz / w;
        vec3 rayDir = gl_WorldRayDirectionEXT;
        float depth = texture(cmsShadowMaps, vec4(rayDir, float(shadow.lightId)));
-       bool inShadow = (hitPos.z < depth);
+       bool inShadow = (proj.z < depth);
        shadow.localLighthing = (inShadow) ? vec4(0.5, 0.5, 0.5, 1) * shadow.lightColor : shadow.lightColor;
     }
 }
