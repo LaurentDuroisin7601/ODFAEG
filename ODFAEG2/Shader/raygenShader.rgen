@@ -36,6 +36,27 @@ layout (push_constant) uniform PushConstant {
     uint directionnalLightCount;
     uint ponctualLightCount;
 } pc;
+struct MaterialData {   
+    /*vec2 uvScale;
+    vec2 uvOffset;*/
+    uint diffuseTextureIndex;
+    uint specularTextureIndex;
+    uint normalTextureIndex;
+    uint metalnessTextureIndex;
+    uint roughnessTextureIndex;
+    uint aoTextureIndex;
+    uint emissiveTextureIndex;
+    uint materialType;
+    uint materialSet;   
+    uint nbVertices;
+    uint nbIndexes;
+    int instanceGroupId;
+    uint vertsInstanceSet;
+    uint materialId;
+    uint nbBuffers;  
+    int reflectable;
+    int refractable;  
+};
 struct TransportRayPayload {
     bool lastBounce;
     int raytype;    

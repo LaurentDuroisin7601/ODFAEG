@@ -53,7 +53,8 @@ namespace odfaeg {
                     math::Matrix4f viewInverse;
                     math::Matrix4f projInverse;
                 };
-                RTRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId=-1, bool usethread = false);
+                RTRenderer(RenderTarget& parentRenderer, Texture& environmentMap, RenderTexture& frameBuffer,
+                    RenderTexture& cmsShadowMaps, RenderTexture& plShadowMaps, unsigned int layer, std::string typesToRenderExpression, int windowId=-1, bool usethread = false);
                 void clear();
                 void drawNextFrame();
                 void draw();
@@ -61,10 +62,13 @@ namespace odfaeg {
                 void createDescriptorsAndPipelines();
                 void createShaderBindingTable();
                 void updateBLAS();
-                void updateTLAS();
+                void updateTLAS();                
+                void addPointLight(entity::PointLight pointLight);
+                void addDirectionnalLight(entity::DirectionnalLight directionnalLight);
             private :
                 VkTransformMatrixKHR toVulkanMatrix (math::Matrix4f matrix);
                 RayGenPC rayGenPC;
+                void updateBuffers;
                 void updateDescriptorSets();
                 void createCommandPool();
                 void loadExtensionsFuncPtr();
@@ -73,15 +77,19 @@ namespace odfaeg {
                 Buffer transformMatrixBuffer, materialBuffer, geometryOffsetBuffer;
                 Buffer transformMatrixStaggingBuffer, materialStaggingBuffer, geometryOffsetStaggingBuffer;
                 Buffer instancesBuffer, instancesStaggingBuffer;
-                Buffer raygenShaderBT, raymissShaderBT, rayhitShaderBT, staggingBuffer;
+                Buffer raygenShaderBT, raymissShaderBT, rayhitShaderBT, dirLightStaggingBuffer, pointLightStaggingBuffer;
+                std::deque<Buffer> dirLights, pointLights;
                 std::deque<Buffer> bottomLevelASBuffers, topLevelASBuffers;
                 std::deque<Buffer> ubo;
-                std::vector<VkAccelerationStructureKHR> bottomLevelAS, topLevelAS; 
+                std::vector<VkAccelerationStructureKHR> bottomLevelAS, topGlobalAS, topLocalAS; 
                 bool needToUpdateBLAS, needToUpdateTLAS, needToUpdateDescriptorSets;
                 Shader rtShader;
                 CommandPool commandPool;
                 RenderTarget& parentRenderer;
+                Texture& environmentMap;
+                RenderTexture& cmsShadowMaps, &plShadowMaps, &frameBuffer;
                 std::string typesToRenderExpression;
+                bool needToUpdateBuffers;
                 int instancesGroupCount, singleInstancesCount, shaderGroupCount;                     
                 PFN_vkCreateAccelerationStructureKHR vkCreateAccelerationStructureKHR{ nullptr };
                 PFN_vkDestroyAccelerationStructureKHR vkDestroyAccelerationStructureKHR{ nullptr };

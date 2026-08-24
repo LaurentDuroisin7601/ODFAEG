@@ -8,6 +8,27 @@ layout(binding = 0, set = 0) uniform CameraProperties {
     mat4 viewInverse;
     mat4 projInverse;    
 } cam[MAX_FRAMES_IN_FLIGHT];
+struct MaterialData {   
+    /*vec2 uvScale;
+    vec2 uvOffset;*/
+    uint diffuseTextureIndex;
+    uint specularTextureIndex;
+    uint normalTextureIndex;
+    uint metalnessTextureIndex;
+    uint roughnessTextureIndex;
+    uint aoTextureIndex;
+    uint emissiveTextureIndex;
+    uint materialType;
+    uint materialSet;   
+    uint nbVertices;
+    uint nbIndexes;
+    int instanceGroupId;
+    uint vertsInstanceSet;
+    uint materialId;
+    uint nbBuffers;  
+    int reflectable;
+    int refractable;  
+};
 struct TransportRayPayload {
     bool lastBounce;
     int raytype;
@@ -38,10 +59,10 @@ struct ShadowRayPayload {
     vec3 normal;
     Material parentMaterial;
 };
-layout (binding = 5, set = 1) samplerCube skybox;
-layout (binding = 6, set = 1) sampler2DArray csmShadowMaps;
-layout (binding = 7, set = 1) samplerCubeArray pointShadowMaps; 
-layout (binding = 8, set = 1) sampler2D frameBuffer;
+layout (binding = 4, set = 1) samplerCube skybox;
+layout (binding = 5, set = 1) sampler2DArray csmShadowMaps;
+layout (binding = 6, set = 1) samplerCubeArray pointShadowMaps; 
+layout (binding = 7, set = 1) sampler2D frameBuffer;
 layout(set = 2, binding = 0) uniform sampler2D specularTextures[MAX_TEXTURES];
 layout(set = 3, binding = 0) uniform sampler2D normalTextures[MAX_TEXTURES];
 layout(set = 4, binding = 0) uniform sampler2D metalnessTextures[MAX_TEXTURES];
