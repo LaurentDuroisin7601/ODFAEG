@@ -78,10 +78,11 @@ struct TransportRayPayload {
 };
 struct ShadowRayPayload {
     vec4 localLightning;
+    vec3 lightPos;
     int lightId;        
     vec4 lightColor; 
     vec4 shadowColor; 
-    mat4 lightSpace;
+    mat4 lightSpace[6];
 };
 layout(location = 0) rayPayloadInEXT TransportPayload transport;
 layout(location = 1) rayPayloadInEXT ShadowPayload shadow;

@@ -16,6 +16,7 @@ struct PointLight {
     uint id;
     vec3 position;
     vec3 color;
+    mat4 lightSpace[6];
 };
 layout(binding = 0, set = 0) uniform CameraProperties {
     mat4 viewInverse;
@@ -55,10 +56,12 @@ struct TransportRayPayload {
 };
 struct ShadowRayPayload {
     vec4 localLightning;
+    vec3 lightPos;
+    vec4 lightPos;
     int lightId;        
     vec4 lightColor; 
     vec4 shadowColor; 
-    mat4 lightSpace;
+    mat4 lightSpace[6];
 };
 layout(location = 0) rayPayloadEXT TransportRayPayload transportpayload; // ray generation
 layout(location = 1) rayPayloadEXT ShadowRayPayload shadow; // shadow ray generation
@@ -104,7 +107,7 @@ void main() {
             transport.rayType = 4;
             shadowpayload.lightId = directionnalLights[l].id;
             shadowpayLoad.lightColor = directionnalLights[l].color;
-            shadowpayLoad.lightSpace = directionnalLights[l].lightSpace;
+            shadowpayLoad.lightSpace[0] = directionnalLights[l].lightSpace;
             payload.raytype == 0;            
             traceRayEXT(localAS[payload.localASID], gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, transportpay.origin, tmin, invLightdir.xyz, tmax, 1);           
         }
@@ -113,7 +116,9 @@ void main() {
             vec3 invLightDir = payload.origin - pointLights[l].position;
             transport.rayType = 5;
             shadowpayLoad.lightId = pointLights[l].id;
+            shadowpayLoad.lightPos = pointLights[l].position;
             shadowpayload.lightColor = pointLights[l].color;
+            shadowpayLoad.lightSpace = pointLights[l].lightSpace;
             payload.raytype == 0;
             traceRayEXT(localAS[payload.localASID], gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, transposrt.origin, tmin, invLightdir.xyz, tmax, 1);                
         }

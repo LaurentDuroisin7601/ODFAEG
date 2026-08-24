@@ -28,10 +28,11 @@ struct TransportRayPayload {
 };
 struct ShadowRayPayload {    
     vec4 localLightning;
+    vec3 lightPos;
     int lightId;        
     vec4 lightColor; 
     vec4 shadowColor; 
-    mat4 lightSpace;
+    mat4 lightSpace[6];
 };
 layout (binding = 5, set = 1) samplerCube skybox;
 layout (binding = 6, set = 1) sampler2DArray csmShadowMaps;
@@ -66,10 +67,20 @@ void main()
     } else if (payload.raytype == 5) {
        vec3 rayDir = gl_WorldRayDirectionEXT; 
        vec3 hitPos = gl_WorldRayOriginEXT + rayDir * gl_HitTEXT;
-       vec4 proj = shadow.lightSpace * hitPos;
+       vec3 fragToLight = (shadow.lightPos - hitPos);
+       vec3 ad = abs(fragToLight);
+       int face; 
+       vec3 d =  fragToLight;      
+       if (ad.x >= ad.y && ad.x >= ad.z)
+           face = d.x > 0 ? 0 : 1; // +X / -X
+       else if (ad.y >= ad.x && ad.y >= ad.z)
+           face = d.y > 0 ? 2 : 3; // +Y / -Y
+       else
+           face = d.z > 0 ? 4 : 5; // +Z / -Z
+       vec2 uv;
+       vec4 proj = shadow.lightSpace[face] * hitPos;
        proj.xyz = proj.xyz / w;
-       vec3 rayDir = gl_WorldRayDirectionEXT;
-       float depth = texture(cmsShadowMaps, vec4(rayDir, float(shadow.lightId)));
+       float depth = texture(cmsShadowMaps, vec4(vec3(proj.xy, face), float(shadow.lightId)));
        bool inShadow = (proj.z < depth);
        shadow.localLighthing = (inShadow) ? vec4(0.5, 0.5, 0.5, 1) * shadow.lightColor : shadow.lightColor;
     }
