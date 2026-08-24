@@ -603,24 +603,67 @@ namespace odfaeg {
             DescriptorSet::allocate(rtRayhitEmissPool, rtRayhitEmissSetLayout, GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 7), MAX_TEXTURES);
         }
         void RTRenderer::updateDescriptorSets() {
-            bool hasTLASStructure = topLevelASBuffers.size() != 0;
+            bool hasTLASStructure = topLocalAS.size() != 0 && topGlobalAS.size() != 0;
             bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
-            DescriptorSet& rtRaygenSet = GPUContext::instance().getDescriptorSets(rtShader, (hasTLASStructure) ? 3 : 2, 1)[0];
+            DescriptorSet& rtRaygenSet = GPUContext::instance().getDescriptorSets(rtShader, (hasTLASStructure) ? 6 : 4, 1)[0];
             rtRaygenSet.updateBufferInfos(0, ubo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
             rtRaygenSet.updateImageInfos(1, storageImage,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+            rtRaygenSet.updateBufferInfos(2, dirLightBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            rtRaygenSet.updateBufferInfos(3, pointLightBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);            
             if (hasTLASStructure) {
-                rtRaygenSet.updateAccelerationStructureInfos(2, topLevelAS);
+                rtRaygenSet.updateAccelerationStructureInfos(4, topGlobalAS);
+                rtRaygenSet.updateAccelerationStructureInfos(5, topLocalAS);
             }
             rtRaygenSet.updateDescriptorSet();
-            DescriptorSet& rtRayhitSet = GPUContext::instance().getDescriptorSets(rtShader, (hasDiffuseTexture) ? 5 : 4, 1, 1)[0];
+            DescriptorSet& rtRayhitSet = GPUContext::instance().getDescriptorSets(rtShader, (hasDiffuseTexture) ? 9 : 8, 1, 1)[0];
             rtRayhitSet.updateBufferInfos(0, true, GPUContext::instance().getSharedVertexBuffer(RenderTarget::VERTEX_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             rtRayhitSet.updateBufferInfos(1, false, GPUContext::instance().getSharedVertexBuffer(RenderTarget::VERTEX_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             rtRayhitSet.updateBufferInfos(2, geometryOffsetBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             rtRayhitSet.updateBufferInfos(3, materialBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            rtRayhitSet.updateImageInfos(4, environmentMap, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            rtRayhitSet.updateImageInfos(5, frameBuffer.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            rtRayhitSet.updateImageInfos(6, cmsShadowMaps.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            rtRayhitSet.updateImageInfos(7, plShadowMaps.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             if (hasDiffuseTexture) {
-                rtRayhitSet.updateImageInfos(4, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                rtRayhitSet.updateImageInfos(8, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             }
-            rtRayhitSet.updateDescriptorSet();
+            rtRayhitSet.updateDescriptorSet();            
+            bool hasSpecTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR).size() != 0;
+            if (hasSpecTexture) {
+                DescriptorSet& rtRayhitSpecSet = GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 2)[0];
+                rtRayhitSpecSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                rtRayhitSpecSet.updateDescriptorSets();
+            }     
+            bool hasNormalTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::NORMAL).size() != 0;
+            if (hasNormalTexture) {
+                DescriptorSet& rtRayhitNormalSet = GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 3)[0];
+                rtRayhitNormalSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::NORMAL), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                rtRayhitNormalSet.updateDescriptorSets();
+            }            
+            bool hasMetTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::METALNESS).size() != 0;
+            if (hasMetTexture) {
+                DescriptorSet& rtRayhitMetSet = GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 4)[0];
+                rtRayhitMetSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::METALNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                rtRayhitMetSet.updateDescriptorSets();
+            }            
+            bool hasRoughTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::ROUGHNESS).size() != 0;
+            if (hasRoughTexture) {
+                DescriptorSet& rtRayhitRoughSet = GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 6)[0];
+                rtRayhitRoughSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::ROUGHNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                rtRayhitMetSet.updateDescriptorSets();
+            }            
+            bool hasAOTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::AO).size() != 0;
+            if (hasAOTexture) {
+                DescriptorSet& rtRayhitAOSet = GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 6)[0];
+                rtRayhitAOSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::AO), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                rtRayhitAOSet.updateDescriptorSets();
+            }            
+            bool hasEmissTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::EMISSIVE).size() != 0;
+            if (hasEmissTexture) {
+                DescriptorSet& rtRayhitEmissSet = GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 2)[0];
+                rtRayhitEmissSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::EMISSIVE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                rtRayhitEmissSet.updateDescriptorSet();
+            }                        
         }
         void RTRenderer::createShaderBindingTable() {
             const uint32_t handleSize = rayTracingPipelineProperties.shaderGroupHandleSize;
