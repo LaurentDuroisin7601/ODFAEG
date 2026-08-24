@@ -4,10 +4,69 @@ struct RayPayload {
     vec4 color;
     bool hit;
 };
-layout(location = 0) rayPayloadInEXT RayPayload payload;
+layout(binding = 0, set = 0) uniform CameraProperties {
+    mat4 viewInverse;
+    mat4 projInverse;    
+} cam[MAX_FRAMES_IN_FLIGHT];
+struct TransportRayPayload {
+    bool lastBounce;
+    int raytype;
+    vec4 finalColor;
+    vec4 primaryColor;
+    vec4 secondaryColor;
+    vec4 transmitionColor;
+    vec4 reflectColor;
+    vec4 refractColor;
+    vec3 origin;
+    vec3 direction;
+    vec3 R;
+    vec3 T; 
+    bool reflectable;
+    bool refractable;
+    bool transmissive;  
+    int localADID;  
+};
+struct ShadowRayPayload {    
+    vec4 localLightning;
+    int lightId;        
+    vec4 lightColor; 
+    vec4 shadowColor; 
+    mat4 lightSpace;
+};
+layout (binding = 5, set = 1) samplerCube skybox;
+layout (binding = 6, set = 1) sampler2DArray csmShadowMaps;
+layout (binding = 7, set = 1) samplerCubeArray pointShadowMaps; 
+layout (binding = 8, set = 1) sampler2D frameBuffer;
+layout(location = 0) rayPayloadInEXT TrasportPayload transport;
+layout(location = 1) rayPayloadInEXT ShadowRayPayload shadow;
 void main()
-{
-    if (!payload.hit) {
-        payload.color = vec4(0, 0, 1, 1); // bleu seulement si aucun hit
+{        
+    //Rayon primaire.
+    if (payload.raytype < 2) {
+       vec4 proj = inverse(viewInverse) * inverse(projInverse) * transport.origin;
+       proj = proj.xyz / proj.w; 
+       transport.primaryColor = texture(framebuffer, vec2(proj.xy)); 
+       transport.transmission = false;
+       transport.reflectable = false;
+       transport.refractable = false;
+    } else if (payload.raytype == 2) {
+       transport.reflectColor = texture(skybox, transport.R);
+       transport.reflectable = false;
+    } else if (payload.raytype == 3) {
+       transport.reflectColor = texture(skybox, transport.T);
+       transport.refractable = false;
+    } else if (payload.raytype == 4) {
+       vec3 rayDir = gl_WorldRayDirectionEXT; 
+       vec3 hitPos = gl_WorldRayOriginEXT + rayDir * gl_HitTEXT;
+       vec4 proj = shadow.lightSpace * hitPos;
+       proj.xyz = proj.xyz / w;
+       float depth = texture(cmsShadowMaps, vec3(proj.xy, shadow.lightId));
+       bool inShadow =  (hitPos.z < depth);
+       shadow.localLighthing = (inShadow) ? vec4(0.5, 0.5, 0.5, 1) * shadow.lightColor : shadow.lightColor;
+    } else if (payload.raytype == 5) {
+       vec3 rayDir = gl_WorldRayDirectionEXT;
+       float depth = texture(cmsShadowMaps, vec4(rayDir, float(shadow.lightId)));
+       bool inShadow = (hitPos.z < depth);
+       shadow.localLighthing = (inShadow) ? vec4(0.5, 0.5, 0.5, 1) * shadow.lightColor : shadow.lightColor;
     }
 }
