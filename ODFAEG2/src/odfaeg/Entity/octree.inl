@@ -9,8 +9,7 @@ namespace ofdaeg {
         template <typename Object>
         void Octree<Object>::addObject(Object object, physic::BoundingBox objectVolume) {                              
             for (unsigned int i = 0; i < nodes.size(); i++) {
-                if (nodes[i].leaf && !nodes[i].contains(object) && nodes[i].volume.intersects(objectVolume)) {
-                    object.nodeId = nodes[i].id;
+                if (nodes[i].leaf && !contains(object) && nodes[i].volume.intersects(objectVolume)) {
                     nodes[i].objects.push_back(object);
                 }               
             }
@@ -71,7 +70,7 @@ namespace ofdaeg {
                 getObjects(objects, node, volume)
             }
             return objects;
-        }
+        }        
         template <typename Object>
         void Octree<Object>::getObjects(std::vector<Object>& objects, Node node, physics::BoundingBox volume) {
             for (unsigned int i = 0; < node.objects.size(); i++) {
@@ -82,6 +81,16 @@ namespace ofdaeg {
                     getObjects(objects, nodes[node.children[c]], volume);
                 }
             }
+        }
+        template <typename Object>
+        bool Octree<Object>::contains(Object object) {
+            for (unsigned int i = 0; i < nodes.size(); i++) {
+                for (unsigned int j = 0; j < nodes[i].objects.size(); j++) {
+                    if(object == nodes[i].objects[j])
+                        return true;
+                }
+            }
+            return false;
         }
     }
 }

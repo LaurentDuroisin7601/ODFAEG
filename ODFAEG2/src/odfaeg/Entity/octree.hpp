@@ -1,3 +1,5 @@
+#ifndef OCTREE_HPP
+#define OCTREE_HPP
 namespace odfaeg {
     namespace entity {
         template <typename Object>
@@ -14,6 +16,7 @@ namespace odfaeg {
             void removeObject(Object object, physic::BoundingBox objectVolume);
             std::vector<Object> getObjects(physics::BoundingBox volume);
             void update(Object object);
+            bool contains(Object object);
             private :
             void getObjects(std::vector<Object>& objects, Node node, physics::BoundingBox volume);
             void build(Node& node);
@@ -21,3 +24,5 @@ namespace odfaeg {
         };        
     }
 }
+#include "octree.inl"
+#endif

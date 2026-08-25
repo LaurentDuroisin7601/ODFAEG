@@ -14,20 +14,18 @@ namespace odfaeg {
             return coords;
         }
         template <typename Object>
-        void GridCell<Object>::GridCell::addEntity (Object* entity) {
-            if (!containsEntity(entity)) {
-                std::unique_ptr<Object> ptr;
-                ptr.reset(entity);
-                octree.addObject(std::move(ptr));
+        void GridCell<Object>::GridCell::addEntity (Object entity, physic::BoundingVolume objectVolume) {
+            if (!containsEntity(entity)) {                
+                octree.addObject(entity, objectVolume);
             }
         }
         template <typename Object>
         physic::BoundingBox GridCell<Object>::GridCell::getCellVolume () {
-            return cellVolume;
+            return volume;
         }
         template <typename Object>
         bool GridCell<Object>::GridCell::isEntityInside () {
-            if (entityInside.size() != 0)
+            if (octree.getObjects(volume).size() != 0)
                     return true;
             return false;
         }
@@ -43,7 +41,7 @@ namespace odfaeg {
             vector<Object> entitiesInside;
             for (unsigned int i = 0; i < octree.getObjects(volume).size(); i++)
                 if (octree.getObjects(volume)[i]->getType() == type)
-                    entitiesInside.push_back(entityInside[i].get());
+                    entitiesInside.push_back(octree.getObjects(volume)[i]);
             return entitiesInside;
         }
         template <typename Object>
@@ -51,9 +49,9 @@ namespace odfaeg {
            octree.removeObject(object);
         }
         template <typename Object>
-        void GridCell<Object>::deleteEntity (Object *entity) {
+        void GridCell<Object>::deleteEntity (Object entity) {
             for (unsigned int i = 0; i < octree.getObjects(volume).size(); i++) {
-                if (octree.getObjects(volume)[i].get() == entity) {
+                if (octree.getObjects(volume)[i] == entity) {
                     removeEntity(entity);
                     delete entity;
                 }
@@ -61,27 +59,22 @@ namespace odfaeg {
         }
         template <typename Object>
         void GridCell<Object>::removeEntity (std::string type) {
-            vector<std::unique_ptr<Object>>& entityInside = octree.getObjects(volume);
-            typename vector<std::unique_ptr<Object>>::iterator it;
-            for (it = entityInside.begin(); it != entityInside.end();) {
-                if (it->get()->getType() == type) {
-                    it->release();
-                    it = entityInside.erase(it);
-                    return true;
-                } else
-                    it++;
+            vector<Object> entityInside = octree.getObjects(volume);
+            for (unsigned int i = 0; i < entityInside.size(); i++) {
+                if (entityInside[i]->getType() == type) {
+                   octree.remove(entityInside[i]);  
+                } 
             }
             return false;
         }
         template <typename Object>
         void GridCell<Object>::deleteEntity (std::string type) {
-            vector<std::unique_ptr<Object>>& entityInside = octree.getObjects(volume);
-            typename vector<std::unique_ptr<Object>>::iterator it;
-            for (it = entityInside.begin(); it != entityInside.end();) {
-                if (it->get()->getType() == type) {
-                    it = entityInside.erase(it);
-                } else
-                    it++;
+            vector<Object> entityInside = octree.getObjects(volume);
+            for (unsigned int i = 0; i < entityInside.size(); i++) {
+                if (entityInside[i]->getType() == type) {
+                   octree.remove(entityInside[i]);
+                   delete entityInside[i];  
+                } 
             }
         }
         template <typename Object>
@@ -97,9 +90,9 @@ namespace odfaeg {
             this->traveled = traveled;
         }
         template<typename Object>
-        Object* CellMap<Object>::getEntityInside (unsigned int index) {
+        Object CellMap<Object>::getEntityInside (unsigned int index) {
             if (index >= 0 && index < entityInside.size()) {
-                Object* entity = octree.getObjects()[index].get();
+                Object entity = octree.getObjects()[index].get();
                 return entity;
             }
             return nullptr;
@@ -109,7 +102,7 @@ namespace odfaeg {
             return octree.getObjects(volume).size();
         }
         template <typename Object>
-        bool GridCell<Object>::containsEntity (Entity *entity) {            
+        bool GridCell<Object>::containsEntity (Object entity) {            
             return octree.contains(entity);
         }
         template <typename Object>
