@@ -101,6 +101,7 @@ namespace odfaeg {
             std::vector<math::Vec3f> getEdgeNormals();
             std::vector<math::Vec3f> getFaceBissectors();
             std::vector<math::Vec3f> getEdgeBissectors();
+            std::array<BoundingBox, 8> subdiv();
             bool isFlat();
         private:
             void computeVectors();

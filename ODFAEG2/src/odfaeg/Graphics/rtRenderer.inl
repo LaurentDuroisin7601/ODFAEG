@@ -519,7 +519,7 @@ namespace odfaeg {
             rtRayhitSetLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
             rtRayhitSetLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
             rtRayhitsetLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
-            rtRayhitsetLayout.updateLayout(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
+            rtRayhitsetLayout.updateLayout(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR);
             rtRayhitsetLayout.updateLayout(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
             rtRayhitsetLayout.updateLayout(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
             rtRayhitSetLayout.updateLayout(8, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
@@ -603,17 +603,20 @@ namespace odfaeg {
             DescriptorSet::allocate(rtRayhitEmissPool, rtRayhitEmissSetLayout, GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 7), MAX_TEXTURES);
         }
         void RTRenderer::updateDescriptorSets() {
-            bool hasTLASStructure = topLocalAS.size() != 0 && topGlobalAS.size() != 0;
+            pc.hasGeometry = topLocalAS.size();
+            bool hasLocalTLASStructure = topLocalAS.size() != 0;
             bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
             DescriptorSet& rtRaygenSet = GPUContext::instance().getDescriptorSets(rtShader, (hasTLASStructure) ? 6 : 4, 1)[0];
             rtRaygenSet.updateBufferInfos(0, ubo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
             rtRaygenSet.updateImageInfos(1, storageImage,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
             rtRaygenSet.updateBufferInfos(2, dirLightBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             rtRaygenSet.updateBufferInfos(3, pointLightBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);            
-            if (hasTLASStructure) {
+            if (topGlobalAS.size() != 0) {
                 rtRaygenSet.updateAccelerationStructureInfos(4, topGlobalAS);
-                rtRaygenSet.updateAccelerationStructureInfos(5, topLocalAS);
             }
+            if (topLocalAS.size() != 0) {
+                rtRaygenSet.updateAccelerationStructureInfos(5, topLocalAS);
+            }            
             rtRaygenSet.updateDescriptorSet();
             DescriptorSet& rtRayhitSet = GPUContext::instance().getDescriptorSets(rtShader, (hasDiffuseTexture) ? 9 : 8, 1, 1)[0];
             rtRayhitSet.updateBufferInfos(0, true, GPUContext::instance().getSharedVertexBuffer(RenderTarget::VERTEX_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);

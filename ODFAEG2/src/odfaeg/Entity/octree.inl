@@ -21,7 +21,7 @@ namespace ofdaeg {
             if (node.objects.size() > maxObjectsPerNode) {
                 node.leaf = false;    
                 physic::BoundingBox volume = node.volume;
-                std::array<physics::BoundingBox, 8> volumes = volume.subDivide();                
+                std::array<physics::BoundingBox, 8> volumes = volume.subdiv();                
                 for (unsigned int v = 0; v < volumes.size(); v++) {
                     Node child;
                     child.id = compteur.next();

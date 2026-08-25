@@ -31,10 +31,12 @@ layout(binding = 3, set = 0) buffer PointLightSSBO {
 }; 
 layout(binding = 4, set = 0) uniform accelerationStructureEXT globalAS;
 layout(binding = 5, set = 0) uniform accelerationStructureEXT localAS[MAX_TLAS_STRUCTURES];
+layout(binding = 5, set = 1, rgba8) uniform image2D rasterImage; 
 layout (push_constant) uniform PushConstant {
     uint currentFrame;
     uint directionnalLightCount;
     uint ponctualLightCount;
+    uint hasGeometry;
 } pc;
 struct MaterialData {   
     /*vec2 uvScale;
@@ -108,73 +110,78 @@ void main() {
     float tmin = 0.001;
     float tmax = 10000.0;
     transport.raytype = 0;
-    traceRayEXT(globalAS, gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, origin.xyz, tmin, direction.xyz, tmax, 0);   
-    uint i = 0;    
-    while (i < MAX_BOUNCES && !transportpayload.lastBounce) {
-        //Objet translucide touché.
-        if (transport.transmissive) {
-            transport.rayType = 1;
-            traceRayEXT(localAS[payload.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, transport.origin, tmin, transport.direction, tmax, 0);            
-        }   
-        //Objet translucide réflectable touché traçage du rayon de rélfection.
-        if (transport.reflectalbe) {
-            transport.rayType = 2;
-            traceRayEXT(localAS[payload.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, transport.origin, tmin, transport.direction, tmax, 0);            
-        }      
-        //Objet translucide réfractable touché traçage du rayon de réfraction.
-        if (payload.refractable) {
-            transport.raytype = 3;
-            traceRayEXT(localAS[payload.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, transport.origin, tmin, transport.T, tmax, 0);            
-        }
-        shadow.normal = transport.normal;
-        shadow.parentMaterial = transport.parentMaterial;
-        //Calcul et projection du shadow ray (pour rayons déviés ou non)
-        for (uint l = 0; l < pc.directionnalLightCount; l++) {
-            vec3 invLightDir = -directionnalLights[l].dir;
-            transport.rayType = 4;
-            shadowpayload.lightId = directionnalLights[l].id;
-            shadowpayLoad.lightColor = directionnalLights[l].color;
-            shadowpayLoad.lightSpace[0] = directionnalLights[l].lightSpace;                        
-            traceRayEXT(localAS[payload.localASID], gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, transportpay.origin, tmin, invLightdir.xyz, tmax, 1);           
-        }
-        
-        for (uint l = 0; l < pc.pointLightCount; l++) {
-            vec3 invLightDir = payload.origin - pointLights[l].position;
-            transport.rayType = 5;
-            shadowpayLoad.lightId = pointLights[l].id;
-            shadowpayLoad.lightPos = pointLights[l].position;
-            shadowpayload.lightColor = pointLights[l].color;
-            shadowpayLoad.lightSpace = pointLights[l].lightSpace;            
-            traceRayEXT(localAS[payload.localASID], gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, transposrt.origin, tmin, invLightdir.xyz, tmax, 1);                
-        }
-        vec3 finalColor = vec3(0);
-        if (transport.reflectable)
-            transport.finalColor += reflect.color;
+    if (pc.hasGeometry == 0) {
+        vec4 color = imageLoad(rasterImage, ivec2(gl_LaunchIDEXT.xy));
+        imageStore(storageImage[pc.currentFrame], ivec2(gl_LaunchIDEXT.xy), color);
+    } else {
+        traceRayEXT(globalAS, gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, origin.xyz, tmin, direction.xyz, tmax, 0);   
+        uint i = 0;    
+        while (i < MAX_BOUNCES && !transportpayload.lastBounce) {
+            //Objet translucide touché.
+            if (transport.transmissive) {
+                transport.rayType = 1;
+                traceRayEXT(localAS[payload.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, transport.origin, tmin, transport.direction, tmax, 0);            
+            }   
+            //Objet translucide réflectable touché traçage du rayon de rélfection.
+            if (transport.reflectalbe) {
+                transport.rayType = 2;
+                traceRayEXT(localAS[payload.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, transport.origin, tmin, transport.direction, tmax, 0);            
+            }      
+            //Objet translucide réfractable touché traçage du rayon de réfraction.
+            if (payload.refractable) {
+                transport.raytype = 3;
+                traceRayEXT(localAS[payload.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, transport.origin, tmin, transport.T, tmax, 0);            
+            }
+            shadow.normal = transport.normal;
+            shadow.parentMaterial = transport.parentMaterial;
+            //Calcul et projection du shadow ray (pour rayons déviés ou non)
+            for (uint l = 0; l < pc.directionnalLightCount; l++) {
+                vec3 invLightDir = -directionnalLights[l].dir;
+                transport.rayType = 4;
+                shadowpayload.lightId = directionnalLights[l].id;
+                shadowpayLoad.lightColor = directionnalLights[l].color;
+                shadowpayLoad.lightSpace[0] = directionnalLights[l].lightSpace;                        
+                traceRayEXT(localAS[payload.localASID], gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, transportpay.origin, tmin, invLightdir.xyz, tmax, 1);           
+            }
+            
+            for (uint l = 0; l < pc.pointLightCount; l++) {
+                vec3 invLightDir = payload.origin - pointLights[l].position;
+                transport.rayType = 5;
+                shadowpayLoad.lightId = pointLights[l].id;
+                shadowpayLoad.lightPos = pointLights[l].position;
+                shadowpayload.lightColor = pointLights[l].color;
+                shadowpayLoad.lightSpace = pointLights[l].lightSpace;            
+                traceRayEXT(localAS[payload.localASID], gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, transposrt.origin, tmin, invLightdir.xyz, tmax, 1);                
+            }
+            vec3 finalColor = vec3(0);
+            if (transport.reflectable)
+                transport.finalColor += reflect.color;
 
-        if (transport.refractable)
-            transport.finalColor += refract.color;
+            if (transport.refractable)
+                transport.finalColor += refract.color;
 
-        if (transport.transmissive)
-            transport.finalColor += transmit.color;
+            if (transport.transmissive)
+                transport.finalColor += transmit.color;
 
-        vec4 finalColor *= shadow.localLightning; 
+            vec4 finalColor *= shadow.localLightning; 
 
-        transport.secondaryColor += finalColor;
-        if (!transport.reflectable &&
-            !transport.refractable &&
-            !transport.transmissive)
-        {
-            transport.lastBounce = true;
-        }
-        i++; 
-    }    
-    transport.finalColor = transport.primaryColor * transport.secondaryColor;
-    if (payload.color.r != 0 || payload.color.g != 0 || payload.color.b != 0 || payload.color.a != 0) {
-        if (payload.color.r > 1 || payload.color.g > 1 || payload.color.b > 1 || payload.color.a > 1) {        
-            //debugPrintfEXT("color : %v4f", payload.color);
-        } /*else {
-            //debugPrintfEXT("color : %v4f", payload.color);
-        }*/
-    }    
-    imageStore(image[pc.currentFrame], ivec2(gl_LaunchIDEXT.xy), transport.finalColor);
+            transport.secondaryColor += finalColor;
+            if (!transport.reflectable &&
+                !transport.refractable &&
+                !transport.transmissive)
+            {
+                transport.lastBounce = true;
+            }
+            i++; 
+        }    
+        transport.finalColor = transport.primaryColor * transport.secondaryColor;
+        if (payload.color.r != 0 || payload.color.g != 0 || payload.color.b != 0 || payload.color.a != 0) {
+            if (payload.color.r > 1 || payload.color.g > 1 || payload.color.b > 1 || payload.color.a > 1) {        
+                //debugPrintfEXT("color : %v4f", payload.color);
+            } /*else {
+                //debugPrintfEXT("color : %v4f", payload.color);
+            }*/
+        }    
+        imageStore(image[pc.currentFrame], ivec2(gl_LaunchIDEXT.xy), transport.finalColor);
+    }
 }

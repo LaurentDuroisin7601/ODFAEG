@@ -509,6 +509,19 @@ namespace odfaeg {
         }
         std::vector<math::Vec3f> BoundingBox::getFaceNormals() {
             return faceNormals;
-        }       
+        }  
+        std::array<BoundingBox, 8> BoundingBox::subdiv() {
+            std::array<BoundingBox, 8> volumes;
+            unsigned int index = 0;
+            for (unsigned int x = position.x(); x < position.x() + size.x(); x+= size.x() * 0.5f) {
+                for (unsigned int y = position.y(); y < position.y() + size.y(); y+= size.y() * 0.5f) {
+                    for (unsigned int z = position.z(); z < position.z() + size.z(); z+= size.z() * 0.5f) {
+                        volumes[index] = BoundingBox(x, y, z, size.x() * 0.5f, size.y() * 0.5f, size.z() * 0.5f);
+                        }
+                    }
+                }
+            } 
+            return volumes;           
+        }     
     }
 }
