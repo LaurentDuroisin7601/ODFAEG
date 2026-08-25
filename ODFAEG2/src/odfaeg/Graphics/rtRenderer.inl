@@ -633,7 +633,6 @@ namespace odfaeg {
             rtRaygenSet.updateBufferInfos(3, pointLightBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             rtRaygenSet.updateImageInfos(4, frameBuffer.getRenderingImage(),VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);            
             if (topGlobalAS.size() != 0) {
-
                 rtRaygenSet.updateAccelerationStructureInfos(5, topGlobalAS);
             }
             if (topLocalAS.size() != 0) {
