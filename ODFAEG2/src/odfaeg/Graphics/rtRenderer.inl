@@ -97,7 +97,25 @@ namespace odfaeg {
             needToUpdateBuffers = true;
         }
         void RTRenderer::updateBuffers() {
-
+            dirLightStaggingBuffer.create(sizeof(DirLight) * dirLights.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_BIT);
+            dirLightStaggingBuffer.update(dirLights.data(), sizeof(DirLight) * dirLights.size());
+            dirLightsBuffer.back().create(sizeof(DirLight) * dirLights.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_BIT);
+            pointLightStaggingBuffer.create(sizeof(PointLight) * pointLights.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_BIT);
+            pointLightStaggingBuffer.update(pointLights.data(), sizeof(PointLight) * pointLights.size());
+            pointLightsBuffer.back().create(sizeof(PointLight) * pointLights.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_BIT);
+            commandPool.beginRecordCommandBuffer(parentRenderer.getCurrentFrame());
+            Buffer::copyBuffer(dirLightStaggingBuffer, dirLightsBuffer.back(), commandPool.getHandle(parentRenderer.getCurrentFrame()));
+            Buffer::copyBuffer(pointLightStaggingBuffer, pointLightsBuffer.back(), commandPool.getHandle(parentRenderer.getCurrentFrame()));
+            commandPool.endRecordCommandBuffer(parentRenderer.getCurrentFrame());
+            VkSubmitInfo submitInfo{};
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = 1;
+            submitInfo.pCommandBuffers = &commandPool.getHandle(parentRenderer.getCurrentFrame());
+            Device::QueueFamilyIndices indices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice(), VK_NULL_HANDLE);
+            if (vkQueueSubmit(GPUContext::instance().getDevice().getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+                throw std::runtime_error("�chec de l'envoi d'un command buffer!");
+            }
+            vkDeviceWaitIdle(GPUContext::instance().getDevice().getDevice());
         }
         void RTRenderer::loadExtensionsFuncPtr() {
             VkDevice device = GPUContext::instance().getDevice().getDevice();

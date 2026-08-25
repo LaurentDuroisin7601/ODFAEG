@@ -23,7 +23,9 @@ namespace odfaeg {
             public :
                 struct RayGenPC {
                     unsigned int currentFrame;
-                    unsigned int tlasCount;
+                    unsigned int pointLightCount;
+                    unsigned int dirLightCount;
+                    unsigned int hasGeometry;
                 };
                 struct GeometryOffset {
                     uint32_t vertexOffset;
@@ -78,7 +80,7 @@ namespace odfaeg {
                 Buffer transformMatrixStaggingBuffer, materialStaggingBuffer, geometryOffsetStaggingBuffer;
                 Buffer instancesBuffer, instancesStaggingBuffer;
                 Buffer raygenShaderBT, raymissShaderBT, rayhitShaderBT, dirLightStaggingBuffer, pointLightStaggingBuffer;
-                std::deque<Buffer> dirLights, pointLights;
+                std::deque<Buffer> dirLightsBuffer, pointLightsBuffer;
                 std::deque<Buffer> bottomLevelASBuffers, topLevelASBuffers;
                 std::deque<Buffer> ubo;
                 std::vector<VkAccelerationStructureKHR> bottomLevelAS, topGlobalAS, topLocalAS; 
