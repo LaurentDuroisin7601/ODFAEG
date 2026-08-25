@@ -144,16 +144,16 @@ void main() {
         transport.parentMaterial = material;
         transport.localASID = int(geomOffs.tlasID);
         transport.origin = hitpos + N * espilon;
-        transport.direction = raydir;
-        if (material.opaque == 1) {
-            transport.transmition  = false;
-        } else {
-            transport.transmition  = true;
-        }
+        transport.direction = raydir;        
+    }
+    if (material.opaque == 0) {
+        transport.transmition  = true;
+    } else {
+        transport.transmition  = false;
     }
     if (transport.rayType < 4) {        
         if(material.reflectable == 1) {
-            payload.R = refract(I, N);
+            transport.R = refract(I, N);
             transport.reflectable = true;          
         } else {
             transport.reflectable = false;
