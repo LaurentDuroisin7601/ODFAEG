@@ -2,7 +2,6 @@
 namespace odfaeg {
     namespace graphic {
         using namespace std;
-        //Ajoute une tile.
         template<typneme Object>
         GridMap<Object>::GridMap (int cellWidth, int cellHeight, int cellDepth) {
             nbCasesPerRow = 0;
@@ -605,7 +604,7 @@ namespace odfaeg {
             return neightbours;
         }
         template<typename Object>
-        GridCell* GridMap::getGridCellAtFromCoords(math::Vec3f coords) {
+        GridCell* GridMap<Object>::getGridCellAtFromCoords(math::Vec3f coords) {
             int indice = (math::Math::abs(minX) + coords.x()) + (math::Math::abs(minY) + coords.y()) * nbCasesPerRow + (math::Math::abs(minZ) + coords.z()) * nbCasesPerCol;
             if (indice >= 0 && indice < static_cast<int>(casesMap.size()))
                 return casesMap[indice];

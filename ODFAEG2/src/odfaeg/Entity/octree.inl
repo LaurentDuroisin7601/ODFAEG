@@ -9,8 +9,9 @@ namespace ofdaeg {
         template <typename Object>
         void Octree<Object>::addObject(Object object, physic::BoundingBox objectVolume) {                              
             for (unsigned int i = 0; i < nodes.size(); i++) {
-                if (nodes[i].leaf && !contains(object) && nodes[i].volume.intersects(objectVolume)) {
+                if (nodes[i].leaf && !containsObject(object) && nodes[i].volume.intersects(objectVolume)) {
                     nodes[i].objects.push_back(object);
+                    nodes[i].objectVolumes.push_back(objectVolume);
                 }               
             }
             build(nodes[0]);            

@@ -10,34 +10,34 @@ namespace odfaeg {
             this->coords = coords;
         }
         template <typename Object>
-        math::Vec3f GridCell<Object>::GridCell::getCoords () {
+        math::Vec3f GridCell<Object>::getCoords () {
             return coords;
         }
         template <typename Object>
-        void GridCell<Object>::GridCell::addEntity (Object entity, physic::BoundingVolume objectVolume) {
+        void GridCell<Object>::addEntity (Object entity, physic::BoundingBox objectVolume) {
             if (!containsEntity(entity)) {                
                 octree.addObject(entity, objectVolume);
             }
         }
         template <typename Object>
-        physic::BoundingBox GridCell<Object>::GridCell::getCellVolume () {
+        physic::BoundingBox GridCell<Object>::getCellVolume () {
             return volume;
         }
         template <typename Object>
-        bool GridCell<Object>::GridCell::isEntityInside () {
+        bool GridCell<Object>::isEntityInside () {
             if (octree.getObjects(volume).size() != 0)
                     return true;
             return false;
         }
         template <typename Object>
-        vector<Object> GridCell<Object>::GridCell::getEntitiesInside () {
+        vector<Object> GridCell<Object>::getEntitiesInside () {
             vector<Object> entitiesInside;
             for (unsigned int i = 0; i < octree.getObjects(volume).size(); i++)
                 entitiesInside.push_back(octree.getObjects(volume)[i]);
             return entitiesInside;
         }
         template <typename Object>
-        vector<Object> GridCell<Object>::GridCell::getEntitiesInside (std::string type) {
+        vector<Object> GridCell<Object>::getEntitiesInside (std::string type) {
             vector<Object> entitiesInside;
             for (unsigned int i = 0; i < octree.getObjects(volume).size(); i++)
                 if (octree.getObjects(volume)[i]->getType() == type)
@@ -55,26 +55,6 @@ namespace odfaeg {
                     removeEntity(entity);
                     delete entity;
                 }
-            }
-        }
-        template <typename Object>
-        void GridCell<Object>::removeEntity (std::string type) {
-            vector<Object> entityInside = octree.getObjects(volume);
-            for (unsigned int i = 0; i < entityInside.size(); i++) {
-                if (entityInside[i]->getType() == type) {
-                   octree.remove(entityInside[i]);  
-                } 
-            }
-            return false;
-        }
-        template <typename Object>
-        void GridCell<Object>::deleteEntity (std::string type) {
-            vector<Object> entityInside = octree.getObjects(volume);
-            for (unsigned int i = 0; i < entityInside.size(); i++) {
-                if (entityInside[i]->getType() == type) {
-                   octree.remove(entityInside[i]);
-                   delete entityInside[i];  
-                } 
             }
         }
         template <typename Object>

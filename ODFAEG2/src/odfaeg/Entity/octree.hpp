@@ -1,5 +1,6 @@
 #ifndef OCTREE_HPP
 #define OCTREE_HPP
+#include "compiletime_counter.hpp"
 namespace odfaeg {
     namespace entity {
         template <typename Object>
@@ -20,7 +21,8 @@ namespace odfaeg {
             private :
             void getObjects(std::vector<Object>& objects, Node node, physics::BoundingBox volume);
             void build(Node& node);
-            std::vector<Node> nodes;      
+            std::vector<Node> nodes;
+            core::Compteur compteur;      
         };        
     }
 }
