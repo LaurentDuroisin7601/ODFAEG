@@ -138,8 +138,8 @@ void main() {
     }
     bool entering = dot (rayDir, N) < 0;
     vec3 I = normalize(-gl_WorldRayDirectionEXT);
-    //Rayon de transmission :  on met à jour le transport du rayon pour le rayon suivant. 
-    if (transport.raytype == 1) {
+    //Seul les rayons primaires et seondaires mettent à jour le transport pour le rayon suivant. 
+    if (transport.raytype < 2) {
         transport.normal = N;
         transport.parentMaterial = material;
         transport.localASID = int(geomOffs.tlasID);
