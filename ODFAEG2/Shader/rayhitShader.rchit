@@ -25,7 +25,7 @@ struct GeometryOffset {
     uint materialOffset;
     uint tlasID;
 };
-struct MaterialData {   
+struct Material {   
     /*vec2 uvScale;
     vec2 uvOffset;*/
     uint diffuseTextureIndex;
@@ -44,7 +44,8 @@ struct MaterialData {
     uint materialId;
     uint nbBuffers;  
     int reflectable;
-    int refractable;  
+    int refractable; 
+    int opaque; 
 };
 layout (binding = 0, set =  1) buffer vertexBuffer {
     Vertex vertices[];
@@ -56,7 +57,7 @@ layout (binding = 2, set = 1) buffer geomBuffer {
     GeometryOffset geomOffsets[];
 };
 layout (binding = 3, set = 1) buffer materialBuffer {
-    MaterialData materials[];
+    Material materials[];
 };
 layout (binding = 8, set = 1) uniform sampler2D diffuseTextures[MAX_TEXTURES];
 layout(set = 2, binding = 0) uniform sampler2D specularTextures[MAX_TEXTURES];
@@ -67,7 +68,7 @@ layout(set = 6, binding = 0) uniform sampler2D aoTextures[MAX_TEXTURES];
 layout(set = 7, binding = 0) uniform sampler2D emissiveTextures[MAX_TEXTURES];
 struct TransportRayPayload {
     bool lastBounce;
-    int raytype;
+    int rayType;
     vec4 finalColor;
     vec4 primaryColor;
     vec4 secondaryColor;
@@ -81,23 +82,18 @@ struct TransportRayPayload {
     bool reflectable;
     bool refractable;
     bool transmissive;  
-    int localADID;
-    vec3 normal;  
-    Material parentMaterial;
-};
-struct ShadowRayPayload {
-    vec4 localLightning;    
+    int localASID; 
+    vec3 normal;
+    Material parentMaterial; 
+    vec4 localLightning;
     vec3 lightPos;
     int lightId;        
     vec4 lightColor; 
     vec4 shadowColor; 
     mat4 dirLightSpace[NB_CASCADES+1];
     mat4 pointLightSpace[6];
-    vec3 normal;
-    Material parentMaterial;
 };
-layout(location = 0) rayPayloadInEXT TransportPayload transport;
-layout(location = 1) rayPayloadInEXT ShadowPayload shadow;
+layout(location = 0) rayPayloadInEXT TransportRayPayload transport;
 hitAttributeEXT vec2 baryCoords;
 vec4 unpackColor(uint c)
 {
@@ -118,7 +114,7 @@ void main() {
     vec4 c1 = unpackColor(verticesData[3].vertices[geomOffs.vertexOffset + i1].color);
     vec4 c2 = unpackColor(verticesData[3].vertices[geomOffs.vertexOffset + i2].color);
     vec4 c3 = unpackColor(verticesData[3].vertices[geomOffs.vertexOffset + i3].color);
-    MaterialData material = materials[geomOffs.materialOffset];
+    Material material = materials[geomOffs.materialOffset];
     vec2 ct1 = verticesData[3].vertices[geomOffs.vertexOffset + i1].texCoords.xy;
     vec2 ct2 = verticesData[3].vertices[geomOffs.vertexOffset + i2].texCoords.xy;
     vec2 ct3 = verticesData[3].vertices[geomOffs.vertexOffset + i3].texCoords.xy;
@@ -134,16 +130,16 @@ void main() {
     vec4 aldebo = (textureIndex > 0) ? color * texture(diffuseTextures[textureIndex-1], tc) : color; 
     vec3 e1 = v2 - v1;
     vec3 e2 = v3 - v1;
-    vec3 N = e1.cross(e2).normalize();
+    vec3 N = normalize(cross(e1, e2));
     vec3 rayDir = gl_WorldRayDirectionEXT;
     vec3 hitPos = gl_WorldRayOriginEXT + rayDir * gl_HitTEXT;
     if (dot(N, rayDir) > 0.0) {
         N = -N;
     }
-    bool entering = dot (rayDir, n) < 0;
+    bool entering = dot (rayDir, N) < 0;
     vec3 I = normalize(-gl_WorldRayDirectionEXT);
     //Si ce n'est pas un shadow ray, on met à jour le transport du rayon pour le rayon suivant. 
-    if (transport.raytype < 4) {
+    if (transport.rayType < 4) {
         transport.normal = N;
         transport.parentMaterial = material;
         transport.localASID = geomOffs.tlasID;
@@ -183,7 +179,7 @@ void main() {
     if (transport.rayType == 0) {
         transport.transmitionColor = albedo;      
     //Rayon secondaire non dévié.
-    } else if (transposrt.raytype == 1) {
+    } else if (transposrt.rayType == 1) {
         vec3 absorption = exp(-aldebo * 1);
         transport.transmissionColor *= absorption;
         //Rayon de réflection.
@@ -193,9 +189,9 @@ void main() {
     } else if (transport.rayType == 3) {
         transport.refractColor = albedo;        
     //Shadow ray. (Lumière ponctuelles et directionnelles)
-    } else if (transposrt.raytype > 3) {        
-        shadow.shadowColor = (material.opaque) ? vec4(0.5, 0.5, 0.5, 1) : albedo;
-        shadow.localLighting = shadow.shadowColor * N * shadowpayload.lightColor * N;//Calcul de la couleur de la lumière locale. (Ombre partielle)
+    } else if (transposrt.rayType > 3) {        
+        transport.shadowColor = (material.opaque) ? vec4(0.5, 0.5, 0.5, 1) : albedo;
+        transport.localLighting = transport.shadowColor * N * transport.lightColor * N;//Calcul de la couleur de la lumière locale. (Ombre partielle)
     } 
     /*if (payload.color.r > 1 || payload.color.g > 1 || payload.color.b > 1 || payload.color.a > 1
     || payload.color.r < 0 || payload.color.g < 0 || payload.color.b < 0 || payload.color.a < 0) {*/

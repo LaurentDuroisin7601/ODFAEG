@@ -1,5 +1,7 @@
 #ifndef ODFAEG_DIRECTIONNAL_LIGHT_HPP
 #define ODFAEG_DIRECTIONNAL_LIGHT_HPP
+#include "gameObject.hpp"
+#include "vec.hpp"
 namespace odfaeg {
     namespace entity {
         class PointLight : public GameObject {
@@ -19,5 +21,4 @@ namespace odfaeg {
         };
     }
 }
-#include "pointLight.inl"
 #endif
