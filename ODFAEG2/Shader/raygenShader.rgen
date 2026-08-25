@@ -6,11 +6,12 @@
 #define MAX_TLAS_STRUCTURES 100
 #define MAX_FRAMES_IN_FLIGHT 2
 #define MAX_BOUNCES 3
+#define NB_CASCADES 4
 struct DirectionnalLight {
     uint id;
     vec3 dir;
     vec3 color;
-    mat4 lightSpace;
+    mat4 lightSpace[NB_CASCADES+1];
 };
 struct PointLight {
     uint id;
@@ -86,7 +87,8 @@ struct ShadowRayPayload {
     int lightId;        
     vec4 lightColor; 
     vec4 shadowColor; 
-    mat4 lightSpace[6];
+    mat4 dirLightSpace[NB_CASCADES];
+    mat4 pointLightSpace[6];
     vec3 normal;
     Material parentMaterial;
 };
@@ -140,7 +142,7 @@ void main() {
                 transport.rayType = 4;
                 shadowpayload.lightId = directionnalLights[l].id;
                 shadowpayLoad.lightColor = directionnalLights[l].color;
-                shadowpayLoad.lightSpace[0] = directionnalLights[l].lightSpace;                        
+                shadowpayLoad.dirLightSpace = directionnalLights[l].lightSpace;                        
                 traceRayEXT(localAS[payload.localASID], gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, transportpay.origin, tmin, invLightdir.xyz, tmax, 1);           
             }
             
@@ -150,7 +152,7 @@ void main() {
                 shadowpayLoad.lightId = pointLights[l].id;
                 shadowpayLoad.lightPos = pointLights[l].position;
                 shadowpayload.lightColor = pointLights[l].color;
-                shadowpayLoad.lightSpace = pointLights[l].lightSpace;            
+                shadowpayLoad.pointLightSpace = pointLights[l].lightSpace;            
                 traceRayEXT(localAS[payload.localASID], gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, transposrt.origin, tmin, invLightdir.xyz, tmax, 1);                
             }
             vec3 finalColor = vec3(0);

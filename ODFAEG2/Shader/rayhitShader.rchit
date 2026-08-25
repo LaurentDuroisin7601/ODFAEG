@@ -7,6 +7,7 @@
 #define MAX_TEXTURES 1024
 #define MAX_BONES_INFLUENCE 4
 const float epsilon = 0.001;
+#define NB_CASCADES 4
 struct Vertex {
     vec3 position; ///< 3D position of the vertex
     uint color; ///< Color of the vertex
@@ -90,7 +91,8 @@ struct ShadowRayPayload {
     int lightId;        
     vec4 lightColor; 
     vec4 shadowColor; 
-    mat4 lightSpace[6];
+    mat4 dirLightSpace[NB_CASCADES+1];
+    mat4 pointLightSpace[6];
     vec3 normal;
     Material parentMaterial;
 };

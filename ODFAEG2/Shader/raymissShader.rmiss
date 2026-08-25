@@ -1,5 +1,6 @@
 #version 460
 #extension GL_EXT_ray_tracing : enable
+#define NB_CASCADES 4
 struct RayPayload {
     vec4 color;
     bool hit;
@@ -55,7 +56,8 @@ struct ShadowRayPayload {
     int lightId;        
     vec4 lightColor; 
     vec4 shadowColor; 
-    mat4 lightSpace[6];
+    mat4 dirLightSpace[NB_CASCADES+1];
+    mat4 pointLightSpace[6];
     vec3 normal;
     Material parentMaterial;
 };
@@ -90,7 +92,7 @@ void main()
     } else if (payload.raytype == 4) {
        vec3 rayDir = gl_WorldRayDirectionEXT; 
        vec3 hitPos = gl_WorldRayOriginEXT + rayDir * gl_HitTEXT;
-       vec4 proj = shadow.lightSpace * hitPos;
+       vec4 proj = shadow.dirLightSpace[0] * hitPos;
        proj.xyz = proj.xyz / w;
        float depth = texture(cmsShadowMaps, vec3(proj.xy, shadow.lightId));
        bool inShadow =  (proj.z < depth);
@@ -109,11 +111,10 @@ void main()
        else
            face = d.z > 0 ? 4 : 5; // +Z / -Z
        vec2 uv;
-       vec4 proj = shadow.lightSpace[face] * hitPos;
+       vec4 proj = shadow.pointLightSpace[face] * hitPos;
        proj.xyz = proj.xyz / w;
        float depth = texture(cmsShadowMaps, vec4(vec3(proj.xy, face), float(shadow.lightId)));
        bool inShadow = (proj.z < depth);
-       if (parentMaterial.)
        shadow.localLighthing = (inShadow) ? vec4(0.5, 0.5, 0.5, 1) * shadow.lightColor * normal : shadow.lightColor * normal;
     }
 }
