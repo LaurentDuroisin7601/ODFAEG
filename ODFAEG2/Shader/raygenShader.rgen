@@ -30,9 +30,10 @@ layout(binding = 2, set = 0) buffer DirectionnalLightSSBO {
 layout(binding = 3, set = 0) buffer PointLightSSBO {
     PointLight pointLights[];
 }; 
-layout(binding = 4, set = 0) uniform accelerationStructureEXT globalAS;
-layout(binding = 5, set = 0) uniform accelerationStructureEXT localAS[MAX_TLAS_STRUCTURES];
-layout(binding = 5, set = 1, rgba8) uniform image2D rasterImage; 
+layout(binding = 4, set = 0, rgba8) uniform image2D rasterImage; 
+layout(binding = 5, set = 0) uniform accelerationStructureEXT globalAS;
+layout(binding = 6, set = 0) uniform accelerationStructureEXT localAS[MAX_TLAS_STRUCTURES];
+
 layout (push_constant) uniform PushConstant {
     uint currentFrame;
     uint directionnalLightCount;
