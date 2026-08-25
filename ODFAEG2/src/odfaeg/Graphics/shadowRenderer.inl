@@ -131,36 +131,44 @@ namespace odfaeg {
             rendererReady.store(true);            
         }          
         void ShadowRenderer::addDirectionnalLight(DirLight dirLight) {            
-            dirLights.push_back(dirLight);            
+            dirLights.push_back(dirLight);  
+            LightSpaceMatrix lightSpaceMatrices;
+            for (size_t i = 1; i < shadowCascadeLevels.size(); i++)
+            {
+
+                lightSpaceMatrices.lightSpaceMatrices[i-1] = getLightSpaceMatrix(dirLight.dir, shadowCascadeLevels[i-1], shadowCascadeLevels[i]);
+                //std::cout<<fLightSpaceMatrices.back()<<std::endl;
+            } 
+            fLightSpaceMatrices.push_back(lightSpaceMatrices);
+            dirLights.back().far_plane = shadowCascadeLevels[NB_CASCADES];           
             needToUpdateDirLightsMatrices = true;
         }
         void ShadowRenderer::addPonctualLight(PointLight pointLight) {
             pointLights.push_back(pointLight);
-            needToUpdatePointLightsMatrices = true;
-        }
-        void ShadowRenderer::computePointLightMatrices() {
             Camera pointLightCamera;
             pointLightCamera.setPerspective(90, 1, 1, 25);            
             shadowPassPLVertPC.lightProjMatrix = pointLightCamera.getProjMatrix().getMatrix().transpose();
-            for (unsigned int l = 0; l < pointLights.size(); l++) {  
-                ViewPLMatrix viewPLMatrices;
-                math::Vec3f lightPos = pointLights[l].pos;              
-                pointLightCamera.setCenter(lightPos);
-                pointLightCamera.lookAt(-1, 0, 0, math::Vec3f(0, -1, 0));
-                viewPLMatrices.viewsPLMatrices[0] = pointLightCamera.getViewMatrix().getMatrix().transpose();
-                pointLightCamera.lookAt(1, 0, 0, math::Vec3f(0, -1, 0));
-                viewPLMatrices.viewsPLMatrices[1] = pointLightCamera.getViewMatrix().getMatrix().transpose();
-                pointLightCamera.lookAt(0, -1, 0, math::Vec3f(0, 0, -1));
-                viewPLMatrices.viewsPLMatrices[2] = pointLightCamera.getViewMatrix().getMatrix().transpose();
-                pointLightCamera.lookAt(0, 1, 0, math::Vec3f(0, 0, 1));
-                viewPLMatrices.viewsPLMatrices[3] = pointLightCamera.getViewMatrix().getMatrix().transpose();
-                pointLightCamera.lookAt(0, 0, -1, math::Vec3f(0, -1, 0));
-                viewPLMatrices.viewsPLMatrices[4] = pointLightCamera.getViewMatrix().getMatrix().transpose();
-                pointLightCamera.lookAt(0, 0, 1, math::Vec3f(0, -1, 0));
-                viewPLMatrices.viewsPLMatrices[5] = pointLightCamera.getViewMatrix().getMatrix().transpose(); 
-                lightViewsPLMatrices.push_back(viewPLMatrices);   
-                pointLights[l].far_plane = 25;             
-            }
+             
+            ViewPLMatrix viewPLMatrices;
+            math::Vec3f lightPos = pointLight.getPosition();              
+            pointLightCamera.setCenter(lightPos);
+            pointLightCamera.lookAt(-1, 0, 0, math::Vec3f(0, -1, 0));
+            viewPLMatrices.viewsPLMatrices[0] = pointLightCamera.getViewMatrix().getMatrix().transpose();
+            pointLightCamera.lookAt(1, 0, 0, math::Vec3f(0, -1, 0));
+            viewPLMatrices.viewsPLMatrices[1] = pointLightCamera.getViewMatrix().getMatrix().transpose();
+            pointLightCamera.lookAt(0, -1, 0, math::Vec3f(0, 0, -1));
+            viewPLMatrices.viewsPLMatrices[2] = pointLightCamera.getViewMatrix().getMatrix().transpose();
+            pointLightCamera.lookAt(0, 1, 0, math::Vec3f(0, 0, 1));
+            viewPLMatrices.viewsPLMatrices[3] = pointLightCamera.getViewMatrix().getMatrix().transpose();
+            pointLightCamera.lookAt(0, 0, -1, math::Vec3f(0, -1, 0));
+            viewPLMatrices.viewsPLMatrices[4] = pointLightCamera.getViewMatrix().getMatrix().transpose();
+            pointLightCamera.lookAt(0, 0, 1, math::Vec3f(0, -1, 0));
+            viewPLMatrices.viewsPLMatrices[5] = pointLightCamera.getViewMatrix().getMatrix().transpose(); 
+            lightViewsPLMatrices.push_back(viewPLMatrices);   
+            pointLights.back().far_plane = 25; 
+            needToUpdatePointLightsMatrices = true;
+        }
+        void ShadowRenderer::computePointLightMatrices() {            
             VkPhysicalDeviceProperties props;
             vkGetPhysicalDeviceProperties(GPUContext::instance().getDevice().getPhysicalDevice(), &props); 
             uint32_t minAlign = props.limits.minStorageBufferOffsetAlignment;  
@@ -194,22 +202,7 @@ namespace odfaeg {
             }
             vkDeviceWaitIdle(GPUContext::instance().getDevice().getDevice());
         }
-        void ShadowRenderer::computeDirLightMatrices() {            
-            for (unsigned int l = 0; l < dirLights.size(); l++) {
-                /*std::cout<<"update light"<<std::endl;
-                int i;
-                std::cin>>i;*/
-                LightSpaceMatrix lightSpaceMatrices;
-                for (size_t i = 1; i < shadowCascadeLevels.size(); i++)
-                {
-
-                    lightSpaceMatrices.lightSpaceMatrices[i-1] = getLightSpaceMatrix(dirLights[l].dir, shadowCascadeLevels[i-1], shadowCascadeLevels[i]);
-                    //std::cout<<fLightSpaceMatrices.back()<<std::endl;
-                }            
-                lightSpaceMatrices.lightSpaceMatrices[NB_CASCADES] = lightSpaceMatrices.lightSpaceMatrices[NB_CASCADES-1];  
-                fLightSpaceMatrices.push_back(lightSpaceMatrices);
-                dirLights[l].far_plane = shadowCascadeLevels[NB_CASCADES];                           
-            }   
+        void ShadowRenderer::computeDirLightMatrices() { 
             VkPhysicalDeviceProperties props;
             vkGetPhysicalDeviceProperties(GPUContext::instance().getDevice().getPhysicalDevice(), &props); 
             uint32_t minAlign = props.limits.minStorageBufferOffsetAlignment;  
