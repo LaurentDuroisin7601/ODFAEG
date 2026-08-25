@@ -138,11 +138,11 @@ void main() {
     }
     bool entering = dot (rayDir, N) < 0;
     vec3 I = normalize(-gl_WorldRayDirectionEXT);
-    //Si ce n'est pas un shadow ray, on met à jour le transport du rayon pour le rayon suivant. 
-    if (transport.rayType < 4) {
+    //Rayon de transmission :  on met à jour le transport du rayon pour le rayon suivant. 
+    if (transport.raytype == 1) {
         transport.normal = N;
         transport.parentMaterial = material;
-        transport.localASID = geomOffs.tlasID;
+        transport.localASID = int(geomOffs.tlasID);
         transport.origin = hitpos + N * espilon;
         transport.direction = raydir;
         if (material.opaque == 1) {
@@ -150,6 +150,8 @@ void main() {
         } else {
             transport.transmition  = true;
         }
+    }
+    if (transport.rayType < 4) {        
         if(material.reflectable == 1) {
             payload.R = refract(I, N);
             transport.reflectable = true;          
