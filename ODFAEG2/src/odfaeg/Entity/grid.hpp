@@ -1,3 +1,5 @@
+#ifndef ODFAEG_GRIDMAP_HPP
+#define ODFAEG_GRIDMAP_HPP
 namespace odfaeg {
     namespace entity {
         template <typename Object>
@@ -22,17 +24,19 @@ namespace odfaeg {
             bool deleteEntity(int id);
             void removeCellMap (GridCell *cell);
             vector<GridCell*> getCasesInBox (physic::BoundingBox bx);
-            vector<Object> GridMap::getEntitiesInBox(physic::BoundingBox box);
-            vector<Object> GridMap<Object>::getEntities ();
-            math::Vec3f GridMap<Object>::getMins ();
-            CellMap* GridMap<Object>::getGridCellAt (math::Vec3f point);            
-            math::Vec3f GridMap<Object>::getCoordinatesAt(math::Vec3f &point)
-            std::vector<GridCell*> GridMap<Object>::getCasesMap ();
-            void GridMap<Object>::checkExts ();
-            math::Vec3f GridMap<Object>::getSize();
-            vector<GridCell*> GridMap<Object>::getNeightbours(Object object, GridCell *cell, bool getCellOnPassable);
+            vector<Object> getEntitiesInBox(physic::BoundingBox box);
+            vector<Object> getEntities ();
+            math::Vec3f getMins ();
+            CellMap* getGridCellAt (math::Vec3f point);            
+            math::Vec3f getCoordinatesAt(math::Vec3f &point)
+            std::vector<GridCell*> getCasesMap ();
+            void checkExts ();
+            math::Vec3f getSize();
+            vector<GridCell*> getNeightbours(Object object, GridCell *cell, bool getCellOnPassable);
             GridCell* getGridCellAtFromCoords(math::Vec3f coords);
             ~GridCell ();
         };
     }
 }
+#include "grid.inl"
+#endif

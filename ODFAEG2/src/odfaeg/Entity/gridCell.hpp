@@ -34,4 +34,5 @@ namespace odfaeg {
         };
     }
 }
+#include "gridCell.inl"
 #endif
