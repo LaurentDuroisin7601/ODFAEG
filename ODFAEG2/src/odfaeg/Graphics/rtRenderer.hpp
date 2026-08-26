@@ -19,6 +19,7 @@
 #include "iRenderer.hpp"
 #include "../Entity/pointLight.hpp"
 #include "../Entity/directionnalLight.hpp"
+
 namespace odfaeg {
     namespace graphic {
         class RTRenderer {
@@ -72,7 +73,7 @@ namespace odfaeg {
             private :
                 VkTransformMatrixKHR toVulkanMatrix (math::Matrix4f matrix);
                 RayGenPC rayGenPC;
-                void updateBuffers;
+                void updateBuffers();
                 void updateDescriptorSets();
                 void createCommandPool();
                 void loadExtensionsFuncPtr();

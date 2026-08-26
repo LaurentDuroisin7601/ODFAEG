@@ -1,7 +1,6 @@
 #ifndef ODFAEG_DIRECTIONNAL_LIGHT_HPP
 #define ODFAEG_DIRECTIONNAL_LIGHT_HPP
 #include "gameObject.hpp"
-#include "color.hpp"
 namespace odfaeg {
     namespace entity {
         class DirectionnalLight : public GameObject {

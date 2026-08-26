@@ -1,5 +1,5 @@
-#ifndef ODFAEG_DIRECTIONNAL_LIGHT_HPP
-#define ODFAEG_DIRECTIONNAL_LIGHT_HPP
+#ifndef ODFAEG_POINT_LIGHT_HPP
+#define ODFAEG_POINT_LIGHT_HPP
 #include "gameObject.hpp"
 namespace odfaeg {
     namespace entity {
