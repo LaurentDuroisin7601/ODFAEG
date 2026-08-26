@@ -8,9 +8,10 @@ namespace odfaeg {
             renderers.insert(std::make_pair(layer, llr));            
         }
         void RenderGraph::addShadowPass(RenderTarget& output, RenderTexture& input,  unsigned int layer, std::string typesToRender, unsigned int windowId) {
+            llSMTransitionPoint = layer;
             ShadowRenderer* sr = new ShadowRenderer(output, input, layer, typesToRender, windowId);
             renderers.insert(std::make_pair(layer, sr));
-            
+            inputShadowRT = &input;
         }
         std::vector<IComponent*> RenderGraph::getComponents() {
             std::vector<IComponent*> components;

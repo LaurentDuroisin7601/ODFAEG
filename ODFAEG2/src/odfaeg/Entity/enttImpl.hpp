@@ -363,7 +363,7 @@ namespace odfaeg {
                 }
             }
             template <size_t I, typename... Signature> requires EMPTY<I, Signature...>
-            void merge_node(entt::entity tocloneId, entt::entity clonedId) {
+            void merge_node(entt::entity entityId, entt::entity toMergeId) {
             }
             template <typename... Signature, typename System, typename... Params>
             void apply(System& system, std::vector<entt::entity>& entities, std::tuple<Params...>& params) {

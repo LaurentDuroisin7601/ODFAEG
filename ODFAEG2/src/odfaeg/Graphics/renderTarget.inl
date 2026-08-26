@@ -531,20 +531,22 @@ namespace odfaeg {
 							unsigned int currentLodMeshletOffset = meshletDatas.size() - currentSubmeshMeshletOffset;
 							//std::cout<<"currentSubmeshMeshletOffset : "<<currentSubmeshMeshletOffset<<" "<<currentLodMeshletOffset<<","<<meshletDatas.size()<<std::endl;
 							lodLevelData.meshletOffset = currentLodMeshletOffset;
-							/*float x = 0, y = 0, z = 0;							
+							/*float x = subMeshGlobalBounds.getPosition().x();
+							float y = subMeshGlobalBounds.getPosition().y();
+							float z = subMeshGlobalBounds.getPosition().z();				
 							float w = subMeshGlobalBounds.getSize().x();
 							float h = subMeshGlobalBounds.getSize().y();
 							float d = subMeshGlobalBounds.getSize().z();
 							unsigned int clusterCount = 0;							
-							while (x < w) {
-								while (y < h) {
-									while (z < d) {
+							while (x < w+x) {
+								while (y < h+y) {
+									while (z < d+z) {
 										Cluster cluster;	
 										cluster.id = currentClustersOffset;	
 										cluster.meshletOffset = 0;	
 										cluster.meshletCount = 0;
 										cluster.lodLevel = l;
-										physic::BoundingBox bb(x, y, z, 50, 50, 50);
+										physic::BoundingBox bb(x, y, z, 100, 100, 100);
 										AABB clusterAABB;	
 										clusterAABB.center = bb.getCenter();
 										clusterAABB.size = bb.getSize();						
@@ -552,11 +554,11 @@ namespace odfaeg {
 										clusterDatas.push_back(cluster);
 										currentClustersOffset++;
 										clusterCount++;											
-										x += 50;
+										z += 100;
 									}
-									y += 50;
+									y += 100;
 								}
-								z += 50;
+								x += 100;
 							}	*/
 							Meshlet m;
 							m.minVertex = std::numeric_limits<unsigned int>::max();
