@@ -1,4 +1,4 @@
-/*#include "enttImpl.hpp"
+#include "enttImpl.hpp"
 namespace odfaeg {
 	namespace entity {
        
@@ -15,7 +15,7 @@ namespace odfaeg {
 	        Entity::setNbEntitiesTypes(componentMapping.getEntityFactory().getNbEntitiesTypes());
         }
 	}
-}*/
+}
 
 
 

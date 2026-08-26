@@ -415,13 +415,7 @@ namespace odfaeg {
 				return componentMapping;
 			}
 			
-			static void initEntity(Entity& entity) {
-				ComponentMapping& componentMapping = getComponentMapping();
-				entity.setTypes(componentMapping.getEntityFactory().updateTypes(entity.getType()));
-				entity.setId(componentMapping.getEntityFactory().getUniqueId());
-				entity.setEnttID((uint32_t)componentMapping.getEntityFactory().getEnttID());
-				Entity::setNbEntitiesTypes(componentMapping.getEntityFactory().getNbEntitiesTypes());
-			}
+			static void initEntity(Entity& entity);
 		};
 	}
 }
