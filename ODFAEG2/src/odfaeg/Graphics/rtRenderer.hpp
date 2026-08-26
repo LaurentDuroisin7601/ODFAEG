@@ -92,7 +92,7 @@ namespace odfaeg {
                 CommandPool commandPool;
                 RenderTarget& parentRenderer;
                 Texture& environmentMap;
-                RenderTexture& cmsShadowMaps, &plShadowMaps, &frameBuffer;
+                RenderTexture& csmShadowMaps, &plShadowMaps, &frameBuffer;
                 std::string typesToRenderExpression;
                 bool needToUpdateBuffers;
                 int instancesGroupCount, singleInstancesCount, shaderGroupCount;                     

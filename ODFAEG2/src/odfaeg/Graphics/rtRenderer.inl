@@ -1,12 +1,12 @@
 namespace odfaeg {
     namespace graphic {
         RTRenderer::RTRenderer(RenderTarget& parentRenderer, Texture& environmentMap, RenderTexture& frameBuffer,
-                    RenderTexture& cmsShadowMaps, RenderTexture& plShadowMaps, unsigned int layer, std::string typesToRenderExpression, int windowId, bool usethread) :
+                    RenderTexture& csmShadowMaps, RenderTexture& plShadowMaps, unsigned int layer, std::string typesToRenderExpression, int windowId, bool usethread) :
         parentRenderer(parentRenderer),
-        environementMap(environmentMap),
+        environmentMap(environmentMap),
         frameBuffer(frameBuffer),
         csmShadowMaps(cmsShadowMaps),
-        plShadowMap(plShadowMaps),
+        plShadowMaps(plShadowMaps),
         rtShader(GPUContext::instance().getDevice()),
         commandPool(GPUContext::instance().getDevice()),
         transformMatrixBuffer(GPUContext::instance().getDevice()),

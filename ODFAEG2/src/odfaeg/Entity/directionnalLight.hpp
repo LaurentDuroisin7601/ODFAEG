@@ -2,7 +2,7 @@
 #define ODFAEG_DIRECTIONNAL_LIGHT_HPP
 #include "gameObject.hpp"
 namespace odfaeg {
-    namespace entity {
+    namespace entity {        
         class DirectionnalLight : public GameObject {
             public :
                 DirectionnalLight(math::Vec3f direction, Color color = entity::Color::Yellow);
