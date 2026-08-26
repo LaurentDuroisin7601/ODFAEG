@@ -53,7 +53,8 @@ namespace ofdaeg {
                         for (it = nodes[i].objects.begin(), it2 = nodes[i].objectVolumes.begin(); it != nodes[i].objects.end();) {
                             if (*it == &object) {
                                 it = nodes[i].objects.erase(it);
-                                it2 = nodes[i].objectVolumes.erase(it2);    
+                                it2 = nodes[i].objectVolumes.erase(it2); 
+                                freeNodes(nodes[i]);   
                             }
                         }
                     }
