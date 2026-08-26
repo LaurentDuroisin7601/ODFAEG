@@ -670,7 +670,7 @@ namespace odfaeg {
             VkPushConstantRange vertexPCRange;
             vertexPCRange.offset = 0;
             vertexPCRange.size = sizeof(RayGenPC);
-            vertexPCRange.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+            vertexPCRange.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR ;
             pushConstants.push_back(vertexPCRange);
             GPUContext::instance().getRTPipeline(rtShader).createRTPipeline(rtShader, GPUContext::instance().getDescriptorSetLayout(rtShader), pushConstants);
             DescriptorPool& rtRaygenPool = GPUContext::instance().getDescriptorPool(rtShader, 7);
@@ -878,7 +878,7 @@ namespace odfaeg {
             rayGenPC.currentFrame = parentRenderer.getCurrentFrame();
 			vkCmdBindPipeline(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, GPUContext::instance().getRTPipeline(rtShader).getHandle());
 			vkCmdBindDescriptorSets(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, GPUContext::instance().getRTPipeline(rtShader).getLayout(), 0, sets.size(), sets.data(), 0, 0);
-            vkCmdPushConstants(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getRTPipeline(rtShader).getLayout(), VK_SHADER_STAGE_RAYGEN_BIT_KHR, 0, sizeof(RayGenPC), &rayGenPC);
+            vkCmdPushConstants(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getRTPipeline(rtShader).getLayout(), VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, 0, sizeof(RayGenPC), &rayGenPC);
 			/*std::cout << "TraceRays size = " 
           << parentRenderer.getSize().x() << " x " 
           << parentRenderer.getSize().y() << "\n";*/

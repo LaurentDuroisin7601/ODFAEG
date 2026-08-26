@@ -59,7 +59,10 @@ struct TransportRayPayload {
     mat4 pointLightSpace[6];
 };
 layout (push_constant) uniform PushConstant {
-    int currentFrame;
+    uint currentFrame;
+    uint directionnalLightCount;
+    uint pointLightCount;
+    uint hasGeometry;
 } pc;
 layout (binding = 4, set = 1) uniform samplerCube skybox;
 layout (binding = 5, set = 1) uniform sampler2DArray csmShadowMaps;
