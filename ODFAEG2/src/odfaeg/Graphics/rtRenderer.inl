@@ -5,7 +5,7 @@ namespace odfaeg {
         parentRenderer(parentRenderer),
         environmentMap(environmentMap),
         frameBuffer(frameBuffer),
-        csmShadowMaps(cmsShadowMaps),
+        csmShadowMaps(csmShadowMaps),
         plShadowMaps(plShadowMaps),
         rtShader(GPUContext::instance().getDevice()),
         commandPool(GPUContext::instance().getDevice()),
