@@ -22,6 +22,7 @@ namespace odfaeg {
             private :
             void getObjects(std::vector<Object>& objects, Node node, physics::BoundingBox volume);
             void build(Node& node);
+            void freeNodes(Node& node);
             std::vector<Node> nodes;
             core::Compteur compteur;      
         };        

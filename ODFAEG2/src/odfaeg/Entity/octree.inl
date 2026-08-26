@@ -85,7 +85,37 @@ namespace ofdaeg {
             }
         }
         template <typename Object>
-        bool Octree<Object>::contains(Object object) {
+        void Octree<Object>::freeNodes(Node& parent) {
+            bool empty = true;
+            for (unsigned int i = 0; i < parent.children.size(); i++) {
+                if (!nodes[parent.children[i]].objets.size() == 0) {
+                    empty = false;
+                    break;
+                }
+            }
+            if (empty) {
+                freeNodes(nodes[parent.parent]);
+                std::vector<Node>::iterator it;
+                for (unsigned int i = 0; i < parent.children.size(); i++) {
+                    for (it = nodes.begin(); it != nodes.end;) {
+                        if (*it == &nodes[node.children]) {
+                            it = nodes.erase(it);
+                        } else {
+                            it++;
+                        }  
+                    }              
+                }                
+                for (it = nodes.begin(); it != nodes.end;) {
+                    if (*it == &node) {
+                        it = nodes.erase(it);
+                    } else {
+                        it++;
+                    }
+                }
+            }
+        }
+        template <typename Object>
+        bool Octree<Object>::containsObject(Object object) {
             for (unsigned int i = 0; i < nodes.size(); i++) {
                 for (unsigned int j = 0; j < nodes[i].objects.size(); j++) {
                     if(object == nodes[i].objects[j])
