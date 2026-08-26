@@ -1,6 +1,6 @@
 namespace odfaeg {
     namespace entity {
-        PointLight(math::Vec3f position, Color = entity::Color::Yellow) : GameObject("E_POINT_LIGHT") {
+        PointLight::PointLight(math::Vec3f position, Color color) : GameObject("E_POINT_LIGHT") {
             this->position = position;
         }
         void PointLight::setLightSpace(std::array<math::Matrix4f, 6> lightSpace) {

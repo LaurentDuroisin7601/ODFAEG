@@ -13,13 +13,13 @@ namespace odfaeg {
             this->shadowMapId = shadowMapId;
         }
         int DirectionnalLight::getShadowMapId() {
-            return shadowMapID;
+            return shadowMapId;
         }
         math::Vec3f DirectionnalLight::getDir() {
             return dir;
         }        
         GameObject* DirectionnalLight::clone() {
-            DirectionnalLight* dl = new DiectionnalLight(dir);
+            DirectionnalLight* dl = new DirectionnalLight(dir);
             GameObject::copy(dl);
             return dl;
         }
