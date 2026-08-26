@@ -138,20 +138,13 @@ void main() {
     }
     bool entering = dot (rayDir, N) < 0;
     vec3 I = normalize(-gl_WorldRayDirectionEXT);
-    //Seul les rayons primaires et seondaires mettent à jour le transport pour le rayon suivant. 
-    if (transport.raytype < 2) {
+    //Seul les rayons primaires et secondaires mettent à jour le transport pour le rayon suivant. 
+    if (transport.rayType == 0 || transport.rayType == 6) {
         transport.normal = N;
         transport.parentMaterial = material;
         transport.localASID = int(geomOffs.tlasID);
         transport.origin = hitpos + N * espilon;
-        transport.direction = raydir;        
-    }
-    if (material.opaque == 0) {
-        transport.transmition  = true;
-    } else {
-        transport.transmition  = false;
-    }
-    if (transport.rayType < 4) {        
+        transport.direction = raydir; 
         if(material.reflectable == 1) {
             transport.R = refract(I, N);
             transport.reflectable = true;          
@@ -174,14 +167,19 @@ void main() {
             transport.refractable = true;        
         } else {
             transport.refractable = false;
+        } 
+        if (material.opaque == 0) {
+            transport.transmition  = true;
+        } else {
+            transport.transmition  = false;
         }
-    }  
+    } 
     //Calcul de la couleur du rayon courant.  
     //Rayon primaire. (Je stocke la couleur secondaire)     
     if (transport.rayType == 0) {
         transport.transmitionColor = albedo;      
     //Rayon secondaire non dévié.
-    } else if (transposrt.rayType == 1) {
+    } else if (transport.rayType == 1) {
         vec3 absorption = exp(-aldebo * 1);
         transport.transmissionColor *= absorption;
         //Rayon de réflection.

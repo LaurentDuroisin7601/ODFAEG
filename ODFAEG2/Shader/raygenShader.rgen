@@ -113,10 +113,14 @@ void main() {
     } else {
         traceRayEXT(globalAS, gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, origin.xyz, tmin, direction.xyz, tmax, 0);   
         uint i = 0;    
-        while (i < MAX_BOUNCES && !transport.lastBounce) {
+        do (i < MAX_BOUNCES && !transport.lastBounce) {
             //Objet translucide touché.
             vec3 hitpoint = transport.origin;            
             //Objet translucide réflectable touché traçage du rayon de rélfection.
+            if (transport.transmissive) {
+                transport.rayType = 1;
+                traceRayEXT(localAS[transport.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, transport.direction, tmax, 0);            
+            } 
             if (transport.reflectable) {
                 transport.rayType = 2;
                 traceRayEXT(localAS[transport.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, transport.R, tmax, 0);            
@@ -125,11 +129,7 @@ void main() {
             if (transport.refractable) {
                 transport.rayType = 3;
                 traceRayEXT(localAS[transport.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, transport.T, tmax, 0);            
-            }
-            if (transport.transmissive) {
-                transport.rayType = 1;
-                traceRayEXT(localAS[transport.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, transport.direction, tmax, 0);            
-            }   
+            }              
             //Calcul et projection du shadow ray (pour rayons déviés ou non)
             for (uint l = 0; l < pc.directionnalLightCount; l++) {
                 vec3 invLightDir = -directionnalLights[l].dir;
@@ -165,6 +165,9 @@ void main() {
                 !transport.transmissive)
             {
                 transport.lastBounce = true;
+            } else {
+                transport.rayType = 6;
+                traceRayEXT(localAS[transport.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, transport.direction, tmax, 0);
             }
             i++; 
         }    
