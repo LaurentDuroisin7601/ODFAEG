@@ -468,7 +468,7 @@ namespace odfaeg {
             if (!depthOnly) {
                 colorAttachmentInfo = {
                     .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-                    .imageView = (viewIndex == -1) ? m_textures[0].getImage(imageIndex).getImageView().getHandle() : m_textures[0].getImage(imageIndex).getImageSubViews()[viewIndex],
+                    .imageView = (viewIndex == -1) ? m_textures[0].getImage(imageIndex).getImageView().getHandle() : m_textures[0].getImage(imageIndex).getImageSubViews()[viewIndex].getHandle(),
                     .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                     .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,

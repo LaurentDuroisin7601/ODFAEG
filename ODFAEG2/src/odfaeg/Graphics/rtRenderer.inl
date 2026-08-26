@@ -21,7 +21,7 @@ namespace odfaeg {
         raymissShaderBT(GPUContext::instance().getDevice()),
         rayhitShaderBT(GPUContext::instance().getDevice()),
         dirLightStaggingBuffer(GPUContext::instance().getDevice()),
-        pointLightStaggingBuffer(GPUContext::instance().getDevice());
+        pointLightStaggingBuffer(GPUContext::instance().getDevice()),
         typesToRenderExpression(typesToRenderExpression)        
         {
             rayTracingPipelineProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
