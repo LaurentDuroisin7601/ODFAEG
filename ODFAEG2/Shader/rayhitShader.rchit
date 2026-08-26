@@ -69,8 +69,6 @@ layout(set = 7, binding = 0) uniform sampler2D emissiveTextures[MAX_TEXTURES];
 struct TransportRayPayload {
     bool lastBounce;
     int rayType;
-    vec4 finalColor;
-    vec4 primaryColor;
     vec4 secondaryColor;
     vec4 transmitionColor;
     vec4 reflectColor;

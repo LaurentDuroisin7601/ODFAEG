@@ -64,9 +64,7 @@ struct Material {
 };
 struct TransportRayPayload {
     bool lastBounce;
-    int rayType;
-    vec4 finalColor;
-    vec4 primaryColor;
+    int rayType;    
     vec4 secondaryColor;
     vec4 transmitionColor;
     vec4 reflectColor;
@@ -93,9 +91,7 @@ layout(location = 0) rayPayloadEXT TransportRayPayload transport; // ray generat
 void main() {
     //debugPrintfEXT("current frame index : %i", pc.currentFrame);
     transport.lastBounce = false;
-    transport.finalColor = vec4(0); 
-    transport.secondaryColor = vec4(1);
-    transport.primaryColor = vec4(1);   
+    transport.secondaryColor = vec4(0);
     const vec2 pixelCenter = vec2(gl_LaunchIDEXT.xy) + vec2(0.5);
     const vec2 inUV = pixelCenter/vec2(gl_LaunchSizeEXT.xy);
     vec2 d = inUV * 2.0 - 1.0;
@@ -170,8 +166,7 @@ void main() {
                 traceRayEXT(localAS[transport.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, transport.direction, tmax, 0);
             }
             i++; 
-        }    
-        transport.finalColor = transport.primaryColor * transport.secondaryColor;
+        }
         /*if (payload.color.r != 0 || payload.color.g != 0 || payload.color.b != 0 || payload.color.a != 0) {
             if (payload.color.r > 1 || payload.color.g > 1 || payload.color.b > 1 || payload.color.a > 1) {        
                 //debugPrintfEXT("color : %v4f", payload.color);
@@ -179,6 +174,6 @@ void main() {
                 //debugPrintfEXT("color : %v4f", payload.color);
             }
         }*/    
-        imageStore(image[pc.currentFrame], ivec2(gl_LaunchIDEXT.xy), transport.finalColor);
+        imageStore(image[pc.currentFrame], ivec2(gl_LaunchIDEXT.xy), transport.secondaryColor);
     }
 }

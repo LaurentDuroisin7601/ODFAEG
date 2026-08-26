@@ -36,8 +36,6 @@ struct Material {
 struct TransportRayPayload {
     bool lastBounce;
     int rayType;
-    vec4 finalColor;
-    vec4 primaryColor;
     vec4 secondaryColor;
     vec4 transmitionColor;
     vec4 reflectColor;
@@ -66,7 +64,7 @@ layout (push_constant) uniform PushConstant {
 layout (binding = 4, set = 1) uniform samplerCube skybox;
 layout (binding = 5, set = 1) uniform sampler2DArray csmShadowMaps;
 layout (binding = 6, set = 1) uniform samplerCubeArray pointShadowMaps; 
-layout (binding = 7, set = 1) uniform sampler2D frameBuffer;
+layout (binding = 7, set = 1) uniform sampler2D framebuffer;
 layout(set = 2, binding = 0) uniform sampler2D specularTextures[MAX_TEXTURES];
 layout(set = 3, binding = 0) uniform sampler2D normalTextures[MAX_TEXTURES];
 layout(set = 4, binding = 0) uniform sampler2D metalnessTextures[MAX_TEXTURES];
@@ -77,13 +75,20 @@ layout(location = 0) rayPayloadInEXT TransportRayPayload transport;
 void main()
 {        
     //Rayon primaire.
-    if (transport.rayType < 2) {
+    if (transport.rayType == 0) {
        vec4 proj = inverse(cam[pc.currentFrame].viewInverse) * inverse(cam[pc.currentFrame].projInverse) * vec4(transport.origin, 1);
-       proj = proj.xyz / proj.w; 
-       transport.primaryColor = texture(framebuffer, vec2(proj.xy)); 
-       transport.transmission = false;
+       proj.xyz = proj.xyz / proj.w; 
+       transport.secondaryColor = texture(framebuffer, vec2(proj.xy)); 
+       transport.transmissive = false;
        transport.reflectable = false;
        transport.refractable = false;
+    } else if (transport.rayType == 1) {
+       vec4 proj = inverse(cam[pc.currentFrame].viewInverse) * inverse(cam[pc.currentFrame].projInverse) * vec4(transport.origin, 1);
+       proj.xyz = proj.xyz / proj.w; 
+       vec3 absorption = exp(-texture(framebuffer, vec2(proj.xy)).xyz * 1);
+       transport.transmitionColor *= vec4(absorption, 1);
+       transport.transmitionColor = texture(framebuffer, vec2(proj.xy)); 
+       transport.transmissive = false;
     } else if (transport.rayType == 2) {
        transport.reflectColor = texture(skybox, transport.R);
        transport.reflectable = false;
@@ -92,15 +97,15 @@ void main()
        transport.refractable = false;
     } else if (transport.rayType == 4) {
        vec3 rayDir = gl_WorldRayDirectionEXT; 
-       vec3 hitPos = gl_WorldRayOriginEXT + rayDir * gl_HitTEXT;
-       vec4 proj = transport.dirLightSpace[0] * hitPos;
-       proj.xyz = proj.xyz / w;
-       float depth = texture(cmsShadowMaps, vec3(proj.xy, transport.lightId));
+       vec3 hitPos = transport.origin;
+       vec4 proj = transport.dirLightSpace[0] * vec4(hitPos, 1);
+       proj.xyz = proj.xyz / proj.w;
+       float depth = texture(csmShadowMaps, vec3(proj.xy, transport.lightId)).r;
        bool inShadow =  (proj.z < depth);
-       transport.localLighthing = (inShadow) ? vec4(0.5, 0.5, 0.5, 1) * transport.lightColor : shadow.lightColor;
+       transport.localLightning = (inShadow) ? vec4(0.5, 0.5, 0.5, 1) * transport.lightColor : transport.lightColor;
     } else if (transport.rayType == 5) {
        vec3 rayDir = gl_WorldRayDirectionEXT; 
-       vec3 hitPos = gl_WorldRayOriginEXT + rayDir * gl_HitTEXT;
+       vec3 hitPos = gl_WorldRayOriginEXT + rayDir * transport.origin;
        vec3 fragToLight = (transport.lightPos - hitPos);
        vec3 ad = abs(fragToLight);
        int face; 
@@ -112,10 +117,10 @@ void main()
        else
            face = d.z > 0 ? 4 : 5; // +Z / -Z
        vec2 uv;
-       vec4 proj = transport.pointLightSpace[face] * hitPos;
-       proj.xyz = proj.xyz / w;
-       float depth = texture(cmsShadowMaps, vec4(vec3(proj.xy, face), float(transport.lightId)));
+       vec4 proj = transport.pointLightSpace[face] * vec4(hitPos, 1);
+       proj.xyz = proj.xyz / proj.w;
+       float depth = texture(pointShadowMaps, vec4(vec3(proj.xy, face), float(transport.lightId))).r;
        bool inShadow = (proj.z < depth);
-       transport.localLighthing = (inShadow) ? vec4(0.5, 0.5, 0.5, 1) * transport.lightColor * normal : transport.lightColor * normal;
+       transport.localLightning = (inShadow) ? vec4(0.5, 0.5, 0.5, 1) * transport.lightColor * vec4(transport.normal, 1) : transport.lightColor * vec4(transport.normal, 1);
     }
 }
