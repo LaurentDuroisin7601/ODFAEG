@@ -59,7 +59,7 @@ namespace odfaeg {
         }
         template <typename Object>
         math::Vec3f GridCell<Object>::getCenter () {
-            return volume->getCenter();
+            return volume.getCenter();
         }
         template <typename Object>
         bool GridCell<Object>::isTraveled () {
@@ -70,8 +70,8 @@ namespace odfaeg {
             this->traveled = traveled;
         }
         template<typename Object>
-        Object CellMap<Object>::getEntityInside (unsigned int index) {
-            if (index >= 0 && index < entityInside.size()) {
+        Object GridCell<Object>::getEntityInside (unsigned int index) {
+            if (index >= 0 && index < octree.getObjects().size()) {
                 Object entity = octree.getObjects()[index].get();
                 return entity;
             }
@@ -102,8 +102,8 @@ namespace odfaeg {
             return stateChanged;
         }
         template <typename Object>
-        bool GridCell<Object>::operator== (const CellMap &cellMap) const {
-            return volume == volume;
+        bool GridCell<Object>::operator== (const GridCell &gridCell) const {
+            return &volume == &gridCell.volume;
         }
     }
 }

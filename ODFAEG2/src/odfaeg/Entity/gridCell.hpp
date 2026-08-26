@@ -11,8 +11,8 @@ namespace odfaeg {
                 void addEntity (Object entity, physic::BoundingBox objectVolume);
                 physic::BoundingBox getCellVolume ();
                 bool isEntityInside ();
-                vector<Object> getEntitiesInside ();                
-                vector<Object> getEntitiesInside (std::string type);
+                std::vector<Object> getEntitiesInside ();                
+                std::vector<Object> getEntitiesInside (std::string type);
                 void removeEntity (Object object);                
                 void deleteEntity (Object entity); 
                 math::Vec3f getCenter ();
@@ -20,17 +20,17 @@ namespace odfaeg {
                 void setTraveled (bool traveled);
                 Object getEntityInside (unsigned int index);
                 unsigned int getNbEntitiesInside();                
-                bool GridCell<Object>::containsEntity (Object entity);
-                bool GridCell<Object>::isPassable ();
-                void GridCell<Object>::setPassable (bool passable);
-                void GridCell<Object>::setStateChanged (bool b);
-                bool GridCell<Object>::isStateChanged ();
-                bool GridCell<Object>::operator== (const GridCell &cellMap);
+                bool containsEntity (Object entity);
+                bool isPassable ();
+                void setPassable (bool passable);
+                void setStateChanged (bool b);
+                bool isStateChanged ();
+                bool operator== (const GridCell &cellMap) const;
             private :
                 bool passable, traveled, stateChanged;
                 math::Vec3f coords;
-                physic::BoundingVolume volume;
-                Octree octree;
+                physic::BoundingBox volume;
+                Octree<Object> octree;
         };
     }
 }
