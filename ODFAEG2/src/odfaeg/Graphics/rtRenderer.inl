@@ -52,10 +52,10 @@ namespace odfaeg {
                 storageImage.back().createImageView(VK_IMAGE_VIEW_TYPE_2D, storageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
                 Texture::transitionImageLayout(storageImage.back(), commandPool.getHandle(0), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
             } 
-            dirLightBuffer.emplace_back(GPUContext::instance().getDevice());
-            pointLightBuffer.emplace_back(GPUContext::instance().getDevice());
-            dirLightBuffer.back().create(sizeof(entity::DirectionnalLight), VK_BUFFER_USAGE_SHADER_STORAG_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-            pointLightBuffer.back().create(sizeof(entity::DirectionnalLight), VK_BUFFER_USAGE_SHADER_STORAG_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+            dirLightsBuffer.emplace_back(GPUContext::instance().getDevice());
+            pointLightsBuffer.emplace_back(GPUContext::instance().getDevice());
+            dirLightsBuffer.back().create(sizeof(DirLight), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+            pointLightsBuffer.back().create(sizeof(PointLight), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
             commandPool.endRecordCommandBuffer(0);
             VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -89,11 +89,11 @@ namespace odfaeg {
             updateTLAS();*/
         } 
         void RTRenderer::addPointLight(entity::PointLight pointLight) {
-            pointsLight.push_back(pointLight);
+            //pointLights.push_back(pointLight);
             needToUpdateBuffers = true;
         }
         void RTRenderer::addDirectionnalLight(entity::DirectionnalLight directionnalLight) {
-            dirLights.push_back(directionnalLight);
+            //dirLights.push_back(directionnalLight);
             needToUpdateBuffers = true;
         }
         void RTRenderer::updateBuffers() {
@@ -104,8 +104,8 @@ namespace odfaeg {
             pointLightStaggingBuffer.update(pointLights.data(), sizeof(PointLight) * pointLights.size());
             pointLightsBuffer.back().create(sizeof(PointLight) * pointLights.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_BIT);
             commandPool.beginRecordCommandBuffer(parentRenderer.getCurrentFrame());
-            Buffer::copyBuffer(dirLightStaggingBuffer, dirLightsBuffer.back(), commandPool.getHandle(parentRenderer.getCurrentFrame()));
-            Buffer::copyBuffer(pointLightStaggingBuffer, pointLightsBuffer.back(), commandPool.getHandle(parentRenderer.getCurrentFrame()));
+            Buffer::copyBuffer(dirLightStaggingBuffer, dirLightsBuffer.back(), sizeof(DirLight) * dirLights.size(), commandPool.getHandle(parentRenderer.getCurrentFrame()));
+            Buffer::copyBuffer(pointLightStaggingBuffer, pointLightsBuffer.back(),sizeof(PointLight) * pointLights.size(), commandPool.getHandle(parentRenderer.getCurrentFrame()));
             commandPool.endRecordCommandBuffer(parentRenderer.getCurrentFrame());
             VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -527,7 +527,7 @@ namespace odfaeg {
             rtRaygenSetLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
             rtRaygenSetLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
             rtRaygenSetLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
-            rtRaygenSetLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
+            rtRaygenSetLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
             rtRaygenSetLayout.updateLayout(5, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1);
             rtRaygenSetLayout.updateLayout(6, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, MAX_TLAS_STRUCTURES, VK_SHADER_STAGE_RAYGEN_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);   
@@ -580,7 +580,7 @@ namespace odfaeg {
             rtRaygenPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT);
             rtRaygenPool.updatePoolSize(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
             rtRaygenPool.updatePoolSize(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
-            rtRaygenPool.updatePoolSize(4, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1);
+            rtRaygenPool.updatePoolSize(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             rtRaygenPool.updatePoolSize(5, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, MAX_TLAS_STRUCTURES);
             rtRaygenPool.updatePoolSize(6, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, MAX_TLAS_STRUCTURES);
             rtRaygenPool.update();
@@ -631,7 +631,7 @@ namespace odfaeg {
             rtRaygenSet.updateImageInfos(1, storageImage,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
             rtRaygenSet.updateBufferInfos(2, dirLightBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             rtRaygenSet.updateBufferInfos(3, pointLightBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-            rtRaygenSet.updateImageInfos(4, frameBuffer.getRenderingImage(),VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);            
+            rtRaygenSet.updateImageInfos(4, frameBuffer.Texture(),VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);            
             if (topGlobalAS.size() != 0) {
                 rtRaygenSet.updateAccelerationStructureInfos(5, topGlobalAS);
             }
@@ -646,8 +646,8 @@ namespace odfaeg {
             rtRayhitSet.updateBufferInfos(3, materialBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             rtRayhitSet.updateImageInfos(4, environmentMap, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             rtRayhitSet.updateImageInfos(5, frameBuffer.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-            rtRayhitSet.updateImageInfos(6, cmsShadowMaps.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-            rtRayhitSet.updateImageInfos(7, plShadowMaps.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            rtRayhitSet.updateImageInfos(6, csmShadowMaps.getDepthStencilTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            rtRayhitSet.updateImageInfos(7, plShadowMaps.getDepthStencilTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             if (hasDiffuseTexture) {
                 rtRayhitSet.updateImageInfos(8, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             }

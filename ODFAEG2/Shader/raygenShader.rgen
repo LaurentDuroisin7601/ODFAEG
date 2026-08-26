@@ -30,7 +30,7 @@ layout(binding = 2, set = 0) buffer DirectionnalLightSSBO {
 layout(binding = 3, set = 0) buffer PointLightSSBO {
     PointLight pointLights[];
 }; 
-layout(binding = 4, set = 0, rgba8) uniform image2D rasterImage; 
+layout(binding = 4, set = 0) uniform sampler2D rasterImage; 
 layout(binding = 5, set = 0) uniform accelerationStructureEXT globalAS;
 layout(binding = 6, set = 0) uniform accelerationStructureEXT localAS[MAX_TLAS_STRUCTURES];
 
@@ -104,8 +104,8 @@ void main() {
     float tmax = 10000.0;
     transport.rayType = 0;
     if (pc.hasGeometry == 0) {
-        vec4 color = imageLoad(rasterImage, ivec2(gl_LaunchIDEXT.xy));
-        imageStore(rasterImage, ivec2(gl_LaunchIDEXT.xy), color);
+        vec4 color = texture(rasterImage, vec2(gl_LaunchIDEXT.xy / gl_LaunchSizeEXT.xy));
+        imageStore(image[pc.currentFrame], ivec2(gl_LaunchIDEXT.xy), color);
     } else {
         traceRayEXT(globalAS, gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, origin.xyz, tmin, direction.xyz, tmax, 0);   
         uint i = 0;    

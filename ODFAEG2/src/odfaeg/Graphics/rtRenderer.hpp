@@ -24,6 +24,18 @@ namespace odfaeg {
     namespace graphic {
         class RTRenderer {
             public :
+                struct DirLight {
+                    int id;
+                    vec3 dir;
+                    vec4 color;
+                    mat4 lightSpace[NB_CASCADES+1];
+                };
+                struct PointLight {
+                    int id;
+                    vec3 position;
+                    vec4 color;
+                    mat4 lightSpace[6];
+                };
                 struct RayGenPC {
                     unsigned int currentFrame;
                     unsigned int pointLightCount;
@@ -86,6 +98,8 @@ namespace odfaeg {
                 std::deque<Buffer> dirLightsBuffer, pointLightsBuffer;
                 std::deque<Buffer> bottomLevelASBuffers, topLevelASBuffers;
                 std::deque<Buffer> ubo;
+                std::vector<PointLight> pointLights;
+                std::vector<DirLight> dirLights;
                 std::vector<VkAccelerationStructureKHR> bottomLevelAS, topGlobalAS, topLocalAS; 
                 bool needToUpdateBLAS, needToUpdateTLAS, needToUpdateDescriptorSets;
                 Shader rtShader;
