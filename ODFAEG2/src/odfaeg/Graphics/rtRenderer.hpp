@@ -66,6 +66,7 @@ namespace odfaeg {
                     unsigned int nbBuffers;
                     int reflectable;
                     int refractable;
+                    int opaque;
                 };	
                 struct UBOData {
                     math::Matrix4f viewInverse;
