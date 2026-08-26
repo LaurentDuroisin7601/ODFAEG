@@ -97,11 +97,11 @@ namespace odfaeg {
             std::vector<LightSpaceMatrix>  fLightSpaceMatrices;
             RenderTarget& parentRenderer;
             RenderTexture& sceneColorTexture;
-            RenderTexture& shadowMapPL;
-            RenderTexture& shadowMap;            
+            RenderTexture shadowMapPL;
+            RenderTexture shadowMap;            
             Shader shadowPassCSMShader, shadowPassPLShader, shadowMappingShader;            
-            CommandPool shadowPassCommandPool;
-            std::deque<CommandPool> shadowPassPLCommandPool, shadowMappingCommandPool;            
+            CommandPool shadowMappingCommandPool;
+            std::deque<CommandPool> shadowPassPLCommandPool, shadowPassCommandPool;            
             std::deque<Buffer> lightSpaceMatricesBuffer, lightSpaceMatricesBufferFinal, cascadePlaneDistancesBuffer,
             lightViewsPLMatricesBuffer, dirLightsBufferFinal, pointLightsBufferFinal;
             Buffer lightSpaceMatricesStaggingBuffer, lightViewsPLMatricesStaggingBuffer,

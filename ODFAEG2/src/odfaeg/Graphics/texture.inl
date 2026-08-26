@@ -332,7 +332,7 @@ namespace odfaeg {
             
             return true;
         }
-        bool Texture::createDepthTexture(uint32_t texWidth, uint32_t texHeight, VkSampleCountFlagBits msaaSamples, uint32_t texDepth, , uint32_t layersPerView, bool layered) {
+        bool Texture::createDepthTexture(uint32_t texWidth, uint32_t texHeight, VkSampleCountFlagBits msaaSamples, uint32_t texDepth, uint32_t layersPerView, bool layered) {
             this->msaaSamples = msaaSamples;
             this->layered = layered; 
             VkImageType imageType;
@@ -459,7 +459,7 @@ namespace odfaeg {
                     for (unsigned int c = 0; c < cubemapCount; c++) {
                         for (unsigned int m = 0; m < mipLevels; m++) {
                             //std::cout<<"create image view"<<std::endl;
-                            images[i].addSubView(images[i].getHandle(), viewType, m_format, imageAspectMask, m, 6*c, 1, 6);                            
+                            images[i].addSubView(viewType, m_format, imageAspectMask, m, 6*c, 1, 6);                            
                         }
                     }
                 }
@@ -525,7 +525,7 @@ namespace odfaeg {
                 if (cubemapCount > 1) {
                     for (unsigned int c = 0; c < cubemapCount; c++) {
                         for (unsigned int m = 0; m < mipLevels; m++) {
-                            images[i].addSubView(images[i].getHandle(), viewType, m_format,  imageAspectMask, m, 6*c, 1, 6);                            
+                            images[i].addSubView(viewType, m_format,  imageAspectMask, m, 6*c, 1, 6);                            
                         }
                     }
                 }
