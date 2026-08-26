@@ -771,7 +771,7 @@ namespace odfaeg {
                             //std::cout<<"registed bind push constants"<<std::endl;
                             vkCmdBindDescriptorSets(shadowPassPLCommandPool[l].getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassPLShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), offsetLightViewMatPLs.size(), offsetLightViewMatPLs.data());
                             //std::cout<<"registered bind decriptor sets"<<std::endl;
-                            shadowMapPL.draw(sshadowPassPLCommandPool[l], static_cast<entity::PrimitiveType>(i), states);
+                            shadowMapPL.draw(shadowPassPLCommandPool[l], static_cast<entity::PrimitiveType>(i), states);
                             //std::cout<<"registered"<<std::endl;
                         }                        
                         shadowPassPLCommandPool[l].endRecordCommandBuffer(renderFrame);
@@ -845,7 +845,7 @@ namespace odfaeg {
                 //std::cout<<"commands : !"<<parentRenderer.getCurrentFrame()<<" registered!"<<std::endl;
                 //std::cout<<"draw shadow map"<<std::endl;                
                 shadowMap.applyComputeGraphicsBarrier();
-                for (unsigned int i = 0; i < dirLightsSize(); i++) {
+                for (unsigned int i = 0; i < dirLights.size(); i++) {
                     shadowMap.beginRendering(true, i);
                     vkCmdExecuteCommands(shadowMap.getCommandPool().getHandle(shadowMap.getCurrentFrame()), 1, &shadowPassCommandPool[i].getHandle(parentRenderer.getCurrentFrame()));
                     shadowMap.endRendering();
@@ -855,8 +855,8 @@ namespace odfaeg {
                 //std::cout<<"shadow map curent frame : "<<shadowMap.getCurrentFrame()<<"window current frame : "<<parentRenderer.getCurrentFrame()<<std::endl;
                 shadowMap.display();
                 shadowMapPL.applyComputeGraphicsBarrier();
-                for (unsigned int i = 0; i < pointLightsSize(); i++) {
-                    shadowMapPL.beginRendering(true);
+                for (unsigned int i = 0; i < pointLights.size(); i++) {
+                    shadowMapPL.beginRendering(true, i);
                     vkCmdExecuteCommands(shadowMapPL.getCommandPool().getHandle(shadowMapPL.getCurrentFrame()), 1, &shadowPassPLCommandPool[i].getHandle(parentRenderer.getCurrentFrame()));
                     shadowMapPL.endRendering(); 
                 }

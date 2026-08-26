@@ -17,8 +17,8 @@
 #include "mesh.hpp"
 #include "buffer.hpp"
 #include "iRenderer.hpp"
-#include "pointLight.hpp"
-#include "directionnalLight.hpp"
+#include "../Entity/pointLight.hpp"
+#include "../Entity/directionnalLight.hpp"
 namespace odfaeg {
     namespace graphic {
         class RTRenderer {
