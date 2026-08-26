@@ -9,6 +9,7 @@ namespace odfaeg {
                 physic::BoundingBox volume;
                 std::vector<Object> objects;
                 std::vector<physic::BoundingBox> objectVolumes;
+                unsigned int parent;
                 std::vector<unsigned int> children;
             }
             public :

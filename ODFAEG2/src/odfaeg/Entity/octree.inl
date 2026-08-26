@@ -25,6 +25,7 @@ namespace ofdaeg {
                 for (unsigned int v = 0; v < volumes.size(); v++) {
                     Node child;
                     child.id = compteur.next();
+                    child.parent = node.id;
                     child.volume.push_back(volumes[v]);                        
                     node.children.push_back(child.id);
                     nodes.push_back(child);
