@@ -26,15 +26,15 @@ namespace odfaeg {
             public :
                 struct DirLight {
                     int id;
-                    vec3 dir;
-                    vec4 color;
-                    mat4 lightSpace[NB_CASCADES+1];
+                    alignas(16) math::Vec3f dir;
+                    unsigned int color;
+                    math::Matrix4f lightSpace[NB_CASCADES+1];
                 };
                 struct PointLight {
                     int id;
-                    vec3 position;
-                    vec4 color;
-                    mat4 lightSpace[6];
+                    alignas(16) math::Vec3f position;
+                    unsigned int color;
+                    math::Matrix4f lightSpace[6];
                 };
                 struct RayGenPC {
                     unsigned int currentFrame;
@@ -100,7 +100,7 @@ namespace odfaeg {
                 std::deque<Buffer> ubo;
                 std::vector<PointLight> pointLights;
                 std::vector<DirLight> dirLights;
-                std::vector<VkAccelerationStructureKHR> bottomLevelAS, topGlobalAS, topLocalAS; 
+                std::vector<VkAccelerationStructureKHR> bottomLevelAS, topLevelAS, topLocalAS; 
                 bool needToUpdateBLAS, needToUpdateTLAS, needToUpdateDescriptorSets;
                 Shader rtShader;
                 CommandPool commandPool;

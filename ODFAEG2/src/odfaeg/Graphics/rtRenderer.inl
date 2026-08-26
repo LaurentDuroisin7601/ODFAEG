@@ -97,12 +97,12 @@ namespace odfaeg {
             needToUpdateBuffers = true;
         }
         void RTRenderer::updateBuffers() {
-            dirLightStaggingBuffer.create(sizeof(DirLight) * dirLights.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_BIT);
+            dirLightStaggingBuffer.create(sizeof(DirLight) * dirLights.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
             dirLightStaggingBuffer.update(dirLights.data(), sizeof(DirLight) * dirLights.size());
-            dirLightsBuffer.back().create(sizeof(DirLight) * dirLights.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_BIT);
-            pointLightStaggingBuffer.create(sizeof(PointLight) * pointLights.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_BIT);
+            dirLightsBuffer.back().create(sizeof(DirLight) * dirLights.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+            pointLightStaggingBuffer.create(sizeof(PointLight) * pointLights.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
             pointLightStaggingBuffer.update(pointLights.data(), sizeof(PointLight) * pointLights.size());
-            pointLightsBuffer.back().create(sizeof(PointLight) * pointLights.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_BIT);
+            pointLightsBuffer.back().create(sizeof(PointLight) * pointLights.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
             commandPool.beginRecordCommandBuffer(parentRenderer.getCurrentFrame());
             Buffer::copyBuffer(dirLightStaggingBuffer, dirLightsBuffer.back(), sizeof(DirLight) * dirLights.size(), commandPool.getHandle(parentRenderer.getCurrentFrame()));
             Buffer::copyBuffer(pointLightStaggingBuffer, pointLightsBuffer.back(),sizeof(PointLight) * pointLights.size(), commandPool.getHandle(parentRenderer.getCurrentFrame()));
@@ -509,7 +509,6 @@ namespace odfaeg {
                         accelerationBuildStructureRangeInfos.data()),
                 currentInstancesOffset ++;                
             //}
-            rayGenPC.tlasCount = topLevelAS.size();
             commandPool.endRecordCommandBuffer(parentRenderer.getCurrentFrame());
             VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -528,7 +527,7 @@ namespace odfaeg {
             rtRaygenSetLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
             rtRaygenSetLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
             rtRaygenSetLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
-            rtRaygenSetLayout.updateLayout(5, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1);
+            rtRaygenSetLayout.updateLayout(5, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
             rtRaygenSetLayout.updateLayout(6, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, MAX_TLAS_STRUCTURES, VK_SHADER_STAGE_RAYGEN_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);   
             rtRaygenSetLayout.update();         
@@ -537,17 +536,17 @@ namespace odfaeg {
             rtRayhitSetLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
             rtRayhitSetLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
             rtRayhitSetLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
-            rtRayhitsetLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
-            rtRayhitsetLayout.updateLayout(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
-            rtRayhitsetLayout.updateLayout(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
-            rtRayhitsetLayout.updateLayout(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
+            rtRayhitSetLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
+            rtRayhitSetLayout.updateLayout(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
+            rtRayhitSetLayout.updateLayout(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
+            rtRayhitSetLayout.updateLayout(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
             rtRayhitSetLayout.updateLayout(8, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
             rtRayhitSetLayout.update();
             DescriptorSetLayout& rtRayhitSpecSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 1, true, 2);
-            rtRayhitSpecSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
-            rtRayhitSpecSetLayout.update();
-                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT); 
+            rtRayhitSpecSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |            
+                VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
+            rtRayhitSpecSetLayout.update(); 
             DescriptorSetLayout& rtRayhitNormalSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 1, true, 3);
             rtRayhitNormalSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
@@ -596,7 +595,7 @@ namespace odfaeg {
             rtRayhitPool.updatePoolSize(8, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             rtRayhitPool.update();
             DescriptorPool& rtRayhitSpecPool = GPUContext::instance().getDescriptorPool(rtShader, 1, 2);
-            rtRayhitSepcPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
+            rtRayhitSpecPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             rtRayhitSpecPool.update();
             DescriptorPool& rtRayhitNormalPool = GPUContext::instance().getDescriptorPool(rtShader, 1, 3);
             rtRayhitNormalPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
@@ -604,7 +603,7 @@ namespace odfaeg {
             DescriptorPool& rtRayhitMetPool = GPUContext::instance().getDescriptorPool(rtShader, 1, 4);
             rtRayhitMetPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             rtRayhitMetPool.update();
-            DescriptorPool& rtRayhitRoughtPool = GPUContext::instance().getDescriptorPool(rtShader, 1, 5);
+            DescriptorPool& rtRayhitRoughPool = GPUContext::instance().getDescriptorPool(rtShader, 1, 5);
             rtRayhitRoughPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             rtRayhitRoughPool.update();
             DescriptorPool& rtRayhitAOPool = GPUContext::instance().getDescriptorPool(rtShader, 1, 6);
@@ -623,17 +622,26 @@ namespace odfaeg {
             DescriptorSet::allocate(rtRayhitEmissPool, rtRayhitEmissSetLayout, GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 7), MAX_TEXTURES);
         }
         void RTRenderer::updateDescriptorSets() {
-            pc.hasGeometry = topLocalAS.size();
-            bool hasLocalTLASStructure = topLocalAS.size() != 0;
+            rayGenPC.hasGeometry = topLevelAS.size();
             bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
-            DescriptorSet& rtRaygenSet = GPUContext::instance().getDescriptorSets(rtShader, (hasTLASStructure) ? 6 : 4, 1)[0];
+            unsigned int updateCount;
+            if (topLevelAS.size() != 0) {
+                if (topLocalAS.size() != 0) {
+                    updateCount = 7;
+                } else {
+                    updateCount = 6;
+                }
+            } else {
+                updateCount = 5;
+            }
+            DescriptorSet& rtRaygenSet = GPUContext::instance().getDescriptorSets(rtShader, updateCount, 1)[0];
             rtRaygenSet.updateBufferInfos(0, ubo, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
             rtRaygenSet.updateImageInfos(1, storageImage,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
-            rtRaygenSet.updateBufferInfos(2, dirLightBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-            rtRaygenSet.updateBufferInfos(3, pointLightBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-            rtRaygenSet.updateImageInfos(4, frameBuffer.Texture(),VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);            
-            if (topGlobalAS.size() != 0) {
-                rtRaygenSet.updateAccelerationStructureInfos(5, topGlobalAS);
+            rtRaygenSet.updateBufferInfos(2, dirLightsBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            rtRaygenSet.updateBufferInfos(3, pointLightsBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            rtRaygenSet.updateImageInfos(4, frameBuffer.getTexture(),VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);            
+            if (topLevelAS.size() != 0) {
+                rtRaygenSet.updateAccelerationStructureInfos(5, topLevelAS);
             }
             if (topLocalAS.size() != 0) {
                 rtRaygenSet.updateAccelerationStructureInfos(6, topLocalAS);
@@ -656,31 +664,31 @@ namespace odfaeg {
             if (hasSpecTexture) {
                 DescriptorSet& rtRayhitSpecSet = GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 2)[0];
                 rtRayhitSpecSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-                rtRayhitSpecSet.updateDescriptorSets();
+                rtRayhitSpecSet.updateDescriptorSet();
             }     
             bool hasNormalTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::NORMAL).size() != 0;
             if (hasNormalTexture) {
                 DescriptorSet& rtRayhitNormalSet = GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 3)[0];
                 rtRayhitNormalSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::NORMAL), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-                rtRayhitNormalSet.updateDescriptorSets();
+                rtRayhitNormalSet.updateDescriptorSet();
             }            
             bool hasMetTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::METALNESS).size() != 0;
             if (hasMetTexture) {
                 DescriptorSet& rtRayhitMetSet = GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 4)[0];
                 rtRayhitMetSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::METALNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-                rtRayhitMetSet.updateDescriptorSets();
+                rtRayhitMetSet.updateDescriptorSet();
             }            
             bool hasRoughTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::ROUGHNESS).size() != 0;
             if (hasRoughTexture) {
                 DescriptorSet& rtRayhitRoughSet = GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 6)[0];
                 rtRayhitRoughSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::ROUGHNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-                rtRayhitMetSet.updateDescriptorSets();
+                rtRayhitRoughSet.updateDescriptorSet();
             }            
             bool hasAOTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::AO).size() != 0;
             if (hasAOTexture) {
                 DescriptorSet& rtRayhitAOSet = GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 6)[0];
                 rtRayhitAOSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::AO), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-                rtRayhitAOSet.updateDescriptorSets();
+                rtRayhitAOSet.updateDescriptorSet();
             }            
             bool hasEmissTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::EMISSIVE).size() != 0;
             if (hasEmissTexture) {
