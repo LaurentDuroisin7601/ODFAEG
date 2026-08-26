@@ -451,7 +451,7 @@ namespace odfaeg {
             VkRenderingInfo renderingInfo = {};
             VkRenderingAttachmentInfo depthAttachmentInfo = {
                 .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-                .imageView = (viewIndex == -1) ? getDepthStencilTexture().getImage().getImageView().getHandle() : getDepthStencilTexture().getImage().getSubViews()[viewIndex].getHandle(),
+                .imageView = (viewIndex == -1) ? getDepthStencilTexture().getImage().getImageView().getHandle() : getDepthStencilTexture().getImage().getImageSubViews()[viewIndex].getHandle(),
                 .imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                 .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
                 .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -463,12 +463,12 @@ namespace odfaeg {
                 .extent = getExtents()
             };
             renderingInfo.pDepthAttachment = &depthAttachmentInfo;
-            renderingInfo.layerCount = (viewIndex == -1) ? getDepthStencilTexture().getLayerCount() : getDepthStencilTexture().getImage().getSubViews()[viewIndex].getLayerCount();
+            renderingInfo.layerCount = (viewIndex == -1) ? getDepthStencilTexture().getLayerCount() : getDepthStencilTexture().getImage().getImageSubViews()[viewIndex].getLayerCount();
             VkRenderingAttachmentInfo colorAttachmentInfo;
             if (!depthOnly) {
                 colorAttachmentInfo = {
                     .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-                    .imageView = (viewIndex == -1) ? m_textures[0].getImage(imageIndex).getImageView().getHandle() : m_textures[0].getImage(imageIndex).getSubViews()[viewIndex],
+                    .imageView = (viewIndex == -1) ? m_textures[0].getImage(imageIndex).getImageView().getHandle() : m_textures[0].getImage(imageIndex).getImageSubViews()[viewIndex],
                     .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                     .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,

@@ -112,17 +112,20 @@ namespace odfaeg {
             if (commandPool.getHandles().size() == 0) {                
                 commandPool.create(queueFamilyIndices.graphicsFamily.value());
                 commandPool.createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT); 
-            }           
+            }     
+            envMapCmdPools.clear();      
             for (unsigned int i = 0; i < reflRefrGameObjects.size(); i++) {
                 envMapCmdPools.emplace_back(GPUContext::instance().getDevice());
                 envMapCmdPools[i].create(queueFamilyIndices.graphicsFamily.value());
                 envMapCmdPools[i].createCommandBuffers(false, MAX_FRAMES_IN_FLIGHT);
-            }            
+            }   
+            envMapQuadCmdPools.clear();         
             for (unsigned int i = 0; i < reflRefrGameObjects.size(); i++) {
                 envMapQuadCmdPools.emplace_back(GPUContext::instance().getDevice());
                 envMapQuadCmdPools[i].create(queueFamilyIndices.graphicsFamily.value());
                 envMapQuadCmdPools[i].createCommandBuffers(false, MAX_FRAMES_IN_FLIGHT);
-            }            
+            }
+            reflRefrCmdPools.clear();            
             for (unsigned int i = 0; i < reflRefrGameObjects.size(); i++) {
                 reflRefrCmdPools.emplace_back(GPUContext::instance().getDevice());
                 reflRefrCmdPools[i].create(queueFamilyIndices.graphicsFamily.value());

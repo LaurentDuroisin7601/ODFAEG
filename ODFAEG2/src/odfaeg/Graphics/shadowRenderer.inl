@@ -148,7 +148,7 @@ namespace odfaeg {
             shadowPassPLVertPC.lightProjMatrix = pointLightCamera.getProjMatrix().getMatrix().transpose();
              
             ViewPLMatrix viewPLMatrices;
-            math::Vec3f lightPos = pointLight.getPosition();              
+            math::Vec3f lightPos = pointLight.pos;              
             pointLightCamera.setCenter(lightPos);
             pointLightCamera.lookAt(-1, 0, 0, math::Vec3f(0, -1, 0));
             viewPLMatrices.viewsPLMatrices[0] = pointLightCamera.getViewMatrix().getMatrix().transpose();
@@ -518,12 +518,18 @@ namespace odfaeg {
                 shadowMappingCommandPool.create(queueFamilyIndices.graphicsFamily.value());
                 shadowMappingCommandPool.createCommandBuffers(false, MAX_FRAMES_IN_FLIGHT);
             }
-            shadowPassPLCommandPool.resize(pointLights.size());   
-            shadowPassPLCommandPool.create(queueFamilyIndices.graphicsFamily.value());
-            shadowPassPLCommandPool.createCommandBuffers(false, MAX_FRAMES_IN_FLIGHT);
-            shadowPassCommandPool.resize(dirLights.size());
-            shadowPassCommandPool.create(queueFamilyIndices.graphicsFamily.value());            
-            shadowPassCommandPool.createCommandBuffers(false, MAX_FRAMES_IN_FLIGHT);
+            shadowPassPLCommandPool.clear();   
+            for (unsigned int i = 0; i < pointLights.size(); i++) {
+                shadowPassPLCommandPool.emplace_back(GPUContext::instance().getDevice());
+                shadowPassPLCommandPool.back().create(queueFamilyIndices.graphicsFamily.value());
+                shadowPassPLCommandPool.back().createCommandBuffers(false, MAX_FRAMES_IN_FLIGHT);
+            }
+            shadowPassCommandPool.clear();
+            for (unsigned int i = 0; i < dirLights.size(); i++) {
+                shadowPassCommandPool.emplace_back(GPUContext::instance().getDevice());
+                shadowPassCommandPool.back().create(queueFamilyIndices.graphicsFamily.value());            
+                shadowPassCommandPool.back().createCommandBuffers(false, MAX_FRAMES_IN_FLIGHT);
+            }
         }
         void ShadowRenderer::updateDescriptorSets() {
             //std::cout<<"update descriptor sets"<<std::endl;
@@ -637,7 +643,7 @@ namespace odfaeg {
                 //vkWaitSemaphores(GPUContext::instance().getDevice().getDevice(), &semaphoreWaitInfo, UINT64_MAX);
                 //std::cout<<"frame : "<<renderFrame<<" ready!"<<std::endl;
                 if (needToUpdateDirLightsMatrices || needToUpdatePointLightsMatrices)
-                    createCommandPool();
+                    createCommandPools();
                 if (needToUpdateDirLightsMatrices) {                    
                     shadowMap.create(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, (NB_CASCADES+1)*dirLights.size(), NB_CASCADES+1, true, true);
                     computeDirLightMatrices();
@@ -645,7 +651,6 @@ namespace odfaeg {
                     needToUpdateDescriptorSets = true;
                 }
                 if (needToUpdatePointLightsMatrices) {
-                    createCommandPool();
                     shadowMapPL.createCubeMap(SHADOW_MAP_SIZE, pointLights.size(), true, false);  
                     computePointLightMatrices();
                     needToUpdatePointLightsMatrices = false;
@@ -657,8 +662,9 @@ namespace odfaeg {
                     needToUpdateDescriptorSets = false;
                 }                         
                 jobFences[renderFrame].reset(dirLights.size()+pointLights.size()+1);  
-                for (unsigned int l = 0; l < dirLights.size(); l++) {              
-                    threadPool.enqueue([this, renderFrame] {
+                for (unsigned int c = 0; c < dirLights.size(); c++) {  
+                    unsigned int l = c;            
+                    threadPool.enqueue([this, l, renderFrame] {
                         VkCommandBufferInheritanceRenderingInfo inheritanceRenderingInfo{};
                         inheritanceRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
                         inheritanceRenderingInfo.colorAttachmentCount = 0;
@@ -713,8 +719,9 @@ namespace odfaeg {
                         jobFences[renderFrame].jobDone();
                     }); 
                 }
-                for (unsigned int l = 0; l < pointLights.size(); l++) {              
-                    threadPool.enqueue([this, renderFrame] {
+                for (unsigned int c = 0; c < pointLights.size(); c++) {
+                    unsigned int l = c;              
+                    threadPool.enqueue([this, l, renderFrame] {
                         VkCommandBufferInheritanceRenderingInfo inheritanceRenderingInfo{};
                         inheritanceRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
                         inheritanceRenderingInfo.colorAttachmentCount = 0;
