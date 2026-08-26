@@ -40,9 +40,10 @@ namespace odfaeg {
             void render();
             std::vector<IComponent*> getComponents();            
             private :
+            unsigned int llSMTransitionPoint;
             std::map<unsigned int, IRenderer*> renderers;
             std::map<unsigned int, Widget*> widgets;
-            //RenderTexture outputRenderTexture;
+            RenderTexture* inputShadowRT;
         };
     }
 }
