@@ -113,7 +113,7 @@ void main() {
     } else {
         traceRayEXT(globalAS, gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, origin.xyz, tmin, direction.xyz, tmax, 0);   
         uint i = 0;    
-        do (i < MAX_BOUNCES && !transport.lastBounce) {
+        while (i < MAX_BOUNCES && !transport.lastBounce) {
             //Objet translucide touché.
             vec3 hitpoint = transport.origin;            
             //Objet translucide réflectable touché traçage du rayon de rélfection.
