@@ -6,8 +6,8 @@
 #define MAX_PRIMITIVE_TYPES 6
 #define MAX_TEXTURES 1024
 #define MAX_BONES_INFLUENCE 4
-const float epsilon = 0.001;
 #define NB_CASCADES 4
+const float epsilon = 0.001;
 struct Vertex {
     vec3 position; ///< 3D position of the vertex
     uint color; ///< Color of the vertex
@@ -127,7 +127,7 @@ void main() {
     vec4 color = w * c1 + u * c2 + v * c3;
     vec2 tc = w * ct1 + u * ct2 + v * ct3;
     uint textureIndex = material.diffuseTextureIndex;  
-    vec4 aldebo = (textureIndex > 0) ? color * texture(diffuseTextures[textureIndex-1], tc) : color; 
+    vec4 albedo = (textureIndex > 0) ? color * texture(diffuseTextures[textureIndex-1], tc) : color; 
     vec3 e1 = v2 - v1;
     vec3 e2 = v3 - v1;
     vec3 N = normalize(cross(e1, e2));
@@ -143,10 +143,10 @@ void main() {
         transport.normal = N;
         transport.parentMaterial = material;
         transport.localASID = int(geomOffs.tlasID);
-        transport.origin = hitpos + N * espilon;
-        transport.direction = raydir; 
+        transport.origin = hitPos + N * epsilon;
+        transport.direction = rayDir; 
         if(material.reflectable == 1) {
-            transport.R = refract(I, N);
+            transport.R = reflect(I, N);
             transport.reflectable = true;          
         } else {
             transport.reflectable = false;
@@ -169,19 +169,19 @@ void main() {
             transport.refractable = false;
         } 
         if (material.opaque == 0) {
-            transport.transmition  = true;
+            transport.transmissive  = true;
         } else {
-            transport.transmition  = false;
+            transport.transmissive = false;
         }
     } 
     //Calcul de la couleur du rayon courant.  
     //Rayon primaire. (Je stocke la couleur secondaire)     
     if (transport.rayType == 0) {
         transport.transmitionColor = albedo;      
-    //Rayon secondaire non dévié.
+    //Rayon de transmission.
     } else if (transport.rayType == 1) {
-        vec3 absorption = exp(-aldebo * 1);
-        transport.transmissionColor *= absorption;
+        vec3 absorption = exp(-albedo.xyz * 1);
+        transport.transmitionColor *= vec4(absorption, 1);
         //Rayon de réflection.
     } else if (transport.rayType == 2) {
         transport.reflectColor = albedo;        
@@ -189,9 +189,9 @@ void main() {
     } else if (transport.rayType == 3) {
         transport.refractColor = albedo;        
     //Shadow ray. (Lumière ponctuelles et directionnelles)
-    } else if (transposrt.rayType > 3) {        
-        transport.shadowColor = (material.opaque) ? vec4(0.5, 0.5, 0.5, 1) : albedo;
-        transport.localLighting = transport.shadowColor * N * transport.lightColor * N;//Calcul de la couleur de la lumière locale. (Ombre partielle)
+    } else if (transport.rayType > 3) {        
+        transport.shadowColor = (material.opaque == 0) ? vec4(0.5, 0.5, 0.5, 1) : albedo;
+        transport.localLightning = transport.shadowColor * transport.lightColor * vec4(N, 1);//Calcul de la couleur de la lumière locale. (Ombre partielle)
     } 
     /*if (payload.color.r > 1 || payload.color.g > 1 || payload.color.b > 1 || payload.color.a > 1
     || payload.color.r < 0 || payload.color.g < 0 || payload.color.b < 0 || payload.color.a < 0) {*/
