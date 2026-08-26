@@ -41,6 +41,7 @@ namespace odfaeg {
                     children[i]->buildMaterialsFromTextureManager(textureManager);
                 }
             }
+            unsigned int instanceId;
             private :
             void buildChild(entity::GameObject* parent);
             void populateVertexBuffer(Mesh* parent);

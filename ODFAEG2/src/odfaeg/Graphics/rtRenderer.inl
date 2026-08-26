@@ -13,6 +13,7 @@ namespace odfaeg {
         materialBuffer(GPUContext::instance().getDevice()),
         geometryOffsetBuffer(GPUContext::instance().getDevice()),
         instancesBuffer(GPUContext::instance().getDevice()),
+        localInstancesBuffer(GPUContext::instance().getDevice()),
         transformMatrixStaggingBuffer(GPUContext::instance().getDevice()),
         materialStaggingBuffer(GPUContext::instance().getDevice()),
         geometryOffsetStaggingBuffer(GPUContext::instance().getDevice()),
@@ -287,7 +288,7 @@ namespace odfaeg {
                             geometryOffset.indexOffset = sm.indexOffset + lods[0].indexOffset;   
                             geometryOffset.materialOffset = sm.materialId;
                             unsigned instanceID = gameObjects[i]->getMaterials()[0]->getInstanceGroupId();
-                            gameObjects[i]->instanceID = instanceID;
+                            gameObjects[i]->instanceId = instanceID;
                             if (instanceID >= geometryOffsets.size())
                                 geometryOffsets.resize(instanceID);          
                             geometryOffsets[instanceID] = geometryOffset;
@@ -382,7 +383,7 @@ namespace odfaeg {
                         geometryOffset.indexOffset = sm.indexOffset + lods[0].indexOffset;
                         geometryOffset.materialOffset = sm.materialId;                        
                         geometryOffsets.push_back(geometryOffset);
-                        gameObjects[i]->instanceID = instanceGroupCount + singleInstancesCount;                        
+                        gameObjects[i]->instanceId = instancesGroupCount + singleInstancesCount;                        
                         singleInstancesCount++;                         
                     } 
                 } 
@@ -408,7 +409,7 @@ namespace odfaeg {
             std::vector<Mesh*> nonOpaqueObjects; 
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
                 for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
-                    if (!gameObjects[i]->getMaterials()[0]->isOpaque() || gameObjects[i]->getMaterials()[0]->isReflectable || gameObjects[i]->getMaterials()[0]->isRefractable()) {
+                    if (!gameObjects[i]->getMaterials()[0]->isOpaque() || gameObjects[i]->getMaterials()[0]->isReflectable() || gameObjects[i]->getMaterials()[0]->isRefractable()) {
                         nonOpaqueObjects.push_back(gameObjects[i]);
                         unsigned int instanceID = gameObjects[i]->instanceId;
                         VkTransformMatrixKHR transformMatrix = toVulkanMatrix(gameObjects[i]->getGameObject()->getTransform().getMatrix());
@@ -500,13 +501,13 @@ namespace odfaeg {
                     commandPool.getHandle(parentRenderer.getCurrentFrame()),
                     1,
                     &accelerationBuildGeometryInfo,
-                    accelerationBuildStructureRangeInfos.data()),
+                    accelerationBuildStructureRangeInfos.data());
                           
             std::vector<Mesh*> localGameObjects;
-            std::vector<std::pair<unsigned int, unsigned int > localTlasInfos;
+            std::vector<std::pair<unsigned int, unsigned int>> localTlasInfos;
             for (unsigned int i = 0; i < nonOpaqueObjects.size(); i++) {
                 unsigned int offset = localGameObjects.size();
-                std::vector<GameObject*> octreeGameObject; //Récupération depuis l'octree + insertion dans le vecteur.
+                std::vector<Mesh*> octreeGameObject; //Récupération depuis l'octree + insertion dans le vecteur.
                 localTlasInfos.push_back(std::make_pair(localGameObjects[i]->instanceId, octreeGameObject.size()));
             }
             unsigned int currentInstancesOffset = 0; 
@@ -531,8 +532,8 @@ namespace odfaeg {
             instancesStaggingBuffer.update(instances.data(), sizeof(VkAccelerationStructureInstanceKHR)*instances.size());
             localInstancesBuffer.create(sizeof(VkAccelerationStructureInstanceKHR)*instances.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, VMA_MEMORY_USAGE_GPU_ONLY, 0, true);   
             Buffer::copyBuffer(instancesStaggingBuffer, localInstancesBuffer, sizeof(VkAccelerationStructureInstanceKHR)*instances.size(), commandPool.getHandle(parentRenderer.getCurrentFrame())); 
-            instanceDataDeviceAddress.deviceAddress = localInstancesBuffer.getBufferAddress();
-            for (unsigned int i = 0; i < localTlasInfos; i++) {
+            instanceDataDeviceAddress.deviceAddress = localInstancesBuffer.getDeviceAddress();
+            for (unsigned int i = 0; i < localTlasInfos.size(); i++) {
                 VkAccelerationStructureGeometryKHR accelerationStructureGeometry{};
                 accelerationStructureGeometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
                 accelerationStructureGeometry.geometryType = VK_GEOMETRY_TYPE_INSTANCES_KHR;
@@ -553,7 +554,7 @@ namespace odfaeg {
                 accelerationStructureBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
 
                 uint32_t primitive_count = localTlasInfos[i].second;
-                geometryOffsets[localTlasInfos[i].first] = i;
+                geometryOffsets[localTlasInfos[i].first].tlasOffset = i;
 
                 VkAccelerationStructureBuildSizesInfoKHR accelerationStructureBuildSizesInfo{};
                 accelerationStructureBuildSizesInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;

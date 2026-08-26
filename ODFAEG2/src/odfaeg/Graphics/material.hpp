@@ -83,6 +83,8 @@ namespace odfaeg {
             entity::Color getAlbedo();  
             void setType(entity::SubMesh::Type type);
             entity::SubMesh::Type getType();
+            bool isOpaque();
+            void setOpaque(bool opaque);
             /**
             * \fn const Texture* getTexture(int texUnit = 0)
             * \brief get the texture of the given unit. (0 = the first texture by default)
@@ -176,7 +178,7 @@ namespace odfaeg {
 		    int instanceGroup;
             inline static std::deque<Material*> materials = std::deque<Material*>();
             inline static std::deque<Material*> sameMaterials = std::deque<Material*>();
-            bool reflectable, refractable;
+            bool reflectable, refractable, opaque;
             math::Vec4f center;
             entity::Color albedo;            
             inline static unsigned int maxSpecularIntensity = 0;

@@ -1,6 +1,7 @@
-#ifndef OCTREE_HPP
-#define OCTREE_HPP
-#include "compiletime_counter.hpp"
+#ifndef ODFAEG_OCTREE_HPP
+#define ODFAEG_OCTREE_HPP
+#include "../Core/compiletime_counter.hpp"
+#include "../Physics/boundingBox.hpp"
 namespace odfaeg {
     namespace entity {
         template <typename Object>
@@ -11,20 +12,21 @@ namespace odfaeg {
                 std::vector<physic::BoundingBox> objectVolumes;
                 unsigned int parent;
                 std::vector<unsigned int> children;
-            }
+            };
             public :
             Octree(physic::BoundingBox volume, unsigned int maxObjectsPerNodes);
             void addObject(Object object, physic::BoundingBox objectVolume);
             void removeObject(Object object, physic::BoundingBox objectVolume);
-            std::vector<Object> getObjects(physics::BoundingBox volume);
+            std::vector<Object> getObjects(physic::BoundingBox volume);
             void update(Object object);
             bool contains(Object object);
             private :
-            void getObjects(std::vector<Object>& objects, Node node, physics::BoundingBox volume);
+            unsigned int maxObjectsPerNode;
+            void getObjects(std::vector<Object>& objects, Node node, physic::BoundingBox volume);
             void build(Node& node);
             void freeNodes(Node& node);
             std::vector<Node> nodes;
-            core::Compteur compteur;      
+            core::Compteur<> compteur;      
         };        
     }
 }

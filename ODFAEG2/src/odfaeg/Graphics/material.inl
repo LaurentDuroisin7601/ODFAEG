@@ -26,7 +26,8 @@ namespace odfaeg {
             specularPower = 0;
             refractionFactor = 0;
             refractable = false;
-            reflectable = false;            
+            reflectable = false; 
+            opaque = false;           
             id = 0;            
             instanceGroup = -1;
             layer = 0;
@@ -72,6 +73,12 @@ namespace odfaeg {
             //materials.push_back(this);
             return *this;
         }*/
+        void Material::setOpaque(bool opaque) {
+            this->opaque = opaque;
+        }
+        bool Material::isOpaque() {
+            return opaque;
+        }
         void Material::setType(entity::SubMesh::Type type) {
             if (type == entity::SubMesh::AIR) {
                 refractionFactor = 1;
@@ -208,8 +215,9 @@ namespace odfaeg {
                 && reflectable == material.reflectable
                 && instanceGroup == material.instanceGroup
                 && layer == material.layer
-                && center == center
-                && albedo == albedo;
+                && center == material.center
+                && albedo == material.albedo
+                && opaque == material.opaque;
         }
         bool Material::operator!= (const Material& material) {
             return !(*this == material);
