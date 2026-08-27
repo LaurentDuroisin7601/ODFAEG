@@ -77,7 +77,7 @@ namespace odfaeg {
             struct ViewPLMatrix {
                 math::Matrix4f viewsPLMatrices[6];
             };
-            ShadowRenderer(RenderTarget& parentRenderer, RenderTexture& sceneColorTexture, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
+            ShadowRenderer(RenderTarget& parentRenderer, RenderTexture& sceneColorTexture, RenderTexture& cmsmShadowMap, RenderTexture pointShadowMap, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
             void createCommandPools();
             void createDescriptorsAndPipelines();
             void updateDescriptorSets();
@@ -97,8 +97,8 @@ namespace odfaeg {
             std::vector<LightSpaceMatrix>  fLightSpaceMatrices;
             RenderTarget& parentRenderer;
             RenderTexture& sceneColorTexture;
-            RenderTexture shadowMapPL;
-            RenderTexture shadowMap;            
+            RenderTexture& shadowMapPL;
+            RenderTexture& shadowMap;            
             Shader shadowPassCSMShader, shadowPassPLShader, shadowMappingShader;            
             CommandPool shadowMappingCommandPool;
             std::deque<CommandPool> shadowPassPLCommandPool, shadowPassCommandPool;            

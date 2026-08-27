@@ -1,17 +1,20 @@
 namespace odfaeg {
     namespace graphic {
-        RenderGraph::RenderGraph() {
-            inputShadowRT = nullptr;
+        RenderGraph::RenderGraph(RenderTarget& output) : output(output),
+        csmShadowMap(GPUContext::instance().getDevice(), true), pointShadowMap(GPUContext::instance().getDevice(), true) {
+            
         }
-        void RenderGraph::addLinkedListPass(RenderTarget& output, unsigned int layer, std::string typesToRender, unsigned int windowId) {
+        void RenderGraph::addOITPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId) {
             LinkedListRenderer* llr = new LinkedListRenderer(output, layer, typesToRender, windowId);
-            renderers.insert(std::make_pair(layer, llr));            
+            renderers.insert(std::make_pair(order, llr));            
         }
-        void RenderGraph::addShadowPass(RenderTarget& output, RenderTexture& input,  unsigned int layer, std::string typesToRender, unsigned int windowId) {
-            llSMTransitionPoint = layer;
-            ShadowRenderer* sr = new ShadowRenderer(output, input, layer, typesToRender, windowId);
+        void RenderGraph::addShadowPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId) {
+            
+            ShadowRenderer* sr = new ShadowRenderer(output, output, csmShadowMaplayer, plShadowMap, typesToRender, windowId);
             renderers.insert(std::make_pair(layer, sr));
-            inputShadowRT = &input;
+        }
+        void RenderGraph::addRTPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId) {
+                        
         }
         std::vector<IComponent*> RenderGraph::getComponents() {
             std::vector<IComponent*> components;
@@ -25,7 +28,7 @@ namespace odfaeg {
             }
             return components;
         }
-        void RenderGraph::render() {
+        void RenderGraph::drawAllPasses() {
             std::map<unsigned int, IRenderer*>::iterator it;
             
             //inputShadowRT->clear();

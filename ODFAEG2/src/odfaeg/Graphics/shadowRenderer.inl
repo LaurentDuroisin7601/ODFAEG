@@ -1,9 +1,9 @@
 namespace odfaeg {
     namespace graphic {
-        ShadowRenderer::ShadowRenderer(RenderTarget& parentRenderer, RenderTexture& sceneColorTexture, unsigned int layer, std::string typesToRenderExpression, int windowId, bool useThread) : IRenderer(windowId), parentRenderer(parentRenderer),
+        ShadowRenderer::ShadowRenderer(RenderTarget& parentRenderer, RenderTexture& sceneColorTexture, RenderTexture& csmShadowMap, RenderTexture& pointShadowMap, unsigned int layer, std::string typesToRenderExpression, int windowId, bool useThread) : IRenderer(windowId), parentRenderer(parentRenderer),
         sceneColorTexture(sceneColorTexture),
-        shadowMap(GPUContext::instance().getDevice(), true), 
-        shadowMapPL(GPUContext::instance().getDevice(), true),
+        shadowMap(csmShadowMap), 
+        shadowMapPL(pointShadowMap),
         shadowPassCSMShader(GPUContext::instance().getDevice()),
         shadowPassPLShader(GPUContext::instance().getDevice()), 
         shadowMappingShader(GPUContext::instance().getDevice()), 

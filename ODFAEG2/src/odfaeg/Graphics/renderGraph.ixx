@@ -18,9 +18,11 @@ namespace odfaeg {
     namespace graphic {
         export class RenderGraph {
             public :                     
-            RenderGraph();
-            void addLinkedListPass(RenderTarget& output, unsigned int layer, std::string typesToRender, unsigned int windowId=-1);
-            void addShadowPass(RenderTarget& output, RenderTexture& input,  unsigned int layer, std::string typesToRender, unsigned int windowId=-1);
+            RenderGraph(RenderTarget& output);
+            void addLinkedListPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId=-1);
+            void addShadowPass(unsigned int order,  unsigned int layer, std::string typesToRender, unsigned int windowId=-1);
+            void addLightningPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId=-1);
+            void addRTPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId=-1);
             template<typename R>
             void addDirectionnalLight(unsigned int layer, ShadowRenderer::DirLight dirLight) {
                 std::map<unsigned int, IRenderer*>::iterator it = renderers.find(layer);
@@ -37,13 +39,14 @@ namespace odfaeg {
                     shadowRenderer->addPonctualLight(pointLight);
                 }
             }
-            void render();
+            void drawAllPasses();
             std::vector<IComponent*> getComponents();            
-            private :
-            unsigned int llSMTransitionPoint;
+            private :            
             std::map<unsigned int, IRenderer*> renderers;
             std::map<unsigned int, Widget*> widgets;
-            RenderTexture* inputShadowRT;
+            RendereTarget& outputTexture;
+            RenderTextur csmShadowMap, plShadowMap;
+            Texture enviornmentMap;
         };
     }
 }
