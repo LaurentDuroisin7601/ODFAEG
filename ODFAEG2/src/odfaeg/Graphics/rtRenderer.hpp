@@ -22,7 +22,7 @@
 #include "../Entity/octree.hpp"
 namespace odfaeg {
     namespace graphic {
-        class RTRenderer {
+        class RTRenderer : public IRenderer {
             public :
                 struct DirLight {
                     int id;
@@ -82,8 +82,8 @@ namespace odfaeg {
                 void createShaderBindingTable();
                 void updateBLAS();
                 void updateTLAS();                
-                void addPointLight(entity::PointLight pointLight);
-                void addDirectionnalLight(entity::DirectionnalLight directionnalLight);
+                void addPointLight(entity::PointLight& pointLight);
+                void addDirectionnalLight(entity::DirectionnalLight& directionnalLight);
                 ~RTRenderer();
             private :
                 VkTransformMatrixKHR toVulkanMatrix (math::Matrix4f matrix);                

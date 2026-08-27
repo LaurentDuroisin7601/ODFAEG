@@ -128,27 +128,31 @@ namespace odfaeg {
             stop.store(false);
             rendererReady.store(true);            
         }          
-        void ShadowRenderer::addDirectionnalLight(DirLight dirLight) {            
-            dirLights.push_back(dirLight);  
+        void ShadowRenderer::addDirectionnalLight(entity::DirectionnalLight& dirLight) {            
+            DirLight dl;
+            dl.dir = dirLight.getDir();
+            dirLights.push_back(dl);  
             LightSpaceMatrix lightSpaceMatrices;
             for (size_t i = 1; i < shadowCascadeLevels.size(); i++)
             {
 
-                lightSpaceMatrices.lightSpaceMatrices[i-1] = getLightSpaceMatrix(dirLight.dir, shadowCascadeLevels[i-1], shadowCascadeLevels[i]);
+                lightSpaceMatrices.lightSpaceMatrices[i-1] = getLightSpaceMatrix(dirLight.getDir(), shadowCascadeLevels[i-1], shadowCascadeLevels[i]);
                 //std::cout<<fLightSpaceMatrices.back()<<std::endl;
             } 
             fLightSpaceMatrices.push_back(lightSpaceMatrices);
             dirLights.back().far_plane = shadowCascadeLevels[NB_CASCADES];           
             needToUpdateDirLightsMatrices = true;
         }
-        void ShadowRenderer::addPonctualLight(PointLight pointLight) {
-            pointLights.push_back(pointLight);
+        void ShadowRenderer::addPonctualLight(entity::PointLight& pointLight) {
+            PointLight pl;
+            pl.pos = pointLight.getPosition();
+            pointLights.push_back(pl);
             Camera pointLightCamera;
             pointLightCamera.setPerspective(90, 1, 1, 25);            
             shadowPassPLVertPC.lightProjMatrix = pointLightCamera.getProjMatrix().getMatrix().transpose();
              
             ViewPLMatrix viewPLMatrices;
-            math::Vec3f lightPos = pointLight.pos;              
+            math::Vec3f lightPos = pointLight.getPosition();              
             pointLightCamera.setCenter(lightPos);
             pointLightCamera.lookAt(-1, 0, 0, math::Vec3f(0, -1, 0));
             viewPLMatrices.viewsPLMatrices[0] = pointLightCamera.getViewMatrix().getMatrix().transpose();

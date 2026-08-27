@@ -6,6 +6,8 @@
 #include "../Window/action.hpp"
 #include "../Window/command.hpp"
 #include "../Core/delegate.hpp"
+#include "../Entity/pointLight.hpp"
+#include "../Entity/directionnalLight.hpp"
 namespace odfaeg {
     namespace graphic {
         class IRenderer : public IComponent {
@@ -16,7 +18,11 @@ namespace odfaeg {
                     window::Action resizedAction(window::Action::RESIZED);
                     window::Command resizedCmd(resizedAction, core::FastDelegate<void>(&R::onSwapchainResized, static_cast<R*>(this), core::ph<0, math::Vector2i>()));
                     getEventListener().connect("SwapchainResizeCmd", resizedCmd);
-                }              
+                }   
+                virtual void addPonctualLight(entity::PointLight& pointLigth) {
+
+                } 
+                virtual void addDirectionnalLight(entity::DirectionnalLight& directionnalLight);          
                 virtual void clear() = 0;                
                 void update(int windowId, window::IEvent event) {
                     /*Si c'est une fenêtre est liée au renderer, on met à jour la pile d'évènements du listener.*/ 

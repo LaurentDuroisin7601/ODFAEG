@@ -7,11 +7,13 @@ namespace odfaeg {
         template <typename Object>
         class Octree {
             struct Node {
+                unsigned int id;
                 physic::BoundingBox volume;
                 std::vector<Object> objects;
                 std::vector<physic::BoundingBox> objectVolumes;
                 unsigned int parent;
                 std::vector<unsigned int> children;
+                bool leaf;
             };
             public :
             Octree(physic::BoundingBox volume, unsigned int maxObjectsPerNodes);

@@ -645,7 +645,7 @@ namespace odfaeg {
 								}
 							}
 						}
-						subMeshData.lodOffset = currentSubmeshesOffset * lods.size();
+						subMeshData.lodOffset = currentSubmeshesOffset * lods.size();						
 						//std::cout<<"submesh meshlet count : "<<(meshletDatas.size() - currentSubmeshMeshletOffset)<<std::endl;
 						subMeshesDatas.push_back(subMeshData);	
 						currentSubmeshesOffset++;					

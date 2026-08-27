@@ -1,12 +1,12 @@
 namespace odfaeg {
     namespace entity {        
         template <typename Object>
-        Octree<Object>::Octree(physic::BoundingBox volume, unsigned int maxObjectsPerNodes) {
+        Octree<Object>::Octree(physic::BoundingBox volume, unsigned int maxObjectsPerNode) {
             Node rootNode;
             rootNode.volume = volume;
             rootNode.leaf = true;
             this->maxObjectsPerNode = maxObjectsPerNode;
-            nodes.push_back(volume);       
+            nodes.push_back(rootNode);       
         }
         template <typename Object>
         void Octree<Object>::addObject(Object object, physic::BoundingBox objectVolume) {                              
@@ -26,23 +26,23 @@ namespace odfaeg {
                 std::array<physic::BoundingBox, 8> volumes = volume.subdiv();                
                 for (unsigned int v = 0; v < volumes.size(); v++) {
                     Node child;
-                    child.id = compteur.next();
+                    child.id = 0;
                     child.parent = node.id;
-                    child.volume.push_back(volumes[v]);                        
+                    child.volume = volumes[v];                        
                     node.children.push_back(child.id);
                     nodes.push_back(child);
                 }                
-                for (unsigned int i = 0; i < node.objets.size(); i++) {
+                for (unsigned int i = 0; i < node.objects.size(); i++) {
                     for (unsigned int j = 0; j < node.children.size(); j++) {
-                        if (nodes[node.children[j]].volume.intersects(node.objectsVolumes[i])) {
+                        if (nodes[node.children[j]].volume.intersects(node.objectVolumes[i])) {
                             nodes[node.children[j]].objects.push_back(node.objects[i]);
-                            nodes[node.children[j]].objectsVolumes.push_back(node.objectsVolumes[i]);
+                            nodes[node.children[j]].objectVolumes.push_back(node.objectVolumes[i]);
                             build(nodes[node.children[j]]);
                         }
                     }
                 }
                 node.objects.clear(); 
-                node.objectsVolumes.clear();                            
+                node.objectVolumes.clear();                            
             }
         }  
         template <typename Object>      

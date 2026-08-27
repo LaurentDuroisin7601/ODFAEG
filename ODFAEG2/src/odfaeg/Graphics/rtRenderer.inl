@@ -2,6 +2,7 @@ namespace odfaeg {
     namespace graphic {
         RTRenderer::RTRenderer(RenderTarget& parentRenderer, Texture& environmentMap, RenderTexture& frameBuffer,
                     RenderTexture& csmShadowMaps, RenderTexture& plShadowMaps, unsigned int layer, std::string typesToRenderExpression, int windowId, bool usethread) :
+        IRenderer(windowId),    
         parentRenderer(parentRenderer),
         environmentMap(environmentMap),
         frameBuffer(frameBuffer),
@@ -89,11 +90,11 @@ namespace odfaeg {
             /*updateBLAS();
             updateTLAS();*/
         } 
-        void RTRenderer::addPointLight(entity::PointLight pointLight) {
+        void RTRenderer::addPointLight(entity::PointLight& pointLight) {
             //pointLights.push_back(pointLight);
             needToUpdateBuffers = true;
         }
-        void RTRenderer::addDirectionnalLight(entity::DirectionnalLight directionnalLight) {
+        void RTRenderer::addDirectionnalLight(entity::DirectionnalLight& directionnalLight) {
             //dirLights.push_back(directionnalLight);
             needToUpdateBuffers = true;
         }
@@ -148,7 +149,7 @@ namespace odfaeg {
                 1.0f, 0.0f, 0.0f, 0.0f,
                 0.0f, 1.0f, 0.0f, 0.0f,
                 0.0f, 0.0f, 1.0f, 0.0f
-            };
+            };            
             transformMatrixStaggingBuffer.create(sizeof(VkTransformMatrixKHR), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);         
             transformMatrixStaggingBuffer.update(&transformMatrix, sizeof(VkTransformMatrixKHR));
             transformMatrixBuffer.create(sizeof(VkTransformMatrixKHR), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, VMA_MEMORY_USAGE_GPU_ONLY, 0, true);
@@ -284,10 +285,12 @@ namespace odfaeg {
                             &accelerationBuildGeometryInfo,
                             accelerationBuildStructureRangeInfos.data());
                             
+            
                             GeometryOffset geometryOffset;
                             geometryOffset.vertexOffset = sm.vertexOffset;
                             geometryOffset.indexOffset = sm.indexOffset + lods[0].indexOffset;   
                             geometryOffset.materialOffset = sm.materialId;
+                            
                             unsigned instanceID = gameObjects[i]->getMaterials()[0]->getInstanceGroupId();
                             gameObjects[i]->instanceId = instanceID;
                             if (instanceID >= geometryOffsets.size())
@@ -503,14 +506,15 @@ namespace odfaeg {
                     1,
                     &accelerationBuildGeometryInfo,
                     accelerationBuildStructureRangeInfos.data());
-            entity::Octree<Mesh*> octree;
-            for (unsigned int = 0; i < gameObjects.size(); i++) {
-                octree.addObject(gameObjects[i], gameObjects[i].getBoundingBox());
+            physic::BoundingBox volume(0, 0, 0, 10000, 10000, 10000);
+            entity::Octree<Mesh*> octree(volume, 7);
+            for (unsigned int i = 0; i < gameObjects.size(); i++) {
+                octree.addObject(gameObjects[i], gameObjects[i]->getGameObject()->getGlobalBounds());
             }              
             std::vector<Mesh*> localGameObjects;
             std::vector<std::pair<unsigned int, unsigned int>> localTlasInfos;            
             for (unsigned int i = 0; i < nonOpaqueObjects.size(); i++) {
-                BoundingBox nonOpaqueZoneInfluence = nonOpaqueObjects[i].getGlobalBounds();
+                physic::BoundingBox nonOpaqueZoneInfluence = nonOpaqueObjects[i]->getGameObject()->getGlobalBounds();
                 nonOpaqueZoneInfluence.scale(math::Vec3f(200, 200, 200));
                 unsigned int offset = localGameObjects.size();
                 std::vector<Mesh*> octreeGameObject = octree.getObjects(nonOpaqueZoneInfluence);
@@ -999,13 +1003,13 @@ namespace odfaeg {
         }
         RTRenderer::~RTRenderer() {
             for (unsigned int i = 0; i < bottomLevelAS.size(); i++) {
-                vkDestroyAccelerationStructureKHR(GPUContext::instance().getDevice(), bottomLevelAS[i], nullptr);
+                vkDestroyAccelerationStructureKHR(GPUContext::instance().getDevice().getDevice(), bottomLevelAS[i], nullptr);
             }
             for (unsigned int i = 0; i < topLevelAS.size(); i++) {
-                vkDestroyAccelerationStructureKHR(GPUContext::instance().getDevice(), topLevelAS[i], nullptr);
+                vkDestroyAccelerationStructureKHR(GPUContext::instance().getDevice().getDevice(), topLevelAS[i], nullptr);
             }
             for (unsigned int i = 0; i < topLocalAS.size(); i++) {
-                vkDestroyAccelerationStructureKHR(GPUContext::instance().getDevice(), topLocalAS[i], nullptr);
+                vkDestroyAccelerationStructureKHR(GPUContext::instance().getDevice().getDevice(), topLocalAS[i], nullptr);
             }
         }
     }    

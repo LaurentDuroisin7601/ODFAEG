@@ -1,7 +1,8 @@
 namespace odfaeg {
     namespace graphic {
-        RenderGraph::RenderGraph(RenderTarget& output) : output(output),
-        csmShadowMap(GPUContext::instance().getDevice(), true), pointShadowMap(GPUContext::instance().getDevice(), true) {
+        RenderGraph::RenderGraph(RenderTexture& output) : output(output),
+        csmShadowMap(GPUContext::instance().getDevice(), true), pointShadowMap(GPUContext::instance().getDevice(), true),
+        environmentMap(GPUContext::instance().getDevice()) {
             
         }
         void RenderGraph::addOITPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId) {
@@ -10,11 +11,24 @@ namespace odfaeg {
         }
         void RenderGraph::addShadowPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId) {
             
-            ShadowRenderer* sr = new ShadowRenderer(output, output, csmShadowMaplayer, plShadowMap, typesToRender, windowId);
+            ShadowRenderer* sr = new ShadowRenderer(output, output, csmShadowMap, pointShadowMap, layer, typesToRender, windowId);
             renderers.insert(std::make_pair(layer, sr));
         }
         void RenderGraph::addRTPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId) {
-                        
+             RTRenderer* rtRenderer = new RTRenderer(output, environmentMap, output, csmShadowMap, pointShadowMap, layer, typesToRender, windowId);
+             renderers.insert(std::make_pair(layer, rtRenderer));           
+        }
+        void RenderGraph::addDirectionnalLight(entity::DirectionnalLight& dirLight) {
+            std::map<unsigned int, IRenderer*>::iterator it;
+            for (it = renderers.begin(); it != renderers.end(); it++) {
+                it->second->addDirectionnalLight(dirLight);
+            }
+        }
+        void RenderGraph::addPonctualLight(entity::PointLight& pointLight) {
+            std::map<unsigned int, IRenderer*>::iterator it;
+            for (it = renderers.begin(); it != renderers.end(); it++) {
+                it->second->addPonctualLight(pointLight);
+            }
         }
         std::vector<IComponent*> RenderGraph::getComponents() {
             std::vector<IComponent*> components;
