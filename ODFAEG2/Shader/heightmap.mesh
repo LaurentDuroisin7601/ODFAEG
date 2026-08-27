@@ -1,0 +1,33 @@
+#version 460
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+// Déclaration du type de primitive + limites
+layout (triangles, max_vertices = 255, max_primitives = 85) out;
+struct TaskData {
+   uint heightOffset;
+   uint heightCount;
+};
+struct Height {
+    vec3 position;
+    uint materialID;
+};
+struct TaskPayload {
+    int taskId;
+};
+taskPayloadSharedEXT TaskPayload payload;
+layout (std430, set = 0, binding = 0) buffer TastDataSSBO {
+    TaskData taskData[];
+};
+layout (std430, set = 0, binding = 0) buffer TastDataSSBO {
+    Height heightsData[];
+};
+void main() {
+    SetMeshOutputsEXT(taskData[payload.taskId].heightOffset, taskData[payload.taskId].heightCount / 4 * 2);
+    for (uint i = 0; i < taskData[payload.taskId].heightCount; i++) {        
+        gl_MeshVerticesEXT[i].gl_Position = heightsData[i].position;        
+    }
+    for (uint tri = 0; tri < taskData[payload.taskId].heightCount / 4; tri++) {
+        gl_PrimitiveTriangleIndicesEXT[tri*2] = uvec3(tri*4, tri*4+1, tri*4+2);
+        gl_PrimitiveTriangleIndicesEXT[tri*2+1] = uvec3(tri*4, tri*4+2, tri*4+3);
+    }
+}
