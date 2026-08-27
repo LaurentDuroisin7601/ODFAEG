@@ -531,7 +531,7 @@ namespace odfaeg {
 							unsigned int currentLodMeshletOffset = meshletDatas.size() - currentSubmeshMeshletOffset;
 							//std::cout<<"currentSubmeshMeshletOffset : "<<currentSubmeshMeshletOffset<<" "<<currentLodMeshletOffset<<","<<meshletDatas.size()<<std::endl;
 							lodLevelData.meshletOffset = currentLodMeshletOffset;
-							/*float x = subMeshGlobalBounds.getPosition().x();
+							float x = subMeshGlobalBounds.getPosition().x();
 							float y = subMeshGlobalBounds.getPosition().y();
 							float z = subMeshGlobalBounds.getPosition().z();				
 							float w = subMeshGlobalBounds.getSize().x();
@@ -559,7 +559,7 @@ namespace odfaeg {
 									y += 100;
 								}
 								x += 100;
-							}	*/
+							}	
 							Meshlet m;
 							m.minVertex = std::numeric_limits<unsigned int>::max();
 							m.maxVertex = 0;
@@ -605,7 +605,7 @@ namespace odfaeg {
 							meshletDatas.push_back(m);
 							currentMeshletsOffset++;
 							meshletCount++;
-							/*for (unsigned int m = currentMeshletsOffset-meshletCount; m < meshletDatas.size(); m++) {
+							for (unsigned int m = currentMeshletsOffset-meshletCount; m < meshletDatas.size(); m++) {
 								for (unsigned int c = currentClustersOffset-clusterCount; c < clusterDatas.size(); c++) {
 									Meshlet& meshlet = meshletDatas[m];
 									Cluster& cluster = clusterDatas[c];
@@ -624,7 +624,7 @@ namespace odfaeg {
 										meshlet.clusterId = cluster.id;
 									} 
 								}
-							}*/							
+							}							
 							//std::cout<<"lod meshlet count : "<<(meshletDatas.size() - currentLodMeshletOffset - currentSubmeshMeshletOffset)<<std::endl;
 							lodLevelData.meshletOffset = currentLodMeshletOffset;
 							lodLevelData.meshletCount = meshletDatas.size() - currentLodMeshletOffset - currentSubmeshMeshletOffset;
@@ -651,7 +651,7 @@ namespace odfaeg {
 						currentSubmeshesOffset++;					
 					}									
 				}
-				/*std::sort(meshletDatas.begin(), meshletDatas.end(), [](Meshlet& m1, Meshlet& m2){ return m1.clusterId < m2.clusterId;});
+				std::sort(meshletDatas.begin(), meshletDatas.end(), [](Meshlet& m1, Meshlet& m2){ return m1.clusterId < m2.clusterId;});
 				unsigned int clusterMeshletOffset = 0;
 				unsigned int previousClusterId = 0;
 				for (unsigned int m = 0; m < meshletDatas.size(); m++) {	
@@ -660,7 +660,7 @@ namespace odfaeg {
 						previousClusterId = meshletDatas[m].clusterId;					
 					}
 					clusterDatas[meshletDatas[m].clusterId].meshletOffset = previousClusterId;
-				}*/
+				}
 				totalMeshlets = meshletDatas.size();
 				/*std::cout<<"total sub meshes"<<totalSubMeshes<<std::endl;
 				system("PAUSE");*/
