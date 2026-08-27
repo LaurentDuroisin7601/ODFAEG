@@ -503,13 +503,19 @@ namespace odfaeg {
                     1,
                     &accelerationBuildGeometryInfo,
                     accelerationBuildStructureRangeInfos.data());
-                          
+            entity::Octree<Mesh*> octree;
+            for (unsigned int = 0; i < gameObjects.size(); i++) {
+                octree.addObject(gameObjects[i], gameObjects[i].getBoundingBox());
+            }              
             std::vector<Mesh*> localGameObjects;
-            std::vector<std::pair<unsigned int, unsigned int>> localTlasInfos;
+            std::vector<std::pair<unsigned int, unsigned int>> localTlasInfos;            
             for (unsigned int i = 0; i < nonOpaqueObjects.size(); i++) {
+                BoundingBox nonOpaqueZoneInfluence = nonOpaqueObjects[i].getGlobalBounds();
+                nonOpaqueZoneInfluence.scale(math::Vec3f(200, 200, 200));
                 unsigned int offset = localGameObjects.size();
-                std::vector<Mesh*> octreeGameObject; //Récupération depuis l'octree + insertion dans le vecteur.
+                std::vector<Mesh*> octreeGameObject = octree.getObjects(nonOpaqueZoneInfluence);
                 localTlasInfos.push_back(std::make_pair(localGameObjects[i]->instanceId, octreeGameObject.size()));
+                localGameObjects.insert(localGameObjects.end(), octreeGameObject.begin(), octreeGameObject.end());
             }
             unsigned int currentInstancesOffset = 0; 
             instances.clear();
@@ -989,6 +995,17 @@ namespace odfaeg {
                 barrier.subresourceRange.levelCount = 1;
                 barrier.subresourceRange.layerCount = 1;
                 vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+            }
+        }
+        RTRenderer::~RTRenderer() {
+            for (unsigned int i = 0; i < bottomLevelAS.size(); i++) {
+                vkDestroyAccelerationStructureKHR(GPUContext::instance().getDevice(), bottomLevelAS[i], nullptr);
+            }
+            for (unsigned int i = 0; i < topLevelAS.size(); i++) {
+                vkDestroyAccelerationStructureKHR(GPUContext::instance().getDevice(), topLevelAS[i], nullptr);
+            }
+            for (unsigned int i = 0; i < topLocalAS.size(); i++) {
+                vkDestroyAccelerationStructureKHR(GPUContext::instance().getDevice(), topLocalAS[i], nullptr);
             }
         }
     }    
