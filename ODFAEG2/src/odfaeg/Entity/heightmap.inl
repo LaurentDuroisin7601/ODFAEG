@@ -16,7 +16,8 @@ namespace odfaeg {
                 int xPosition = (point.x() + pos.x()) / squareSize;
                 int yPosition = (point.y() + pos.y()) / squareSize;
                 int position = yPosition * nbQuadsPerRow + xPosition;
-                int triIndex = (point.x() < point.y()) ? 0 : 1;
+                math::Vec2f d(point.x() - xPosition * squareSize, point.y() - yPosition*squareSize);
+                int triIndex = (d.x() < d.y()) ? 0 : 1;
                 Height h1, h2, h3;
                 h1 = squares[position].getHeight(0);
                 h2 = squares[position].getHeight(1+triIndex);                     
