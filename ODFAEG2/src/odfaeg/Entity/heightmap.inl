@@ -1,12 +1,12 @@
 namespace odfaeg {
     namespace entity {
-        HeightMap::HeightMap (unsigned int squareSize, physic::BoundingBox zone)
+       HeightMap::HeightMap (unsigned int squareSize, physic::BoundingBox zone)
         : GameObject (pos, math::Vec3f (0, 0, 0), math::Vec3f (0, 0, 0), "E_BIGTILE", factory),
         tileSize(squareSize) {
             nbQuadsPerRow = zone.getSize().x() / squareSize;
        }
-       void HeightMap::addSquare(Square square) {
-           square.push_back(square); 
+       void HeightMap::addSquare(std;;string materialId, Tile* square) {
+           addChild(square);
        } 
        bool HeightMap::getHeight(math::Vec2f point, float& height) {
             ////////std::cout<<"get height"<<std::endl;

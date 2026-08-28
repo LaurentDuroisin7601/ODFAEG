@@ -16,9 +16,9 @@ namespace odfaeg {
             //std::cout<<"color : "<<(int)color.r<<","<<(int)color.g<<","<<(int)color.b<<","<<(int)color.a<<std::endl;
             VertexArray va(Triangles);
             Vertex v1(math::Vec3f(0.f, 0.f, 0.f), color);
-            Vertex v2(math::Vec3f(0.f, size.y(), 0.f), color);
-            Vertex v3(math::Vec3f(size.x(), size.y(), size.z()), color);
-            Vertex v4(math::Vec3f(size.x(), 0.f, size.z()), color);
+            Vertex v2(math::Vec3f(0.f, 0.f, size.z()), color);
+            Vertex v3(math::Vec3f(size.x(), 0.f, size.z()), color);
+            Vertex v4(math::Vec3f(size.x(), 0.f, 0.f), color);
             v1.texCoords = math::Vec2f(static_cast<float>(subRect.left), static_cast<float>(subRect.top));
             v2.texCoords = math::Vec2f(static_cast<float>(subRect.left), static_cast<float>(subRect.top + subRect.height));
             v3.texCoords = math::Vec2f(static_cast<float>(subRect.left + subRect.width), static_cast<float>(subRect.top + subRect.height));
