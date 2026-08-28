@@ -46,6 +46,7 @@ namespace odfaeg {
                     uint32_t vertexOffset;
                     uint32_t indexOffset;
                     uint32_t materialOffset;
+                    uint32_t lodOffset;
                     uint32_t tlasOffset;
                 };
                 struct MaterialData {

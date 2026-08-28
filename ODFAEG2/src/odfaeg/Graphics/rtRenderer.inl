@@ -211,7 +211,7 @@ namespace odfaeg {
             geometryOffsets.clear();
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
                 for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
-                    entity::SubMesh sm = gameObjects[i]->getGameObject()->getSubMeshes()[j];
+                    entity::SubMesh& sm = gameObjects[i]->getGameObject()->getSubMeshes()[j];
                     //Ensuite on parcours les matériaux à plusieurs instances.
                     if (gameObjects[i]->getMaterials()[0]->getInstanceGroupId() != -1) {
                         if (gameObjects[i]->getMaterials()[0]->materialSet == 0) {
@@ -290,9 +290,10 @@ namespace odfaeg {
                             geometryOffset.vertexOffset = sm.vertexOffset;
                             geometryOffset.indexOffset = sm.indexOffset + lods[0].indexOffset;   
                             geometryOffset.materialOffset = sm.materialId;
+                            geometryOffset.lodOffset = sm.lodOffset;
                             
                             unsigned instanceID = gameObjects[i]->getMaterials()[0]->getInstanceGroupId();
-                            gameObjects[i]->instanceId = instanceID;
+                            sm.instanceId = instanceID;
                             if (instanceID >= geometryOffsets.size())
                                 geometryOffsets.resize(instanceID);          
                             geometryOffsets[instanceID] = geometryOffset;
@@ -307,7 +308,7 @@ namespace odfaeg {
             }
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
                 for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
-                    entity::SubMesh sm = gameObjects[i]->getGameObject()->getSubMeshes()[j];
+                    entity::SubMesh& sm = gameObjects[i]->getGameObject()->getSubMeshes()[j];
                     //On commence par les matériaux à une seule instance.
                     if (gameObjects[i]->getMaterials()[0]->getInstanceGroupId() == -1) {
                     
@@ -385,9 +386,10 @@ namespace odfaeg {
                         GeometryOffset geometryOffset;
                         geometryOffset.vertexOffset = sm.vertexOffset;
                         geometryOffset.indexOffset = sm.indexOffset + lods[0].indexOffset;
-                        geometryOffset.materialOffset = sm.materialId;                        
+                        geometryOffset.materialOffset = sm.materialId; 
+                        geometryOffset.lodOffset = sm.lodOffset;                      
                         geometryOffsets.push_back(geometryOffset);
-                        gameObjects[i]->instanceId = instancesGroupCount + singleInstancesCount;                        
+                        sm.instanceId = instancesGroupCount + singleInstancesCount;                        
                         singleInstancesCount++;                         
                     } 
                 } 
@@ -415,7 +417,7 @@ namespace odfaeg {
                 for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
                     if (!gameObjects[i]->getMaterials()[0]->isOpaque() || gameObjects[i]->getMaterials()[0]->isReflectable() || gameObjects[i]->getMaterials()[0]->isRefractable()) {
                         nonOpaqueObjects.push_back(gameObjects[i]);
-                        unsigned int instanceID = gameObjects[i]->instanceId;
+                        unsigned int instanceID = gameObjects[i]->getGameObject()->getSubMeshes()[j].instanceId;
                         VkTransformMatrixKHR transformMatrix = toVulkanMatrix(gameObjects[i]->getGameObject()->getTransform().getMatrix());
                         VkAccelerationStructureInstanceKHR instance{};
                         instance.transform = transformMatrix;
@@ -517,14 +519,15 @@ namespace odfaeg {
                 nonOpaqueZoneInfluence.scale(math::Vec3f(200, 200, 200));
                 unsigned int offset = localGameObjects.size();
                 std::vector<Mesh*> octreeGameObject = grid.getEntitiesInBox(nonOpaqueZoneInfluence);
-                localTlasInfos.push_back(std::make_pair(localGameObjects[i]->instanceId, octreeGameObject.size()));
+                
+                localTlasInfos.push_back(std::make_pair(offset, octreeGameObject.size()));
                 localGameObjects.insert(localGameObjects.end(), octreeGameObject.begin(), octreeGameObject.end());
             }
             unsigned int currentInstancesOffset = 0; 
             instances.clear();
             for (unsigned int i = 0; i < localGameObjects.size(); i++) {
                 for (unsigned int j = 0; j < localGameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
-                    unsigned int instanceID = localGameObjects[i]->instanceId;
+                    unsigned int instanceID = gameObjects[i]->getGameObject()->getSubMeshes()[j].instanceId;
                     VkTransformMatrixKHR transformMatrix = toVulkanMatrix(localGameObjects[i]->getGameObject()->getTransform().getMatrix());
                     VkAccelerationStructureInstanceKHR instance{};
                     instance.transform = transformMatrix;
@@ -640,7 +643,7 @@ namespace odfaeg {
             rtRaygenSetLayout.updateLayout(6, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, MAX_TLAS_STRUCTURES, VK_SHADER_STAGE_RAYGEN_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);   
             rtRaygenSetLayout.update();         
-            DescriptorSetLayout& rtRayhitSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 9, true, 1); 
+            DescriptorSetLayout& rtRayhitSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 10, true, 1); 
             rtRayhitSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR); 
             rtRayhitSetLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
             rtRayhitSetLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
@@ -649,7 +652,8 @@ namespace odfaeg {
             rtRayhitSetLayout.updateLayout(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
             rtRayhitSetLayout.updateLayout(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
             rtRayhitSetLayout.updateLayout(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
-            rtRayhitSetLayout.updateLayout(8, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+            rtRayhitSetLayout.updateLayout(8, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
+            rtRayhitSetLayout.updateLayout(9, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
             rtRayhitSetLayout.update();
             DescriptorSetLayout& rtRayhitSpecSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 1, true, 2);
@@ -692,7 +696,7 @@ namespace odfaeg {
             rtRaygenPool.updatePoolSize(5, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, MAX_TLAS_STRUCTURES);
             rtRaygenPool.updatePoolSize(6, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, MAX_TLAS_STRUCTURES);
             rtRaygenPool.update();
-            DescriptorPool& rtRayhitPool = GPUContext::instance().getDescriptorPool(rtShader, 5, 1);
+            DescriptorPool& rtRayhitPool = GPUContext::instance().getDescriptorPool(rtShader, 10, 1);
             rtRayhitPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES);
             rtRayhitPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES);
             rtRayhitPool.updatePoolSize(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
@@ -701,7 +705,8 @@ namespace odfaeg {
             rtRayhitPool.updatePoolSize(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             rtRayhitPool.updatePoolSize(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             rtRayhitPool.updatePoolSize(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
-            rtRayhitPool.updatePoolSize(8, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
+            rtRayhitPool.updatePoolSize(8, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
+            rtRayhitPool.updatePoolSize(9, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             rtRayhitPool.update();
             DescriptorPool& rtRayhitSpecPool = GPUContext::instance().getDescriptorPool(rtShader, 1, 2);
             rtRayhitSpecPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
@@ -722,7 +727,7 @@ namespace odfaeg {
             rtRayhitEmissPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             rtRayhitEmissPool.update();
             DescriptorSet::allocate(rtRaygenPool, rtRaygenSetLayout, GPUContext::instance().getDescriptorSets(rtShader, 7, 1), MAX_TLAS_STRUCTURES);
-            DescriptorSet::allocate(rtRayhitPool, rtRayhitSetLayout, GPUContext::instance().getDescriptorSets(rtShader, 9, 1, 1), MAX_TEXTURES);
+            DescriptorSet::allocate(rtRayhitPool, rtRayhitSetLayout, GPUContext::instance().getDescriptorSets(rtShader, 10, 1, 1), MAX_TEXTURES);
             DescriptorSet::allocate(rtRayhitSpecPool, rtRayhitSpecSetLayout, GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 2), MAX_TEXTURES);
             DescriptorSet::allocate(rtRayhitNormalPool, rtRayhitNormalSetLayout, GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 3), MAX_TEXTURES);
             DescriptorSet::allocate(rtRayhitMetPool, rtRayhitMetSetLayout, GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 4), MAX_TEXTURES);
@@ -756,7 +761,7 @@ namespace odfaeg {
                 rtRaygenSet.updateAccelerationStructureInfos(6, topLocalAS);
             }            
             rtRaygenSet.updateDescriptorSet();
-            DescriptorSet& rtRayhitSet = GPUContext::instance().getDescriptorSets(rtShader, (hasDiffuseTexture) ? 9 : 8, 1, 1)[0];
+            DescriptorSet& rtRayhitSet = GPUContext::instance().getDescriptorSets(rtShader, (hasDiffuseTexture) ? 10 : 3, 1, 1)[0];
             rtRayhitSet.updateBufferInfos(0, true, GPUContext::instance().getSharedVertexBuffer(RenderTarget::VERTEX_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             rtRayhitSet.updateBufferInfos(1, false, GPUContext::instance().getSharedVertexBuffer(RenderTarget::VERTEX_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             rtRayhitSet.updateBufferInfos(2, geometryOffsetBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -765,8 +770,9 @@ namespace odfaeg {
             rtRayhitSet.updateImageInfos(5, frameBuffer.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             rtRayhitSet.updateImageInfos(6, csmShadowMaps.getDepthStencilTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             rtRayhitSet.updateImageInfos(7, plShadowMaps.getDepthStencilTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            rtRayhitSet.updateBufferInfos(8,GPUContext::instance().getSharedBuffers(RenderTarget::LOD_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             if (hasDiffuseTexture) {
-                rtRayhitSet.updateImageInfos(8, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                rtRayhitSet.updateImageInfos(9, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             }
             rtRayhitSet.updateDescriptorSet();            
             bool hasSpecTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR).size() != 0;

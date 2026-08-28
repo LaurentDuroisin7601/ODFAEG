@@ -52,7 +52,9 @@ namespace odfaeg {
         	unsigned int vertexOffset;
             unsigned int indexOffset;
         	unsigned int id;
-            unsigned int materialId;            
+            unsigned int materialId; 
+            unsigned int instanceId;
+            unsigned int lodOffset;           
         protected :
             void onResize(math::Vec3f& s);
             /**

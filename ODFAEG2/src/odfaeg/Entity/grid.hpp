@@ -18,7 +18,6 @@ namespace odfaeg {
             math::BaseChangementMatrix getBaseChangementMatrix();*/
             bool addEntity (Object entity, physic::BoundingBox objectVolume);
             bool containsEntity(Object entity, math::Vec3f pos);
-            bool isEntityInside();
             Object* getEntity (int id);
             Object* getEntity (std::string name);
             void createCellMap (math::Vec3f &point);
