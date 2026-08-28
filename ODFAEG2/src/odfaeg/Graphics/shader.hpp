@@ -118,7 +118,7 @@ namespace odfaeg{
             bool loadRaytracingFromMemory(const std::string& raygenShader, const std::string& raymissShader, const std::string& rayhitShader);
             bool loadRaytracingFromFileSpv(const std::string& raygenShaderFileName,
                                  const std::string& raymissShaderFileName,
-                                 const std::string& rayhitFileName);
+                                 const std::string& rayhitFileName, const std::string& anyhitFileName="");
             bool loadFromStream(core::InputStream& vertexShaderStream, core::InputStream& fragmentShaderStream, core::InputStream& geometryShaderStream);
             bool loadFromMemory(const std::string& shaderCode, ShaderType shaderType);
             template <typename T>
@@ -140,6 +140,7 @@ namespace odfaeg{
             VkShaderModule getRaygenShaderModule();
             VkShaderModule getRaymissShaderModule();
             VkShaderModule getRayhitShaderModule();
+            VkShaderModule getRayAnyhitShaderModule();
             VkShaderModule getMeshShaderModule();
             VkShaderModule getTaskShaderModule();
             unsigned int getId() const;
@@ -175,7 +176,7 @@ namespace odfaeg{
             bool isCompiled;
             std::string vertexShaderCode, fragmentShaderCode, geometryShaderCode, meshShaderCode, taskShaderCode, raygenShaderCode, raymissShaderCode, rayhitShaderCode;
             VkShaderModule vertexShaderModule, fragmentShaderModule, geometryShaderModule, computeShaderModule,
-                meshShaderModule, taskShaderModule, raygenShaderModule, raymissShaderModule, rayhitShaderModule;
+                meshShaderModule, taskShaderModule, raygenShaderModule, raymissShaderModule, rayhitShaderModule, rayAnyhitShaderModule;
             std::vector<uint32_t> spvMeshShaderCode;
             std::vector<uint32_t> spvTaskShaderCode;            
             std::vector<uint32_t> spvVertexShaderCode;
@@ -185,6 +186,7 @@ namespace odfaeg{
             std::vector<uint32_t> spvRaygenShaderCode;
             std::vector<uint32_t> spvRaymissShaderCode;
             std::vector<uint32_t> spvRayhitShaderCode;
+            std::vector<uint32_t> spvRayanyhitShaderCode;
             Device& device;
             inline static unsigned int nbShaders = 0;
             unsigned int id;            

@@ -137,7 +137,7 @@ namespace odfaeg {
             }
             bool Shader::loadRaytracingFromFileSpv(const std::string& raygenShaderFileName,
                                  const std::string& raymissShaderFileName,
-                                 const std::string& rayhitShaderFileName)
+                                 const std::string& rayhitShaderFileName, const std::string& rayanyhitFileName)
             {
                 // Mesh shader
                 if (!loadSpv(raygenShaderFileName, spvRaygenShaderCode))
@@ -148,6 +148,8 @@ namespace odfaeg {
                     return false;
 
                 if (!loadSpv(rayhitShaderFileName, spvRayhitShaderCode))
+                    return false;
+                if (!rayanyhitFileName.empty() && !loadSpv(rayhitShaderFileName, spvRayanyhitShaderCode))
                     return false;
                 return true;
             }
@@ -485,6 +487,15 @@ namespace odfaeg {
                 if (vkCreateShaderModule(device.getDevice(), &createRHInfo, nullptr, &rayhitShaderModule) != VK_SUCCESS) {
                     throw std::runtime_error("Failed to create rayhit shader module");
                 }
+                if (spvRayanyhitShaderCode.size() > 0) {
+                    VkShaderModuleCreateInfo createRHInfo{};
+                    createRHInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+                    createRHInfo.codeSize = 4 * spvRayanyhitShaderCode.size();
+                    createRHInfo.pCode = spvRayanyhitShaderCode.data();
+                    if (vkCreateShaderModule(device.getDevice(), &createRHInfo, nullptr, &rayAnyhitShaderModule) != VK_SUCCESS) {
+                        throw std::runtime_error("Failed to create rayanyhit shader module");
+                    }
+                }
             }
             void Shader::cleanupShaderModules() {
                 vkDestroyShaderModule(device.getDevice(), vertexShaderModule, nullptr);
@@ -504,6 +515,9 @@ namespace odfaeg {
                 vkDestroyShaderModule(device.getDevice(), raygenShaderModule, nullptr);
                 vkDestroyShaderModule(device.getDevice(), raymissShaderModule, nullptr);
                 vkDestroyShaderModule(device.getDevice(), rayhitShaderModule, nullptr);
+                if (rayAnyhitShaderModule != VK_NULL_HANDLE) {
+                   vkDestroyShaderModule(device.getDevice(), rayAnyhitShaderModule, nullptr); 
+                }
             }
             VkShaderModule Shader::getVertexShaderModule() {
                 return vertexShaderModule;
@@ -522,6 +536,9 @@ namespace odfaeg {
             }
             VkShaderModule Shader::getRayhitShaderModule() {
                 return rayhitShaderModule;
+            }
+            VkShaderModule Shader::getRayAnyhitShaderModule() {
+                return rayAnyhitShaderModule;
             }
             VkShaderModule Shader::getComputeShaderModule() {
                 return computeShaderModule;

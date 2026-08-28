@@ -543,6 +543,22 @@ namespace odfaeg {
 				shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
 				shaderGroups.push_back(shaderGroup);
 			}
+			if (shader.getRayAnyhitShaderModule() != VK_NULL_HANDLE) {
+				VkPipelineShaderStageCreateInfo shaderStageInfo{};
+				shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+				shaderStageInfo.stage = VK_SHADER_STAGE_ANY_HIT_BIT_KHR;
+				shaderStageInfo.module = shader.getRayAnyhitShaderModule();
+				shaderStageInfo.pName = "main";
+				shaderStages.push_back(shaderStageInfo);
+				VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+				shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+				shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
+				shaderGroup.generalShader = VK_SHADER_UNUSED_KHR;
+				shaderGroup.closestHitShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+				shaderGroup.anyHitShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+				shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+				shaderGroups.push_back(shaderGroup);
+			} else 
 			{
 				VkPipelineShaderStageCreateInfo shaderStageInfo{};
 				shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -558,7 +574,7 @@ namespace odfaeg {
 				shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
 				shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
 				shaderGroups.push_back(shaderGroup);
-			}
+			}			
 			std::vector<VkDescriptorSetLayout> descriptorSetLayouts;			
 			for (unsigned int i = 0; i < setLayouts.size(); i++) {	
 				//std::cout<<"handle : "<<setLayouts[i].getHandle()<<std::endl;	
