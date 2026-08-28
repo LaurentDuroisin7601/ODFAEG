@@ -30,7 +30,7 @@ namespace odfaeg {
             void build(Node& node);
             void freeNodes(Node& node);
             std::vector<Node> nodes;
-            core::Compteur<> compteur;      
+            static constexpr core::Compteur<> compteur{};      
         };        
     }
 }

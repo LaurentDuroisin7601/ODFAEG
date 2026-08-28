@@ -26,7 +26,7 @@ namespace odfaeg {
                 std::array<physic::BoundingBox, 8> volumes = volume.subdiv();                
                 for (unsigned int v = 0; v < volumes.size(); v++) {
                     Node child;
-                    child.id = 0;
+                    child.id = compteur.next();
                     child.parent = node.id;
                     child.volume = volumes[v];                        
                     node.children.push_back(child.id);

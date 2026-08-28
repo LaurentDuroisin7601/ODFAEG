@@ -24,7 +24,7 @@ namespace odfaeg {
         template <auto InstanceIdentifier = []{}>
         struct Compteur {
             template <auto x = ExtractThenUpdateCurrentState<InstanceIdentifier>()>
-            consteval auto next() { return x; }
+            consteval auto next() const { return x; }
         };
     }
 }
