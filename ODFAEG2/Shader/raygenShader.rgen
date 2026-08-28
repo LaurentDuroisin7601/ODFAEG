@@ -86,6 +86,7 @@ struct TransportRayPayload {
     vec4 shadowColor; 
     mat4 dirLightSpace[NB_CASCADES+1];
     mat4 pointLightSpace[6];
+    int desiredLod;
 };
 layout(location = 0) rayPayloadEXT TransportRayPayload transport; // ray generation
 void main() {

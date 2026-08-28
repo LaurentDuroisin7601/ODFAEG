@@ -57,6 +57,7 @@ struct TransportRayPayload {
     vec4 shadowColor; 
     mat4 dirLightSpace[NB_CASCADES+1];
     mat4 pointLightSpace[6];
+    int desiredLod;
 };
 layout (push_constant) uniform PushConstant {
     uint currentFrame;

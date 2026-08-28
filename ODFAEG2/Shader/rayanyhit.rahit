@@ -1,0 +1,130 @@
+#version 460
+#extension GL_EXT_ray_tracing : enable
+#extension GL_EXT_nonuniform_qualifier : enable
+#extension GL_EXT_debug_printf : enable
+#define MAX_FRAMES_IN_FLIGHT 2
+#define MAX_PRIMITIVE_TYPES 6
+#define MAX_TEXTURES 1024
+#define MAX_BONES_INFLUENCE 4
+#define NB_CASCADES 4
+const float epsilon = 0.001;
+struct Vertex {
+    vec3 position; ///< 3D position of the vertex
+    uint color; ///< Color of the vertex
+    vec2 texCoords; ///< Coordinates of the texture's pixel to map to the vertex
+    vec3 normal;
+    //bone indexes which will influence this vertex
+    int m_BoneIDs[MAX_BONES_INFLUENCE];
+    //weights from each bone
+    float m_Weights[MAX_BONES_INFLUENCE];
+    int submeshId;
+};
+struct GeometryOffset {
+    uint vertexOffset;
+    uint indexOffset;
+    uint materialOffset;
+    uint lodOffset;
+    uint tlasID;
+};
+struct LodLevel {
+    uint index_offset;
+    uint index_count;
+    uint mesheltOffset;
+    uint meshletCount;
+};
+struct Material {   
+    /*vec2 uvScale;
+    vec2 uvOffset;*/
+    uint diffuseTextureIndex;
+    uint specularTextureIndex;
+    uint normalTextureIndex;
+    uint metalnessTextureIndex;
+    uint roughnessTextureIndex;
+    uint aoTextureIndex;
+    uint emissiveTextureIndex;
+    uint materialType;
+    uint materialSet;   
+    uint nbVertices;
+    uint nbIndexes;
+    int instanceGroupId;
+    uint vertsInstanceSet;
+    uint materialId;
+    uint nbBuffers;  
+    int reflectable;
+    int refractable; 
+    int opaque; 
+};
+layout (binding = 0, set =  1) buffer vertexBuffer {
+    Vertex vertices[];
+} verticesData[MAX_PRIMITIVE_TYPES];
+layout (binding = 1, set = 1) buffer indexBuffer {
+    uint indexes[];
+} indexesData[MAX_PRIMITIVE_TYPES];
+layout (binding = 2, set = 1) buffer geomBuffer {
+    GeometryOffset geomOffsets[];
+};
+layout (binding = 3, set = 1) buffer materialBuffer {
+    Material materials[];
+};
+layout (binding = 7, set = 1) buffer lodBuffer {
+    LodLevel lodLevels[];
+};
+layout (binding = 8, set = 1) uniform sampler2D diffuseTextures[MAX_TEXTURES];
+layout(set = 2, binding = 0) uniform sampler2D specularTextures[MAX_TEXTURES];
+layout(set = 3, binding = 0) uniform sampler2D normalTextures[MAX_TEXTURES];
+layout(set = 4, binding = 0) uniform sampler2D metalnessTextures[MAX_TEXTURES];
+layout(set = 5, binding = 0) uniform sampler2D roughnessTextures[MAX_TEXTURES];
+layout(set = 6, binding = 0) uniform sampler2D aoTextures[MAX_TEXTURES];
+layout(set = 8, binding = 0) uniform sampler2D emissiveTextures[MAX_TEXTURES];
+struct TransportRayPayload {
+    bool lastBounce;
+    int rayType;
+    vec4 secondaryColor;
+    vec4 transmitionColor;
+    vec4 reflectColor;
+    vec4 refractColor;
+    vec3 origin;
+    vec3 direction;
+    vec3 R;
+    vec3 T; 
+    bool reflectable;
+    bool refractable;
+    bool transmissive;  
+    int localASID; 
+    vec3 normal;
+    Material parentMaterial; 
+    vec4 localLightning;
+    vec3 lightPos;
+    int lightId;        
+    vec4 lightColor; 
+    vec4 shadowColor; 
+    mat4 dirLightSpace[NB_CASCADES+1];
+    mat4 pointLightSpace[6];
+};
+layout(location = 0) rayPayloadInEXT TransportRayPayload transport;
+hitAttributeEXT vec2 baryCoords;
+vec4 unpackColor(uint c)
+{
+    float r = float((c >> 0)  & 0xFFu) / 255.0;
+    float g = float((c >> 8)  & 0xFFu) / 255.0;
+    float b = float((c >> 16) & 0xFFu) / 255.0;
+    float a = float((c >> 24) & 0xFFu) / 255.0;
+
+    return vec4(r, g, b, a);
+}
+
+void main() {  
+    GeometryOffset geomOffs = geomOffsets[gl_InstanceCustomIndexEXT];
+    int primID = gl_PrimitiveID;
+    float dist = gl_HitTEXT;
+    float lodStep = 20.0;
+    int lod = clamp(int(dist / lodStep), 0, 4);
+    LodLevel lodLevel = lodLevels[geomOffs.lodOffset];
+    if (geomOffs.indexOffset + primID * 3 >= lodLevels[geomOffs.lodOffset+lod].index_offset 
+    && geomOffs.indexOffset + primID * 3 < lodLevels[geomOffs.lodOffset+lod].index_count) {
+        transport.desiredLod = lod;
+    } else {
+        ignoreIntersectionEXT();
+        return;
+    }
+}
