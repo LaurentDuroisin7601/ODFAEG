@@ -506,10 +506,9 @@ namespace odfaeg {
                     1,
                     &accelerationBuildGeometryInfo,
                     accelerationBuildStructureRangeInfos.data());
-            physic::BoundingBox volume(0, 0, 0, 10000, 10000, 10000);
-            entity::Octree<Mesh*> octree(volume, 7);
+            entity::GridMap<Mesh*> grid(100, 100, 100);
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
-                octree.addObject(gameObjects[i], gameObjects[i]->getGameObject()->getGlobalBounds());
+                grid.addEntity(gameObjects[i], gameObjects[i]->getGameObject()->getGlobalBounds());
             }              
             std::vector<Mesh*> localGameObjects;
             std::vector<std::pair<unsigned int, unsigned int>> localTlasInfos;            
@@ -517,7 +516,7 @@ namespace odfaeg {
                 physic::BoundingBox nonOpaqueZoneInfluence = nonOpaqueObjects[i]->getGameObject()->getGlobalBounds();
                 nonOpaqueZoneInfluence.scale(math::Vec3f(200, 200, 200));
                 unsigned int offset = localGameObjects.size();
-                std::vector<Mesh*> octreeGameObject = octree.getObjects(nonOpaqueZoneInfluence);
+                std::vector<Mesh*> octreeGameObject = grid.getEntitiesInBox(nonOpaqueZoneInfluence);
                 localTlasInfos.push_back(std::make_pair(localGameObjects[i]->instanceId, octreeGameObject.size()));
                 localGameObjects.insert(localGameObjects.end(), octreeGameObject.begin(), octreeGameObject.end());
             }

@@ -460,7 +460,7 @@ namespace odfaeg {
                         if (cell != nullptr) {
                             for (unsigned int n = 0; n < cell->getEntitiesInside().size(); n++) {
                                physic::BoundingBox bx2;
-                               Object* entity = cell->getEntityInside(n, bx2);                               
+                               Object entity = cell->getEntityInside(n, bx2);                               
                                bool contains = false;
                                for (unsigned int k = 0; k < entities.size() && !contains; k++) {
                                     if (entities[k] == entity)
@@ -552,7 +552,7 @@ namespace odfaeg {
             unsigned int nbCases=0;
             for (unsigned int i = 0; i < casesMap.size(); i++) {
                 if (casesMap[i] != nullptr) {
-                    math::Vec3f point = casesMap[i]->getCellVolume()->getCenter();
+                    math::Vec3f point = casesMap[i]->getCellVolume().getCenter();
                     math::Vec3f coordsCaseP = getCoordinatesAt(point);
                     minX = (coordsCaseP.x() < minX) ? coordsCaseP.x() : minX;
                     minY = (coordsCaseP.y() < minY) ? coordsCaseP.y() : minY;

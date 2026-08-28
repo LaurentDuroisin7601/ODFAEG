@@ -19,7 +19,7 @@
 #include "iRenderer.hpp"
 #include "../Entity/pointLight.hpp"
 #include "../Entity/directionnalLight.hpp"
-#include "../Entity/octree.hpp"
+#include "../Entity/grid.hpp"
 namespace odfaeg {
     namespace graphic {
         class RTRenderer : public IRenderer {

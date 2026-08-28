@@ -2,7 +2,7 @@ namespace odfaeg {
     namespace entity {
         using namespace std;
         template <typename Object>
-        GridCell<Object>::GridCell (physic::BoundingBox volume, math::Vec3f coords) {
+        GridCell<Object>::GridCell (physic::BoundingBox volume, math::Vec3f coords) : octree(volume, 8) {
             this->volume = volume;
             passable = true;
             stateChanged = false;
@@ -71,9 +71,9 @@ namespace odfaeg {
         }
         template<typename Object>
         Object GridCell<Object>::getEntityInside (unsigned int index, physic::BoundingBox& bx) {
-            if (index >= 0 && index < octree.getObjects().size()) {
-                Object entity = octree.getObjects()[index];
-                bx = octree.getObjectVolumes()[index];
+            if (index >= 0 && index < octree.getObjects(volume).size()) {
+                Object entity = octree.getObjects(volume)[index];
+                bx = octree.getObjectVolumes(volume)[index];
                 return entity;
             }
             return nullptr;

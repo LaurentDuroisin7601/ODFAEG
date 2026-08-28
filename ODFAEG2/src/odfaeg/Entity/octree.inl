@@ -93,18 +93,18 @@ namespace odfaeg {
             std::vector<physic::BoundingBox> objects;
             Node node = nodes[0];
             if (node.volume.intersects(volume)) {
-                getObjects(objects, node, volume);
+                getObjectVolumes(objects, node, volume);
             }
             return objects;
         }        
         template <typename Object>
         void Octree<Object>::getObjectVolumes(std::vector<physic::BoundingBox>& objects, Node node, physic::BoundingBox volume) {
             for (unsigned int i = 0; i < node.objects.size(); i++) {
-                objects.push_back(node.objectVolume[i]);                
+                objects.push_back(node.objectVolumes[i]);                
             }
             for (unsigned int c = 0; c < node.children.size(); c++) {
                 if (nodes[node.children[c]].volume.intersects(volume)) {
-                    getObjects(objects, nodes[node.children[c]], volume);
+                    getObjectVolumes(objects, nodes[node.children[c]], volume);
                 }
             }
         }
