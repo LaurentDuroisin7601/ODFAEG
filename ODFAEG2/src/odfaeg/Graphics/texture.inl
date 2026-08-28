@@ -298,7 +298,7 @@ namespace odfaeg {
                         VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, msaaSamples, VK_IMAGE_TILING_OPTIMAL);
                 } else {
                     //std::cout<<"create image : "<<i<<","<<id<<std::endl;
-                    images[i].create(texWidth, texHeight, (layered) ? 1 : texDepth, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+                    images[i].create(texWidth, texHeight, (layered) ? 1 : texDepth, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT /*| VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT*/,
                         VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, msaaSamples, VK_IMAGE_TILING_OPTIMAL);
                 }
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, mipLevels, (layered) ? texDepth : 1);
@@ -702,7 +702,13 @@ namespace odfaeg {
                 //std::cout<<"transition : "<<i<<","<<images[i].getHandle()<<std::endl;
                 transitionImageLayout(images[i], commandPool.getHandle(i),VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevel, 0, 1, 1);
                 images[i].copyBufferToImage(commandPool.getHandle(i), staggingBuffer, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), static_cast<uint32_t>(x), static_cast<uint32_t>(y), srcStart, mipLevel);
-                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevel, 0, 1, 1);
+                /*if (mipLevel == mipLevels-1 && mipLevels == 1) {
+                    mipLevels = std::floor(std::log2(std::max(texWidth, texHeight))) + 1;
+                    std::cout<<"mip levels : "<<mipLevels<<" , "<<texWidth<<" ,"<<texHeight<<std::endl;
+                    generateMipmaps();
+                } else {*/
+                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevel, 0, 1, 1);
+                //}
             }
             mipsInfos.push_back({texWidth, texHeight});
             if (mipLevel == mipLevels-1) {
@@ -1152,8 +1158,8 @@ namespace odfaeg {
                             1,
                             &copyRegion
                         );
-                        transitionImageLayout(texture.images[imageIndex], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,currentLayout,mip,0,1,texture.layerCount);
-                        transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,mip,0,1,layerCount);
+                        transitionImageLayout(texture.images[imageIndex], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,mip,0,1,texture.layerCount);
+                        //transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,mip,0,1,layerCount);
                         
                     }
                 }
@@ -1177,9 +1183,10 @@ namespace odfaeg {
 
             copyRegion.extent.width  = texture.mipsInfos[mipLevel].width;
             copyRegion.extent.height = texture.mipsInfos[mipLevel].height;
-            copyRegion.extent.depth  = 1;
+            copyRegion.extent.depth  = 1;            
             for (unsigned int i = 0; i < nbBuffers; i++) {
-                texture.transitionImageLayout(texture.images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, mipLevel, 0, 1, 1);
+                VkImageLayout currentLayout = texture.images[i].getLayout();
+                texture.transitionImageLayout(texture.images[i], commandPool.getHandle(i), texture.images[i].getLayout(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, mipLevel, 0, 1, 1);
                 transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevel, 0, 1, 1);
                 vkCmdCopyImage(
                     commandPool.getHandle(i),
@@ -1188,7 +1195,7 @@ namespace odfaeg {
                     1,
                     &copyRegion
                 );
-                texture.transitionImageLayout(texture.images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, mipLevel, 0, 1, 1);
+                texture.transitionImageLayout(texture.images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevel, 0, 1, 1);
                 transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevel, 0, 1, 1);
             }
         }
