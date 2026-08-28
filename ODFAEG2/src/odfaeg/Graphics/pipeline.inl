@@ -544,17 +544,23 @@ namespace odfaeg {
 				shaderGroups.push_back(shaderGroup);
 			}
 			if (shader.getRayAnyhitShaderModule() != VK_NULL_HANDLE) {
-				VkPipelineShaderStageCreateInfo shaderStageInfo{};
-				shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-				shaderStageInfo.stage = VK_SHADER_STAGE_ANY_HIT_BIT_KHR;
-				shaderStageInfo.module = shader.getRayAnyhitShaderModule();
-				shaderStageInfo.pName = "main";
-				shaderStages.push_back(shaderStageInfo);
+				VkPipelineShaderStageCreateInfo chitshaderStageInfo{};
+				chitshaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+				chitshaderStageInfo.stage = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+				chitshaderStageInfo.module = shader.getRayhitShaderModule();
+				chitshaderStageInfo.pName = "main";
+				shaderStages.push_back(chitshaderStageInfo);
+				VkPipelineShaderStageCreateInfo anyhitshaderStageInfo{};
+				anyhitshaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+				anyhitshaderStageInfo.stage = VK_SHADER_STAGE_ANY_HIT_BIT_KHR;
+				anyhitshaderStageInfo.module = shader.getRayAnyhitShaderModule();
+				anyhitshaderStageInfo.pName = "main";
+				shaderStages.push_back(anyhitshaderStageInfo);
 				VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
 				shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
 				shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
 				shaderGroup.generalShader = VK_SHADER_UNUSED_KHR;
-				shaderGroup.closestHitShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+				shaderGroup.closestHitShader = static_cast<uint32_t>(shaderStages.size()) - 2;
 				shaderGroup.anyHitShader = static_cast<uint32_t>(shaderStages.size()) - 1;
 				shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
 				shaderGroups.push_back(shaderGroup);
