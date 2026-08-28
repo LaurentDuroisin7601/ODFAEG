@@ -36,7 +36,7 @@ namespace odfaeg {
             //if ( parameters.get< bool >( cuT( "tangent_space" ) ) )
                 importFlags |= aiProcess_CalcTangentSpace;*/
             //std::cout<<"path : "<<path<<std::endl;
-            const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs /*| aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace*/);
+            const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate /*| aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace*/);
 
             //std::cout<<"imported"<<std::endl;
             if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)

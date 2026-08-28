@@ -992,6 +992,7 @@ namespace odfaeg {
                     commandPool.beginRecordCommandBuffer(i);
                     /*std::cout<<"mip levels : "<<mipLevels<<std::endl;
                 system("PAUSE");*/
+                    VkImageLayout currentLayout = texture.images[i].getLayout();
                     for (unsigned int mip = 0; mip < mipLevels; mip++) {
                         VkImageCopy copyRegion{};
                         copyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -1014,7 +1015,7 @@ namespace odfaeg {
                         
                         //std::cout<<"buffer : "<<texture.images.size()<<std::endl;
                         
-                        VkImageLayout currentLayout = texture.images[i].getLayout();
+                        
                         /*if (currentLayout ==  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
                             system("PAUSE");
                         } */
@@ -1113,7 +1114,7 @@ namespace odfaeg {
                     transitionImageLayout(images[i], commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,0,0,1,layerCount);
                 }
             } else {
-               
+               VkImageLayout currentLayout = texture.images[imageIndex].getLayout();
                 for (unsigned int mip = 0; mip < mipLevels; mip++) {
                     VkImageCopy copyRegion{};
 
@@ -1133,7 +1134,7 @@ namespace odfaeg {
                     copyRegion.extent.height = (mipLevels == 1) ? texture.m_size.y() : mipsInfos[mip].height;
                     copyRegion.extent.depth  = 1;
                     for (unsigned int i = 0; i < nbBuffers; i++) {
-                        VkImageLayout currentLayout = texture.images[imageIndex].getLayout();
+                        
                         /*if (currentLayout == VK_IMAGE_LAYOUT_UNDEFINED) {
                             std::cout<<"current layout : "<<currentLayout<<std::endl;
                             system("PAUSE");

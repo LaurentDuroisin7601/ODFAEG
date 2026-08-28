@@ -537,10 +537,14 @@ namespace odfaeg {
 							float w = subMeshGlobalBounds.getSize().x();
 							float h = subMeshGlobalBounds.getSize().y();
 							float d = subMeshGlobalBounds.getSize().z();
-							unsigned int clusterCount = 0;							
-							while (x < w+x) {
-								while (y < h+y) {
-									while (z < d+z) {
+							unsigned int clusterCount = 0;	
+							float tmpX = x;
+							float tmpY = y;
+							float tmpZ = z;
+							//std::cout<<x<<" ,"<<y<<" ,"<<z<<" ,"<<w<<" , "<<h<<" ,"<<d<<std::endl;						
+							while (tmpX < x+w) {
+								while (tmpY < y+h) {
+									while (tmpZ < z+d) {
 										Cluster cluster;	
 										cluster.id = currentClustersOffset;	
 										cluster.meshletOffset = 0;	
@@ -553,13 +557,19 @@ namespace odfaeg {
 										cluster.globalBounds = clusterAABB;
 										clusterDatas.push_back(cluster);
 										currentClustersOffset++;
-										clusterCount++;											
-										z += 100;
+										clusterCount++;	
+										/*std::cout<<x<<" ,"<<y<<" ,"<<z<<" ,"<<x+w<<" , "<<y+h<<" ,"<<z+d<<std::endl;					
+										system("PAUSE");*/
+										/*std::cout<<"min max : "<<currentClustersOffset<<","<<clusterCount<<std::endl;
+										system("PAUSE");*/											
+										tmpZ+=10;
 									}
-									y += 100;
+									tmpY+=10;
 								}
-								x += 100;
-							}	
+								tmpX+=10;								
+							}
+							/*std::cout<<"min max : "<<currentClustersOffset<<","<<clusterCount<<std::endl;
+							system("PAUSE");*/	
 							Meshlet m;
 							m.minVertex = std::numeric_limits<unsigned int>::max();
 							m.maxVertex = 0;
@@ -575,12 +585,13 @@ namespace odfaeg {
 								newMin = std::min(m.minVertex, newMin);
 								newMax = std::max(m.maxVertex, newMax);
 								unsigned int newVertexCount = (newMin - newMax) + 1;
+								
 								// Si ce triangle dépasse les limites → nouveau meshlet
 								if (m.nbIndexes/3 >= MAX_PRIMS || newVertexCount > MAX_VERTS)
     							{
 									m.vertexOffset = m.minVertex;
 									m.nbVertices   = m.maxVertex - m.minVertex + 1;
-									meshletDatas.push_back(m);
+									
 									// Nouveau meshlet
 									m = Meshlet();
 									m.minVertex = std::numeric_limits<unsigned int>::max();
@@ -589,28 +600,37 @@ namespace odfaeg {
 									m.indexOffset = tri * 3;
 									// Recalculer pour ce triangle
 									newMin = std::min(g0, std::min(g1, g2));
-									newMax = std::max(g0, std::max(g1, g2));
-									newVertexCount = newMax - newMin + 1;	
+									newMax = std::max(g0, std::max(g1, g2));									
+									newVertexCount = newMax - newMin + 1;
+									meshletDatas.push_back(m);	
 									currentMeshletsOffset++;	
 									meshletCount++;							
 								}
 								// Ajouter triangle
 								m.minVertex = newMin;
 								m.maxVertex = newMax;
-								m.nbIndexes += 3;
+								meshletDatas.back().minVertex = newMin;
+								meshletDatas.back().maxVertex = newMax;
+								m.nbIndexes += 3;								
 							}
-							// Final meshlet
+							// Final meshlet							
 							m.vertexOffset = m.minVertex;
 							m.nbVertices   = m.maxVertex - m.minVertex + 1;
-							meshletDatas.push_back(m);
+							
+							//std::cout<<"min : "<<m.minVertex<<std::endl;
 							currentMeshletsOffset++;
 							meshletCount++;
-							for (unsigned int m = currentMeshletsOffset-meshletCount; m < meshletDatas.size(); m++) {
+							for (unsigned int t = currentLodMeshletOffset; t < meshletDatas.size(); t++) {
 								for (unsigned int c = currentClustersOffset-clusterCount; c < clusterDatas.size(); c++) {
-									Meshlet& meshlet = meshletDatas[m];
+									
+									Meshlet& meshlet = meshletDatas[t];
 									Cluster& cluster = clusterDatas[c];
+									//std::cout<<"m : "<<t<<" c : "<<c<<" min, max : "<<meshlet.minVertex<<","<<meshlet.maxVertex<<std::endl;
+									/*system("PAUSE");*/
+									meshlet.minVertex;								
 									entity::Vertex v1 = vertices[primitiveType][meshlet.minVertex];
 									entity::Vertex v2 = vertices[primitiveType][meshlet.maxVertex];
+									
 									physic::BoundingBox meshletBounds(v1.position.x(), v1.position.y(), v1.position.z(), v2.position.x(), v2.position.y(), v2.position.z());
 									physic::BoundingBox clusterBounds(cluster.globalBounds.center.x() - cluster.globalBounds.size.x()*0.5f,
 																	  cluster.globalBounds.center.y() - cluster.globalBounds.size.y()*0.5f,
@@ -624,13 +644,14 @@ namespace odfaeg {
 										meshlet.clusterId = cluster.id;
 									} 
 								}
-							}							
+							}	
+							std::cout<<"cluster added"<<std::endl;						
 							//std::cout<<"lod meshlet count : "<<(meshletDatas.size() - currentLodMeshletOffset - currentSubmeshMeshletOffset)<<std::endl;
 							lodLevelData.meshletOffset = currentLodMeshletOffset;
 							lodLevelData.meshletCount = meshletDatas.size() - currentLodMeshletOffset - currentSubmeshMeshletOffset;
 							//std::cout<<"meshlet count : "<<	meshletDatas.size()<<","<<currentLodMeshletOffset<<std::endl;																		
 							lodLevelDatas.push_back(lodLevelData);
-							for (unsigned int m = currentSubmeshMeshletOffset+lodLevelData.meshletOffset; m < currentSubmeshMeshletOffset+lodLevelData.meshletOffset + lodLevelData.meshletCount; m++) {
+							/*for (unsigned int m = currentSubmeshMeshletOffset+lodLevelData.meshletOffset; m < currentSubmeshMeshletOffset+lodLevelData.meshletOffset + lodLevelData.meshletCount; m++) {
 								Meshlet meshlet = meshletDatas[m];
 								unsigned int firstIndex = subMeshData.indexOffset + lods[l].indexOffset + meshlet.indexOffset; 
 								//std::cout<<"meshlet : "<<lodLevelData.meshletCount<<","<<currentSubmeshMeshletOffset<<","<<subMeshData.indexOffset<<","<<meshlet.nbIndexes<<","<<meshlet.nbVertices<<","<<meshlet.indexOffset<<","<<meshlet.vertexOffset<<std::endl;							
@@ -643,7 +664,7 @@ namespace odfaeg {
 										system("PAUSE");
 									}
 								}
-							}
+							}*/
 						}
 						subMeshData.lodOffset = currentSubmeshesOffset * lods.size();
 						subMesh.lodOffset = currentSubmeshesOffset * lods.size();		
@@ -663,8 +684,8 @@ namespace odfaeg {
 					clusterDatas[meshletDatas[m].clusterId].meshletOffset = previousClusterId;
 				}
 				totalMeshlets = meshletDatas.size();
-				/*std::cout<<"total sub meshes"<<totalSubMeshes<<std::endl;
-				system("PAUSE");*/
+				std::cout<<"total sub meshes"<<totalSubMeshes<<std::endl;
+				system("PAUSE");
 				for (unsigned int i = 0; i < 1; i++) {
 					for (unsigned int j = 0; j < NB_PRIMITIVE_TYPES; j++) {
 						//std::cout<<"update vertices"<<std::endl;
