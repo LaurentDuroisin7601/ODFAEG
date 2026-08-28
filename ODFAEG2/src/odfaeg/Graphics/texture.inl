@@ -222,6 +222,8 @@ namespace odfaeg {
             //std::cout<<"create format : "<<m_format<<std::endl;
             //id = getUniqueId();
             isFBOTexture = FBOAttachment;
+            /*std::cout<<"FBO Attachment ? "<<FBOAttachment<<std::endl;
+            system("PAUSE");*/
             if (FBOAttachment) {
                 m_format = VK_FORMAT_R8G8B8A8_SRGB;
             } 
@@ -296,12 +298,13 @@ namespace odfaeg {
                         VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, msaaSamples, VK_IMAGE_TILING_OPTIMAL);
                 } else {
                     //std::cout<<"create image : "<<i<<","<<id<<std::endl;
-                    images[i].create(texWidth, texHeight, (layered) ? 1 : texDepth, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                    images[i].create(texWidth, texHeight, (layered) ? 1 : texDepth, imageType, m_format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
                         VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, msaaSamples, VK_IMAGE_TILING_OPTIMAL);
                 }
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, mipLevels, (layered) ? texDepth : 1);
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
-                if (FBOAttachment) {                    
+                if (FBOAttachment) {  
+                    //system("PAUSE");                  
                     commandPool.beginRecordCommandBuffer(i);
                     transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);    
                     commandPool.endRecordCommandBuffer(i);                                                                     
