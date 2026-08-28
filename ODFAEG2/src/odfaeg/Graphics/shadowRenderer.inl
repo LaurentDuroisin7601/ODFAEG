@@ -17,6 +17,8 @@ namespace odfaeg {
         threadPool(6),
         useThread(useThread)
         {
+            shadowPassCSMFragPC.resolution = math::Vector2i(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
+            shadowPassPLFragPC.resolution = math::Vector2i(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
             rendererReady.store(false); 
             shadowMappingFragPC.resolution = math::Vector2i(parentRenderer.getSize().x(), parentRenderer.getSize().y());   
             //shadowMapPL.createCubeMap(std::max(parentRenderer.getSize().x(), parentRenderer.getSize().y()), true, false);              
@@ -74,13 +76,13 @@ namespace odfaeg {
             createCommandPools();
             unsigned int maxNodesDir = 20 * SHADOW_MAP_WIDTH * SHADOW_MAP_HEIGHT;
             shadowPassCSMFragPC.maxNodes = maxNodesDir;
-            unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int);
+            unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int) * 2;
             commandPool.beginRecordCommandBuffer(0);
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT*(NB_CASCADES+1); i++) {
                 headPtrsDirStorageImage.emplace_back(GPUContext::instance().getDevice());
                 linkedListDirBuffer.emplace_back(GPUContext::instance().getDevice());
                 nodeCounterDirBuffer.emplace_back(GPUContext::instance().getDevice());
-                headPtrsDirStorageImage.back().create(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, 1, VK_IMAGE_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY,
+                headPtrsDirStorageImage.back().create(PPLL_RESOLUTION, PPLL_RESOLUTION, 1, VK_IMAGE_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY,
                     1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);                
                 headPtrsDirStorageImage.back().createImageView(VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
                 Texture::transitionImageLayout(headPtrsDirStorageImage.back(), commandPool.getHandle(0), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
@@ -94,7 +96,7 @@ namespace odfaeg {
                 headPtrsPointStorageImage.emplace_back(GPUContext::instance().getDevice());
                 linkedListPointBuffer.emplace_back(GPUContext::instance().getDevice());
                 nodeCounterPointBuffer.emplace_back(GPUContext::instance().getDevice());
-                headPtrsPointStorageImage.back().create(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, 1, VK_IMAGE_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY,
+                headPtrsPointStorageImage.back().create(PPLL_RESOLUTION, PPLL_RESOLUTION, 1, VK_IMAGE_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT, VMA_MEMORY_USAGE_GPU_ONLY,
                     1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);                
                 headPtrsPointStorageImage.back().createImageView(VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
                 Texture::transitionImageLayout(headPtrsPointStorageImage.back(), commandPool.getHandle(0), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
@@ -148,24 +150,18 @@ namespace odfaeg {
             pl.pos = pointLight.getPosition();
             pointLights.push_back(pl);
             Camera pointLightCamera;
-            pointLightCamera.setPerspective(90, 1, 1, 25);            
-            shadowPassPLVertPC.lightProjMatrix = pointLightCamera.getProjMatrix().getMatrix().transpose();
+            glm::perspective(90, 1, 1, 25);            
+            shadowPassPLVertPC.lightProjMatrix = glm::perspective(glm::radians(90.0f), (float) SHADOW_MAP_SIZE / (float) SHADOW_MAP_SIZE, 1.0f, 25.0f);   
              
             ViewPLMatrix viewPLMatrices;
             math::Vec3f lightPos = pointLight.getPosition();              
-            pointLightCamera.setCenter(lightPos);
-            pointLightCamera.lookAt(-1, 0, 0, math::Vec3f(0, -1, 0));
-            viewPLMatrices.viewsPLMatrices[0] = pointLightCamera.getViewMatrix().getMatrix().transpose();
-            pointLightCamera.lookAt(1, 0, 0, math::Vec3f(0, -1, 0));
-            viewPLMatrices.viewsPLMatrices[1] = pointLightCamera.getViewMatrix().getMatrix().transpose();
-            pointLightCamera.lookAt(0, -1, 0, math::Vec3f(0, 0, -1));
-            viewPLMatrices.viewsPLMatrices[2] = pointLightCamera.getViewMatrix().getMatrix().transpose();
-            pointLightCamera.lookAt(0, 1, 0, math::Vec3f(0, 0, 1));
-            viewPLMatrices.viewsPLMatrices[3] = pointLightCamera.getViewMatrix().getMatrix().transpose();
-            pointLightCamera.lookAt(0, 0, -1, math::Vec3f(0, -1, 0));
-            viewPLMatrices.viewsPLMatrices[4] = pointLightCamera.getViewMatrix().getMatrix().transpose();
-            pointLightCamera.lookAt(0, 0, 1, math::Vec3f(0, -1, 0));
-            viewPLMatrices.viewsPLMatrices[5] = pointLightCamera.getViewMatrix().getMatrix().transpose(); 
+            pointLightCamera.setCenter(lightPos);           
+            viewPLMatrices.viewsPLMatrices[0] = glm::lookAt(glm::vec3(-1, 0, 0), glm::vec3(lightPos.x(), lightPos.y(), lightPos.z()), glm::vec3(0, -1, 0));           
+            viewPLMatrices.viewsPLMatrices[1] = glm::lookAt(glm::vec3(1, 0, 0), glm::vec3(lightPos.x(), lightPos.y(), lightPos.z()), glm::vec3(0, -1, 0));           
+            viewPLMatrices.viewsPLMatrices[2] = glm::lookAt(glm::vec3(0, -1, 0), glm::vec3(lightPos.x(), lightPos.y(), lightPos.z()), glm::vec3(0, 0, -1));            
+            viewPLMatrices.viewsPLMatrices[3] = glm::lookAt(glm::vec3(0, 1, 0), glm::vec3(lightPos.x(), lightPos.y(), lightPos.z()), glm::vec3(0, 0, 1));
+            viewPLMatrices.viewsPLMatrices[4] = glm::lookAt(glm::vec3(0, 0, -1), glm::vec3(lightPos.x(), lightPos.y(), lightPos.z()), glm::vec3(0, -1, 0));
+            viewPLMatrices.viewsPLMatrices[5] = glm::lookAt(glm::vec3(0, 0, 1), glm::vec3(lightPos.x(), lightPos.y(), lightPos.z()), glm::vec3(0, -1, 0));
             lightViewsPLMatrices.push_back(viewPLMatrices);   
             pointLights.back().far_plane = 25; 
             needToUpdatePointLightsMatrices = true;
@@ -432,7 +428,7 @@ namespace odfaeg {
             }
             return frustrumCorners;
         }
-        math::Matrix4f ShadowRenderer::getLightSpaceMatrix(math::Vec3f lightDir, const float nearPlane, const float farPlane) {
+        glm::mat4 ShadowRenderer::getLightSpaceMatrix(math::Vec3f lightDir, const float nearPlane, const float farPlane) {
             Camera camera = parentRenderer.getCamera();
             //std::cout<<"near/far : "<<nearPlane<<","<<farPlane<<std::endl;
             camera.setPerspective(80, shadowMap.getSize().x() / shadowMap.getSize().y(), nearPlane, farPlane);  
@@ -450,8 +446,8 @@ namespace odfaeg {
             center /= corners.size();
             //std::cout<<"center / 8 : "<<center<<std::endl;            
             Camera lightSpace;
-            lightSpace.setCenter(center + lightDir);
-            lightSpace.lookAt(center.x(), center.y(), center.z(), math::Vec3f(0.f, -1.f, 0.f));
+            math::Vec3f target(center + lightDir);
+            glm::mat4 view = glm::lookAt(glm::vec3(target.x(), target.y(), target.z()), glm::vec3(center.x(), center.y(), center.z()), glm::vec3(0.f, -1.f, 0.f));
 
             float minX = std::numeric_limits<float>::max();
             float maxX = std::numeric_limits<float>::lowest();
@@ -489,10 +485,10 @@ namespace odfaeg {
                 maxZ *= zMult;
             }
             
-            lightSpace.setPerspective(minX, maxX, minY, maxY, minZ, maxZ);
+            glm::mat4 proj = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
            
 
-            return lightSpace.getProjMatrix().getMatrix() * lightSpace.getViewMatrix().getMatrix();
+            return  proj * view;
         }
         std::vector<float> ShadowRenderer::computeSplits(int cascadeCount, float nearPlane, float farPlane, float lambda)
         {

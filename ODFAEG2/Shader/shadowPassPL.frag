@@ -4,6 +4,7 @@
 #define MAX_TEXTURES 1024
 #define NB_PRIMITIVE_TYPES 6
 #define MAX_FRAMES_IN_FLIGHT 2
+#define PPLL_RESOLUTION 512
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in vec3 normal;
@@ -15,11 +16,13 @@ layout (push_constant) uniform PushConstant {
     layout(offset=80) vec3 lightPos;    
     layout(offset=96) float far_plane;
     layout(offset=100) int maxNodes;
+    layout(offset=104) vec2 resolution;
 } pc;
 struct NodeType {
     vec4 color;
     float depth;
     uint next;
+    uint hResId;
 };
 struct MaterialData {
     uint diffuseTextureIndex;
@@ -54,6 +57,8 @@ layout (set = 0, binding = 6) uniform sampler2D diffuseTextures[MAX_TEXTURES];
 void main()
 {
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[v_DrawID];
+    ivec2 hrLrScale = ivec2(pc.resolution.xy) / PPLL_RESOLUTION;
+    ivec2 lrFragCoord = ivec2(gl_FragCoord.xy) / hrLrScale; 
     // --- Diffuse ---
     vec2 uv = fragTexCoord;
     vec4 diffuse = fragColor;
@@ -63,10 +68,11 @@ void main()
     uint nodeIdx = atomicAdd(countData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].count, 1);
     if (nodeIdx < pc.maxNodes) {
          //debugPrintfEXT("index %i, max node %i", nodeIdx, pc.maxNodes);
-         uint prevHead = imageAtomicExchange(headPointers[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame], ivec2(gl_FragCoord.xy), nodeIdx);
+         uint prevHead = imageAtomicExchange(headPointers[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame], lrFragCoord, nodeIdx);
          linkedListData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].nodes[nodeIdx].color = diffuse;
          linkedListData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].nodes[nodeIdx].depth = gl_FragCoord.z;
          linkedListData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].nodes[nodeIdx].next = prevHead;
+         linkedListData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].nodes[nodeIdx].hResId = uint((int(gl_FragCoord.x) % hrLrScale.x) + (int(gl_FragCoord.y) % hrLrScale.y) * hrLrScale.x);
     } 
     // get distance between fragment and light source
     float lightDistance = length(fragPos.xyz - pc.lightPos);    

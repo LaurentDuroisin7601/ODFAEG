@@ -4,6 +4,7 @@
 #include <vector>
 #include <deque>
 #include <odfaeg/config.hpp>
+#include <glm/glm.hpp>
 #include <queue>
 #include <atomic>
 #include <condition_variable>
@@ -43,17 +44,20 @@ namespace odfaeg {
                unsigned int nbPointLights;
                unsigned int imageIndex; 
                unsigned int pad;
-               math::Vector2i resolution;              
+               math::Vector2i resolution; 
+               math::Vector2i csmResolution;
+               math::Vector2i plResolution;             
             }; 
             struct ShadowPassCSMVertPC {
                 int primitiveType;
-                int currentFrame;
+                int currentFrame;                
             };  
             struct ShadowPassCSMFragPC {                
-                int maxNodes;
+                alignas(8) int maxNodes;
+                math::Vector2i resolution;
             };  
             struct ShadowPassPLVertPC {
-                math::Matrix4f lightProjMatrix;
+                glm::mat4 lightProjMatrix;
                 int primitiveType;
                 int currentFrame;
                 int _pad[2];
@@ -62,6 +66,7 @@ namespace odfaeg {
                 alignas(16) math::Vec3f lightPos;              
                 float far_plane;
                 int maxNodes;
+                math::Vector2i resolution;
             };
             struct DirLight {               
                 alignas(16) math::Vec3f dir; 
@@ -72,10 +77,10 @@ namespace odfaeg {
                 float far_plane;
             };
             struct LightSpaceMatrix {
-                math::Matrix4f lightSpaceMatrices[NB_CASCADES+1];
+                glm::mat4 lightSpaceMatrices[NB_CASCADES+1];
             };
             struct ViewPLMatrix {
-                math::Matrix4f viewsPLMatrices[6];
+                glm::mat4 viewsPLMatrices[6];
             };
             ShadowRenderer(RenderTarget& parentRenderer, RenderTexture& sceneColorTexture, RenderTexture& cmsmShadowMap, RenderTexture& pointShadowMap, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
             void createCommandPools();
@@ -92,7 +97,7 @@ namespace odfaeg {
             void computeDirLightMatrices();
             void computePointLightMatrices();
             std::vector<float> computeSplits(int cascadeCount, float nearPlane, float farPlane, float lambda);
-            math::Matrix4f getLightSpaceMatrix(math::Vec3f lightDir, const float nearPlane, const float farPlane);
+            glm::mat4 getLightSpaceMatrix(math::Vec3f lightDir, const float nearPlane, const float farPlane);
             std::array<math::Vec3f, 8> getFrustrumCornersWordlSpace(math::Matrix4f projView);
             std::vector<LightSpaceMatrix>  fLightSpaceMatrices;
             RenderTarget& parentRenderer;
@@ -135,9 +140,10 @@ namespace odfaeg {
             std::vector<DirLight> dirLights;
             std::vector<PointLight> pointLights; 
             std::vector<float> shadowCascadeLevels;
-            inline static const unsigned int SHADOW_MAP_SIZE = 1024;             
+            inline static const unsigned int SHADOW_MAP_SIZE = 2048;             
             inline static const unsigned int SHADOW_MAP_WIDTH = 1024;
-            inline static const unsigned int SHADOW_MAP_HEIGHT = 1024;                                                
+            inline static const unsigned int SHADOW_MAP_HEIGHT = 1024;   
+            inline static const unsigned int PPLL_RESOLUTION = 512;                                             
         };
     }
 }

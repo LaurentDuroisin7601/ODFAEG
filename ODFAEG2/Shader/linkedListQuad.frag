@@ -9,8 +9,7 @@ struct NodeType {
   uint next;  
 };
 layout (push_constant) uniform PushConstant {
-  int currentFrame;
-  vec2 resolution;
+  int currentFrame; 
 } pc;
 layout(set = 0, binding = 0, r32ui) uniform uimage2D headPointers[MAX_FRAMES_IN_FLIGHT];
 layout(std430, set = 0, binding = 1) buffer linkedLists {

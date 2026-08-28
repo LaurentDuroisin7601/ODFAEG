@@ -5,10 +5,12 @@
 #define NB_PRIMITIVE_TYPES 6
 #define MAX_FRAMES_IN_FLIGHT 2
 #define NB_CASCADES 4
+#define PPLL_RESOLUTION 512
 struct NodeType {
     vec4 color;
     float depth;
     uint next;
+    uint hResId;
 };
 struct MaterialData {    
     uint diffuseTextureIndex;
@@ -37,6 +39,7 @@ layout (location = 4) in flat int primitiveType;
 layout (location = 5) in flat int currentFrame;
 layout (push_constant) uniform PushConstant {
     layout(offset=8) int maxNodes; 
+    layout(offset=16) vec2 resolution;
 } pc;
 layout (std430, set = 0, binding = 2) buffer MaterialDataSSBO {
     MaterialData materialData[];
@@ -51,6 +54,8 @@ layout (std430, set = 0, binding = 5) buffer linkedListSSBO {
 layout (set = 0, binding = 6) uniform sampler2D diffuseTextures[MAX_TEXTURES];
 void main()
 {   
+    ivec2 hrLrScale = ivec2(pc.resolution.xy) / PPLL_RESOLUTION;
+    ivec2 lrFragCoord = ivec2(gl_FragCoord.xy) / hrLrScale; 
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[v_DrawID];
     // --- Diffuse ---
     vec2 uv = fragTexCoord;
@@ -60,9 +65,10 @@ void main()
     }
     uint nodeIdx = atomicAdd(countData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].count, 1);
     if (nodeIdx < pc.maxNodes) {
-         uint prevHead = imageAtomicExchange(headPointers[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame], ivec2(gl_FragCoord.xy), nodeIdx);
+         uint prevHead = imageAtomicExchange(headPointers[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame], lrFragCoord, nodeIdx);
          linkedListData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].nodes[nodeIdx].color = diffuse;
          linkedListData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].nodes[nodeIdx].depth = gl_FragCoord.z;
          linkedListData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].nodes[nodeIdx].next = prevHead;
+         linkedListData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].nodes[nodeIdx].hResId = uint((int(gl_FragCoord.x) % hrLrScale.x) + (int(gl_FragCoord.y) % hrLrScale.y) * hrLrScale.x);
     }      
 }

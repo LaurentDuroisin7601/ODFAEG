@@ -35,7 +35,9 @@ layout (push_constant) uniform PushConstant {
     layout(offset=208) uint nbDirLights;
     layout(offset=212) uint nbPointLights; 
     layout(offset=216) uint imageIndex;  
-    layout(offset=224) ivec2 resolution;  
+    layout(offset=224) ivec2 resolution;
+    layout(offset=232) ivec2 csmResolution; 
+    layout(offset=240) ivec2 plResolution;  
 } pc;
 layout (std430, set = 0, binding = 1) buffer LightSpaceMatricesSSBO {
     LightSpaceMatrix lightSpaceMatrices[];

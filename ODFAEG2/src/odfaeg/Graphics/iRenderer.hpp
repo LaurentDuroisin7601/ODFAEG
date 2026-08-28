@@ -22,7 +22,7 @@ namespace odfaeg {
                 virtual void addPonctualLight(entity::PointLight& pointLigth) {
 
                 } 
-                virtual void addDirectionnalLight(entity::DirectionnalLight& directionnalLight);          
+                virtual void addDirectionnalLight(entity::DirectionnalLight& directionnalLight) {}        
                 virtual void clear() = 0;                
                 void update(int windowId, window::IEvent event) {
                     /*Si c'est une fenêtre est liée au renderer, on met à jour la pile d'évènements du listener.*/ 
