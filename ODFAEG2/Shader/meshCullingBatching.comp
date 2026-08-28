@@ -347,8 +347,7 @@ void main() {
                 for (uint i = 0; i < 4; i++) {
                     uint offset = atomicAdd(offsets.offsetHeight, 1);
                     heights[offset] = vertexData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].vertices[subMesh.vertexOffset+i];
-                }
-                
+                }                
             }
         }		
 	}

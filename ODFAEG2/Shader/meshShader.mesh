@@ -30,6 +30,8 @@ struct TaskData {
     MeshDrawCommand meshDrawCommand;
     uint baseInstance;
     int clusterId;
+    int heightOffset;
+    uint heightCount;    
 };
 struct AABB {
 	vec3 center;
@@ -124,6 +126,9 @@ layout (std430, set = 0, binding = 7) buffer MeshletsSSBO {
 layout (std430, set = 0, binding = 8) buffer ClustersSSBO {
     Cluster clusters[];
 } clusterDatas;
+layout (std430, set = 0, binding = 9) buffer HeightSSBO {
+    Vertex heights[];
+};
 vec4 unpackColor(uint c)
 {
     float r = float((c >> 24) & 0xFFu) / 255.0;
@@ -135,25 +140,28 @@ vec4 unpackColor(uint c)
 }
 void main() {      
     //Instance id = taskId (base instance) + workGroupId.x (instance id).
-    SubMesh subMesh = SubMeshDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMeshData[payload.taskId];
-    Cluster cluster = clusterDatas.clusters[taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].clusterId];
-    uint instanceId = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].baseInstance + gl_WorkGroupID.x;
-    //debugPrintfEXT("Instance id : %i", gl_WorkGroupID.x); 
-    mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId].modelMatrix;
-        
-    MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+gl_WorkGroupID.y];
-    /*if (gl_WorkGroupID.y >= lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletCount)
-        debugPrintfEXT("meshlet offets : %i, %i", lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletCount, gl_WorkGroupID.y);*/
-    uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_offset + meshlet.indexOffset;
-    //debugPrintfEXT("First index : %i,%i", firstIndex, meshlet.vertexOffset);
-    //3 = Triangles.
-    uint maxVerts = 255u;
-    uint maxPrims = 85u;
-    uint vertexCount   = min(meshlet.nbVertices, maxVerts);
-    uint primitiveCount = min(meshlet.nbIndexes / 3u, maxPrims);
-    /*if (vertexCount > 0)
-        debugPrintfEXT("submesh vertex count : %i, %i", meshlet.nbVertices, meshlet.nbIndexes);*/
-    //if (pc.primitiveType == 3) {       
+    TaskData taskData = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId];
+    if (taskData.heightCount == 0) {    
+        SubMesh subMesh = SubMeshDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMeshData[payload.taskId];
+        Cluster cluster = clusterDatas.clusters[taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].clusterId];
+        uint instanceId = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].baseInstance + gl_WorkGroupID.x;
+        //debugPrintfEXT("Instance id : %i", gl_WorkGroupID.x); 
+        mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId].modelMatrix;
+            
+        MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+gl_WorkGroupID.y];
+        /*if (gl_WorkGroupID.y >= lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletCount)
+            debugPrintfEXT("meshlet offets : %i, %i", lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletCount, gl_WorkGroupID.y);*/
+        uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_offset + meshlet.indexOffset;
+        //debugPrintfEXT("First index : %i,%i", firstIndex, meshlet.vertexOffset);
+        //3 = Triangles.
+        uint maxVerts = 255u;
+        uint maxPrims = 85u;
+        uint vertexCount   = min(meshlet.nbVertices, maxVerts);
+        uint primitiveCount = min(meshlet.nbIndexes / 3u, maxPrims);
+        /*if (vertexCount > 0)
+            debugPrintfEXT("submesh vertex count : %i, %i", meshlet.nbVertices, meshlet.nbIndexes);*/
+        //if (pc.primitiveType == 3) {
+            
         SetMeshOutputsEXT(vertexCount, primitiveCount);
         for (uint i = 0; i < vertexCount; i++) {
             uint v = subMesh.vertexOffset + meshlet.vertexOffset + i;
@@ -177,6 +185,17 @@ void main() {
             /*if ((i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount) && pc.currentFrame == 1)
                 debugPrintfEXT("meshlet : %i,%i, %i, %i, %i, %i, %i",lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletCount, subMesh.meshletOffset, subMesh.indexOffset, meshlet.nbIndexes, meshlet.nbVertices, meshlet.indexOffset, meshlet.vertexOffset);*/  
             gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
+        }
+    } else {
+            SetMeshOutputsEXT(taskData.heightOffset, taskData.heightCount / 4 * 2);
+            for (uint i = 0; i < taskData.heightCount; i++) {        
+                gl_MeshVerticesEXT[i].gl_Position = vec4(heights[taskData.heightOffset+i].position, 1);        
+            }
+            for (uint tri = 0; tri < taskData.heightCount / 4; tri++) {
+                uint offset = taskData.heightOffset / 4 * 2 + tri;
+                gl_PrimitiveTriangleIndicesEXT[tri*2] = uvec3(offset*4, offset*4+1, offset*4+2);
+                gl_PrimitiveTriangleIndicesEXT[tri*2+1] = uvec3(offset*4, offset*4+2, offset*4+3);
+            }
         }
     //}
 }
