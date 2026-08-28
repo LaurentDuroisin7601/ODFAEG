@@ -70,9 +70,10 @@ namespace odfaeg {
             this->traveled = traveled;
         }
         template<typename Object>
-        Object GridCell<Object>::getEntityInside (unsigned int index) {
+        Object GridCell<Object>::getEntityInside (unsigned int index, physic::BoundingBox& bx) {
             if (index >= 0 && index < octree.getObjects().size()) {
-                Object entity = octree.getObjects()[index].get();
+                Object entity = octree.getObjects()[index];
+                bx = octree.getObjectVolumes()[index];
                 return entity;
             }
             return nullptr;

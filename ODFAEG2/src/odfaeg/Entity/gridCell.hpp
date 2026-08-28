@@ -18,7 +18,7 @@ namespace odfaeg {
                 math::Vec3f getCenter ();
                 bool isTraveled ();
                 void setTraveled (bool traveled);
-                Object getEntityInside (unsigned int index);
+                Object getEntityInside (unsigned int index, physic::BoundingBox& bx);
                 unsigned int getNbEntitiesInside();                
                 bool containsEntity (Object entity);
                 bool isPassable ();

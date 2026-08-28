@@ -20,10 +20,12 @@ namespace odfaeg {
             void addObject(Object object, physic::BoundingBox objectVolume);
             void removeObject(Object object, physic::BoundingBox objectVolume);
             std::vector<Object> getObjects(physic::BoundingBox volume);
+            std::vector<physic::BoundingBox> getObjectVolumes(physic::BoundingBox volume);
             void update(Object object);
             bool contains(Object object);
             private :
             unsigned int maxObjectsPerNode;
+            void getObjectVolumes(std::vector<physic::BoundingBox>& objects, Node node, physic::BoundingBox volume);
             void getObjects(std::vector<Object>& objects, Node node, physic::BoundingBox volume);
             void build(Node& node);
             void freeNodes(Node& node);

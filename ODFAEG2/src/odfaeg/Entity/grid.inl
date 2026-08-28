@@ -1,8 +1,7 @@
-#include "../../../include/odfaeg/Graphics/gridMap.h"
 namespace odfaeg {
-    namespace graphic {
+    namespace entity {
         using namespace std;
-        template<typneme Object>
+        template<typename Object>
         GridMap<Object>::GridMap (int cellWidth, int cellHeight, int cellDepth) {
             nbCasesPerRow = 0;
             nbCasesPerCol = 0;
@@ -12,36 +11,36 @@ namespace odfaeg {
             this->cellHeight = cellHeight;
             this->cellDepth = cellDepth;
         }
-        template<typneme Object>
+        template<typename Object>
         int GridMap<Object>::getCellWidth() {
             return cellWidth;
         }
-        template<typneme Object>
+        template<typename Object>
         int GridMap<Object>::getCellHeight() {
             return cellHeight;
         }
-        template<typneme Object>
+        template<typename Object>
         int GridMap<Object>::getCellDepth() {
             return cellDepth;
         }
-        template<typneme Object>
+        template<typename Object>
         int GridMap<Object>::getNbCasesPerRow () {
             return nbCasesPerRow;
         }
-        template<typneme Object>
+        template<typename Object>
         int GridMap<Object>::getNbCasesPerCol () {
             return nbCasesPerCol;
         }
-        template<typneme Object>
+        /*template<typneme Object>
         void GridMap<Object>::setBaseChangementMatrix(BaseChangementMatrix bm) {
             this->bm = bm;
         }
         template<typname Object>
         BaseChangementMatrix GridMap<Object>::getBaseChangementMatrix() {
             return bm;
-        }
-        template<typname Object>
-        bool GridMap<Object>::addEntity (Object entity, physic::BoundingVolume objectVolume) {
+        }*/
+        template<typename Object>
+        bool GridMap<Object>::addEntity (Object entity, physic::BoundingBox objectVolume) {
 
             /*if (entity->getType() == "E_ANIMATION_FRAME")
                 //////std::cout<<"add global bounds : "<<entity->getGlobalBounds().getPosition()<<entity->getGlobalBounds().getWidth()<<","<<entity->getGlobalBounds().getHeight()<<","<<entity->getGlobalBounds().getDepth()<<std::endl;*/
@@ -71,9 +70,9 @@ namespace odfaeg {
             }*/
             //////////std::cout<<"offsets : "<<offsetX<<","<<offsetY<<","<<offsetZ<<std::endl<<"start : "<<x<<","<<y<<","<<z<<std::endl<<"ends : "<<endX<<","<<endY<<","<<endZ<<std::endl;
             //////////std::cout<<"add entity : "<<entity->getType()<<std::endl<<x<<","<<y<<","<<z<<","<<endX<<","<<endY<<","<<endZ<<std::endl;
-            for (int i = x; i <= endX; i+= gridWidth) {
-                for (int j = y; j <= endY; j+= gridHeight)  {
-                    for (int k = z; k <= endZ; k+= gridDepth) {
+            for (int i = x; i <= endX; i+= cellWidth) {
+                for (int j = y; j <= endY; j+= cellHeight)  {
+                    for (int k = z; k <= endZ; k+= cellDepth) {
 
                         math::Vec3f pos (i, j, k);
                         //////////std::cout<<"pos : "<<pos<<std::endl;
@@ -81,7 +80,7 @@ namespace odfaeg {
                         ////////std::cout<<"contains entity"<<std::endl;
                         if (!(containsEntity(entity, pos))) {
 
-                            CellMap *cm = getGridCellAt(pos);
+                            GridCell<Object> *cm = getGridCellAt(pos);
 
                             if (cm == nullptr) {
                                 ////////std::cout<<"create cell map"<<std::endl;
@@ -125,9 +124,9 @@ namespace odfaeg {
             ////////std::cout<<"entity added"<<std::endl;
             return added;
         }
-        template<typname Object>
+        template<typename Object>
         bool GridMap<Object>::containsEntity(Object entity, math::Vec3f pos) {
-            CellMap *caseMap = getGridCellAt(pos);
+            GridCell<Object> *caseMap = getGridCellAt(pos);
             if (caseMap !=nullptr) {
                  if (caseMap->containsEntity(entity)) {
                      return true;
@@ -135,10 +134,10 @@ namespace odfaeg {
             }
             return false;
         }
-        template<typname Object>
+        template<typename Object>
         Object* GridMap<Object>::getEntity (int id) {
             for (unsigned int i = 0; i < casesMap.size(); i++) {
-                CellMap *cm = casesMap[i];
+                GridCell<Object> *cm = casesMap[i];
                 if (cm != nullptr) {
                     for (unsigned int j = 0; j < cm->getEntitiesInside().size(); j++) {
                         Object entity = cm->getEntityInside(j);
@@ -150,10 +149,10 @@ namespace odfaeg {
             }
             return nullptr;
         }
-        template<typname Object>
-        Entity* GridMap<Object>::getEntity (std::string name) {
+        template<typename Object>
+        Object* GridMap<Object>::getEntity (std::string name) {
             for (unsigned int i = 0; i < casesMap.size(); i++) {
-                CellMap *cm = casesMap[i];
+                GridCell<Object> *cm = casesMap[i];
                 if (cm != nullptr) {
                     for (unsigned int j = 0; j < cm->getEntitiesInside().size(); j++) {
                         Object entity = cm->getEntityInside(j);
@@ -165,10 +164,10 @@ namespace odfaeg {
             }
             return nullptr;
         }
-        template<typname Object>
+        template<typename Object>
         void GridMap<Object>::createCellMap (math::Vec3f &point) {
             ////////std::cout<<"point : "<<point<<std::endl;
-            math::Vec3f coordsCaseP = getCoordinatesAt(point);
+            math::Vec3f p = getCoordinatesAt(point);
             ////////std::cout<<"coords caseP : "<<coordsCaseP<<std::endl;
 
             /*minX = (coordsCaseP.x < minX) ? coordsCaseP.x : minX;
@@ -178,7 +177,7 @@ namespace odfaeg {
             maxY = (coordsCaseP.y > maxY) ? coordsCaseP.y : maxY;
             maxZ = (coordsCaseP.z > maxZ) ? coordsCaseP.z : maxZ;*/
 
-            math::Vec3f p = bm.unchangeOfBase(point);
+            //math::Vec3f p = bm.unchangeOfBase(point);
 
             math::Vec3f v1;
             v1[0] = (cellWidth > 0) ? (int) p.x() / cellWidth : 0;
@@ -204,9 +203,7 @@ namespace odfaeg {
             v[7] = math::Vec3f (v1.x(), v1.y() + cellHeight, v1.z()+cellDepth);
 
             for (unsigned int i = 0; i < 8; i++) {
-                v[i] = bm.changeOfBase(v[i]);
-                /*if (i < 4)
-                    ////////std::cout<<"point "<<i<<" : "<<v[i]<<std::endl;*/
+                v[i] = bm.changeOfBase(v[i]);               
             }*/
 
             //Face de devant.
@@ -228,7 +225,7 @@ namespace odfaeg {
             bp->addTriangle(v[3], v[7], v[6]);
             bp->addTriangle(v[3], v[2], v[6]);*/
             //////////std::cout<<"center : "<<bp->getCenter()<<std::endl;
-            GridCell *cell = new GridCell(volume, coordsCaseP);
+            GridCell<Object> *cell = new GridCell<Object>(volume, p);
             casesMap.push_back(cell);
             checkExts();
             casesMap.pop_back();
@@ -239,12 +236,12 @@ namespace odfaeg {
             //////////std::cout<<"nbCasesPerRow : "<<nbCasesPerRow<<std::endl<<"nbCasesPerCol : "<<nbCasesPerCol<<"nb cases per depth"<<nbCasesPerDepth<<std::endl;
             unsigned int newSize = nbCasesPerCol * nbCasesPerRow * nbCasesPerDepth;
             //////////std::cout<<"min z : "<<minZ<<std::endl;
-            int indice = (math::Math::abs(minX) + coordsCaseP.x())
-                         + (math::Math::abs(minY) + coordsCaseP.y()) * nbCasesPerRow + (math::Math::abs(minZ) + coordsCaseP.z()) * nbCasesPerCol * nbCasesPerRow;
+            int indice = (math::Math::abs(minX) + p.x())
+                         + (math::Math::abs(minY) + p.y()) * nbCasesPerRow + (math::Math::abs(minZ) + p.z()) * nbCasesPerCol * nbCasesPerRow;
             ////////std::cout<<"create cell map at indice : "<<indice<<std::endl;
             if (newSize > casesMap.size()) {
                 ////////std::cout<<"resize vector! > : "<<newSize<<std::endl;
-                vector<GridCell*> tmpCasesMap = casesMap;
+                vector<GridCell<Object>*> tmpCasesMap = casesMap;
                 casesMap.clear();
                 casesMap.resize(newSize);
                 std::fill(casesMap.begin(), casesMap.end(), nullptr);
@@ -260,7 +257,7 @@ namespace odfaeg {
                 ////////std::cout<<"vector resized > "<<std::endl;
             } else if (newSize < casesMap.size()) {
                 ////////std::cout<<"resize vector < ! : "<<newSize<<std::endl;
-                vector<GridCell*> tmpCasesMap = casesMap;
+                vector<GridCell<Object>*> tmpCasesMap = casesMap;
                 casesMap.clear();
                 casesMap.resize(newSize);
                 std::fill(casesMap.begin(), casesMap.end(), nullptr);
@@ -279,28 +276,28 @@ namespace odfaeg {
             casesMap[indice] = cell;
             //system("PAUSE");
         }
-        template<typname Object>
+        template<typename Object>
         void GridMap<Object>::replaceEntity (Object entity) {
             removeEntity(entity);
             addEntity(entity);
         }
-        template<typname Object>
+        template<typename Object>
         //Supprime une tile dans la cellule. (Sans la supprimer de la m�moire.)
         bool GridMap<Object>::removeEntity (Object entity, physic::BoundingBox volume) {
             /*if (entity->getType() == "E_ANIMATION_FRAME")
                 //////std::cout<<"remove global bounds : "<<entity->getGlobalBounds().getPosition()<<entity->getGlobalBounds().getWidth()<<","<<entity->getGlobalBounds().getHeight()<<","<<entity->getGlobalBounds().getDepth()<<std::endl;*/
             int x = volume.getPosition().x();
-            int y = volume.getGlobalBounds().getPosition().y();
-            int z = volume.getGlobalBounds().getPosition().z();
-            int endX = (x + volume.getGlobalBounds().getWidth());
-            int endY = (y + volume.getGlobalBounds().getHeight());
-            int endZ = (z + volume.getGlobalBounds().getDepth());
+            int y = volume.getPosition().y();
+            int z = volume.getPosition().z();
+            int endX = (x + volume.getWidth());
+            int endY = (y + volume.getHeight());
+            int endZ = (z + volume.getDepth());
             bool removed = false;
-            for (int i = x; i <= endX; i+= offsetX) {
-                for (int j = y; j <= endY; j+= offsetY) {
-                    for (int k = z; k <= endZ; k+= offsetZ) {
+            for (int i = x; i <= endX; i+= cellWidth) {
+                for (int j = y; j <= endY; j+= cellHeight) {
+                    for (int k = z; k <= endZ; k+= cellDepth) {
                         math::Vec3f pos (i, j, k);
-                        CellMap *cm = getGridCellAt(pos);
+                        GridCell<Object> *cm = getGridCellAt(pos);
                         /*math::Vec3f coords = getCoordinatesAt(pos);
                         int indice = (math::Math::abs(minX) + coords.x)
                                     + (math::Math::abs(minY) + coords.y) * nbCasesPerRow + (math::Math::abs(minZ) + coords.z) * nbCasesPerCol;
@@ -321,23 +318,23 @@ namespace odfaeg {
             }
             return removed;
         }
-        template<typname Object>
-        bool GridMap<Object>::deleteEntity (Object object, physic::BoundingBox volume) {
+        template<typename Object>
+        bool GridMap<Object>::deleteEntity (Object entity, physic::BoundingBox volume) {
             int x = volume.getPosition().x();
             int y = volume.getPosition().y();
-            int z = volume.getGlobalBounds().getPosition().z();
+            int z = volume.getPosition().z();
             int endX = (x + volume.getWidth());
             int endY = (y + volume.getHeight());
             int endZ = (z + volume.getDepth());
 
             bool removed = false;
-            for (int i = x; i <= endX; i+= offsetX) {
-                for (int j = y; j <= endY; j+= offsetY) {
-                    for (int k = z; k <= endZ; k+= offsetZ) {
+            for (int i = x; i <= endX; i+= cellWidth) {
+                for (int j = y; j <= endY; j+= cellHeight) {
+                    for (int k = z; k <= endZ; k+= cellDepth) {
                         math::Vec3f pos (i, j, k);
                         /*if (entity->getType() == "E_BIGTILE")
                               ////////std::cout<<"remove entity at : "<<pos<<std::endl;*/
-                        CellMap *cm = getGridCellAt(pos);
+                        GridCell<Object> *cm = getGridCellAt(pos);
                         if (cm != nullptr) {
 
                           if(!removed && cm->deleteEntity(entity))
@@ -353,10 +350,9 @@ namespace odfaeg {
             }
             return removed;
         }
-        template<typname Object>
+        template<typename Object>
         bool GridMap<Object>::deleteEntity(int id) {
-
-            vector<Object>::iterator it;
+            typename vector<Object>::iterator it;
             vector<Object> entities = getEntities();
             for (it = entities.begin(); it != entities.end();) {
 
@@ -370,8 +366,8 @@ namespace odfaeg {
             }
             return false;
         }
-        template<typname Object>
-        void GridMap<Object>::removeCellMap (GridCell *cell) {
+        template<typename Object>
+        void GridMap<Object>::removeCellMap (GridCell<Object> *cell) {
 
             for (unsigned int i = 0; i < casesMap.size(); i++) {
                 if (casesMap[i] != nullptr && casesMap[i]==cell) {
@@ -391,7 +387,7 @@ namespace odfaeg {
 
             if (newSize < casesMap.size()) {
                 //////////std::cout<<"new size : "<<newSize<<std::endl;
-                vector<GridCell*> tmpCasesMap = casesMap;
+                vector<GridCell<Object>*> tmpCasesMap = casesMap;
                 casesMap.clear();
                 casesMap.resize(newSize);
                 std::fill(casesMap.begin(), casesMap.end(), nullptr);
@@ -404,7 +400,7 @@ namespace odfaeg {
                 }
             } else if (newSize > casesMap.size()) {
                 //////////std::cout<<"new size : "<<newSize<<std::endl;
-                vector<GridCell*> tmpCasesMap = casesMap;
+                vector<GridCell<Object>*> tmpCasesMap = casesMap;
                 casesMap.clear();
                 casesMap.resize(newSize);
                 std::fill(casesMap.begin(), casesMap.end(), nullptr);
@@ -418,20 +414,20 @@ namespace odfaeg {
             }
         }
         template<typename Object>
-        vector<GridCell*> GridMap::getCasesInBox (physic::BoundingBox bx) {
+        vector<GridCell<Object>*> GridMap<Object>::getCasesInBox (physic::BoundingBox bx) {
 
-            vector<GridCell*> cells;
+            vector<GridCell<Object>*> cells;
             int x = bx.getPosition().x();
             int y = bx.getPosition().y();
             int z = bx.getPosition().z();
             int endX = (x + bx.getWidth());
             int endY = (y + bx.getHeight());
             int endZ = (z + bx.getDepth());
-            for (int i = x; i <= endX; i+= offsetX) {
-                for (int j = y; j <= endY; j+= offsetY) {
-                    for (int k = 0; k <= endZ; k+= offsetZ) {
+            for (int i = x; i <= endX; i+= cellWidth) {
+                for (int j = y; j <= endY; j+= cellHeight) {
+                    for (int k = 0; k <= endZ; k+= cellDepth) {
                         math::Vec3f p (i, j, k);
-                        GridCell *cell = getGridCellAt(p);
+                        GridCell<Object> *cell = getGridCellAt(p);
                         if (cell != nullptr) {
                             bool contains = false;
                             for (unsigned int i = 0; i < cells.size(); i++) {
@@ -447,7 +443,7 @@ namespace odfaeg {
             return cells;
         }
         template<typename Object>
-        vector<Object> GridMap::getEntitiesInBox(physic::BoundingBox box) {
+        vector<Object> GridMap<Object>::getEntitiesInBox(physic::BoundingBox box) {
             vector<Object> entities;
             int x = box.getPosition().x();
             int y = box.getPosition().y();
@@ -456,15 +452,15 @@ namespace odfaeg {
             int endY = box.getPosition().y() + box.getHeight();
             int endZ = box.getPosition().z() + box.getDepth();
             physic::BoundingBox bx (x, y, z, endX-x, endY-y, z - endZ);
-            for (int i = x; i <= endX; i+=offsetX) {
-                for (int j = y; j <= endY; j+=offsetY) {
-                    for (int k = z; k <= endZ; k+= offsetZ) {
+            for (int i = x; i <= endX; i+=cellWidth) {
+                for (int j = y; j <= endY; j+=cellHeight) {
+                    for (int k = z; k <= endZ; k+= cellDepth) {
                         math::Vec3f point(i, j, k);
-                        GridCell* cell = getGridCellAt(point);
+                        GridCell<Object>* cell = getGridCellAt(point);
                         if (cell != nullptr) {
                             for (unsigned int n = 0; n < cell->getEntitiesInside().size(); n++) {
-                               Entity* entity = cell->getEntityInside(n);
-                               physic::BoundingBox bx2 = entity->getGlobalBounds();
+                               physic::BoundingBox bx2;
+                               Object* entity = cell->getEntityInside(n, bx2);                               
                                bool contains = false;
                                for (unsigned int k = 0; k < entities.size() && !contains; k++) {
                                     if (entities[k] == entity)
@@ -485,7 +481,7 @@ namespace odfaeg {
         vector<Object> GridMap<Object>::getEntities () {
             vector<Object> allEntities;
             for (unsigned int i = 0; i < casesMap.size(); i++) {
-                GridCell *cell = casesMap[i];
+                GridCell<Object> *cell = casesMap[i];
                 if (cell != nullptr) {
                      for (unsigned int n = 0; n < cell->getNbEntitiesInside(); n++) {
                         bool contains = false;
@@ -506,7 +502,7 @@ namespace odfaeg {
             return math::Vec3f(minX, minY, minZ);
         }
         template<typename Object>
-        CellMap* GridMap<Object>::getGridCellAt (math::Vec3f point) {
+        GridCell<Object>* GridMap<Object>::getGridCellAt (math::Vec3f point) {
             math::Vec3f coordsCaseP = getCoordinatesAt(point);
             ////////std::cout<<"indice : "<<coordsCaseP<<std::endl;
             unsigned int indice = (math::Math::abs(minX) + coordsCaseP.x()) + (math::Math::abs(minY) + coordsCaseP.y()) * nbCasesPerRow + (math::Math::abs(minZ) + coordsCaseP.z()) * nbCasesPerCol * nbCasesPerRow;
@@ -518,9 +514,9 @@ namespace odfaeg {
             return nullptr;
         }
         template<typename Object>
-        math::Vec3f GridMap<Object>::getCoordinatesAt(math::Vec3f &point) {
+        math::Vec3f GridMap<Object>::getCoordinatesAt(math::Vec3f &p) {
             //////////std::cout<<"get coordinates at, point : "<<point<<std::endl;
-            math::Vec3f p = bm.unchangeOfBase(point);
+            //math::Vec3f p = bm.unchangeOfBase(point);
             ////////std::cout<<"point : "<<point<<std::endl;
             math::Vec3f f;
             if (cellWidth > 0)
@@ -545,7 +541,7 @@ namespace odfaeg {
             return f;
         }
         template<typename Object>
-        std::vector<GridCell*> GridMap<Object>::getCasesMap () {
+        std::vector<GridCell<Object>*> GridMap<Object>::getCasesMap () {
             return casesMap;
         }
         template<typename Object>
@@ -579,15 +575,15 @@ namespace odfaeg {
             return math::Vec3f (maxX - minX, maxY - minY, maxZ - minZ);
         }
         template<typename Object>
-        vector<GridCell*> GridMap<Object>::getNeightbours(Object object, GridCell *cell, bool getCellOnPassable) {
+        vector<GridCell<Object>*> GridMap<Object>::getNeightbours(Object object, GridCell<Object> *cell, bool getCellOnPassable) {
             math::Vec3f coords = cell->getCoords();
-            vector<GridCell*> neightbours;
+            vector<GridCell<Object>*> neightbours;
             for (int i = coords.x() - 1; i <= coords.x() + 1; i++) {
                 for (int j = coords.y() - 1; j <= coords.y() + 1; j++) {
                     for (int k = coords.z() - 1; k <= coords.z() + 1; k++) {
                         if (!(i == coords.x() && j == coords.y() && k == coords.z())) {
                             math::Vec2f neightbourCoords(i, j);
-                            GridCell *neightbour = getGridCellAtFromCoords(neightbourCoords);
+                            GridCell<Object> *neightbour = getGridCellAtFromCoords(neightbourCoords);
                             if (neightbour != nullptr) {
                                 if (getCellOnPassable)
                                     neightbours.push_back(neightbour);
@@ -604,14 +600,14 @@ namespace odfaeg {
             return neightbours;
         }
         template<typename Object>
-        GridCell* GridMap<Object>::getGridCellAtFromCoords(math::Vec3f coords) {
+        GridCell<Object>* GridMap<Object>::getGridCellAtFromCoords(math::Vec3f coords) {
             int indice = (math::Math::abs(minX) + coords.x()) + (math::Math::abs(minY) + coords.y()) * nbCasesPerRow + (math::Math::abs(minZ) + coords.z()) * nbCasesPerCol;
             if (indice >= 0 && indice < static_cast<int>(casesMap.size()))
                 return casesMap[indice];
             return nullptr;
         }
         template<typename Object>
-        GridCell<Object>::~GridCell () {
+        GridMap<Object>::~GridMap () {
             /*vector<Entity*> entities = getEntities();
             for (unsigned int i = 0; i < entities.size(); i++) {
                 delete entities[i];
