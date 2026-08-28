@@ -43,6 +43,7 @@ namespace odfaeg {
 
 				if (graphicsPipeline[shader.getId()][j].size() <= depthStencilId * blendMode.nbBlendModes + blendMode.id) {
 					for (unsigned int k = graphicsPipeline[shader.getId()][j].size(); k < depthStencilId * blendMode.nbBlendModes + blendMode.id + 1; k++) {
+						//std::cout<<"pipeline ids : "<<shader.getId()<<","<<primType<<","<<depthStencilId * blendMode.nbBlendModes + blendMode.id<<std::endl;
 						graphicsPipeline[shader.getId()][j].emplace_back(device);
 					}
 				}

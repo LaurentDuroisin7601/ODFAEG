@@ -17,6 +17,8 @@ namespace odfaeg {
         threadPool(6),
         useThread(useThread)
         {
+            shadowMap.create(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, NB_CASCADES+1, NB_CASCADES+1,true, true);
+            shadowMapPL.createCubeMap(SHADOW_MAP_SIZE, 1 , 1, true);
             shadowPassCSMFragPC.resolution = math::Vector2i(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
             shadowPassPLFragPC.resolution = math::Vector2i(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
             rendererReady.store(false); 
@@ -89,7 +91,8 @@ namespace odfaeg {
                 //headPtrsStorageImage.back().createSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, 1, false, false);
                 nodeCounterDirBuffer.back().create(sizeof(std::uint32_t), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
                 linkedListDirBuffer.back().create(maxNodesDir * nodeSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);                
-            }        
+            }   
+           
             unsigned int maxNodesPoint = 20 * SHADOW_MAP_SIZE * SHADOW_MAP_SIZE;
             shadowPassPLFragPC.maxNodes = maxNodesPoint;    
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT*6; i++) {
@@ -114,7 +117,9 @@ namespace odfaeg {
                 throw std::runtime_error("�chec de l'envoi d'un command buffer!");
             }
             vkDeviceWaitIdle(GPUContext::instance().getDevice().getDevice());
+            //std::cout<<"ll dir ok"<<std::endl; 
             createDescriptorsAndPipelines();
+            //std::cout<<"ppl dir ok"<<std::endl; 
             window::Command rendererReadyCmd(core::FastDelegate<bool>(&ShadowRenderer::isRendererReady, this), core::FastDelegate<void>(&ShadowRenderer::drawNextFrame, this));
             getEventListener().connect("RendererReady",rendererReadyCmd); 
             if (useThread) {
@@ -128,7 +133,8 @@ namespace odfaeg {
             needToUpdateDescriptorSets = true;
             needToUpdateDirLightsMatrices = needToUpdatePointLightsMatrices = false;
             stop.store(false);
-            rendererReady.store(true);            
+            rendererReady.store(true);
+                             
         }          
         void ShadowRenderer::addDirectionnalLight(entity::DirectionnalLight& dirLight) {            
             DirLight dl;
@@ -279,8 +285,9 @@ namespace odfaeg {
                     }
                 }
                 shadowPassCSMPipeline[i][RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id]->createGraphicPipeline(shadowPassCSMShader, static_cast<PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(shadowPassCSMShader), renderingCreateInfo, shadowMap.getDepthStencilInfos()[RenderTarget::DEPTHNOSTENCIL], blendMode, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);*/
-              
+                //std::cout<<"pipeline : "<<GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle()<<std::endl;
                 GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).createGraphicPipeline(shadowPassCSMShader, static_cast<entity::PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(shadowPassCSMShader), renderingCreateInfo, shadowMap.getDepthStencilInfos()[RenderTarget::DEPTHNOSTENCIL], blendMode, GPUContext::instance().getDevice().getMsaaSamples(), VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);
+                //std::cout<<"pipeline : "<<i<<std::endl;
                 /*std::cout<<"ids : "<<i<<","<<shadowPassCSMShader.getId()<<","<<RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id<<std::endl;
                 std::cout<<"pipeline at creation : "<<shadowPassCSMPipeline[i][RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id]->getHandle()<<std::endl;
                 std::cout<<"pipeline layout at creation : "<<shadowPassCSMPipeline[i][RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id]->getLayout()<<std::endl;*/
