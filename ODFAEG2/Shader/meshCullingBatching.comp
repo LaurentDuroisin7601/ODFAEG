@@ -271,7 +271,7 @@ void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, inout
                         taskData.meshletCount = n.meshletCount;
                         uint clusterOffset = atomicAdd(offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffest, 1);                        
                         outputClusters[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = cluster;  
-                        //Meshlet de modèle 3D visible : On le dessine.
+                        //Cluster de modèle 3D visible : On dessine ce qu'il contient.
                         if (object.renderType == 0) {
                             taskData.meshDrawCommand.y++;                             
                         } else {
