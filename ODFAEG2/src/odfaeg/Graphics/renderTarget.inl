@@ -573,16 +573,23 @@ namespace odfaeg {
 							m.maxVertex = 0;
 							m.nbIndexes = 0;
 							m.indexOffset = 0;	
-							unsigned int meshletCount = 0;													
+							unsigned int meshletCount = 0;
+							math::Vec3f mins(std::numeric_limits<unsigned int>::max(), std::numeric_limits<unsigned int>::max(), std::numeric_limits<unsigned int>::max()), maxs(0, 0, 0);													
 							for (unsigned int tri = 0; tri < lods[l].indexCount / 3; tri++) {
 								int g0 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[l].indexOffset+tri*3+0);								
 								int g1 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[l].indexOffset+tri*3+1);
-								int g2 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[l].indexOffset+tri*3+2);																
+								int g2 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[l].indexOffset+tri*3+2);
+								math::Vec3f p1, p2, p3;
+								p1 = vertices[primitiveType][g0].position;
+								p2 = vertices[primitiveType][g1].position;
+								p3 = vertices[primitiveType][g2].position;
 								unsigned int newMin = std::min(g0, std::min(g1, g2));
     							unsigned int newMax = std::max(g0, std::max(g1, g2));
 								newMin = std::min(m.minVertex, newMin);
 								newMax = std::max(m.maxVertex, newMax);
 								unsigned int newVertexCount = (newMin - newMax) + 1;
+								mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
+								maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));
 								
 								// Si ce triangle dépasse les limites → nouveau meshlet
 								if (m.nbIndexes/3 >= MAX_PRIMS || newVertexCount > MAX_VERTS)
@@ -596,9 +603,16 @@ namespace odfaeg {
 									m.maxVertex = 0;
 									m.nbIndexes = 0;
 									m.indexOffset = tri * 3;
+									physic::BoundingBox bx (mins.x(), mins.y(), mins.z(), maxs.x() - mins.x(), maxs.y() - mins.y(), maxs.z() - mins.z());
+									//Récupérer les cellules de la grille de clusters.
+									mins = math::Vec3f(std::numeric_limits<unsigned int>::max(), std::numeric_limits<unsigned int>::max(), std::numeric_limits<unsigned int>::max());
+									maxs = math::Vec3f(0, 0, 0);
+									
 									// Recalculer pour ce triangle
 									newMin = std::min(g0, std::min(g1, g2));
-									newMax = std::max(g0, std::max(g1, g2));									
+									newMax = std::max(g0, std::max(g1, g2));
+									mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
+								    maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));									
 									newVertexCount = newMax - newMin + 1;
 									meshletDatas.push_back(m);	
 									currentMeshletsOffset++;	
@@ -614,37 +628,13 @@ namespace odfaeg {
 							// Final meshlet							
 							m.vertexOffset = m.minVertex;
 							m.nbVertices   = m.maxVertex - m.minVertex + 1;
-							
+							physic::BoundingBox bx (mins.x(), mins.y(), mins.z(), maxs.x() - mins.x(), maxs.y() - mins.y(), maxs.z() - mins.z());
+							//Récupérer les cellules de la grille de clusters.
 							//std::cout<<"min : "<<m.minVertex<<std::endl;
 							currentMeshletsOffset++;
 							meshletCount++;
 							//std::cout<<currentMeshletsOffset<<" , "<<meshletCount<<" , "<<currentClustersOffset-clusterCount<<" , "<<clusterDatas.size()<<std::endl;
-							bool added = false;
-							for (unsigned int t = currentMeshletsOffset-meshletCount; t < meshletDatas.size() && !added; t++) {
-								for (unsigned int c = currentClustersOffset-clusterCount; c < clusterDatas.size() && !added; c++) {
-									
-									Meshlet& meshlet = meshletDatas[t];
-									Cluster& cluster = clusterDatas[c];
-									
-									meshlet.minVertex;								
-									entity::Vertex v1 = vertices[primitiveType][meshlet.minVertex];
-									entity::Vertex v2 = vertices[primitiveType][meshlet.maxVertex];
-									
-									physic::BoundingBox meshletBounds(v1.position.x(), v1.position.y(), v1.position.z(), v2.position.x(), v2.position.y(), v2.position.z());
-									physic::BoundingBox clusterBounds(cluster.globalBounds.center.x() - cluster.globalBounds.size.x()*0.5f,
-																	  cluster.globalBounds.center.y() - cluster.globalBounds.size.y()*0.5f,
-																	  cluster.globalBounds.center.z() - cluster.globalBounds.size.z()*0.5f,
-																	  cluster.globalBounds.size.x(),
-																	  cluster.globalBounds.size.y(),
-																	  cluster.globalBounds.size.z()
-																	);
-									if (clusterBounds.intersects(meshletBounds)) {
-										added = true;
-										cluster.meshletCount++;
-										meshlet.clusterId = cluster.id;
-									} 
-								}
-							}	
+							
 							//std::cout<<"cluster added"<<std::endl;						
 							//std::cout<<"lod meshlet count : "<<(meshletDatas.size() - currentLodMeshletOffset - currentSubmeshMeshletOffset)<<std::endl;
 							lodLevelData.meshletOffset = currentLodMeshletOffset;
@@ -676,13 +666,13 @@ namespace odfaeg {
 				std::sort(meshletDatas.begin(), meshletDatas.end(), [](Meshlet& m1, Meshlet& m2){ return m1.clusterId < m2.clusterId;});
 				unsigned int clusterMeshletOffset = 0;
 				unsigned int previousClusterId = 0;
-				for (unsigned int m = 0; m < meshletDatas.size(); m++) {	
+				/*for (unsigned int m = 0; m < meshletDatas.size(); m++) {	
 					if (meshletDatas[m].clusterId > previousClusterId) {							
 						clusterMeshletOffset += clusterDatas[meshletDatas[m].clusterId].meshletCount;
 						previousClusterId = meshletDatas[m].clusterId;					
 					}
 					clusterDatas[meshletDatas[m].clusterId].meshletOffset = previousClusterId;
-				}
+				}*/
 				totalMeshlets = meshletDatas.size();
 				/*std::cout<<"total sub meshes"<<totalSubMeshes<<std::endl;
 				system("PAUSE");*/
