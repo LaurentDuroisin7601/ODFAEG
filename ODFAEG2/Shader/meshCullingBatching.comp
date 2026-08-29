@@ -266,7 +266,8 @@ void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, inout
                         continue;
                     }
                     if (n.leaf && n.lod == lod && n.id ==  sm.clusterId) {
-                        taskData.meshDrawCommand.y++;                        
+                        taskData.meshDrawCommand.y++;
+                        atomicAdd(offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffest, 1);                        
                         outputClusters[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[meshletOffset] = cluster;  
                         //Height visible : on génère.
                         if (object.renderType == 1) {                                                
@@ -328,7 +329,7 @@ void main() {
                                 TaskData taskData;
                                 taskData.baseInstance = instanceId;
                                 taskData.heightCount = 0;
-                                taskData.clusterOffset = atomicAdd(offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffest, 1);
+                                taskData.clusterOffset = offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffest;
                                 taskData.meshDrawCommand = meshDrawCommand; 
                                 MaterialData material = inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId];
                                 material.materialId = materialId;
@@ -355,8 +356,9 @@ void main() {
                         meshDrawCommand.groupYCount = 0;
                         meshDrawCommand.groupZCount = 1;
                         TaskData taskData;
+                        taskData.baseInstance = instanceId;
                         taskData.heightCount = 0;
-                        taskData.clusterOffset = atomicAdd(offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffest, 1);
+                        taskData.clusterOffset = offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffest;
                         taskData.meshDrawCommand = meshDrawCommand;
                         //debugPrintfEXT("lod infos : %i, %i",subMesh.lodLevel[lod].index_offset,subMesh.lodLevel[lod].index_count);
                         //debugPrintfEXT("instance base %i", instanceBase); 
