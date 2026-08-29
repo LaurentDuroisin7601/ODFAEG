@@ -48,18 +48,19 @@ namespace odfaeg {
             
             //inputShadowRT->clear();
             output.clear();
-            for (it = renderers.begin(); it != renderers.end(); it++) {
+            for (unsigned int i = 0; i < renderers.size(); i++) {
                 //std::cout<<"clear"<<std::endl;
                 
                 //std::cout<<"cleared"<<std::endl;
                 //std::cout<<"draw : "<<it->first<<std::endl;
-                //output.beginRecordCommandBuffer();
-                it->second->clear();
+                output.beginRecordCommandBuffer();
+                renderers[i]->clear();
                 //std::cout<<"draw"<<std::endl;
-                it->second->draw();
+                renderers[i]->draw();
+                output.submit(true);
+                //output.display();
                 //std::cout<<"drawed"<<std::endl;
-            }   
-            output.submit(true);
+            }  
             output.display();
         }
     }

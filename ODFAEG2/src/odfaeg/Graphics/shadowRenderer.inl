@@ -145,7 +145,7 @@ namespace odfaeg {
             for (size_t i = 1; i < shadowCascadeLevels.size(); i++)
             {
 
-                lightSpaceMatrices.lightSpaceMatrices[i-1] = getLightSpaceMatrix(dirLight.getDir(), shadowCascadeLevels[i-1], shadowCascadeLevels[i]).transpose();
+                lightSpaceMatrices.lightSpaceMatrices[i-1] = getLightSpaceMatrix(dirLight.getDir(), shadowCascadeLevels[i-1], shadowCascadeLevels[i]);
                 //std::cout<<fLightSpaceMatrices.back()<<std::endl;
             } 
             fLightSpaceMatrices.push_back(lightSpaceMatrices);
@@ -163,7 +163,7 @@ namespace odfaeg {
             pointLights.push_back(pl);
             Camera pointLightCamera;
             pointLightCamera.setPerspective(90, (float) SHADOW_MAP_SIZE / (float) SHADOW_MAP_SIZE, 1, 25);            
-            shadowPassPLVertPC.lightProjMatrix = pointLightCamera.getProjMatrix().getMatrix().transpose();
+            shadowPassPLVertPC.lightProjMatrix = pointLightCamera.getProjMatrix().getMatrix();
              
             ViewPLMatrix viewPLMatrices;
             math::Vec3f lightPos = pointLight.getPosition();              
@@ -863,7 +863,7 @@ namespace odfaeg {
                     jobFences[renderFrame].jobDone();
                 });                                            
                 jobFences[renderFrame].wait(); 
-                std::cout<<"wait finished"<<std::endl;                            
+                //std::cout<<"wait finished"<<std::endl;                            
             }
             
             commandBuffersReady[renderFrame].store(true);

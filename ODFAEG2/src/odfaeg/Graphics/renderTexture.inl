@@ -300,7 +300,7 @@ namespace odfaeg {
             return imageIndex;
         }        
         void RenderTexture::display() {
-            beginRecordCommandBuffer(); 
+            /*beginRecordCommandBuffer(); 
             if (!isDepthOnly()) {
                 getTexture().update(getCommandPool().getHandle(currentFrame), m_textures[0], imageIndex);
             } 
@@ -319,7 +319,7 @@ namespace odfaeg {
             VkResult r2 = vkWaitForFences(device.getDevice(), 1, &inFlightFences[currentFrame].getHandle(), VK_TRUE, UINT64_MAX);
             if (r2 == -4)
                 printf("wait for fence result : %d\n", r2);
-            vkResetFences(device.getDevice(), 1, &inFlightFences[currentFrame].getHandle());
+            vkResetFences(device.getDevice(), 1, &inFlightFences[currentFrame].getHandle());*/
             currentFrame = (currentFrame + 1) % RT_MAX_FRAMES_IN_FLIGHT;
             imageIndex = (imageIndex + 1) % NB_SWAPCHAIN_IMAGES;
         }        
@@ -347,8 +347,11 @@ namespace odfaeg {
                             signalValues.push_back(0);
                         }
                     }
+                    if (!isDepthOnly()) {
+                        getTexture().update(getCommandPool().getHandle(currentFrame), m_textures[0], imageIndex);
+                    } 
                      
-                    /*VkImageMemoryBarrier barrier{};
+                    VkImageMemoryBarrier barrier{};
                     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                     barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -359,8 +362,8 @@ namespace odfaeg {
                     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
                     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 
-                    barrier.image = getTexture().getImage(0).getHandle();
-                    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    barrier.image = (!depthOnly) ? getTexture().getImage(0).getHandle() : getDepthStencilTexture().getImage(0).getHandle();
+                    barrier.subresourceRange.aspectMask = (!depthOnly) ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT;
                     barrier.subresourceRange.baseMipLevel = 0;
                     barrier.subresourceRange.levelCount = 1;
                     barrier.subresourceRange.baseArrayLayer = 0;
@@ -374,7 +377,7 @@ namespace odfaeg {
                         0, nullptr,
                         0, nullptr,
                         1, &barrier
-                    );*/
+                    );
                     /*signalSemaphores.push_back(imageAvailableSemaphores[0].getHandle());                    
                     signalValues.push_back(imageAvailableSemaphores[0].getValue()+1);                
                     imageAvailableSemaphores[0].incrementValue();*/

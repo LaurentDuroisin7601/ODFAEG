@@ -196,7 +196,7 @@ void main()
     /*if (shadowPoint > 0)
         debugPrintfEXT("Shadow point : %f", shadowPoint);*/
     float shadow = max(shadowDir, shadowPoint);
-    /*if (shadowDir > 0 || shadowPoint > 0)
-        debugPrintfEXT("shadow dir %f", shadow);*/   
-    frag_color = vec4(vec3(sceneColor) * (1 - shadow), sceneColor.a);
+    if (sceneColor.r != 0 || sceneColor.g != 0 || sceneColor.b != 0 || sceneColor.a != 0)
+        debugPrintfEXT("scene color %v4f", sceneColor);   
+    frag_color = vec4(vec3(sceneColor) /** (1 - shadow)*/, sceneColor.a);
 }
