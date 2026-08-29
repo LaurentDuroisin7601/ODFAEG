@@ -262,18 +262,17 @@ void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, inout
                 while (sp > 0) {
                     uint id = stack[sp--];
                     Cluster n = nodes[id];
-                    if (!intersects(frustrum, c.globalBounds)) {
+                    if (!intersects(frustrum, n.globalBounds)) {
                         continue;
                     }
                     if (n.leaf && n.lod == lod && n.id ==  sm.clusterId) {
                         taskData.meshDrawCommand.y++;
                         taskData.meshDrawCommand.z = 8;
                         taskData.meshletCount = n.meshletCount;
-                        atomicAdd(offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffest, 1);                        
-                        outputClusters[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[meshletOffset] = cluster;  
+                        uint clusterOffset = atomicAdd(offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffest, 1);                        
+                        outputClusters[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = cluster;  
                         //Height visible : on génère.
-                        if (object.renderType == 1) {                                                
-                            outputClusters[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[meshletOffset] = cluster;  
+                        if (object.renderType == 1) { 
                             for (uint i = 0; i < 4; i++) {
                                 uint offset = atomicAdd(offsetsData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.heightOffset, 1); 
                                 heights[offset] = inputHeightsData.heights[sm.vertexOffset+i];
