@@ -114,7 +114,7 @@ struct Cluster {
     uint children[8];
     uint leaf;
     uint meshletCount;
-    uint meshetOffsets[8];
+    uint meshetOffset;
     uint lod;
 };
 /*objets en entrée.*/
