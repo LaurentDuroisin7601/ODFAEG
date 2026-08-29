@@ -145,8 +145,9 @@ void main() {
         SubMesh subMesh = SubMeshDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMeshData[payload.taskId];
         Cluster cluster = clusterDatas.clusters[taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].clusterOffset+gl_WorkGroupID.y];
         uint id = gl_WorkGroupID.z;
-        if (id >= cluster.meshletCount)
+        if (id >= cluster.meshletCount) {
             return;
+        }
         //Instance id = taskId (base instance) + workGroupId.x (instance id).
         uint instanceId = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].baseInstance + gl_WorkGroupID.x;
         //debugPrintfEXT("Instance id : %i", gl_WorkGroupID.x); 
@@ -164,7 +165,7 @@ void main() {
         uint primitiveCount = min(meshlet.nbIndexes / 3u, maxPrims);
         /*if (vertexCount > 0)
             debugPrintfEXT("submesh vertex count : %i, %i", meshlet.nbVertices, meshlet.nbIndexes);*/
-        //if (pc.primitiveType == 3) {
+        
             
         SetMeshOutputsEXT(vertexCount, primitiveCount);
         for (uint i = 0; i < vertexCount; i++) {
@@ -191,15 +192,14 @@ void main() {
             gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
         }
     } else {
-            SetMeshOutputsEXT(taskData.heightOffset, taskData.heightCount / 4 * 2);
-            for (uint i = 0; i < taskData.heightCount; i++) {        
-                gl_MeshVerticesEXT[i].gl_Position = vec4(heights[taskData.heightOffset+i].position, 1);        
-            }
-            for (uint tri = 0; tri < taskData.heightCount / 4; tri++) {
-                uint offset = taskData.heightOffset / 4 * 2 + tri;
-                gl_PrimitiveTriangleIndicesEXT[tri*2] = uvec3(offset*4, offset*4+1, offset*4+2);
-                gl_PrimitiveTriangleIndicesEXT[tri*2+1] = uvec3(offset*4, offset*4+2, offset*4+3);
-            }
+        SetMeshOutputsEXT(taskData.heightOffset, taskData.heightCount / 4 * 2);
+        for (uint i = 0; i < taskData.heightCount; i++) {        
+            gl_MeshVerticesEXT[i].gl_Position = vec4(heights[taskData.heightOffset+i].position, 1);        
         }
-    //}
+        for (uint tri = 0; tri < taskData.heightCount / 4; tri++) {
+            uint offset = taskData.heightOffset / 4 * 2 + tri;
+            gl_PrimitiveTriangleIndicesEXT[tri*2] = uvec3(offset*4, offset*4+1, offset*4+2);
+            gl_PrimitiveTriangleIndicesEXT[tri*2+1] = uvec3(offset*4, offset*4+2, offset*4+3);
+        }
+    }    
 }
