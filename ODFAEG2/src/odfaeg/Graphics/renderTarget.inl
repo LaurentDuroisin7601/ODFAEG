@@ -651,7 +651,7 @@ namespace odfaeg {
 							lodLevelData.meshletCount = meshletDatas.size() - currentLodMeshletOffset - currentSubmeshMeshletOffset;
 							//std::cout<<"meshlet count : "<<	meshletDatas.size()<<","<<currentLodMeshletOffset<<std::endl;																		
 							lodLevelDatas.push_back(lodLevelData);
-							for (unsigned int m = currentSubmeshMeshletOffset+lodLevelData.meshletOffset; m < currentSubmeshMeshletOffset+lodLevelData.meshletOffset + lodLevelData.meshletCount; m++) {
+							/*for (unsigned int m = currentSubmeshMeshletOffset+lodLevelData.meshletOffset; m < currentSubmeshMeshletOffset+lodLevelData.meshletOffset + lodLevelData.meshletCount; m++) {
 								Meshlet meshlet = meshletDatas[m];
 								unsigned int firstIndex = subMeshData.indexOffset + lods[l].indexOffset + meshlet.indexOffset; 
 								//std::cout<<"meshlet : "<<lodLevelData.meshletCount<<","<<currentSubmeshMeshletOffset<<","<<subMeshData.indexOffset<<","<<meshlet.nbIndexes<<","<<meshlet.nbVertices<<","<<meshlet.indexOffset<<","<<meshlet.vertexOffset<<std::endl;							
@@ -664,7 +664,7 @@ namespace odfaeg {
 										system("PAUSE");
 									}
 								}
-							}
+							}*/
 						}
 						subMeshData.lodOffset = currentSubmeshesOffset * lods.size();
 						subMesh.lodOffset = currentSubmeshesOffset * lods.size();		
@@ -676,13 +676,13 @@ namespace odfaeg {
 				std::sort(meshletDatas.begin(), meshletDatas.end(), [](Meshlet& m1, Meshlet& m2){ return m1.clusterId < m2.clusterId;});
 				unsigned int clusterMeshletOffset = 0;
 				unsigned int previousClusterId = 0;
-				/*for (unsigned int m = 0; m < meshletDatas.size(); m++) {	
+				for (unsigned int m = 0; m < meshletDatas.size(); m++) {	
 					if (meshletDatas[m].clusterId > previousClusterId) {							
 						clusterMeshletOffset += clusterDatas[meshletDatas[m].clusterId].meshletCount;
 						previousClusterId = meshletDatas[m].clusterId;					
 					}
 					clusterDatas[meshletDatas[m].clusterId].meshletOffset = previousClusterId;
-				}*/
+				}
 				totalMeshlets = meshletDatas.size();
 				/*std::cout<<"total sub meshes"<<totalSubMeshes<<std::endl;
 				system("PAUSE");*/

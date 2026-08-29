@@ -35,7 +35,9 @@ namespace odfaeg {
 		}
 		void Fence::cleanup() {
 			for (unsigned int i = 0; i < fences.size(); i++) {
-				vkDestroyFence(device.getDevice(), fences[i], nullptr);
+				if (fences[i] != VK_NULL_HANDLE) {
+					vkDestroyFence(device.getDevice(), fences[i], nullptr);
+				}
 			}
 			fences.clear();
 		}
