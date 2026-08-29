@@ -45,6 +45,6 @@ void main() {
     /*if (gl_ViewIndex == 1)
     debugPrintfEXT("view index : %i",gl_ViewIndex);*/
     //debugPrintfEXT("model matrix : %v4f\n%v4f\n%v4f\n%v4f\nposition : %v4f", modelMatrix[0],modelMatrix[1],modelMatrix[2],modelMatrix[3], gl_Position);
-    //debugPrintfEXT("light space matrix : %v4f\n%v4f\n%v4f\n%v4f\nposition : %v4f", lightMatsData[pc.currentFrame].lightSpaceMats[gl_ViewIndex][0],lightMatsData[pc.currentFrame].lightSpaceMats[gl_ViewIndex][1],lightMatsData[pc.currentFrame].lightSpaceMats[gl_ViewIndex][2],lightMatsData[pc.currentFrame].lightSpaceMats[gl_ViewIndex][3], gl_Position);
+    debugPrintfEXT("light space matrix : %v4f\n%v4f\n%v4f\n%v4f\nposition : %v4f", lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex][0],lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex][1],lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex][2],lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex][3], gl_Position);
     //debugPrintfEXT("position : %v4f", gl_Position);
 }
