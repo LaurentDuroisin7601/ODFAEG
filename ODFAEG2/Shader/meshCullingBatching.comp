@@ -274,7 +274,7 @@ void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, inout
                         //Cluster de modèle 3D visible : On dessine ce qu'il contient.
                         if (object.renderType == 0) {
                             taskData.meshDrawCommand.y++;                             
-                        } else {
+                        } else if (objectType == 1) {
                             //Height visible : on le génère.
                             for (uint h = 0; h < 4; h++) {
                                 uint offset = atomicAdd(offsetsData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.heightOffset, 1); 
