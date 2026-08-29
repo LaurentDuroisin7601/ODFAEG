@@ -44,7 +44,8 @@ namespace odfaeg {
             CascadeData cascadeData;            
             for (unsigned int i = 0; i < shadowCascadeLevels.size(); i++) {
                 cascadeData.cascadePlaneDistances[i].x() = shadowCascadeLevels[i];
-                //std::cout<<"cascade data : "<<cascadeData.cascadePlaneDistances[i]<<std::endl;
+                /*std::cout<<"cascade data : "<<cascadeData.cascadePlaneDistances[i]<<std::endl;
+                system("PAUSE");*/
             }
             cascadeData.cascadeCount = NB_CASCADES;  
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
@@ -460,7 +461,8 @@ namespace odfaeg {
         }
         math::Matrix4f ShadowRenderer::getLightSpaceMatrix(math::Vec3f lightDir, const float nearPlane, const float farPlane) {
             Camera camera = parentRenderer.getCamera();
-            //std::cout<<"near/far : "<<nearPlane<<","<<farPlane<<std::endl;
+            /*std::cout<<"near/far : "<<nearPlane<<","<<farPlane<<std::endl;
+            system("PAUSE");*/
             camera.setPerspective(80, shadowMap.getSize().x() / shadowMap.getSize().y(), nearPlane, farPlane);  
             //camera.setUp(math::Vec3f(0, -1, 0));          
             math::Matrix4f projView = camera.getProjMatrix().getMatrix() * camera.getViewMatrix().getMatrix();
@@ -478,7 +480,7 @@ namespace odfaeg {
             Camera lightSpace;
             math::Vec3f target(center + lightDir);
             lightSpace.setCenter(center);
-            camera.lookAt(target.x(), target.y(), target.z(),math::Vec3f(0.f, -1.f, 0.f));
+            camera.lookAt(target.x(), target.y(), target.z(),math::Vec3f(0.f, 1.f, 0.f));
 
             float minX = std::numeric_limits<float>::max();
             float maxX = std::numeric_limits<float>::lowest();
@@ -518,8 +520,8 @@ namespace odfaeg {
             
             camera.setPerspective(minX, maxX, minY, maxY, minZ, maxZ);
            
-
-            return  camera.getProjMatrix().getMatrix() * camera.getViewMatrix().getMatrix();
+            math::Matrix4f lightProjView = camera.getProjMatrix().getMatrix() * camera.getViewMatrix().getMatrix();
+            return  lightProjView;
         }
         std::vector<float> ShadowRenderer::computeSplits(int cascadeCount, float nearPlane, float farPlane, float lambda)
         {
@@ -917,37 +919,8 @@ namespace odfaeg {
                 memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                 memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;  
                 vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                /*for (unsigned int i = 0; i < RenderTexture::NB_SWAPCHAIN_IMAGES; i++) {
-                   
-                    VkImageMemoryBarrier barrier{};
-                    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                    barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-                    barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-                    barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-                    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-                    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-
-                    barrier.image = sceneColorTexture.getTexture().getImage(i).getHandle();
-                    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                    barrier.subresourceRange.baseMipLevel = 0;
-                    barrier.subresourceRange.levelCount = 1;
-                    barrier.subresourceRange.baseArrayLayer = 0;
-                    barrier.subresourceRange.layerCount = 1;
-
-                    vkCmdPipelineBarrier(
-                        parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()),
-                        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,   // écrit dans la texture
-                        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,           // va la lire
-                        0,
-                        0, nullptr,
-                        0, nullptr,
-                        1, &barrier
-                    );
-                }*/
-                Texture::transitionImageLayout(shadowMap.getDepthStencilTexture().getImage(0), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 0, 1, NB_CASCADES+1);      
+                
+                Texture::transitionImageLayout(shadowMap.getDepthStencilTexture().getImage(0), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 0, 1, (NB_CASCADES+1));      
                 Texture::transitionImageLayout(shadowMapPL.getDepthStencilTexture().getImage(0), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 0, 1, 6);
                 /*for (unsigned int i = 0; i < RenderTexture::NB_SWAPCHAIN_IMAGES; i++) {
                     Texture::transitionImageLayout(sceneColorTexture.getTexture().getImage(i), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -955,7 +928,7 @@ namespace odfaeg {
                 parentRenderer.beginRendering(true);
                 vkCmdExecuteCommands(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &shadowMappingCommandPool.getHandle(parentRenderer.getCurrentFrame()));
                 parentRenderer.endRendering(); 
-                Texture::transitionImageLayout(shadowMap.getDepthStencilTexture().getImage(0), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 0, 0, 1, NB_CASCADES+1);     
+                Texture::transitionImageLayout(shadowMap.getDepthStencilTexture().getImage(0), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 0, 0, 1, (NB_CASCADES+1));     
                 Texture::transitionImageLayout(shadowMapPL.getDepthStencilTexture().getImage(0), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 0, 0, 1, 6);   
                 /*for (unsigned int i = 0; i < RenderTexture::NB_SWAPCHAIN_IMAGES; i++) {
                     Texture::transitionImageLayout(sceneColorTexture.getTexture().getImage(i), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL); 

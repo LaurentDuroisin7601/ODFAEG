@@ -37,7 +37,7 @@ void main() {
     //debugPrintfEXT("shader");
     gl_PointSize = 2.0f;
     mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[gl_InstanceIndex].modelMatrix;
-    gl_Position = lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex] * modelMatrix * vec4(inPosition, 1);
+    gl_Position = transpose(lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex]) * modelMatrix * vec4(inPosition, 1);
     
     v_DrawID = gl_DrawID;
     primitiveType = pc.primitiveType;
@@ -45,6 +45,6 @@ void main() {
     /*if (gl_ViewIndex == 1)
     debugPrintfEXT("view index : %i",gl_ViewIndex);*/
     //debugPrintfEXT("model matrix : %v4f\n%v4f\n%v4f\n%v4f\nposition : %v4f", modelMatrix[0],modelMatrix[1],modelMatrix[2],modelMatrix[3], gl_Position);
-    debugPrintfEXT("light space matrix : %v4f\n%v4f\n%v4f\n%v4f\nposition : %v4f", lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex][0],lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex][1],lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex][2],lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex][3], gl_Position);
+    //debugPrintfEXT("light space matrix : %v4f\n%v4f\n%v4f\n%v4f\nposition : %v4f", lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex][0],lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex][1],lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex][2],lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex][3], gl_Position);
     //debugPrintfEXT("position : %v4f", gl_Position);
 }

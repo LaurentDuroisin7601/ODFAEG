@@ -71,6 +71,16 @@ namespace odfaeg {
                 to[0][3] = from[0][3]; to[1][3] = from[1][3]; to[2][3] = from[2][3]; to[3][3] = from[3][3];
                 return to;
             }
+            static inline glm::mat4 convertODFAEGToGLMMatrix(const math::Matrix4f& from)
+            {
+                glm::mat4 to;
+                //the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
+                to[0][0] = from[0][0]; to[1][0] = from[1][0]; to[2][0] = from[2][0]; to[3][0] = from[3][0];
+                to[0][1] = from[1][0]; to[1][1] = from[1][1]; to[2][1] = from[2][1]; to[3][1] = from[3][1];
+                to[0][2] = from[0][2]; to[1][2] = from[1][2]; to[2][2] = from[2][2]; to[3][2] = from[3][2];
+                to[0][3] = from[0][3]; to[1][3] = from[1][3]; to[2][3] = from[2][3]; to[3][3] = from[3][3];
+                return to;
+            }
 
             static inline glm::vec3 getGLMVec(const aiVector3D& vec)
             {

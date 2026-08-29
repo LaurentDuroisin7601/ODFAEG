@@ -31,7 +31,7 @@ struct PointLight {
     float far_plane;
 };
 layout (push_constant) uniform PushConstant { 
-    layout(offset=144) mat4 view;     
+    layout(offset=144) uint view;     
     layout(offset=208) uint nbDirLights;
     layout(offset=212) uint nbPointLights; 
     layout(offset=216) uint imageIndex;  
@@ -72,23 +72,21 @@ float shadowCalculationDir(vec3 fragPosWorldSpace)
     // select cascade layer 
     float shadow = 0.0;  
     for(int l = 0; l < pc.nbDirLights; l++) {
-        vec4 fragPosViewSpace = pc.view * vec4(fragPosWorldSpace, 1.0);  
-        //debugPrintfEXT("frag pos view space : %v4f", pc.view[0]);  
+        vec4 fragPosViewSpace = pc.view * vec4(fragPosWorldSpace, 1.0);    
         float depthValue = abs(fragPosViewSpace.z);
         int layer = -1; 
         for (int i = 0; i < NB_CASCADES; ++i)
-        { 
-            //debugPrintfEXT("depthValue : %f, distance : %f", depthValue, cascadePlaneDistanceData[currentFrame].cascadePlaneDistances[i]);      
+        {       
             if (depthValue < cascadePlaneDistanceData[currentFrame].cascadePlaneDistances[i])
             {
                 
-                layer = l*(NB_CASCADES+1) + i;
+                layer = i;
                 break;
             }
         }
         if (layer == -1)
         {
-            layer = l*(NB_CASCADES+1) + NB_CASCADES;
+            layer = NB_CASCADES;
         } 
         vec4 fragPosLightSpace =  lightSpaceMatricesData[currentFrame].lightSpaceMatrices[l].lightSpaceMatrices[layer] * vec4(fragPosWorldSpace, 1.0);
         vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -116,15 +114,14 @@ float shadowCalculationDir(vec3 fragPosWorldSpace)
         }
         // PCF
         float currentLightShadow = 0.0;
-        vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0)); 
-        //debugPrintfEXT("cascade layer : %i", layer);       
+        vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));        
         for(int x = -1; x <= 1; ++x)
         {
             for(int y = -1; y <= 1; ++y)
-            {                
-                float pcfDepth = texture(shadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;               
-                /*if (pcfDepth < 1)
-                    debugPrintfEXT("pcf def : %f", pcfDepth);*/
+            {
+                float pcfDepth = texture(shadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, l*(NB_CASCADES+1)+layer)).r;               
+                if (pcfDepth < 1)
+                    debugPrintfEXT("pcf def : %f", pcfDepth);
                 currentLightShadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
             }
         }
@@ -197,13 +194,12 @@ void main()
     vec3 normal = normalize(normal);
     // calculate shadow
     float shadowDir = shadowCalculationDir(fragPos);
-    
+    if (shadowDir > 0 && shadowDir < 1)
+        debugPrintfEXT("Shadow : %f", shadowDir);
     float shadowPoint = shadowCalculationPoint(fragPos);
     /*if (shadowPoint > 0)
         debugPrintfEXT("Shadow point : %f", shadowPoint);*/
     float shadow = max(shadowDir, shadowPoint);
-    if (shadow > 0 && shadow < 1)
-        debugPrintfEXT("Shadow : %f", shadow);
 
     /*if (sceneColor.r != 0 || sceneColor.g != 0 || sceneColor.b != 0 || sceneColor.a != 0)
         debugPrintfEXT("scene color %v4f", sceneColor); */  

@@ -363,11 +363,11 @@ namespace odfaeg {
                     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 
                     barrier.image = (!depthOnly) ? getTexture().getImage(0).getHandle() : getDepthStencilTexture().getImage(0).getHandle();
-                    barrier.subresourceRange.aspectMask = (!depthOnly) ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT;
+                    barrier.subresourceRange.aspectMask = (!depthOnly) ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
                     barrier.subresourceRange.baseMipLevel = 0;
                     barrier.subresourceRange.levelCount = 1;
                     barrier.subresourceRange.baseArrayLayer = 0;
-                    barrier.subresourceRange.layerCount = 1;
+                    barrier.subresourceRange.layerCount = (!depthOnly) ? getTexture().getLayerCount() : getDepthStencilTexture().getLayerCount();
 
                     vkCmdPipelineBarrier(
                         getCommandPool().getHandle(currentFrame),

@@ -54,7 +54,8 @@ layout (std430, set = 0, binding = 5) buffer linkedListSSBO {
 layout (set = 0, binding = 6) uniform sampler2D diffuseTextures[MAX_TEXTURES];
 void main()
 {  
-    debugPrintfEXT("Ok"); 
+    //
+    //debugPrintfEXT("z : %f", gl_FragCoord.z); 
     ivec2 hrLrScale = ivec2(pc.resolution.xy) / PPLL_RESOLUTION;
     ivec2 lrFragCoord = ivec2(gl_FragCoord.xy) / hrLrScale; 
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[v_DrawID];
