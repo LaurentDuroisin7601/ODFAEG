@@ -267,7 +267,8 @@ void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, inout
                     }
                     if (n.leaf && n.lod == lod && n.id ==  sm.clusterId) {
                         taskData.meshDrawCommand.y++;
-                        taskData.meshDrawCommand.z = n.meshletCount;
+                        taskData.meshDrawCommand.z = 8;
+                        taskData.meshletCount = n.meshletCount;
                         atomicAdd(offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffest, 1);                        
                         outputClusters[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[meshletOffset] = cluster;  
                         //Height visible : on génère.
