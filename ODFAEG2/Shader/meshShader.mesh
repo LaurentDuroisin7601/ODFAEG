@@ -29,7 +29,8 @@ struct LODLevel {
 struct TaskData {
     MeshDrawCommand meshDrawCommand;
     uint baseInstance;
-    int clusterId;
+    int meshletOffset;
+    int meshletCount;
     int heightOffset;
     uint heightCount;    
 };

@@ -90,7 +90,7 @@ struct MeshDrawCommand {
 struct TaskData {
     MeshDrawCommand meshDrawCommand;
     uint instanceBase; 
-    int clusterId;  
+    int meshletOffset;  
     int offsetHeight;
     uint heightCount; 
 };
@@ -269,10 +269,10 @@ void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, inout
                             Meshlet meshlet = inputMeshletData.meshlets[n.meshlets[m].meshletOffset];                        
                             if (meshlet.subMeshId == sm.id) {                                                        
                                 //Modèle 3D.(On l'ajoute)
+                                taskData.meshDrawCommand.x++;
                                 if(object.renderingType == 0) { 
                                     uint meshletOffset = offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset;
-                                    outputMeshlet[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlets[mshletOffset] = meshlet;                
-                                    taskData.meshletCount++;
+                                    outputMeshlet[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlets[mshletOffset] = meshlet;
                                     //Heightmap. (On ajoute les 4 coins du carré)
                                 } else {
                                     for (uint i = 0; i < 4; i++) {
@@ -333,7 +333,7 @@ void main() {
                                 inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset = taskDataOffset;
                                 MeshDrawCommand meshDrawCommand;
                                 meshDrawCommand.groupXCount = 0;
-                                meshDrawCommand.groupYCount = 1;
+                                meshDrawCommand.groupYCount = 0;
                                 meshDrawCommand.groupZCount = 1;
                                 TaskData taskData;
                                 taskData.heightCount = 0;
@@ -352,13 +352,13 @@ void main() {
                             ModelData modelData = inputModelData.modelData[object.modelDataOffset];
                             outputModelData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId] = modelData;
                             //nombre d'instances + 1.                           
-                            outputTaskData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupXCount++;
+                            outputTaskData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupYCount++;
                         }
                         //Matériel non instanciable.                                               
                     } else {                        
                         uint offsetTaskData = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
                         MeshDrawCommand meshDrawCommand;                        
-                        meshDrawCommand.groupXCount = 1;
+                        meshDrawCommand.groupXCount = 0;
                         meshDrawCommand.groupYCount = 1;
                         meshDrawCommand.groupZCount = 1;
                         TaskData taskData;
