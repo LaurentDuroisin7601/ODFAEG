@@ -44,17 +44,18 @@ layout (push_constant) uniform PushConstant {
 layout (std430, set = 0, binding = 2) buffer MaterialDataSSBO {
     MaterialData materialData[];
 } materialDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
-layout (set = 0, binding = 3, r32ui) uniform coherent uimage2D headPointers[MAX_FRAMES_IN_FLIGHT*(NB_CASCADES+1)];
+/*layout (set = 0, binding = 3, r32ui) uniform coherent uimage2D headPointers[MAX_FRAMES_IN_FLIGHT*(NB_CASCADES+1)];
 layout (std430, set = 0, binding = 4) buffer nodeCountSSBO {
     uint count;
 } countData[MAX_FRAMES_IN_FLIGHT*(NB_CASCADES+1)];
 layout (std430, set = 0, binding = 5) buffer linkedListSSBO {
     NodeType nodes[];
-} linkedListData[MAX_FRAMES_IN_FLIGHT*(NB_CASCADES+1)];
-layout (set = 0, binding = 6) uniform sampler2D diffuseTextures[MAX_TEXTURES];
+} linkedListData[MAX_FRAMES_IN_FLIGHT*(NB_CASCADES+1)];*/
+layout (set = 0, binding = 3) uniform sampler2D diffuseTextures[MAX_TEXTURES];
 void main()
-{   
-    ivec2 hrLrScale = ivec2(pc.resolution.xy) / PPLL_RESOLUTION;
+{  
+    //debugPrintfEXT("Ok"); 
+    /*ivec2 hrLrScale = ivec2(pc.resolution.xy) / PPLL_RESOLUTION;
     ivec2 lrFragCoord = ivec2(gl_FragCoord.xy) / hrLrScale; 
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[v_DrawID];
     // --- Diffuse ---
@@ -70,5 +71,5 @@ void main()
          linkedListData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].nodes[nodeIdx].depth = gl_FragCoord.z;
          linkedListData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].nodes[nodeIdx].next = prevHead;
          linkedListData[gl_ViewIndex*MAX_FRAMES_IN_FLIGHT+currentFrame].nodes[nodeIdx].hResId = uint((int(gl_FragCoord.x) % hrLrScale.x) + (int(gl_FragCoord.y) % hrLrScale.y) * hrLrScale.x);
-    }      
+    }*/      
 }

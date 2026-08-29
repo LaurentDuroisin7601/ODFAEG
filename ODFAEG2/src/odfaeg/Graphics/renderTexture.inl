@@ -19,7 +19,7 @@ namespace odfaeg {
                     //std::cout<<"create texture"<<std::endl;
                     m_textures.emplace_back(device, NB_SWAPCHAIN_IMAGES);
                     //std::cout<<"images : "<<m_textures.back().getImages().size()<<std::endl;
-                    m_textures.back().create(width, height, (multisample) ? device.getMsaaSamples() : VK_SAMPLE_COUNT_1_BIT, depth, 1, layered, true);
+                    m_textures.back().create(width, height, (!layered && multisample) ? device.getMsaaSamples() : VK_SAMPLE_COUNT_1_BIT, depth, 1, layered, true);
                 }
             }
             //std::cout<<"images : "<<m_textures.back().getImages().size()<<std::endl;
@@ -28,7 +28,7 @@ namespace odfaeg {
             this->depthOnly = depthOnly;           
             //if (useDepthTest() || useDepthTest() || depthOnly) {
                       
-                getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, (multisample) ? device.getMsaaSamples() : VK_SAMPLE_COUNT_1_BIT, depth, layersPerView, layered);
+                getDepthStencilTexture().createDepthTexture(getExtents().width, getExtents().height, (!layered && multisample) ? device.getMsaaSamples() : VK_SAMPLE_COUNT_1_BIT, depth, layersPerView, layered);
             //}
             /*createRenderPass();
             createFramebuffers();*/
@@ -174,15 +174,24 @@ namespace odfaeg {
         void RenderTexture::clear(const entity::Color& clearColor) {
             firstSubmit = true;
             beginRecordCommandBuffer();
-            VkClearColorValue clearValue = { clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f };
-            VkRenderingAttachmentInfo colorAttachmentInfo = {
-                .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-                .imageView = m_textures[0].getImage(imageIndex).getImageView().getHandle(),
-                .imageLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
-                .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                .clearValue = clearValue 
-            };
+            /*VkRenderingAttachmentInfo colorAttachmentInfo;
+            VkRenderingInfo renderingInfo;
+            if (!depthOnly) {
+                VkClearColorValue clearValue = { clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f };
+                colorAttachmentInfo = {
+                    .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+                    .imageView = m_textures[0].getImage(imageIndex).getImageView().getHandle(),
+                    .imageLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+                    .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                    .clearValue = clearValue 
+                };
+                renderingInfo.colorAttachmentCount = 1,
+                renderingInfo.pColorAttachments = &colorAttachmentInfo;
+            } else {
+                renderingInfo.colorAttachmentCount = 0,
+                renderingInfo.pColorAttachments = nullptr;
+            }
             VkRenderingAttachmentInfo depthAttachmentInfo = {
                 .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
                 .imageView = getDepthStencilTexture().getImage().getImageView().getHandle(),
@@ -190,21 +199,19 @@ namespace odfaeg {
                 .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
                 .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                 .clearValue = {.depthStencil{1.f, 0}}
-            };            
-            VkRenderingInfo renderingInfo = {
-                .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
-                .renderArea = {
-                    .offset { .x=0, .y=0 },
-                    .extent = getExtents()
-                },
-                .layerCount = getDepthStencilTexture().getLayerCount(),
-                .colorAttachmentCount = 1,
-                .pColorAttachments = &colorAttachmentInfo,
-                .pDepthAttachment = &depthAttachmentInfo
-            };            
+            };           
+            
+            renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
+            renderingInfo.renderArea = {
+                .offset { .x=0, .y=0 },
+                .extent = getExtents()
+            },
+            renderingInfo.layerCount = getDepthStencilTexture().getLayerCount(),                
+            renderingInfo.pDepthAttachment = &depthAttachmentInfo;
+                 
             vkCmdBeginRendering(getCommandPool().getHandle(getCurrentFrame()),&renderingInfo);
-            vkCmdEndRendering(getCommandPool().getHandle(getCurrentFrame()));
-            /*if (!isDepthOnly()) {
+            vkCmdEndRendering(getCommandPool().getHandle(getCurrentFrame()));*/
+            if (!isDepthOnly()) {
                 
                 VkClearColorValue clearValue = { clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f };
 
@@ -287,7 +294,7 @@ namespace odfaeg {
                     VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &depthStencilToClearBarrier);
             vkCmdClearDepthStencilImage(getCommandPool().getHandle(currentFrame), getDepthStencilTexture().getImage(0).getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearDepthStencilValue, 1, &imageRange2);
             vkCmdPipelineBarrier(getCommandPool().getHandle(currentFrame), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
-                    VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToDepthStencilBarrier);*/
+                    VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToDepthStencilBarrier);
         }        
         uint32_t RenderTexture::getImageIndex() {
             return imageIndex;
@@ -448,6 +455,7 @@ namespace odfaeg {
             vkCmdEndRenderPass(getCommandPool().getHandle(getCurrentFrame()));
         }
 	    void RenderTexture::beginRendering(bool secondaryCommandBuffers, int viewIndex) {
+            //std::cout<<"nb sub views : "<<getDepthStencilTexture().getImage().getImageSubViews().size()<<std::endl;
             VkRenderingInfo renderingInfo = {};
             VkRenderingAttachmentInfo depthAttachmentInfo = {
                 .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,

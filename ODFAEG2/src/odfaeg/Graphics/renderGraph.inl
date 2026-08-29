@@ -12,13 +12,14 @@ namespace odfaeg {
         void RenderGraph::addShadowPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId) {
             
             ShadowRenderer* sr = new ShadowRenderer(output, output, csmShadowMap, pointShadowMap, layer, typesToRender, windowId);
-            renderers.insert(std::make_pair(layer, sr));
+            renderers.insert(std::make_pair(order, sr));
         }
         void RenderGraph::addRTPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId) {
              RTRenderer* rtRenderer = new RTRenderer(output, environmentMap, output, csmShadowMap, pointShadowMap, layer, typesToRender, windowId);
-             renderers.insert(std::make_pair(layer, rtRenderer));           
+             renderers.insert(std::make_pair(order, rtRenderer));           
         }
         void RenderGraph::addDirectionnalLight(entity::DirectionnalLight& dirLight) {
+            //std::cout<<"add directionnal light"<<std::endl;
             std::map<unsigned int, IRenderer*>::iterator it;
             for (it = renderers.begin(); it != renderers.end(); it++) {
                 it->second->addDirectionnalLight(dirLight);
@@ -46,16 +47,20 @@ namespace odfaeg {
             std::map<unsigned int, IRenderer*>::iterator it;
             
             //inputShadowRT->clear();
+            output.clear();
             for (it = renderers.begin(); it != renderers.end(); it++) {
                 //std::cout<<"clear"<<std::endl;
                 
                 //std::cout<<"cleared"<<std::endl;
                 //std::cout<<"draw : "<<it->first<<std::endl;
+                //output.beginRecordCommandBuffer();
                 it->second->clear();
                 //std::cout<<"draw"<<std::endl;
                 it->second->draw();
                 //std::cout<<"drawed"<<std::endl;
             }   
+            output.submit(true);
+            output.display();
         }
     }
 }

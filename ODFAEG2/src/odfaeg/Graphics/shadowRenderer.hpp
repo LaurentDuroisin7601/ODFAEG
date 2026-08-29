@@ -57,7 +57,7 @@ namespace odfaeg {
                 math::Vector2i resolution;
             };  
             struct ShadowPassPLVertPC {
-                glm::mat4 lightProjMatrix;
+                math::Matrix4f lightProjMatrix;
                 int primitiveType;
                 int currentFrame;
                 int _pad[2];
@@ -77,10 +77,10 @@ namespace odfaeg {
                 float far_plane;
             };
             struct LightSpaceMatrix {
-                glm::mat4 lightSpaceMatrices[NB_CASCADES+1];
+                math::Matrix4f lightSpaceMatrices[NB_CASCADES+1];
             };
             struct ViewPLMatrix {
-                glm::mat4 viewsPLMatrices[6];
+                math::Matrix4f viewsPLMatrices[6];
             };
             ShadowRenderer(RenderTarget& parentRenderer, RenderTexture& sceneColorTexture, RenderTexture& cmsShadowMap, RenderTexture& pointShadowMap, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
             void createCommandPools();
@@ -91,13 +91,14 @@ namespace odfaeg {
             void draw();
             unsigned int getLayer();
             bool isRendererReady();
-            void addDirectionnalLight(entity::DirectionnalLight& dirLight);
-            void addPonctualLight(entity::PointLight& pointLight);
+            void addDirectionnalLight(entity::DirectionnalLight& dirLight) override;
+            void addPonctualLight(entity::PointLight& pointLight) override;
+            virtual ~ShadowRenderer() {}
         private :                    
             void computeDirLightMatrices();
             void computePointLightMatrices();
             std::vector<float> computeSplits(int cascadeCount, float nearPlane, float farPlane, float lambda);
-            glm::mat4 getLightSpaceMatrix(math::Vec3f lightDir, const float nearPlane, const float farPlane);
+            math::Matrix4f getLightSpaceMatrix(math::Vec3f lightDir, const float nearPlane, const float farPlane);
             std::array<math::Vec3f, 8> getFrustrumCornersWordlSpace(math::Matrix4f projView);
             std::vector<LightSpaceMatrix>  fLightSpaceMatrices;
             RenderTarget& parentRenderer;
@@ -140,7 +141,7 @@ namespace odfaeg {
             std::vector<DirLight> dirLights;
             std::vector<PointLight> pointLights; 
             std::vector<float> shadowCascadeLevels;
-            inline static const unsigned int SHADOW_MAP_SIZE = 2048;             
+            inline static const unsigned int SHADOW_MAP_SIZE = 1024;             
             inline static const unsigned int SHADOW_MAP_WIDTH = 1024;
             inline static const unsigned int SHADOW_MAP_HEIGHT = 1024;   
             inline static const unsigned int PPLL_RESOLUTION = 512;                                             

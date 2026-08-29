@@ -399,11 +399,12 @@ namespace odfaeg {
                 commandPool.beginRecordCommandBuffer(i);
                 transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 0, 0, 1, (layered) ? texDepth : 1);                
                 commandPool.endRecordCommandBuffer(i);
-                if (texDepth > 1) {
+                //if (layerCount > 1) {
                     for (unsigned int v = 0; v < layerCount; v+=layersPerView) {
+                       //std::cout<<"add sub view"<<std::endl; 
                        images[i].addSubView(viewType, m_format, VK_IMAGE_ASPECT_DEPTH_BIT /*| VK_IMAGE_ASPECT_STENCIL_BIT*/, 0, v, 1, layersPerView); 
                     }
-                }                
+                //}                
             }             
             VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -512,7 +513,7 @@ namespace odfaeg {
             VkImageViewType viewType; 
             layerCount = 6*cubemapCount;                       
             if (!layered) {
-                viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+                viewType = VK_IMAGE_VIEW_TYPE_CUBE;
             }
             else {
                 //std::cout<<"cube view array"<<std::endl;
@@ -525,13 +526,13 @@ namespace odfaeg {
                     VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, layerCount, msaaSamples, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_DEPTH_BIT, 0, 0, 1, layerCount);
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
-                if (cubemapCount > 1) {
+                //if (cubemapCount > 1) {
                     for (unsigned int c = 0; c < cubemapCount; c++) {
                         for (unsigned int m = 0; m < mipLevels; m++) {
                             images[i].addSubView(viewType, m_format,  imageAspectMask, m, 6*c, 1, 6);                            
                         }
                     }
-                }
+                //}
                 commandPool.beginRecordCommandBuffer(i);
                 transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 0, 0, 1, layerCount);                
                 commandPool.endRecordCommandBuffer(i);

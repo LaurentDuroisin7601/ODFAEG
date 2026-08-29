@@ -18,7 +18,7 @@ namespace odfaeg {
         useThread(useThread)
         {
             shadowMap.create(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, NB_CASCADES+1, NB_CASCADES+1,true, true);
-            shadowMapPL.createCubeMap(SHADOW_MAP_SIZE, 1 , 1, true);
+            shadowMapPL.createCubeMap(SHADOW_MAP_SIZE, 1 , 1, true, true);
             shadowPassCSMFragPC.resolution = math::Vector2i(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
             shadowPassPLFragPC.resolution = math::Vector2i(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
             rendererReady.store(false); 
@@ -137,6 +137,7 @@ namespace odfaeg {
                              
         }          
         void ShadowRenderer::addDirectionnalLight(entity::DirectionnalLight& dirLight) {            
+            //std::cout<<"add directionnal light!"<<std::endl;
             DirLight dl;
             dl.dir = dirLight.getDir();
             dirLights.push_back(dl);  
@@ -144,33 +145,49 @@ namespace odfaeg {
             for (size_t i = 1; i < shadowCascadeLevels.size(); i++)
             {
 
-                lightSpaceMatrices.lightSpaceMatrices[i-1] = getLightSpaceMatrix(dirLight.getDir(), shadowCascadeLevels[i-1], shadowCascadeLevels[i]);
+                lightSpaceMatrices.lightSpaceMatrices[i-1] = getLightSpaceMatrix(dirLight.getDir(), shadowCascadeLevels[i-1], shadowCascadeLevels[i]).transpose();
                 //std::cout<<fLightSpaceMatrices.back()<<std::endl;
             } 
             fLightSpaceMatrices.push_back(lightSpaceMatrices);
             dirLights.back().far_plane = shadowCascadeLevels[NB_CASCADES];           
             needToUpdateDirLightsMatrices = true;
+            createCommandPools();
+            //computeDirLightMatrices();
+            //updateDescriptorSets();
+            //needToUpdateDescriptorSets = true;
+            //needToUpdateDirLightsMatrices = true;
         }
         void ShadowRenderer::addPonctualLight(entity::PointLight& pointLight) {
             PointLight pl;
             pl.pos = pointLight.getPosition();
             pointLights.push_back(pl);
             Camera pointLightCamera;
-            glm::perspective(90, 1, 1, 25);            
-            shadowPassPLVertPC.lightProjMatrix = glm::perspective(glm::radians(90.0f), (float) SHADOW_MAP_SIZE / (float) SHADOW_MAP_SIZE, 1.0f, 25.0f);   
+            pointLightCamera.setPerspective(90, (float) SHADOW_MAP_SIZE / (float) SHADOW_MAP_SIZE, 1, 25);            
+            shadowPassPLVertPC.lightProjMatrix = pointLightCamera.getProjMatrix().getMatrix().transpose();
              
             ViewPLMatrix viewPLMatrices;
             math::Vec3f lightPos = pointLight.getPosition();              
-            pointLightCamera.setCenter(lightPos);           
-            viewPLMatrices.viewsPLMatrices[0] = glm::lookAt(glm::vec3(-1, 0, 0), glm::vec3(lightPos.x(), lightPos.y(), lightPos.z()), glm::vec3(0, -1, 0));           
-            viewPLMatrices.viewsPLMatrices[1] = glm::lookAt(glm::vec3(1, 0, 0), glm::vec3(lightPos.x(), lightPos.y(), lightPos.z()), glm::vec3(0, -1, 0));           
-            viewPLMatrices.viewsPLMatrices[2] = glm::lookAt(glm::vec3(0, -1, 0), glm::vec3(lightPos.x(), lightPos.y(), lightPos.z()), glm::vec3(0, 0, -1));            
-            viewPLMatrices.viewsPLMatrices[3] = glm::lookAt(glm::vec3(0, 1, 0), glm::vec3(lightPos.x(), lightPos.y(), lightPos.z()), glm::vec3(0, 0, 1));
-            viewPLMatrices.viewsPLMatrices[4] = glm::lookAt(glm::vec3(0, 0, -1), glm::vec3(lightPos.x(), lightPos.y(), lightPos.z()), glm::vec3(0, -1, 0));
-            viewPLMatrices.viewsPLMatrices[5] = glm::lookAt(glm::vec3(0, 0, 1), glm::vec3(lightPos.x(), lightPos.y(), lightPos.z()), glm::vec3(0, -1, 0));
+            pointLightCamera.setCenter(lightPos); 
+            pointLightCamera.lookAt(-1, 0, 0, math::Vec3f(0, -1, 0));          
+            viewPLMatrices.viewsPLMatrices[0] = pointLightCamera.getViewMatrix().getMatrix();           
+            pointLightCamera.lookAt(1, 0, 0, math::Vec3f(0, -1, 0)); 
+            viewPLMatrices.viewsPLMatrices[1] = pointLightCamera.getViewMatrix().getMatrix();         
+            pointLightCamera.lookAt(0, -1, 0, math::Vec3f(0, 0, -1)); 
+            viewPLMatrices.viewsPLMatrices[2] = pointLightCamera.getViewMatrix().getMatrix();            
+            pointLightCamera.lookAt(0, 1, 0, math::Vec3f(0, 0, 1)); 
+            viewPLMatrices.viewsPLMatrices[3] = pointLightCamera.getViewMatrix().getMatrix();
+            pointLightCamera.lookAt(0, 0, -1, math::Vec3f(0, -1, 0)); 
+            viewPLMatrices.viewsPLMatrices[4] = pointLightCamera.getViewMatrix().getMatrix();
+            pointLightCamera.lookAt(0, 0, 1, math::Vec3f(0, -1, 0)); 
+            viewPLMatrices.viewsPLMatrices[5] = pointLightCamera.getViewMatrix().getMatrix();
             lightViewsPLMatrices.push_back(viewPLMatrices);   
             pointLights.back().far_plane = 25; 
             needToUpdatePointLightsMatrices = true;
+            /*createCommandPools();
+            computePointLightMatrices();*/
+            //updateDescriptorSets();
+            //needToUpdatePointLightsMatrices = true;
+            //std::cout<<"point light added"<<std::endl;
         }
         void ShadowRenderer::computePointLightMatrices() {            
             VkPhysicalDeviceProperties props;
@@ -286,7 +303,7 @@ namespace odfaeg {
                 }
                 shadowPassCSMPipeline[i][RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id]->createGraphicPipeline(shadowPassCSMShader, static_cast<PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(shadowPassCSMShader), renderingCreateInfo, shadowMap.getDepthStencilInfos()[RenderTarget::DEPTHNOSTENCIL], blendMode, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);*/
                 //std::cout<<"pipeline : "<<GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle()<<std::endl;
-                GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).createGraphicPipeline(shadowPassCSMShader, static_cast<entity::PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(shadowPassCSMShader), renderingCreateInfo, shadowMap.getDepthStencilInfos()[RenderTarget::DEPTHNOSTENCIL], blendMode, GPUContext::instance().getDevice().getMsaaSamples(), VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);
+                GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).createGraphicPipeline(shadowPassCSMShader, static_cast<entity::PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(shadowPassCSMShader), renderingCreateInfo, shadowMap.getDepthStencilInfos()[RenderTarget::DEPTHNOSTENCIL], blendMode, VK_SAMPLE_COUNT_1_BIT, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);
                 //std::cout<<"pipeline : "<<i<<std::endl;
                 /*std::cout<<"ids : "<<i<<","<<shadowPassCSMShader.getId()<<","<<RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id<<std::endl;
                 std::cout<<"pipeline at creation : "<<shadowPassCSMPipeline[i][RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id]->getHandle()<<std::endl;
@@ -435,7 +452,7 @@ namespace odfaeg {
             }
             return frustrumCorners;
         }
-        glm::mat4 ShadowRenderer::getLightSpaceMatrix(math::Vec3f lightDir, const float nearPlane, const float farPlane) {
+        math::Matrix4f ShadowRenderer::getLightSpaceMatrix(math::Vec3f lightDir, const float nearPlane, const float farPlane) {
             Camera camera = parentRenderer.getCamera();
             //std::cout<<"near/far : "<<nearPlane<<","<<farPlane<<std::endl;
             camera.setPerspective(80, shadowMap.getSize().x() / shadowMap.getSize().y(), nearPlane, farPlane);  
@@ -454,7 +471,8 @@ namespace odfaeg {
             //std::cout<<"center / 8 : "<<center<<std::endl;            
             Camera lightSpace;
             math::Vec3f target(center + lightDir);
-            glm::mat4 view = glm::lookAt(glm::vec3(target.x(), target.y(), target.z()), glm::vec3(center.x(), center.y(), center.z()), glm::vec3(0.f, -1.f, 0.f));
+            lightSpace.setCenter(center);
+            camera.lookAt(target.x(), target.y(), target.z(),math::Vec3f(0.f, -1.f, 0.f));
 
             float minX = std::numeric_limits<float>::max();
             float maxX = std::numeric_limits<float>::lowest();
@@ -492,10 +510,10 @@ namespace odfaeg {
                 maxZ *= zMult;
             }
             
-            glm::mat4 proj = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
+            camera.setPerspective(minX, maxX, minY, maxY, minZ, maxZ);
            
 
-            return  proj * view;
+            return  camera.getProjMatrix().getMatrix() * camera.getViewMatrix().getMatrix();
         }
         std::vector<float> ShadowRenderer::computeSplits(int cascadeCount, float nearPlane, float farPlane, float lambda)
         {
@@ -544,9 +562,9 @@ namespace odfaeg {
             DescriptorSet& shadowPassDescriptorSet = GPUContext::instance().getDescriptorSets(shadowPassCSMShader, (hasDiffuseTexture) ? 7 : 6, 1)[0];
             //std::cout<<"size : "<<shadowPassCSMSets.size()<<","<<shadowPassCSMSets[0].size()<<std::endl;
             //std::cout<<"output model range : "<<GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+shadowMap.getId()*RenderTarget::NB_BUFFERS)[3].getRange()<<std::endl;
-            shadowPassDescriptorSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+shadowMap.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            shadowPassDescriptorSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowPassDescriptorSet.updateBufferInfos(1, lightSpaceMatricesBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC);
-            shadowPassDescriptorSet.updateBufferInfos(2, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS+shadowMap.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            shadowPassDescriptorSet.updateBufferInfos(2, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowPassDescriptorSet.updateImageInfos(3, headPtrsDirStorageImage, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
             shadowPassDescriptorSet.updateBufferInfos(4, nodeCounterDirBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowPassDescriptorSet.updateBufferInfos(5, linkedListDirBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -555,9 +573,9 @@ namespace odfaeg {
             }
             shadowPassDescriptorSet.updateDescriptorSet();   
             DescriptorSet& shadowPassPLDescriptorSet = GPUContext::instance().getDescriptorSets(shadowPassPLShader, (hasDiffuseTexture) ? 7 : 6, 1)[0];
-            shadowPassPLDescriptorSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+shadowMapPL.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            shadowPassPLDescriptorSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowPassPLDescriptorSet.updateBufferInfos(1, lightViewsPLMatricesBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC);
-            shadowPassPLDescriptorSet.updateBufferInfos(2, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS+shadowMapPL.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            shadowPassPLDescriptorSet.updateBufferInfos(2, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowPassPLDescriptorSet.updateImageInfos(3, headPtrsPointStorageImage, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
             shadowPassPLDescriptorSet.updateBufferInfos(4, nodeCounterPointBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowPassPLDescriptorSet.updateBufferInfos(5, linkedListPointBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -597,7 +615,9 @@ namespace odfaeg {
             //std::cout<<"descriptor sets updated"<<std::endl;
         }
         void ShadowRenderer::clear() {
+            
             shadowMap.clear();
+            //std::cout<<"clear"<<std::endl;
             VkClearColorValue clearColor;
             clearColor.uint32[0] = 0xffffffff;
             VkImageSubresourceRange subresRange = {};
@@ -608,17 +628,19 @@ namespace odfaeg {
                 vkCmdClearColorImage(shadowMap.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), headPtrsDirStorageImage[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
                 vkCmdFillBuffer(shadowMap.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), nodeCounterDirBuffer[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), 0, sizeof(uint32_t), 0u);
             }
+           // std::cout<<"cleared 1  :"<<parentRenderer.getCurrentFrame()<<std::endl;
             shadowMapPL.clear(); 
             for (unsigned int i = 0; i < 6; i++) {
                 vkCmdClearColorImage(shadowMapPL.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), headPtrsPointStorageImage[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
                 vkCmdFillBuffer(shadowMapPL.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), nodeCounterPointBuffer[i*MAX_FRAMES_IN_FLIGHT+parentRenderer.getCurrentFrame()].getHandle(), 0, sizeof(uint32_t), 0u);
             }
-            parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
-            parentRenderer.applyCullingAndBatching();
-            shadowMap.setTypesToRender(typesToRenderExpression, shadowMap.getCurrentFrame());
+            //std::cout<<"cleared 2  :"<<parentRenderer.getCurrentFrame()<<std::endl;
+            /*parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
+            parentRenderer.applyCullingAndBatching();*/
+            /*shadowMap.setTypesToRender(typesToRenderExpression, shadowMap.getCurrentFrame());
             shadowMap.applyCullingAndBatching();            
             shadowMapPL.setTypesToRender(typesToRenderExpression, shadowMapPL.getCurrentFrame());
-            shadowMapPL.applyCullingAndBatching();
+            shadowMapPL.applyCullingAndBatching();*/
             
             //std::cout<<"cleared  :"<<parentRenderer.getCurrentFrame()<<std::endl;
             registerFramesJob[parentRenderer.getCurrentFrame()].store(true);
@@ -630,13 +652,14 @@ namespace odfaeg {
             cv.wait(lock, [this] {
                     //std::cout<<"draw frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
                 return registerFramesJob[parentRenderer.getCurrentFrame()].load() || stop.load();
-            });            
+            });   
+            //std::cout<<"unlocked"<<std::endl;         
             uint32_t renderFrame  = parentRenderer.getCurrentFrame();
             //std::cout<<"draw!"<<std::endl;
             registerFramesJob[renderFrame].store(false);
             
             if (!stop.load()) {
-                VkSemaphoreWaitInfo semaphoreWaitInfo = {};
+                /*VkSemaphoreWaitInfo semaphoreWaitInfo = {};
                 semaphoreWaitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
                 std::vector<VkSemaphore> waitSemaphores;
                 std::vector<uint64_t> waitValues;
@@ -646,19 +669,22 @@ namespace odfaeg {
                 //waitValues.push_back(shadowMap.getSemaphores()[0].getValue());    
                 semaphoreWaitInfo.semaphoreCount = waitSemaphores.size();
                 semaphoreWaitInfo.pSemaphores = waitSemaphores.data();
-                semaphoreWaitInfo.pValues = waitValues.data();
+                semaphoreWaitInfo.pValues = waitValues.data();*/
                 //vkWaitSemaphores(GPUContext::instance().getDevice().getDevice(), &semaphoreWaitInfo, UINT64_MAX);
                 //std::cout<<"frame : "<<renderFrame<<" ready!"<<std::endl;
+                
+                //std::cout<<"pool created"<<std::endl;
                 if (needToUpdateDirLightsMatrices || needToUpdatePointLightsMatrices)
                     createCommandPools();
                 if (needToUpdateDirLightsMatrices) {                    
-                    shadowMap.create(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, (NB_CASCADES+1)*dirLights.size(), NB_CASCADES+1, true, true);
+                    //shadowMap.create(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, (NB_CASCADES+1)*dirLights.size(), NB_CASCADES+1, true, true);
                     computeDirLightMatrices();
                     needToUpdateDirLightsMatrices = false;
                     needToUpdateDescriptorSets = true;
                 }
+               
                 if (needToUpdatePointLightsMatrices) {
-                    shadowMapPL.createCubeMap(SHADOW_MAP_SIZE, pointLights.size(), true, false);  
+                    //shadowMapPL.createCubeMap(SHADOW_MAP_SIZE, pointLights.size(), true, false);  
                     computePointLightMatrices();
                     needToUpdatePointLightsMatrices = false;
                     needToUpdateDescriptorSets = true;
@@ -667,17 +693,20 @@ namespace odfaeg {
                     //std::cout<<"update ds"<<std::endl;
                     updateDescriptorSets();
                     needToUpdateDescriptorSets = false;
-                }                         
+                } 
+                // std::cout<<"shadow map created"<<std::endl;                       
                 jobFences[renderFrame].reset(dirLights.size()+pointLights.size()+1);  
                 for (unsigned int c = 0; c < dirLights.size(); c++) {  
-                    unsigned int l = c;            
+                    unsigned int l = c;     
+                    //std::cout<<"enter enqueue dir light"<<std::endl;       
                     threadPool.enqueue([this, l, renderFrame] {
+                        //std::cout<<"enqueue dir light"<<std::endl;
                         VkCommandBufferInheritanceRenderingInfo inheritanceRenderingInfo{};
                         inheritanceRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
                         inheritanceRenderingInfo.colorAttachmentCount = 0;
                         inheritanceRenderingInfo.pColorAttachmentFormats = nullptr; // tableau de VkFormat
                         inheritanceRenderingInfo.depthAttachmentFormat = shadowMap.getDepthStencilTexture().getFormat();    // VK_FORMAT_D32_SFLOAT, etc.                    
-                        inheritanceRenderingInfo.rasterizationSamples = GPUContext::instance().getDevice().getMsaaSamples(); 
+                        inheritanceRenderingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT; 
                         inheritanceRenderingInfo.viewMask = shadowMap.getViewMask();
                         VkCommandBufferInheritanceInfo inheritanceInfo{};
                         inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -734,7 +763,7 @@ namespace odfaeg {
                         inheritanceRenderingInfo.colorAttachmentCount = 0;
                         inheritanceRenderingInfo.pColorAttachmentFormats = nullptr; // tableau de VkFormat
                         inheritanceRenderingInfo.depthAttachmentFormat = shadowMapPL.getDepthStencilTexture().getFormat();    // VK_FORMAT_D32_SFLOAT, etc.                    
-                        inheritanceRenderingInfo.rasterizationSamples = GPUContext::instance().getDevice().getMsaaSamples(); 
+                        inheritanceRenderingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT; 
                         inheritanceRenderingInfo.viewMask = shadowMapPL.getViewMask();
                         VkCommandBufferInheritanceInfo inheritanceInfo{};
                         inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -833,7 +862,8 @@ namespace odfaeg {
                     //std::cout<<"render frame : "<<renderFrame<<std::endl;
                     jobFences[renderFrame].jobDone();
                 });                                            
-                jobFences[renderFrame].wait();                             
+                jobFences[renderFrame].wait(); 
+                std::cout<<"wait finished"<<std::endl;                            
             }
             
             commandBuffersReady[renderFrame].store(true);
@@ -869,7 +899,7 @@ namespace odfaeg {
                 }
                 shadowMapPL.submit(true);
                 shadowMapPL.display();
-                sceneColorTexture.submit(true);
+                //sceneColorTexture.submit(true);
                 
                 //std::cout<<"shadow map drawn"<<std::endl;
                                           
@@ -923,7 +953,7 @@ namespace odfaeg {
                 /*for (unsigned int i = 0; i < RenderTexture::NB_SWAPCHAIN_IMAGES; i++) {
                     Texture::transitionImageLayout(sceneColorTexture.getTexture().getImage(i), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL); 
                 }*/           
-                sceneColorTexture.display();
+                //sceneColorTexture.display();
             }
             //std::cout<<"drawn"<<std::endl;
         }
