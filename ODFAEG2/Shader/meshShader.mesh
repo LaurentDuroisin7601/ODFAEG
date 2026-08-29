@@ -29,10 +29,7 @@ struct LODLevel {
 struct TaskData {
     MeshDrawCommand meshDrawCommand;
     uint baseInstance;
-    int meshletOffset;
-    int meshletCount;
-    int heightOffset;
-    uint heightCount;    
+    int clusterId;   
 };
 struct AABB {
 	vec3 center;
@@ -41,7 +38,9 @@ struct AABB {
 struct Cluster {
     AABB globalBounds;
     int meshletOffset;
-    int meshletCount;
+    int meshletCount; 
+    int heightOffset;
+    uint heightCount; 
     int id;
     int lodLevel;
 };
