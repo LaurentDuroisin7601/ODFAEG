@@ -128,9 +128,11 @@ float shadowCalculationDir(vec3 fragPosWorldSpace)
                 currentLightShadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
             }
         }
+        //float diff = max(dot(dirLightData[currentFrame].dirLights[l].lightDir, normalize(normal)), 0.0);
         shadow = max(currentLightShadow, shadow);
     }     
     shadow /= 9.0;
+    
     return shadow;
 }
 float shadowCalculationPoint(vec3 fragPos)
@@ -196,16 +198,16 @@ void main()
         debugPrintfEXT("scene color %v4f", sceneColor);*/
     vec3 normal = normalize(normal);
     // calculate shadow
-    float shadowDir = shadowCalculationDir(fragPos);
+    float shadowDir = shadowCalculationDir(fragPos) * 0.5;
     
     float shadowPoint = shadowCalculationPoint(fragPos);
     /*if (shadowPoint > 0)
         debugPrintfEXT("Shadow point : %f", shadowPoint);*/
     float shadow = max(shadowDir, shadowPoint);
-    if (shadow > 0 && shadow < 1)
-        debugPrintfEXT("Shadow : %v3f", vec3(sceneColor) * (1 - shadow));
+    /*if (shadow > 0 && shadow < 1)
+        debugPrintfEXT("Shadow : %f", shadow);*/
 
     /*if (sceneColor.r != 0 || sceneColor.g != 0 || sceneColor.b != 0 || sceneColor.a != 0)
         debugPrintfEXT("scene color %v4f", sceneColor); */  
-    frag_color = vec4(vec3(sceneColor) * (1 - shadow * 0.5), sceneColor.a);
+    frag_color = vec4(vec3(sceneColor) * (1 - shadow), sceneColor.a);
 }

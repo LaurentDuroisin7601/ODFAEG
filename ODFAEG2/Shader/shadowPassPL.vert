@@ -40,7 +40,7 @@ void main() {
     mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[gl_InstanceIndex].modelMatrix;
     fragPos = modelMatrix * vec4(inPosition, 1);  
     //debugPrintfEXT("viewPLMatrix : %v4f", lightViewMatricesData[pc.currentFrame].viewPLMatrix.viewPLMatrices[gl_ViewIndex][0]); 
-    gl_Position = pc.lightProjMatrix * lightViewMatricesData[pc.currentFrame].viewPLMatrix.viewPLMatrices[gl_ViewIndex] * fragPos;  
+    gl_Position = transpose(pc.lightProjMatrix) * transpose(lightViewMatricesData[pc.currentFrame].viewPLMatrix.viewPLMatrices[gl_ViewIndex]) * fragPos;  
     
     fragColor = inColor;
     fragTexCoord = inTexCoord;
