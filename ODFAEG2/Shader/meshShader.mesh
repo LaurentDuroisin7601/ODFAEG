@@ -139,11 +139,12 @@ vec4 unpackColor(uint c)
     return vec4(r, g, b, a);
 }
 void main() {      
-    //Instance id = taskId (base instance) + workGroupId.x (instance id).
+    
     TaskData taskData = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId];
     if (taskData.heightCount == 0) {    
         SubMesh subMesh = SubMeshDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMeshData[payload.taskId];
-        Cluster cluster = clusterDatas.clusters[taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].clusterId];
+        Cluster cluster = clusterDatas.clusters[taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].clusterOffset+gl_WorkGroupID.y];
+        //Instance id = taskId (base instance) + workGroupId.x (instance id).
         uint instanceId = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].baseInstance + gl_WorkGroupID.x;
         //debugPrintfEXT("Instance id : %i", gl_WorkGroupID.x); 
         mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId].modelMatrix;
