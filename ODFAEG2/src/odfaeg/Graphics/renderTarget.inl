@@ -661,15 +661,16 @@ namespace odfaeg {
 							entity::GridCell* gridCell = getGridCellFromCoords(x, y, z);
 							//Trou. (Il faut les gérer pour le ballayage GPU)
 							if (gridCell == nullptr || gridCell->empty()) {
-								GPUCell gpuCell;
-								gpuCell.clusterId = -1;
-								gpuCells.push_back(gpuCell);
+								CellData emptyCell;
+								emptyCell.clusterId = -1;
+								cellDatas.push_back(emptyCell);
 							//Cluster rempli. 
 							} else {
 								//Ajout du root node et des enfants + création des clusters et assignation des ids.
 								std::vector<Octree::Node> nodes = gridCell->getOctreeNodes();
 								std::vector<Octree::Node> stack;
-								stack.push_back(nodes[0]);								
+								stack.push_back(nodes[0]);	
+								CellData cellData;							
 								cellData.clusterId = currentClusterId;
 								cellDatas.push_back(cellData);								
 								while (stack.size() > 0) {
@@ -684,6 +685,7 @@ namespace odfaeg {
 											childClusterData.id = currentClusterId;
 											childClusterData.volume = nodes[node.children[c]];
 											childClusterData.children[c] = currentClusterId;
+											childClusterData.leaf = 0;
 											clusterDatas.push_back(childClusterData);
 											stack.push_back(nodes[node.children[c]]);
 										}
@@ -694,6 +696,7 @@ namespace odfaeg {
 											childClusterData.id = currentClusterId;
 											childClusterData.globalBounds = nodes[children[c]].volume;
 											childClusterData.meshletCount = nodes[children[c]].objects.size();
+											childClusterData.leaf = 1;
 											clusterDatas.push_back(childClusterData);
 											for (unsigned int i = 0; i < nodes[children[c]].objects.size(); i++) {
 												meshletDatas[nodes[children[c]].objects[i].id].clusterId = currentClusterId;
