@@ -693,6 +693,7 @@ namespace odfaeg {
 											ClusterData childClusterData;
 											childClusterData.id = currentClusterId;
 											childClusterData.globalBounds = nodes[children[c]].volume;
+											childClusterData.meshletCount = nodes[children[c]].objects.size();
 											clusterDatas.push_back(childClusterData);
 											for (unsigned int i = 0; i < nodes[children[c]].objects.size(); i++) {
 												meshletDatas[nodes[children[c]].objects[i].id].clusterId = currentClusterId;
