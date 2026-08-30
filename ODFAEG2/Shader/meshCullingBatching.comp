@@ -305,7 +305,7 @@ void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, int f
                                         //Voxel. 
                                     } else {
                                         //Voxel visible : on le génère.
-                                        if (hasNeighbour(vec3(tmpX, tmpY, tmpZ), f)) {
+                                        if (!hasNeighbour(vec3(tmpX, tmpY, tmpZ), f)) {
                                             uint count = offsets.offsetVoxel - offsets.previousOffsetVoxel;
                                             //Si on dépasse on créé une nouvelle tâche.
                                             if (count + 4 >= MAX_VERTICES 
