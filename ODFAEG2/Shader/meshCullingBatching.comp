@@ -437,8 +437,9 @@ void main() {
                                 outputMeshData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshData[instanceId]  = subMesh;
                                 setVisibleMeshletsFromBox(ubo[pc.currentFrame].frustrum, lod, object, subMesh, s, taskData);
                             }
-                            uint taskOffset = inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset; 
-                            uint instanceId = atomicAdd(outputInstanceBase[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT].instanceOffset, 1);
+                            uint taskDataOffset = inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;
+                            TaskData taskData = outputTaskData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset]; 
+                            uint instanceId = taskData.baseInstance + taskData.meshDrawCommand.groupXCount;
                             ModelData modelData = inputModelData.modelData[object.modelDataOffset];
                             outputModelData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId] = modelData;
                             //nombre d'instances + 1.                           
