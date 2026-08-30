@@ -86,10 +86,10 @@ struct MeshDrawCommand {
 };
 struct TaskData {
     MeshDrawCommand meshDrawCommand;
-    uint instanceBase; 
-    int clusterId;  
-    int offsetHeight;
-    uint heightCount; 
+    uint baseInstance;    
+    uint vertexCount;
+    uint primitiveCount;
+    uint vertexOffset; 
 };
 struct Vertex {
     vec3 position; ///< 3D position of the vertex
@@ -134,6 +134,7 @@ layout(push_constant) uniform PushConstant {
     ivec3 gridCellSize;
     ivec3 nbCellsPerRow;    
     ivec3 gridSize;
+    uint totalVertexCount;
 } pc;
 layout (set = 0, binding = 0) buffer ObjectTypesSSBO {
 	int types[];
@@ -303,24 +304,21 @@ void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, int f
                         if (n.leaf) {
                             if (n.lod == lod && n.submeshId == sm.id) {                                
                                 uint clusterOffset = atomicAdd(offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);                        
-                                outputClusters[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = cluster;  
+                                outputClusters[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = n;  
                                 //Cluster de modèle 3D visible : On dessine ce qu'il contient.
-                                if (object.renderType == 0) {
-                                    taskData.meshDrawCommand.y++; 
+                                if (object.renderingType == 0) {
+                                    taskData.meshDrawCommand.groupYCount++; 
                                     //Heightmap.                            
-                                } else if (objectType == 1) {
-                                    uint count = offsets.offsetVertex - offsets.previousOffsetVertex;
-                                    //Si on dépasse on créé une nouvelle tâche.
+                                } else if (object.renderingType == 1) {
+                                    uint count = offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
+                                    //Si on dépasse ou on arrive au dernier on créé une nouvelle tâche.
                                     if (count + 4 >= MAX_VERTICES 
-                                        || (count + 4) / 4 * 2 >= MAX_PRIMITIVES 
-                                        || offsets.offsetVoxel + count == pc.totalVoxelCount-1) {                        
+                                        || (count + 4) / 4 * 2 >= MAX_PRIMITIVES) {                        
                                         TaskData taskData; 
                                         MeshDrawCommand meshDrawCommand;                        
                                         meshDrawCommand.groupXCount = 1;
                                         meshDrawCommand.groupYCount = 1;
-                                        meshDrawCommand.groupZCount = 1;                     
-                                        taskData.verticesCount = count;
-                                        taskData.primitiveCount = count / 4 * 2;
+                                        meshDrawCommand.groupZCount = 1; 
                                         taskData.meshDrawCommand = meshDrawCommand;                      
                                         taskData.vertexOffset = offsets.previousOffsetVertex;
                                         uint taskDataOffset = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
@@ -333,6 +331,9 @@ void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, int f
                                         vertices[offset] = inputHeightsData.heights[sm.vertexOffset+h];
                                         taskData.heightCount++;
                                     }
+                                    count = offsets.offsetVertex - offsets.previousOffsetVertex;
+                                    taskData.verticesCount = count;
+                                    taskData.primitiveCount = count / 4 * 2;
                                     //Voxel. 
                                 } else {
                                     //Voxel visible : on le génère.
@@ -346,9 +347,7 @@ void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, int f
                                             MeshDrawCommand meshDrawCommand;                        
                                             meshDrawCommand.groupXCount = 1;
                                             meshDrawCommand.groupYCount = 1;
-                                            meshDrawCommand.groupZCount = 1;                     
-                                            taskData.verticesCount = count;
-                                            taskData.primitiveCount = count / 4 * 2;
+                                            meshDrawCommand.groupZCount = 1;
                                             taskData.meshDrawCommand = meshDrawCommand;                      
                                             taskData.vertexOffset = offsets.previousOffsetVertex;
                                             uint taskDataOffset = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
@@ -360,6 +359,9 @@ void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, int f
                                             vertices[offset] = inputHeightsData.heights[sm.vertexOffset+v];
                                             taskData.offsetVertex++;
                                         }
+                                        count = offsets.offsetVertex - offsets.previousOffsetVertex;
+                                        taskData.verticesCount = count;
+                                        taskData.primitiveCount = count / 4 * 2;
                                     }    
                                 }
                             }                          

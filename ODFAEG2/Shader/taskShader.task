@@ -31,9 +31,11 @@ struct MeshDrawCommand {
 };
 struct TaskData {
     MeshDrawCommand meshDrawCommand;
-    uint baseInstance;
-    int clusterId;
-};
+    uint baseInstance;    
+    uint vertexCount;
+    uint primitiveCount;
+    uint vertexOffset;
+}
 layout(push_constant) uniform PushConstant {
     mat4 viewMatrix;
     mat4 projMatrix;
