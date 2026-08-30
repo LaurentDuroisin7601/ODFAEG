@@ -28,23 +28,25 @@ struct LODLevel {
 };
 struct TaskData {
     MeshDrawCommand meshDrawCommand;
-    uint baseInstance;
-    int clusterId;   
+    uint baseInstance;    
+    uint vertexCount;
+    uint primitiveCount;
+    uint vertexOffset;
+    uint clusterOffset; 
 };
 struct AABB {
 	vec3 center;
 	vec3 size;
 };
 struct Cluster {
+    int id;
     AABB globalBounds;
     int meshletOffset;
-    int meshletCount; 
-    int heightOffset;
-    uint heightCount; 
-    int id;
+    int meshletCount;
     int lodLevel;
 };
 struct MeshLet {
+    AABB globalBounds;
     uint vertexOffset;
     uint indexOffset;
     uint nbVertices;
@@ -62,8 +64,8 @@ struct SubMesh {
 	int nbVertices;
 	int nbIndexes;
 	int lodOffset;
-	int id;
     int lodLevel;
+	int id;
     int objectId;
     int clusterOffset;
     int custerCount;
@@ -126,8 +128,8 @@ layout (std430, set = 0, binding = 7) buffer MeshletsSSBO {
 layout (std430, set = 0, binding = 8) buffer ClustersSSBO {
     Cluster clusters[];
 } clusterDatas;
-layout (std430, set = 0, binding = 9) buffer HeightSSBO {
-    Vertex heights[];
+layout (std430, set = 0, binding = 9) buffer VerticesSSBO {
+    Vertex vertices[];
 };
 vec4 unpackColor(uint c)
 {
@@ -141,7 +143,8 @@ vec4 unpackColor(uint c)
 void main() {      
     
     TaskData taskData = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId];
-    if (taskData.heightCount == 0) {    
+    //Modèles 3D.
+    if (taskData.vertexCount == 0) {    
         SubMesh subMesh = SubMeshDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMeshData[payload.taskId];
         Cluster cluster = clusterDatas.clusters[taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].clusterOffset+gl_WorkGroupID.y];
         uint id = gl_WorkGroupID.z;
@@ -191,15 +194,15 @@ void main() {
                 debugPrintfEXT("meshlet : %i,%i, %i, %i, %i, %i, %i",lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletCount, subMesh.meshletOffset, subMesh.indexOffset, meshlet.nbIndexes, meshlet.nbVertices, meshlet.indexOffset, meshlet.vertexOffset);*/  
             gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
         }
+    //Face de heightmap ou voxel.
     } else {
-        SetMeshOutputsEXT(taskData.heightOffset, taskData.heightCount / 4 * 2);
-        for (uint i = 0; i < taskData.heightCount; i++) {        
-            gl_MeshVerticesEXT[i].gl_Position = vec4(heights[taskData.heightOffset+i].position, 1);        
+        SetMeshOutputsEXT(taskData.vertexCount, taskData.primitiveCount);
+        for (uint i = 0; i < taskData.vertexCount; i++) {        
+            gl_MeshVerticesEXT[i].gl_Position = vec4(vertices[taskData.vertexOffset+i].position, 1);        
         }
-        for (uint tri = 0; tri < taskData.heightCount / 4; tri++) {
-            uint offset = taskData.heightOffset / 4 * 2 + tri;
-            gl_PrimitiveTriangleIndicesEXT[tri*2] = uvec3(offset*4, offset*4+1, offset*4+2);
-            gl_PrimitiveTriangleIndicesEXT[tri*2+1] = uvec3(offset*4, offset*4+2, offset*4+3);
+        for (uint tri = 0; tri < taskData.primitiveCount; tri++) {
+            gl_PrimitiveTriangleIndicesEXT[tri*2] = uvec3(tri*4, tri*4+1, tri*4+2);
+            gl_PrimitiveTriangleIndicesEXT[tri*2+1] = uvec3(tri*4, tri*4+2, tri*4+3);
         }
     }    
 }
