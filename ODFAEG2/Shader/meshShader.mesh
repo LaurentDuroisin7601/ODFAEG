@@ -54,6 +54,7 @@ struct MeshLet {
     uint minVertex;
     uint maxVertex;  
     uint clusterId; 
+    uint rendered;
 };
 struct SubMesh {
 	AABB globalBounds;
@@ -155,6 +156,10 @@ void main() {
         mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId].modelMatrix;
             
         MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+id];
+        //Avoid to render it twice of the meshlet is between two clusters. (Deduplication)
+        if (meshlet.rendered == 1)
+            return;
+        meshletDatas.meshlet[cluster.meshletOffset+id].rendered = 1;
         /*if (gl_WorkGroupID.y >= lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletCount)
             debugPrintfEXT("meshlet offets : %i, %i", lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletCount, gl_WorkGroupID.y);*/
         uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_offset + meshlet.indexOffset;

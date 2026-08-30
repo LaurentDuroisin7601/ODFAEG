@@ -127,6 +127,7 @@ struct MeshLet {
     uint maxVertex;  
     uint clusterId; 
     int voxel;
+    int rendered;
 };
 /*objets en entrée.*/
 layout(push_constant) uniform PushConstant {    
@@ -312,6 +313,9 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                                 if (object.renderingType == 0) {    
                                     uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;                                
                                     outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupYCount++; 
+                                    for (uint m = 0; m < n.meshletCount; m++) {
+                                        inputMeshlet.meshlets[n.meshletOffset+m].rendered = 0;
+                                    }
                                     //Heightmap.                            
                                 } else if (object.renderingType == 1) {
                                     uint count = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
