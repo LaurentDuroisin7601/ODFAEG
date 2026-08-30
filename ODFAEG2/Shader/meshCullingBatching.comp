@@ -207,9 +207,6 @@ layout (std430, set = 0, binding = 22) buffer inputClusterSSBBO {
 layout (std430, set = 0, binding = 23) buffer outputMeshletSSBO {
     Meshlet meshlets[];
 } inputMeshlet;
-layout (std430, set = 0, binding = 24) buffer outputMeshletSSBO {
-    Meshlet meshlets[];
-} outputMeshlet[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 bool intersects (AABB first, AABB second) {
     float hx1 = first.size.x * 0.5;
@@ -262,7 +259,35 @@ bool hasNeighbour(vec3 pos, int axe) {
         offset = vec3(pos.x, pos.y, pos.z + pc.gridCellSize.z);
     }
     int cellId = (offset.x / pc.gridCellSize.x) + (offset.y / pc.gridCellSize.y) * pc.nbCellsPerRow.x + (offset.z / pc.gridCellSize.z) * pc.nbCellsPerRow.y;
-    return (cellId != -1 || cellGrid < 0 || cellGrid >= pc.clustersCount);
+    if (offset.x >= pc.gridSize.x || offset.y >= pc.gridSize.y || offset.z >= pc.gridSize.z || cellId  >= pc.gridCellCount || inputGridBuffer.grid[cellId].clusterId == -1) {
+        return false;
+    }
+    bool hasNVoxel = false;
+    int stack[32];
+    int sp = 0;
+    stack[sp++] = inputClustersBuffer.clusters[inputGridBuffer.grid[cellId].clusterId].id;
+
+    while (sp > 0) {
+        uint id = stack[sp--];
+        Cluster n = nodes[id];
+        if (!intersects(ubo[pc.currentFrame].frustrum, n.globalBounds)) {
+            continue;
+        }
+        if (n.leaf) {
+            if (n.lod == 0) {
+                for (uint m = 0; m < n.meshletCount && !hasNVoxel; m++) {
+                    if (inputMeshlet.meshlets[n.meshletOffset+i].voxel == 1) {
+                        hasNVoxel = true;
+                    }
+                }
+            }                               
+        } else {
+            for (uint c = 0; c < 8; c++) {
+                stack[sp++] = n.children[c].id;
+            }
+        } 
+    }
+    return hasNVoxel;
 }
 void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, int f, inout TaskData taskData) {   
     uint stack[32]; 
@@ -275,69 +300,67 @@ void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, int f
             for (uint k = tmpZ; k < (frustrum.center.z - frustrum.size.z*0.5) + frusturm.size.z; k+= pc.gridCellSize.z) {
                 //Root.
                 int cellId = (tmpX / pc.gridCellSize.x) + (tmpY / pc.gridCellSize.y) * pc.nbCellsPerRow.x + (tmpZ / pc.gridCellSize.z) * pc.nbCellsPerRow.y;
-                if (cellId < pc.clustersCount) {
+                if (tmpX < pc.gridSize.x && tmpY < pc.gridSize.y && tmpZ < pc.gridSize.z && inputGridBuffer.grid[cellId].clusterId != -1 && cellId < pc.clustersCount) {
                     stack[sp++] = inputClustersBuffer.clusters[inputGridBuffer.grid[cellId].clusterId].id;
-                    //Case non vide.
-                    if (stack[sp] != -1) {
-                        while (sp > 0) {
-                            uint id = stack[sp--];
-                            Cluster n = nodes[id];
-                            if (!intersects(frustrum, n.globalBounds)) {
-                                continue;
-                            }
-                            if (n.leaf) {
-                                if (n.lod == lod && n.id ==  sm.clusterId) {
-                                    
-                                    
-                                    taskData.meshletCount = n.meshletCount;
-                                    uint clusterOffset = atomicAdd(offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffest, 1);                        
-                                    outputClusters[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = cluster;  
-                                    //Cluster de modèle 3D visible : On dessine ce qu'il contient.
-                                    if (object.renderType == 0) {
-                                        taskData.meshDrawCommand.y++;                             
-                                    } else if (objectType == 1) {
-                                        //Height visible : on le génère.
-                                        for (uint h = 0; h < 4; h++) {
+                    //Case non vide.                   
+                    while (sp > 0) {
+                        uint id = stack[sp--];
+                        Cluster n = nodes[id];
+                        if (!intersects(frustrum, n.globalBounds)) {
+                            continue;
+                        }
+                        if (n.leaf) {
+                            if (n.lod == lod && n.id ==  sm.clusterId) {
+                                
+                                
+                                taskData.meshletCount = n.meshletCount;
+                                uint clusterOffset = atomicAdd(offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffest, 1);                        
+                                outputClusters[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = cluster;  
+                                //Cluster de modèle 3D visible : On dessine ce qu'il contient.
+                                if (object.renderType == 0) {
+                                    taskData.meshDrawCommand.y++;                             
+                                } else if (objectType == 1) {
+                                    //Height visible : on le génère.
+                                    for (uint h = 0; h < 4; h++) {
+                                        uint offset = atomicAdd(offsetsData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.verticesOffset, 1); 
+                                        vertices[offset] = inputHeightsData.heights[sm.vertexOffset+i];
+                                        taskData.heightCount++;
+                                    }
+                                    //Voxel. 
+                                } else {
+                                    //Voxel visible : on le génère.
+                                    if (!hasNeighbour(vec3(tmpX, tmpY, tmpZ), f)) {
+                                        uint count = offsets.offsetVoxel - offsets.previousOffsetVoxel;
+                                        //Si on dépasse on créé une nouvelle tâche.
+                                        if (count + 4 >= MAX_VERTICES 
+                                            || (count + 4) / 4 * 2 >= MAX_PRIMITIVES 
+                                            || offsets.offsetVoxel + count == pc.totalVoxelCount-1) {                        
+                                            TaskData taskData; 
+                                            MeshDrawCommand meshDrawCommand;                        
+                                            meshDrawCommand.groupXCount = 1;
+                                            meshDrawCommand.groupYCount = 1;
+                                            meshDrawCommand.groupZCount = 1;                     
+                                            taskData.clusterOffset = atomicAdd(offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffest, 1);
+                                            taskData.meshDrawCommand = meshDrawCommand;                      
+                                            taskData.voxelOffset = offsets.previousOffsetHeight;
+                                            uint taskDataOffset = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
+                                            outputTaskData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = taskData; 
+                                            offsets.previousOffsetVoxel = offsets.offsetVoxel;                    
+                                        } 
+                                        
+                                        for (uint v = 0; v < 4; v++) {
                                             uint offset = atomicAdd(offsetsData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.verticesOffset, 1); 
                                             vertices[offset] = inputHeightsData.heights[sm.vertexOffset+i];
-                                            taskData.heightCount++;
+                                            taskData.offsetVoxel++;
                                         }
-                                        //Voxel. 
-                                    } else {
-                                        //Voxel visible : on le génère.
-                                        if (!hasNeighbour(vec3(tmpX, tmpY, tmpZ), f)) {
-                                            uint count = offsets.offsetVoxel - offsets.previousOffsetVoxel;
-                                            //Si on dépasse on créé une nouvelle tâche.
-                                            if (count + 4 >= MAX_VERTICES 
-                                                || (count + 4) / 4 * 2 >= MAX_PRIMITIVES 
-                                                || offsets.offsetVoxel + count == pc.totalVoxelCount-1) {                        
-                                                TaskData taskData; 
-                                                MeshDrawCommand meshDrawCommand;                        
-                                                meshDrawCommand.groupXCount = 1;
-                                                meshDrawCommand.groupYCount = 1;
-                                                meshDrawCommand.groupZCount = 1;                     
-                                                taskData.clusterOffset = atomicAdd(offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffest, 1);
-                                                taskData.meshDrawCommand = meshDrawCommand;                      
-                                                taskData.voxelOffset = offsets.previousOffsetHeight;
-                                                uint taskDataOffset = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
-                                                outputTaskData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = taskData; 
-                                                offsets.previousOffsetVoxel = offsets.offsetVoxel;                    
-                                            } 
-                                            
-                                            for (uint v = 0; v < 4; v++) {
-                                                uint offset = atomicAdd(offsetsData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.verticesOffset, 1); 
-                                                vertices[offset] = inputHeightsData.heights[sm.vertexOffset+i];
-                                                taskData.offsetVoxel++;
-                                            }
-                                        }    
-                                    }
-                                }                          
-                            } else {
-                                for (uint c = 0; c < 8; c++) {
-                                    stack[sp++] = n.children[c].id;
+                                    }    
                                 }
-                            } 
-                        }
+                            }                          
+                        } else {
+                            for (uint c = 0; c < 8; c++) {
+                                stack[sp++] = n.children[c].id;
+                            }
+                        }                         
                     }
                 }
             }
