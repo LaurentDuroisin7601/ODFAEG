@@ -639,87 +639,79 @@ namespace odfaeg {
 						currentSubmeshesOffset++;					
 					}									
 				}
-				for (unsigned int m = 0; m < meshletsDatas.size(); m++) {
-					//Reconstruction de l'AABB et ajout dans la grille de meshlets.
-					physic::BoundingBox volume(
-						meshletsDatas[i].minVertex.x(), 
-						meshletsDatas[i].minVertex.y(),
-						meshletsDatas[i].minVertex.z(),
-						meshletsDatas[i].maxVertex.x() - meshletsDatas[i].minVertex.x(),
-						meshletsDatas[i].maxVertex.y() - meshletsDatas[i].minVertex.y(),
-						meshletsDatas[i].maxVertex.z() - meshletsDatas[i].minVertex.z());
-					meshletsGrid.addEntity(meshletsDatas[i], volume);	
-				}
-				std::vector<GPUCell> gpuCells;
-				math::Vec3f gridPos = meshletsGrid.getMins();
-				math::Vec3f gridSize = meshletsGrid.getSize();
-				unsigned int currentclusterId = 0;
-				//Ballayage de la grille.				
-				for (unsigned int x = gridPos.x(); x < gridPos.x() + gridSize.x(); x++) {
-					for (unsigned int y = gridPos.y(); y < gridPos.y() + gridSize.y(); y++) {
-						for (unsigned int z = gridPos.x(); z < gridPos.x() + gridSize.z(); z++) {
-							entity::GridCell* gridCell = getGridCellFromCoords(x, y, z);
-							//Trou. (Il faut les gérer pour le ballayage GPU)
-							if (gridCell == nullptr || gridCell->empty()) {
-								CellData emptyCell;
-								emptyCell.clusterId = -1;
-								cellDatas.push_back(emptyCell);
-							//Cluster rempli. 
-							} else {
-								//Ajout du root node et des enfants + création des clusters et assignation des ids.
-								std::vector<Octree::Node> nodes = gridCell->getOctreeNodes();
-								std::vector<Octree::Node> stack;
-								stack.push_back(nodes[0]);	
-								CellData cellData;							
-								cellData.clusterId = currentClusterId;
-								cellDatas.push_back(cellData);								
-								while (stack.size() > 0) {
-									Node node = stack.back();
-									ClusterData clusterData;
-									clusterData.id = currentClusterId;
-									clusterData.volume = node.volume;									
-									if (!node.leaf) {										
-										for(unsigned int c = 0; c < node.children.size(); c++) {
-											currentClusterId++;
-											ClusterData childClusterData;
-											childClusterData.id = currentClusterId;
-											childClusterData.volume = nodes[node.children[c]];
-											clusterData.children[c] = currentClusterId;
-											childClusterData.leaf = 0;
-											clusterDatas.push_back(childClusterData);
-											stack.push_back(nodes[node.children[c]]);
-										}
-									} else {
-										for (unsigned int c = 0; c < node.children.size(); c++) {
-											for (unsigned int i = 0; i < nodes[children[c]].objects.size(); i++) {												
-												meshletDatas[nodes[children[c]].objects[i].id].clusterId = currentClusterId;
-												unsigned int currentLod = meshletDatas[nodes[children[c]].objects[i].id].lod;
-												if (currentLod == lod) {
+				for (unsigned int lod = 0; lod < lods.size(); lod++) {
+					meshletGrid.clear();
+					for (unsigned int m = 0; m < meshletsDatas.size(); m++) {
+						if (meshletsDatas[i].lod == lod) {
+							//Reconstruction de l'AABB et ajout dans la grille de meshlets.
+							physic::BoundingBox volume(
+								meshletsDatas[i].minVertex.x(), 
+								meshletsDatas[i].minVertex.y(),
+								meshletsDatas[i].minVertex.z(),
+								meshletsDatas[i].maxVertex.x() - meshletsDatas[i].minVertex.x(),
+								meshletsDatas[i].maxVertex.y() - meshletsDatas[i].minVertex.y(),
+								meshletsDatas[i].maxVertex.z() - meshletsDatas[i].minVertex.z());
+							meshletsGrid.addEntity(meshletsDatas[i], volume);
+						}	
+					}
+					std::vector<GPUCell> gpuCells;
+					math::Vec3f gridPos = meshletsGrid.getMins();
+					math::Vec3f gridSize = meshletsGrid.getSize();
+					unsigned int currentclusterId = 0;
+					//Ballayage de la grille.				
+					for (unsigned int x = gridPos.x(); x < gridPos.x() + gridSize.x(); x++) {
+						for (unsigned int y = gridPos.y(); y < gridPos.y() + gridSize.y(); y++) {
+							for (unsigned int z = gridPos.x(); z < gridPos.x() + gridSize.z(); z++) {
+								entity::GridCell* gridCell = getGridCellFromCoords(x, y, z);
+								//Trou. (Il faut les gérer pour le ballayage GPU)
+								if (gridCell == nullptr || gridCell->empty()) {
+									CellData emptyCell;
+									emptyCell.clusterId = -1;
+									cellDatas.push_back(emptyCell);
+								//Cluster rempli. 
+								} else {
+									//Ajout du root node et des enfants + création des clusters et assignation des ids.
+									std::vector<Octree::Node> nodes = gridCell->getOctreeNodes();
+									std::vector<Octree::Node> stack;
+									stack.push_back(nodes[0]);	
+									CellData cellData;							
+									cellData.clusterId = currentClusterId;
+									cellDatas.push_back(cellData);
+									while (stack.size() > 0) {
+										Node node = stack.back();
+										ClusterData clusterData;
+										clusterData.id = currentClusterId;
+										clusterData.volume = node.volume;									
+										if (!node.leaf) {										
+											for(unsigned int c = 0; c < node.children.size(); c++) {
+												currentClusterId++;
+												ClusterData childClusterData;
+												childClusterData.id = currentClusterId;
+												childClusterData.volume = nodes[node.children[c]];
+												clusterData.children[c] = currentClusterId;
+												childClusterData.leaf = 0;
+												clusterDatas.push_back(childClusterData);
+												stack.push_back(nodes[node.children[c]]);
+											}
+										} else {
+											for (unsigned int c = 0; c < node.children.size(); c++) {
+												for (unsigned int i = 0; i < nodes[children[c]].objects.size(); i++) {												
+													meshletDatas[nodes[children[c]].objects[i].id].clusterId = currentClusterId;
 													currentClusterId++;
 													ClusterData childClusterData;
 													childClusterData.id = currentClusterId;
 													childClusterData.globalBounds = nodes[children[c]].volume;
 													childClusterData.meshletCount = nodes[children[c]].objects.size();
 													childClusterData.leaf = 1;
-													childClusterData.lod = meshletDatas[nodes[children[c]].objects[i].id].lod;
+													childClusterData.lod = currentLod;
 													clusterData.children[c] = currentClusterId;
-													clusterDatas.push_back(childClusterData);
-												} else {
-													currentClusterId++;
-													ClusterData childClusterData;
-													childClusterData.id = currentClusterId;
-													childClusterData.globalBounds = nodes[children[c]].volume;
-													childClusterData.meshletCount = nodes[children[c]].objects.size();
-													childClusterData.leaf = 1;
-													clusterData.children[c] = currentClusterId;
-													clusterDatas.push_back(childClusterData);
-													currentLod = meshletDatas[nodes[children[c]].objects[i].id].lod;
-												}
-											}											
+													clusterDatas.push_back(childClusterData);													
+												}											
+											}
 										}
+										stack.pop_back();
+										currentClusterId++;
 									}
-									stack.pop_back();
-									currentClusterId++;
 								}
 							}
 						}
