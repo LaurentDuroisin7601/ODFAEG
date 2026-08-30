@@ -262,7 +262,7 @@ bool hasNeighbour(vec3 pos, int axe) {
         offset = vec3(pos.x, pos.y, pos.z + pc.gridCellSize.z);
     }
     int cellId = (offset.x / pc.gridCellSize.x) + (offset.y / pc.gridCellSize.y) * pc.nbCellsPerRow.x + (offset.z / pc.gridCellSize.z) * pc.nbCellsPerRow.y;
-    return (cellId != -1);
+    return (cellId != -1 || cellGrid < 0 || cellGrid >= pc.clustersCount);
 }
 void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, int f, inout TaskData taskData) {   
     uint stack[32]; 
