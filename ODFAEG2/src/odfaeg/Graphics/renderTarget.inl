@@ -670,8 +670,8 @@ namespace odfaeg {
 								std::vector<Octree::Node> nodes = gridCell->getOctreeNodes();
 								std::vector<Octree::Node> stack;
 								stack.push_back(nodes[0]);								
-								gpuCell.clusterId = currentCluster;
-								gpuCells.push_back(gpuCell);								
+								cellData.clusterId = currentClusterId;
+								cellDatas.push_back(cellData);								
 								while (stack.size() > 0) {
 									Node node = stack.back();
 									ClusterData clusterData;
