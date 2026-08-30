@@ -684,23 +684,38 @@ namespace odfaeg {
 											ClusterData childClusterData;
 											childClusterData.id = currentClusterId;
 											childClusterData.volume = nodes[node.children[c]];
-											childClusterData.children[c] = currentClusterId;
+											clusterData.children[c] = currentClusterId;
 											childClusterData.leaf = 0;
 											clusterDatas.push_back(childClusterData);
 											stack.push_back(nodes[node.children[c]]);
 										}
 									} else {
 										for (unsigned int c = 0; c < node.children.size(); c++) {
-											currentClusterId++;
-											ClusterData childClusterData;
-											childClusterData.id = currentClusterId;
-											childClusterData.globalBounds = nodes[children[c]].volume;
-											childClusterData.meshletCount = nodes[children[c]].objects.size();
-											childClusterData.leaf = 1;
-											clusterDatas.push_back(childClusterData);
-											for (unsigned int i = 0; i < nodes[children[c]].objects.size(); i++) {
+											for (unsigned int i = 0; i < nodes[children[c]].objects.size(); i++) {												
 												meshletDatas[nodes[children[c]].objects[i].id].clusterId = currentClusterId;
-											}
+												unsigned int currentLod = meshletDatas[nodes[children[c]].objects[i].id].lod;
+												if (currentLod == lod) {
+													currentClusterId++;
+													ClusterData childClusterData;
+													childClusterData.id = currentClusterId;
+													childClusterData.globalBounds = nodes[children[c]].volume;
+													childClusterData.meshletCount = nodes[children[c]].objects.size();
+													childClusterData.leaf = 1;
+													childClusterData.lod = meshletDatas[nodes[children[c]].objects[i].id].lod;
+													clusterData.children[c] = currentClusterId;
+													clusterDatas.push_back(childClusterData);
+												} else {
+													currentClusterId++;
+													ClusterData childClusterData;
+													childClusterData.id = currentClusterId;
+													childClusterData.globalBounds = nodes[children[c]].volume;
+													childClusterData.meshletCount = nodes[children[c]].objects.size();
+													childClusterData.leaf = 1;
+													clusterData.children[c] = currentClusterId;
+													clusterDatas.push_back(childClusterData);
+													currentLod = meshletDatas[nodes[children[c]].objects[i].id].lod;
+												}
+											}											
 										}
 									}
 									stack.pop_back();
