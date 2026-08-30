@@ -113,7 +113,7 @@ struct Cluster {
     int meshletCount;
     int meshletOffset;
     int lod;
-    int sumeshId;
+    int submeshId;
 };
 struct MeshLet {
     AABB globalBounds;
@@ -130,6 +130,7 @@ struct MeshLet {
 layout(push_constant) uniform PushConstant {    
     uint currentFrame;
     uint gridCellCount;
+    uint primitiveType;
     ivec3 gridCellSize;
     ivec3 nbCellsPerRow;    
     ivec3 gridSize;
@@ -155,39 +156,43 @@ layout (std430, set = 0, binding = 4) buffer inputModelDataSSBO {
 layout (std430, set = 0, binding = 5) buffer inputMaterialDataSSBO {
 	MaterialData materialData[];
 } inputMaterialData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+//Clusters visibles.
+layout (std430, set = 0, binding = 6) buffer outputClusterSSBO {
+	Cluster clusters[];
+} outputClusters[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 /*matrices des objets visibles pour les instances en sortie.*/
-layout (std430, set = 0, binding = 6) buffer outputModelDataSSBO {
+layout (std430, set = 0, binding = 7) buffer outputModelDataSSBO {
 	ModelData modelData[];
 } outputModelData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 /*Matrices des objets visible en sortie pour les non instances*/
-layout (std430, set = 0, binding = 7) buffer outputMeshDataSSBO {
+layout (std430, set = 0, binding = 8) buffer outputMeshDataSSBO {
 	SubMesh meshData[];
 } outputMeshData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 /*position dans le buffer des matrices de sortie*/
-layout (std430, set = 0, binding = 8) buffer outputTaskCountSSBO {
+layout (std430, set = 0, binding = 9) buffer outputTaskCountSSBO {
 	uint taskCount;
 } outputTaskCount[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 9) buffer outputTaskDataSSBO {
+layout (std430, set = 0, binding = 10) buffer outputTaskDataSSBO {
 	TaskData taskData[];
 } outputTaskData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
-layout (std140, set = 0, binding = 10) uniform UniformBufferObject {
+layout (std140, set = 0, binding = 11) uniform UniformBufferObject {
 	AABB frustrum;			
 	uint nbObjectTypes;
 	uint paddings[3];
 } ubo[MAX_FRAMES_IN_FLIGHT];
-layout (std430, set=0, binding = 11) buffer LodLevelBuffer {
+layout (std430, set=0, binding = 12) buffer LodLevelBuffer {
     LODLevel lodLevel[];
 } lodLevelData;
-layout (std430, set = 0, binding = 12) buffer offsetBufferSSBO {
+layout (std430, set = 0, binding = 13) buffer offsetBufferSSBO {
     Offset offsets;
 } offsetsData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 13) buffer outputHeight {
+layout (std430, set = 0, binding = 14) buffer outputHeight {
     Vertex vertices[];
 } outputVertices[MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 14) buffer GirdSSBBO {
+layout (std430, set = 0, binding = 15) buffer GirdSSBBO {
     GridCell grid[];
 } inputGridBuffer;
-layout (std430, set = 0, binding = 15) buffer inputMeshletSSBO {
+layout (std430, set = 0, binding = 16) buffer inputMeshletSSBO {
     MeshLet meshlets[];
 } inputMeshlet;
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
@@ -296,9 +301,8 @@ void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, int f
                             continue;
                         }
                         if (n.leaf) {
-                            if (n.lod == lod && n.submeshId = sm.id) {
-                                taskData.meshletCount = n.meshletCount;
-                                uint clusterOffset = atomicAdd(offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffest, 1);                        
+                            if (n.lod == lod && n.submeshId == sm.id) {                                
+                                uint clusterOffset = atomicAdd(offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);                        
                                 outputClusters[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = cluster;  
                                 //Cluster de modèle 3D visible : On dessine ce qu'il contient.
                                 if (object.renderType == 0) {
