@@ -235,7 +235,7 @@ bool intersects (AABB first, AABB second) {
     }
     return true;
 }
-bool hasNeightbour(ivec3 pos, int axe) {
+bool hasNeightbour(ivec3 pos, uint axe) {
     ivec3 offset;
     if (axe == 0) {
         offset = ivec3(pos.x - pc.gridCellSize.x, pos.y, pos.z);
@@ -280,7 +280,7 @@ bool hasNeightbour(ivec3 pos, int axe) {
     }
     return hasNVoxel;
 }
-void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, int f, inout TaskData taskData) {   
+void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, uint f, inout TaskData taskData) {   
     uint stack[32]; 
     uint sp = 0;    
     int startx = int(frustrum.center.x - frustrum.size.x * 0.5);
@@ -417,7 +417,7 @@ void main() {
                                     
                                 inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet = 1;
                                 uint taskDataOffset = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
-                                uint instanceId = atomicAdd(outputInstanceBase[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT].instanceBase, 1);
+                                uint instanceId = atomicAdd(offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.instanceOffset, 1);
                                 
                                 inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset = taskDataOffset;
                                 MeshDrawCommand meshDrawCommand;
@@ -426,16 +426,16 @@ void main() {
                                 meshDrawCommand.groupZCount = 8;
                                 TaskData taskData;
                                 taskData.baseInstance = instanceId;
-                                taskData.heightCount = 0;
-                                taskData.clusterOffset = offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffest;
+                                taskData.vertexCount = 0;
+                                taskData.clusterOffset = offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset;
                                 taskData.meshDrawCommand = meshDrawCommand; 
                                 MaterialData material = inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId];
                                 material.materialId = materialId;
                                 outputTaskData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = taskData;
-                                outputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[instanceId] = material;
-                                uint offsetInOutputMeshData = atomicAdd(offsetInOutputMeshData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshDataOffset, 1);
+                                //outputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[instanceId] = material;
+                                uint offsetInOutputMeshData = atomicAdd(offsetsData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.submeshOffset, 1);
                                 outputMeshData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshData[instanceId]  = subMesh;
-                                setVisibleMesheltsFromBox(frustrum, lod, object, subMesh, s, taskData);
+                                setVisibleMeshletsFromBox(ubo[pc.currentFrame].frustrum, lod, object, subMesh, s, taskData);
                             }
                             uint taskOffset = inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset; 
                             uint instanceId = atomicAdd(outputInstanceBase[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT].instanceOffset, 1);
