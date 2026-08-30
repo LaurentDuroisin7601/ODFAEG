@@ -722,11 +722,14 @@ namespace odfaeg {
 				std::sort(meshletDatas.begin(), meshletDatas.end(), [](Meshlet& m1, Meshlet& m2){ return m1.clusterId < m2.clusterId;});
 				unsigned int clusterMeshletOffset = 0;
 				unsigned int lastMeshletId = 0;
+				unsigned int count = 0;
 				for (unsigned int m = 0; m < meshletDatas.size(); m++) {	
-					if (meshletDatas[m].clusterId >= clusterDatas[meshletDatas[m].clusterId].meshletCount) {	
-						lastMeshletId = m;					
+					if (count >= clusterDatas[meshletDatas[m].clusterId].meshletCount) {	
+						lastMeshletId = m;
+						count = 0;					
 					}
 					clusterDatas[meshletDatas[m].clusterId].meshletOffset = lastMeshletId;
+					count++;
 				}
 				totalMeshlets = meshletDatas.size();
 				/*std::cout<<"total sub meshes"<<totalSubMeshes<<std::endl;
