@@ -447,11 +447,12 @@ void main() {
                             outputModelData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId] = modelData;
                             //nombre d'instances + 1.                           
                             outputTaskData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupXCount++;
+                            atomicAdd(outputInstanceBase[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT].instanceOffset, 1);
                         }
                         //Matériel non instanciable.                                               
                     } else {                        
                         uint offsetTaskData = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
-                        uint instanceId = atomicAdd(outputInstanceBase[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT].instanceBase, 1);
+                        uint instanceId = atomicAdd(outputInstanceBase[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT].instanceOffset, 1);
                         MeshDrawCommand meshDrawCommand;                        
                         meshDrawCommand.groupXCount = 1;
                         meshDrawCommand.groupYCount = 0;
