@@ -666,7 +666,7 @@ namespace odfaeg {
 								gpuCells.push_back(gpuCell);
 							//Cluster rempli. 
 							} else {
-								//Ajout du root node et des enfants + création des cluster et assignation des ids.
+								//Ajout du root node et des enfants + création des clusters et assignation des ids.
 								std::vector<Octree::Node> nodes = gridCell->getOctreeNodes();
 								std::vector<Octree::Node> stack;
 								stack.push_back(nodes[0]);								
@@ -711,7 +711,7 @@ namespace odfaeg {
 				unsigned int clusterMeshletOffset = 0;
 				unsigned int lastMeshletId = 0;
 				for (unsigned int m = 0; m < meshletDatas.size(); m++) {	
-					if (meshletDatas[m].clusterId >= clusterDatas[meshletDatas[m].clusterId].clusterId) {	
+					if (meshletDatas[m].clusterId >= clusterDatas[meshletDatas[m].clusterId].meshletCount) {	
 						lastMeshletId = m;					
 					}
 					clusterDatas[meshletDatas[m].clusterId].meshletOffset = lastMeshletId;
