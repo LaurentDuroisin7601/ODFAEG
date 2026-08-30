@@ -31,8 +31,8 @@ struct TaskData {
     uint baseInstance;    
     uint vertexCount;
     uint primitiveCount;
-    uint vertexOffset;
-    uint vertexCount; 
+    uint vertexOffset; 
+    uint clusterOffset;  
 };
 struct AABB {
 	vec3 center;

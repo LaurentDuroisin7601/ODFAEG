@@ -35,7 +35,8 @@ struct TaskData {
     uint vertexCount;
     uint primitiveCount;
     uint vertexOffset;
-}
+    uint clusterOffset;
+};
 layout(push_constant) uniform PushConstant {
     mat4 viewMatrix;
     mat4 projMatrix;
