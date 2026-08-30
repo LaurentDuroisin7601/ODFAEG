@@ -199,8 +199,8 @@ layout (std430, set = 0, binding = 20) buffer vertexBufferSSBO {
     Vertex vertices[];
 } vertexData[NB_PRIMITIVE_TYPES];
 layout (std430, set = 0, binding = 21) buffer outputHeight {
-    Vertex heights[];
-};
+    Vertex vertices[];
+} outputVertices[MAX_FRAMES_IN_FLIGHT];
 layout (std430, set = 0, binding = 22) buffer inputClusterSSBBO {
     GridCell grid[];
 } inputGridBuffer;
