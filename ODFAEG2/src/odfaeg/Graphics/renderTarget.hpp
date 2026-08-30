@@ -32,6 +32,7 @@
 #include "morphAnimUpdater.hpp"
 #include "boneAnimUpdater.hpp"
 #include "viewportMatrix.hpp"
+#include "Entity/grid.hpp"
 namespace odfaeg {
 	namespace graphic {		
 		class RenderTarget {
@@ -96,9 +97,10 @@ namespace odfaeg {
 				unsigned int indexOffset;
 				unsigned int nbVertices;
 				unsigned int nbIndexes;
-				unsigned int minVertex;
-				unsigned int maxVertex;
-				unsigned int clusterId;								
+				alignas(16) math::Vec3f minVertex;
+				alignas(16) math::Vec3f maxVertex;
+				unsigned int clusterId;	
+				unsigned int lod;							
 			};			
 			struct ModelData {
 				math::Matrix4f modelMatrix;
@@ -248,7 +250,7 @@ namespace odfaeg {
 			void applyComputeGraphicsBarrier();
 			void applyComputeGraphicsBarrier(VertexBuffer& vertexBuffer);
 			int getId();
-			static unsigned int getNbRenderTarget();
+			static unsigned int getNbRenderTarget();			
 			protected:
 				void initialize();
 			private :				
@@ -329,7 +331,8 @@ namespace odfaeg {
 			unsigned int id;
 			bool needToUpdateCullBatchIndCmds;
 			IndexesPC indexesPC;
-			PFN_vkCmdDrawMeshTasksEXT vkCmdDrawMeshTasksEXT;					
+			PFN_vkCmdDrawMeshTasksEXT vkCmdDrawMeshTasksEXT;
+			entity::Grid<Meshlet> meshletsGrid;					
 		};
 		class Drawable {
             public :

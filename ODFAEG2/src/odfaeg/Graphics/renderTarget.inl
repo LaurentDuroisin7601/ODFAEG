@@ -484,8 +484,7 @@ namespace odfaeg {
 						}						
 						subMeshData.nbVertices = subMesh.getVertexArray().getVertexCount();
 						subMeshData.nbIndexes = subMesh.getVertexArray().getIndexCount();
-						subMeshData.objectId = i;
-						subMeshData.clusterOffset = currentClustersOffset;
+						subMeshData.objectId = i;						
 						/*if (subMeshData.id == 1590) {
 							std::cout<<"id : vertex offset : nbVertices : "<<subMeshData.id<<","<<subMeshData.vertexOffset<<","<<subMeshData.nbVertices<<std::endl;
 							system("PAUSE");
@@ -536,35 +535,9 @@ namespace odfaeg {
 							float z = subMeshGlobalBounds.getPosition().z();				
 							float w = subMeshGlobalBounds.getSize().x();
 							float h = subMeshGlobalBounds.getSize().y();
-							float d = subMeshGlobalBounds.getSize().z();
-							unsigned int clusterCount = 0;	
-							float tmpX = x;
-							float tmpY = y;
-							float tmpZ = z;
+							float d = subMeshGlobalBounds.getSize().z();							
 							//std::cout<<x<<" ,"<<y<<" ,"<<z<<" ,"<<w<<" , "<<h<<" ,"<<d<<std::endl;						
-							while (tmpX < x+w) {
-								while (tmpY < y+h) {
-									while (tmpZ < z+d) {
-										Cluster cluster;	
-										cluster.id = currentClustersOffset;	
-										cluster.meshletOffset = 0;	
-										cluster.meshletCount = 0;
-										cluster.lodLevel = l;
-										physic::BoundingBox bb(tmpX, tmpY, tmpZ, 1, 1, 1);
-										AABB clusterAABB;	
-										clusterAABB.center = bb.getCenter();
-										clusterAABB.size = bb.getSize();						
-										cluster.globalBounds = clusterAABB;
-										clusterDatas.push_back(cluster);
-										currentClustersOffset++;
-										clusterCount++;	
-																					
-										tmpZ++;
-									}
-									tmpY++;
-								}
-								tmpX++;								
-							}
+							
 							//std::cout<<"cluster count : "<<clusterCount<<std::endl;
 							/*std::cout<<"min max : "<<currentClustersOffset<<","<<clusterCount<<std::endl;
 							system("PAUSE");*/	
@@ -572,7 +545,8 @@ namespace odfaeg {
 							m.minVertex = std::numeric_limits<unsigned int>::max();
 							m.maxVertex = 0;
 							m.nbIndexes = 0;
-							m.indexOffset = 0;	
+							m.indexOffset = 0;
+							m.lod = l;	
 							unsigned int meshletCount = 0;
 							math::Vec3f mins(std::numeric_limits<unsigned int>::max(), std::numeric_limits<unsigned int>::max(), std::numeric_limits<unsigned int>::max()), maxs(0, 0, 0);													
 							for (unsigned int tri = 0; tri < lods[l].indexCount / 3; tri++) {
@@ -596,6 +570,7 @@ namespace odfaeg {
     							{
 									m.vertexOffset = m.minVertex;
 									m.nbVertices   = m.maxVertex - m.minVertex + 1;
+									meshletDatas.push_back(m);
 									
 									// Nouveau meshlet
 									m = Meshlet();
@@ -603,8 +578,9 @@ namespace odfaeg {
 									m.maxVertex = 0;
 									m.nbIndexes = 0;
 									m.indexOffset = tri * 3;
-									physic::BoundingBox bx (mins.x(), mins.y(), mins.z(), maxs.x() - mins.x(), maxs.y() - mins.y(), maxs.z() - mins.z());
-									//Récupérer les cellules de la grille de clusters.
+									m.lod = l;
+																	
+									
 									mins = math::Vec3f(std::numeric_limits<unsigned int>::max(), std::numeric_limits<unsigned int>::max(), std::numeric_limits<unsigned int>::max());
 									maxs = math::Vec3f(0, 0, 0);
 									
@@ -613,22 +589,22 @@ namespace odfaeg {
 									newMax = std::max(g0, std::max(g1, g2));
 									mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
 								    maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));									
-									newVertexCount = newMax - newMin + 1;
-									meshletDatas.push_back(m);	
+									newVertexCount = newMax - newMin + 1;										
 									currentMeshletsOffset++;	
 									meshletCount++;							
 								}
 								// Ajouter triangle
 								m.minVertex = newMin;
 								m.maxVertex = newMax;
-								meshletDatas.back().minVertex = newMin;
-								meshletDatas.back().maxVertex = newMax;
+								meshletDatas.back().minVertex = mins;
+								meshletDatas.back().maxVertex = maxs;
 								m.nbIndexes += 3;								
 							}
 							// Final meshlet							
 							m.vertexOffset = m.minVertex;
 							m.nbVertices   = m.maxVertex - m.minVertex + 1;
-							physic::BoundingBox bx (mins.x(), mins.y(), mins.z(), maxs.x() - mins.x(), maxs.y() - mins.y(), maxs.z() - mins.z());
+							meshletDatas.push_back(m);
+							
 							//Récupérer les cellules de la grille de clusters.
 							//std::cout<<"min : "<<m.minVertex<<std::endl;
 							currentMeshletsOffset++;
@@ -663,16 +639,83 @@ namespace odfaeg {
 						currentSubmeshesOffset++;					
 					}									
 				}
+				for (unsigned int m = 0; m < meshletsDatas.size(); m++) {
+					//Reconstruction de l'AABB et ajout dans la grille de meshlets.
+					physic::BoundingBox volume(
+						meshletsDatas[i].minVertex.x(), 
+						meshletsDatas[i].minVertex.y(),
+						meshletsDatas[i].minVertex.z(),
+						meshletsDatas[i].maxVertex.x() - meshletsDatas[i].minVertex.x(),
+						meshletsDatas[i].maxVertex.y() - meshletsDatas[i].minVertex.y(),
+						meshletsDatas[i].maxVertex.z() - meshletsDatas[i].minVertex.z());
+					meshletsGrid.addEntity(meshletsDatas[i], volume);	
+				}
+				std::vector<GPUCell> gpuCells;
+				math::Vec3f gridPos = meshletsGrid.getMins();
+				math::Vec3f gridSize = meshletsGrid.getSize();
+				unsigned int currentclusterId = 0;
+				//Ballayage de la grille.				
+				for (unsigned int x = gridPos.x(); x < gridPos.x() + gridSize.x(); x++) {
+					for (unsigned int y = gridPos.y(); y < gridPos.y() + gridSize.y(); y++) {
+						for (unsigned int z = gridPos.x(); z < gridPos.x() + gridSize.z(); z++) {
+							entity::GridCell* gridCell = getGridCellFromCoords(x, y, z);
+							//Trou. (Il faut les gérer pour le ballayage GPU)
+							if (gridCell == nullptr || gridCell->empty()) {
+								GPUCell gpuCell;
+								gpuCell.clusterId = -1;
+								gpuCells.push_back(gpuCell);
+							//Cluster rempli. 
+							} else {
+								//Ajout du root node et des enfants + création des cluster et assignation des ids.
+								std::vector<Octree::Node> nodes = gridCell->getOctreeNodes();
+								std::vector<Octree::Node> stack;
+								stack.push_back(nodes[0]);								
+								gpuCell.clusterId = currentCluster;
+								gpuCells.push_back(gpuCell);								
+								while (stack.size() > 0) {
+									Node node = stack.back();
+									ClusterData clusterData;
+									clusterData.id = currentClusterId;
+									clusterData.volume = node.volume;									
+									if (!node.leaf) {										
+										for(unsigned int c = 0; c < node.children.size(); c++) {
+											currentClusterId++;
+											ClusterData childClusterData;
+											childClusterData.id = currentClusterId;
+											childClusterData.volume = nodes[node.children[c]];
+											childClusterData.children[c] = currentClusterId;
+											clusterDatas.push_back(childClusterData);
+											stack.push_back(nodes[node.children[c]]);
+										}
+									} else {
+										for (unsigned int c = 0; c < node.children.size(); c++) {
+											currentClusterId++;
+											ClusterData childClusterData;
+											childClusterData.id = currentClusterId;
+											childClusterData.globalBounds = nodes[children[c]].volume;
+											clusterDatas.push_back(childClusterData);
+											for (unsigned int i = 0; i < nodes[children[c]].objects.size(); i++) {
+												meshletDatas[nodes[children[c]].objects[i].id].clusterId = currentClusterId;
+											}
+										}
+									}
+									stack.pop_back();
+									currentClusterId++;
+								}
+							}
+						}
+					}
+				}
+				//Tri des meshlets par cluster ids et placement des offsets.
 				std::sort(meshletDatas.begin(), meshletDatas.end(), [](Meshlet& m1, Meshlet& m2){ return m1.clusterId < m2.clusterId;});
 				unsigned int clusterMeshletOffset = 0;
-				unsigned int previousClusterId = 0;
-				/*for (unsigned int m = 0; m < meshletDatas.size(); m++) {	
-					if (meshletDatas[m].clusterId > previousClusterId) {							
-						clusterMeshletOffset += clusterDatas[meshletDatas[m].clusterId].meshletCount;
-						previousClusterId = meshletDatas[m].clusterId;					
+				unsigned int lastMeshletId = 0;
+				for (unsigned int m = 0; m < meshletDatas.size(); m++) {	
+					if (meshletDatas[m].clusterId >= clusterDatas[meshletDatas[m].clusterId].clusterId) {	
+						lastMeshletId = m;					
 					}
-					clusterDatas[meshletDatas[m].clusterId].meshletOffset = previousClusterId;
-				}*/
+					clusterDatas[meshletDatas[m].clusterId].meshletOffset = lastMeshletId;
+				}
 				totalMeshlets = meshletDatas.size();
 				/*std::cout<<"total sub meshes"<<totalSubMeshes<<std::endl;
 				system("PAUSE");*/

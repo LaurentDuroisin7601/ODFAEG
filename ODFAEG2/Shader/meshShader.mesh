@@ -66,9 +66,7 @@ struct SubMesh {
 	int lodOffset;
     int lodLevel;
 	int id;
-    int objectId;
-    int clusterOffset;
-    int custerCount;
+    int objectId;    
 };
 struct Vertex {
     vec3 position; ///< 3D position of the vertex
