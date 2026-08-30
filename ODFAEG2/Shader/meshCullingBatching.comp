@@ -130,8 +130,7 @@ struct MeshLet {
 /*objets en entrée.*/
 layout(push_constant) uniform PushConstant {    
     uint currentFrame;
-    uint gridCellCount;
-    uint primitiveType;
+    uint gridCellCount;    
     ivec3 gridCellSize;
     ivec3 nbCellsPerRow;    
     ivec3 gridSize;   
@@ -149,6 +148,9 @@ layout (std430, set = 0, binding = 2) buffer inputSubmeshesSSBO {
 layout (std430, set = 0, binding = 3) buffer inputClusterSSBBO {
     Cluster clusters[];
 } inputClustersBuffer;
+layout (std430, set = 0, binding = 14) buffer inputVertexSSBO {
+    Vertex vertices[];
+} inputVertices[MAX_FRAMES_IN_FLIGHT];
 /*matrices en entrée.*/
 layout (std430, set = 0, binding = 4) buffer inputModelDataSSBO {
 	ModelData modelData[];
@@ -187,7 +189,7 @@ layout (std430, set=0, binding = 12) buffer LodLevelBuffer {
 layout (std430, set = 0, binding = 13) buffer offsetBufferSSBO {
     Offset offsets;
 } offsetsData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 14) buffer outputHeight {
+layout (std430, set = 0, binding = 14) buffer outputVertexSSBO {
     Vertex vertices[];
 } outputVertices[MAX_FRAMES_IN_FLIGHT];
 layout (std430, set = 0, binding = 15) buffer GirdSSBBO {
@@ -303,14 +305,14 @@ void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, int f
                         }
                         if (n.leaf) {
                             if (n.lod == lod && n.submeshId == sm.id) {                                
-                                uint clusterOffset = atomicAdd(offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);                        
-                                outputClusters[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = n;  
+                                uint clusterOffset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);                        
+                                outputClusters[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = n;  
                                 //Cluster de modèle 3D visible : On dessine ce qu'il contient.
                                 if (object.renderingType == 0) {
                                     taskData.meshDrawCommand.groupYCount++; 
                                     //Heightmap.                            
                                 } else if (object.renderingType == 1) {
-                                    uint count = offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
+                                    uint count = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
                                     //Si on dépasse ou on arrive au dernier on créé une nouvelle tâche.
                                     if (count + 4 >= MAX_VERTICES 
                                         || (count + 4) / 4 * 2 >= MAX_PRIMITIVES) {                        
@@ -320,15 +322,15 @@ void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, int f
                                         meshDrawCommand.groupYCount = 1;
                                         meshDrawCommand.groupZCount = 1; 
                                         taskData.meshDrawCommand = meshDrawCommand;                      
-                                        taskData.vertexOffset = offsets.previousOffsetVertex;
-                                        uint taskDataOffset = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
-                                        outputTaskData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = taskData; 
-                                        offsets.previousOffsetVoxel = offsets.offsetVertex;                    
+                                        taskData.vertexOffset = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
+                                        uint taskDataOffset = atomicAdd(outputTaskCount[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
+                                        outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = taskData; 
+                                        offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex;                    
                                     }   
                                     //Sommets visible : on les génères.
                                     for (uint h = 0; h < 4; h++) {
-                                        uint offset = atomicAdd(offsetsData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.verticesOffset, 1); 
-                                        vertices[offset] = inputHeightsData.heights[sm.vertexOffset+h];
+                                        uint offset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.vertexOffset, 1); 
+                                        vertices[offset] = inputVertexData.vertices[sm.vertexOffset+h];
                                         taskData.heightCount++;
                                     }
                                     count = offsets.offsetVertex - offsets.previousOffsetVertex;
@@ -350,8 +352,8 @@ void setMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, int f
                                             meshDrawCommand.groupZCount = 1;
                                             taskData.meshDrawCommand = meshDrawCommand;                      
                                             taskData.vertexOffset = offsets.previousOffsetVertex;
-                                            uint taskDataOffset = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
-                                            outputTaskData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = taskData; 
+                                            uint taskDataOffset = atomicAdd(outputTaskCount[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
+                                            outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = taskData; 
                                             offsets.previousOffsetVoxel = offsets.offsetVertex;                    
                                         }                                         
                                         for (uint v = 0; v < 4; v++) {
