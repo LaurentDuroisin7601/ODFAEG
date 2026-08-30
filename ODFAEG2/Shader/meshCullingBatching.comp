@@ -122,8 +122,8 @@ layout(push_constant) uniform PushConstant {
     uint currentFrame;
     uint totalHeightCount;
     vec3 gridCellSize;
-    vec3 nbCellsPerRow;
-    uint clustersCount;
+    vec3 nbCellsPerRow;    
+    vec3 gridSize;
 } pc;
 layout (set = 0, binding = 0) buffer ObjectTypesSSBO {
 	int types[];
