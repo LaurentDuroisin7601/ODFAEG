@@ -639,6 +639,8 @@ namespace odfaeg {
 						currentSubmeshesOffset++;					
 					}									
 				}
+				unsigned int currentclusterId = 0;
+				//Tri par lod. (D'abord clusters pour meshelts en lod0, puis 1, etc...)
 				for (unsigned int lod = 0; lod < lods.size(); lod++) {
 					meshletGrid.clear();
 					for (unsigned int m = 0; m < meshletsDatas.size(); m++) {
@@ -656,8 +658,7 @@ namespace odfaeg {
 					}
 					std::vector<GPUCell> gpuCells;
 					math::Vec3f gridPos = meshletsGrid.getMins();
-					math::Vec3f gridSize = meshletsGrid.getSize();
-					unsigned int currentclusterId = 0;
+					math::Vec3f gridSize = meshletsGrid.getSize();					
 					//Ballayage de la grille.				
 					for (unsigned int x = gridPos.x(); x < gridPos.x() + gridSize.x(); x++) {
 						for (unsigned int y = gridPos.y(); y < gridPos.y() + gridSize.y(); y++) {
