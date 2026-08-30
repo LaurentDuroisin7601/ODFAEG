@@ -413,9 +413,9 @@ void main() {
                         if (inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].instanceGroupId != -1) {
                             /*Nouvelle instance de matériel/primitive visible = nouvelle tâche et on enregistre l'offset de la tâche,
                             pour les instances visibles suivantes.*/
-                            if(inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].instanceSet == 0) {
+                            if(inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet == 0) {
                                     
-                                inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].instanceSet = 1;
+                                inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet = 1;
                                 uint taskDataOffset = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
                                 uint instanceId = atomicAdd(outputInstanceBase[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT].instanceBase, 1);
                                 
