@@ -160,8 +160,7 @@ void main() {
             
         MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+id];
         //Avoid to render it twice if the meshlet is between two clusters. (Deduplication)
-        if (meshlet.rendered == instanceId+1) {
-            meshletDatas.meshlet[cluster.meshletOffset+id].rendered = instanceId+1;
+        if (meshlet.rendered == instanceId+1) {            
             return;
         }
         meshletDatas.meshlet[cluster.meshletOffset+id].rendered = instanceId+1;
