@@ -789,6 +789,12 @@ namespace odfaeg {
 					//std::cout<<"submeshes buffer : "<<staggingObjects[i].getHandle()<<std::endl;
 				}
 				for (unsigned int i = 0; i < 1; i++) {
+					staggingGridCells[i].create(cellDatas.size() * sizeof(CellData), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+					staggingGridCells[i].update(cellDatas.data(), cellDatas.size() * sizeof(GridCell));
+					inputGridCells[i].create(cellDatas.size() * sizeof(CellData), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+					Buffer::copyBuffer(staggingGridCells[i], inputGridCells[i], gridCellsDatas.size() * sizeof(GridCell), commandPool.getHandle(getCurrentFrame()));
+				}
+				for (unsigned int i = 0; i < 1; i++) {
 					staggingClusters[i].create(clusterDatas.size() * sizeof(Cluster), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 					staggingClusters[i].update(clusterDatas.data(), clusterDatas.size() * sizeof(Cluster));
 					inputClusters[i].create(clusterDatas.size() * sizeof(Cluster), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
