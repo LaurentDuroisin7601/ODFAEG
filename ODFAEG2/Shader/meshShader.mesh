@@ -160,9 +160,9 @@ void main() {
             
         MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+id];
         //Avoid to render it twice if the meshlet is between two clusters. (Deduplication)
-        if (meshlet.rendered == 1)
+        if (meshlet.rendered == instanceId+1)
             return;
-        meshletDatas.meshlet[cluster.meshletOffset+id].rendered = 1;
+        meshletDatas.meshlet[cluster.meshletOffset+id].rendered = instanceId+1;
         /*if (gl_WorkGroupID.y >= lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletCount)
             debugPrintfEXT("meshlet offets : %i, %i", lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletCount, gl_WorkGroupID.y);*/
         uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_offset + meshlet.indexOffset;
