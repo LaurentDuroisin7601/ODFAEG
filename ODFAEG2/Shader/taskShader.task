@@ -54,9 +54,6 @@ layout(std430, set = 0, binding = 0) buffer TaskDataSSBO {
 layout(std430, set = 0, binding = 1) buffer TaskCountSSBO {
     uint taskCount;
 } TaskCounts[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
-layout(std430, set = 0, binding = 2) buffer SubMeshDataSSBO {
-    SubMesh subMesh[];
-} subMeshDatas[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 void main() {
     uint id = gl_WorkGroupID.x;
     //debugPrintfEXT("Primitive type : %i", pc.primitiveType);

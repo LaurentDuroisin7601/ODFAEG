@@ -138,69 +138,69 @@ layout(push_constant) uniform PushConstant {
     ivec3 gridSize;   
     ivec3 gridPos;
 } pc;
-layout (set = 0, binding = 0) buffer ObjectTypesSSBO {
-	int types[];
-} objectTypes[MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 1) buffer inputObjectSSBO {
+layout (std430, set = 0, binding = 0) buffer inputObjectSSBO {
 	Object objects[];
 } inputObjectBuffer;
 /*SubMeshes en entrée.*/
-layout (std430, set = 0, binding = 2) buffer inputSubmeshesSSBO {
+layout (std430, set = 0, binding = 1) buffer inputSubmeshesSSBO {
 	SubMesh subMeshes[];
 } inputSubmeshesBuffer;
-layout (std430, set = 0, binding = 3) buffer inputClusterSSBBO {
+layout (std430, set = 0, binding = 2) buffer inputClusterSSBBO {
     Cluster clusters[];
 } inputClustersBuffer;
-layout (std430, set = 0, binding = 4) buffer inputVertexSSBO {
-    Vertex vertices[];
-} inputVertices[NB_PRIMITIVE_TYPES];
+layout (std430, set = 0, binding = 3) buffer GirdSSBBO {
+    GridCell grid[];
+} inputGridBuffer;
 /*matrices en entrée.*/
-layout (std430, set = 0, binding = 5) buffer inputModelDataSSBO {
+layout (std430, set = 0, binding = 4) buffer inputModelDataSSBO {
 	ModelData modelData[];
 } inputModelData;
 /*matériaux en entrée.*/
-layout (std430, set = 0, binding = 6) buffer inputMaterialDataSSBO {
+layout (std430, set = 0, binding = 5) buffer inputMeshletSSBO {
+    MeshLet meshlets[];
+} inputMeshlet;
+layout (std430, set=0, binding = 6) buffer LodLevelBuffer {
+    LODLevel lodLevel[];
+} lodLevelData;
+layout (std430, set = 0, binding = 7) buffer inputVertexSSBO {
+    Vertex vertices[];
+} inputVertices[NB_PRIMITIVE_TYPES];
+layout (std430, set = 0, binding = 8) buffer inputMaterialDataSSBO {
 	MaterialData materialData[];
 } inputMaterialData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 //Clusters visibles.
-layout (std430, set = 0, binding = 7) buffer outputClusterSSBO {
+layout (std430, set = 0, binding = 9) buffer outputClusterSSBO {
 	Cluster clusters[];
 } outputClusters[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 /*matrices des objets visibles pour les instances en sortie.*/
-layout (std430, set = 0, binding = 8) buffer outputModelDataSSBO {
+layout (std430, set = 0, binding = 10) buffer outputModelDataSSBO {
 	ModelData modelData[];
 } outputModelData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 /*Matrices des objets visible en sortie pour les non instances*/
-layout (std430, set = 0, binding = 9) buffer outputMeshDataSSBO {
+layout (std430, set = 0, binding = 11) buffer outputMeshDataSSBO {
 	SubMesh meshData[];
 } outputMeshData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 /*position dans le buffer des matrices de sortie*/
-layout (std430, set = 0, binding = 10) buffer outputTaskCountSSBO {
+layout (std430, set = 0, binding = 12) buffer outputTaskCountSSBO {
 	uint taskCount;
 } outputTaskCount[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 11) buffer outputTaskDataSSBO {
+layout (std430, set = 0, binding = 13) buffer outputTaskDataSSBO {
 	TaskData taskData[];
 } outputTaskData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
-layout (std140, set = 0, binding = 12) uniform UniformBufferObject {
+layout (std430, set = 0, binding = 14) buffer offsetBufferSSBO {
+    Offset offsets;
+} offsetsData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+layout (set = 0, binding = 15) buffer ObjectTypesSSBO {
+	int types[];
+} objectTypes[MAX_FRAMES_IN_FLIGHT];
+layout (std430, set = 0, binding = 16) buffer outputVertexSSBO {
+    Vertex vertices[];
+} outputVertices[MAX_FRAMES_IN_FLIGHT];
+layout (std140, set = 0, binding = 17) uniform UniformBufferObject {
 	AABB frustrum;			
 	uint nbObjectTypes;
 	uint paddings[3];
 } ubo[MAX_FRAMES_IN_FLIGHT];
-layout (std430, set=0, binding = 13) buffer LodLevelBuffer {
-    LODLevel lodLevel[];
-} lodLevelData;
-layout (std430, set = 0, binding = 14) buffer offsetBufferSSBO {
-    Offset offsets;
-} offsetsData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 15) buffer outputVertexSSBO {
-    Vertex vertices[];
-} outputVertices[MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 16) buffer GirdSSBBO {
-    GridCell grid[];
-} inputGridBuffer;
-layout (std430, set = 0, binding = 17) buffer inputMeshletSSBO {
-    MeshLet meshlets[];
-} inputMeshlet;
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 bool intersects (AABB first, AABB second) {
     float hx1 = first.size.x * 0.5;
