@@ -278,6 +278,7 @@ namespace odfaeg {
 			std::deque<Buffer>& staggingSubMeshes;
 			std::deque<Buffer> staggingMeshlets;
 			std::deque<Buffer> staggingClusters;
+			std::deque<Buffer> staggingGridCells;
 			std::deque<Buffer>& staggingLODLevel;
 			std::deque<Buffer>& lodLevel;
 			std::deque<VertexBuffer>& vertices;
@@ -295,13 +296,17 @@ namespace odfaeg {
 			std::deque<Buffer> outputElementsDrawIndirectCommand;
 			std::deque<Buffer> outputTaskDatas;
 			std::deque<Buffer> inputMeshlets;
+			std::deque<Buffer> inputCellDatas;
 			std::deque<Buffer> inputClusters;
 			std::deque<Buffer> offsetInOutputModelData;
 			std::deque<Buffer> offsetInOutputObjectData;
 			std::deque<Buffer> offsetInOutputMaterialData;
 			std::deque<Buffer> offsetInOutputElementsIndirectCommands;
 			std::deque<Buffer> offsetInOutputTaskDatas;
-			std::deque<Buffer> offsetInOutputMeshes;			
+			std::deque<Buffer> offsetInOutputMeshes;
+			std::deque<Buffer> offsetBuffer;
+			std::deque<Buffer> outputVertexBuffer;
+			std::deque<Buffer> gridCellBuffer;			
 			std::deque<Buffer> instanceBase;
 			std::deque<Buffer> ubo;
 			std::deque<Buffer> drawCount;

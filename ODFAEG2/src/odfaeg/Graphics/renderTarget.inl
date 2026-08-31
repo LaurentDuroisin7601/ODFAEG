@@ -10,7 +10,7 @@ namespace odfaeg {
 		vertices(GPUContext::instance().getSharedVertexBuffer(VERTEX_BUFFER)),
 		outputMeshes(GPUContext::instance().getSharedBuffers(OUTPUT_MESHES+registeredRenderTargets.size()*NB_BUFFERS)),
 		outputModelDatas(GPUContext::instance().getSharedBuffers(OUTPUT_MODELS+registeredRenderTargets.size()*NB_BUFFERS)),
-		outputMaterialDatas(GPUContext::instance().getSharedBuffers(OUTPUT_MATERIALS+registeredRenderTargets.size()*NB_BUFFERS)),
+		outputMaterialDatas(GPUContext::instance().getSharedBuffers(OUTPUT_MATERIALS+registeredRenderTargets.size()*NB_BUFFERS)),		
 		meshletsGrid(50, 50, 50)		
 		{
 			
@@ -132,6 +132,9 @@ namespace odfaeg {
 					staggingSubMeshes.emplace_back(device);
 				}
 			}
+			if (staggingGridCells.empty()) {
+				staggingGridCells.emplace_back(device);
+			}
 			if (staggingClusters.empty()) {
 				for (unsigned int i = 0; i < 1; i++) {
 					staggingClusters.emplace_back(device);
@@ -212,6 +215,10 @@ namespace odfaeg {
 					inputMeshlets.back().create(sizeof(Meshlet), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 				for (unsigned int i = 0; i < 1; i++) {
+					inputCellDatas.emplace_back(device);
+					inputCellDatas.back().create(sizeof(CellData), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+				}
+				for (unsigned int i = 0; i < 1; i++) {
 					inputClusters.emplace_back(device);
 					inputClusters.back().create(sizeof(Cluster), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
@@ -226,6 +233,10 @@ namespace odfaeg {
 				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 					outputMaterialDatas.emplace_back(device);
 					outputMaterialDatas.back().create(sizeof(Material), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+				}
+				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
+					outputVertices.emplace_back(device);
+					outputVertices.back().create(sizeof(Vertex), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 			/*} else {
 				unsigned int totalSubMeshes=0;
