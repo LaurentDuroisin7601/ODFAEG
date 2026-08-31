@@ -308,7 +308,7 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                         }
                         if (n.leaf == 1) {
                             if (n.lod == lod && n.submeshId == sm.id) { 
-                                //Cluster de modèle 3D visible : On marque ce cluster comme visible.
+                                //Cluster de modèle 3D visible : On ajoute ce cluster aux clusters visible.
                                 if (object.renderingType == 0) {  
                                     uint clusterOffset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);                        
                                     outputClusters[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = n;    
