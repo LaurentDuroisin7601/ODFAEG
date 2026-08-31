@@ -307,11 +307,11 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                             continue;
                         }
                         if (n.leaf == 1) {
-                            if (n.lod == lod && n.submeshId == sm.id) {                                
-                                uint clusterOffset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);                        
-                                outputClusters[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = n;  
-                                //Cluster de modèle 3D visible : On dessine ce qu'il contient.
-                                if (object.renderingType == 0) {    
+                            if (n.lod == lod && n.submeshId == sm.id) { 
+                                //Cluster de modèle 3D visible : On marque ce cluster comme visible.
+                                if (object.renderingType == 0) {  
+                                    uint clusterOffset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);                        
+                                    outputClusters[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = n;    
                                     uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;                                
                                     outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupYCount++; 
                                     for (uint m = 0; m < n.meshletCount; m++) {
