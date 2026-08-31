@@ -239,9 +239,9 @@ namespace odfaeg {
 					outputMaterialDatas.emplace_back(device);
 					outputMaterialDatas.back().create(sizeof(Material), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
-				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
-					outputVertices.emplace_back(device);
-					outputVertices.back().getVertexBuffer().create(sizeof(entity::Vertex), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+				outputVertices.emplace_back(device);
+				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {					
+					outputVertices.back().getVertexBuffer(i).create(sizeof(entity::Vertex), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 			/*} else {
 				unsigned int totalSubMeshes=0;
@@ -795,7 +795,7 @@ namespace odfaeg {
 					staggingGridCells[i].create(cellDatas.size() * sizeof(CellData), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 					staggingGridCells[i].update(cellDatas.data(), cellDatas.size() * sizeof(CellData));
 					inputCellDatas[i].create(cellDatas.size() * sizeof(CellData), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-					Buffer::copyBuffer(staggingGridCells[i], inputCellData[i], cellDatas.size() * sizeof(CellData), commandPool.getHandle(getCurrentFrame()));
+					Buffer::copyBuffer(staggingGridCells[i], inputCellDatas[i], cellDatas.size() * sizeof(CellData), commandPool.getHandle(getCurrentFrame()));
 				}
 				for (unsigned int i = 0; i < 1; i++) {
 					staggingClusters[i].create(clusterDatas.size() * sizeof(Cluster), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
@@ -887,9 +887,9 @@ namespace odfaeg {
 			}
 			if (currentSubmeshesOffset > totalSubMeshes) {
 				for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
+					outputVertices.back().getVertexBuffer(j).create(sizeof(entity::Vertex) * vertices[entity::Triangles].getVertexCount(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 					for (unsigned int k = 0; k < NB_PRIMITIVE_TYPES; k++) {
-						//std::cout<<"update : "<<j<<","<<k<<std::endl;
-						outputVertices[j * NB_PRIMITIVE_TYPES + k].getVertexBuffer().create(sizeof(entity::Vertex), sizeof(entity::Vertex) * vertices[entity::Triangles].getVertexCount(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+						//std::cout<<"update : "<<j<<","<<k<<std::endl;						
 						outputObjectDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 						outputModelDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 						//std::cout<<"output model data : "<<outputModelDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
@@ -1298,11 +1298,11 @@ namespace odfaeg {
 				//std::cout<<"update object types"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(0, objects, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"update objects"<<std::endl;
-				cullingBatchingSet.updateBufferInfos(1, subMehses, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(1, subMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range objects : "<<objects[0].getRange()<<std::endl;
 				cullingBatchingSet.updateBufferInfos(2, inputClusters, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range  submeshes : "<<subMeshes[0].getRange()<<std::endl;
-				cullingBatchingSet.updateBufferInfos(3, gridCellDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(3, inputCellDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				cullingBatchingSet.updateBufferInfos(4, modelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"id : "<<id<<",range model datas : "<<modelDatas[0].getRange()<<std::endl;
 				cullingBatchingSet.updateBufferInfos(5, inputMeshlets, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -1310,26 +1310,26 @@ namespace odfaeg {
 				//std::cout<<"update output vertics"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(6, lodLevel, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range output vertices : "<<outputVertexDatas[3].getVertexBuffer(0).getRange()<<std::endl;
-				cullingBatchingSet.updateBufferInfos(7, vertices, true, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(7, true, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range output indexes : "<<outputVertexDatas[3].getIndexBuffer(0).getRange()<<std::endl;
 				//std::cout<<"model data"<<std::endl;
-				cullingBatchingSet.updateBufferInfos(8, inputMaterialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(8, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range output model datas : "<<outputModelDatas[0].getRange()<<std::endl;
 				//std::cout<<"object data"<<std::endl;
-				cullingBatchingSet.updateBufferInfos(9, outputClusterDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(9, outputClusters, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range output objects datas : "<<outputObjectDatas[0].getRange()<<std::endl;
 				//std::cout<<"offset in output vertex"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(10, outputModelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"offset in output index"<<std::endl;
-				cullingBatchingSet.updateBufferInfos(11, outputMeshesDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(11, outputMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"offset in model data"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(12, offsetInOutputTaskDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"offset in output object data"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(13, outputTaskDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"uniform buffer"<<std::endl;
-				cullingBatchingSet.updateBufferInfos(14, offsetDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(14, offsetBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				cullingBatchingSet.updateBufferInfos(15, objectTypes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				cullingBatchingSet.updateBufferInfos(16, outputVertices, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+				cullingBatchingSet.updateBufferInfos(16, true, outputVertices, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 				cullingBatchingSet.updateBufferInfos(17, ubo, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"update culling ds"<<std::endl;
 				cullingBatchingSet.updateDescriptorSet();
@@ -1338,13 +1338,13 @@ namespace odfaeg {
 				defaultRenderingSet.updateBufferInfos(0, outputTaskDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(1, taskCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(2, outputModelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				defaultRenderingSet.updateBufferInfos(3, outputSubmeshDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				defaultRenderingSet.updateBufferInfos(3, outputMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(4, true, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(5, false, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(6, lodLevel, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(7, inputMeshlets, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);	
 				defaultRenderingSet.updateBufferInfos(8, inputClusters, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				defaultRenderingSet.updateBufferInfos(9, outputVertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);				
+				defaultRenderingSet.updateBufferInfos(9, true, outputVertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);				
 				defaultRenderingSet.updateBufferInfos(10, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				if (hasDiffuseTextures) {
 					//std::cout<<"textures : "<<Texture::getAllTextures().size()<<std::endl;
