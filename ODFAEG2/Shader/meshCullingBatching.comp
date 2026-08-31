@@ -12,6 +12,9 @@ struct AABB {
 	vec3 center;
 	vec3 size;
 };
+struct Instance {    
+    uint nbMeshletsVisible;
+};
 /*Objets*/
 struct Object {
 	AABB globalBounds;
@@ -460,7 +463,7 @@ void main() {
                             outputModelData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId] = modelData;
                             //nombre d'instances + 1.                           
                             outputTaskData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupXCount++;                           
-                        
+                            setVisibleMeshletsFromBox(ubo[pc.currentFrame].frustrum, lod, object, subMesh, s, materialId);
                         //Matériel non instanciable.                                               
                         } else {                        
                             uint offsetTaskData = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
