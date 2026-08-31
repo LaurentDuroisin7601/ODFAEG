@@ -222,6 +222,10 @@ namespace odfaeg {
 					inputClusters.emplace_back(device);
 					inputClusters.back().create(sizeof(Cluster), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
+				for (unsigned int i = 0; i < 1; i++) {
+					outputClusters.emplace_back(device);
+					outputClusters.back().create(sizeof(Cluster), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+				}
 				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 					outputObjectDatas.emplace_back(device);
 					outputObjectDatas.back().create(sizeof(ModelData), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
@@ -275,6 +279,10 @@ namespace odfaeg {
 			for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 				drawCount.emplace_back(device);
 				drawCount.back().create(sizeof(unsigned int), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+			}	
+			for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
+				offsetBuffer.emplace_back(device);
+				offsetBuffer.back().create(sizeof(Offset), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 			}			
 			for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 				taskCount.emplace_back(device);
@@ -514,20 +522,23 @@ namespace odfaeg {
 						//std::cout<<"vertex offset : "<<currentVertexOffset[primitiveType]<<std::endl;
 						unsigned int baseVertex = currentVertexOffset[primitiveType];
 						//std::cout<<"base vertex : "<<subMeshData.vertexOffset <<"nb vertices : "<<subMeshData.nbVertices<<std::endl;
-						for (unsigned int v = 0; v < subMesh.getVertexArray().getVertexCount(); v++) {
-							//std::cout<<"add vertex : "<<subMesh.getVertexBuffer()[v].position<<std::endl;
-							vertices[primitiveType].append(subMesh.getVertexArray()[v]);
-							vertices[primitiveType][baseVertex+v].drawableDataId = currentSubmeshesOffset;
-							//std::cout<<"drawable data id : "<<vertices[primitiveType][v].drawableDataId<<std::endl;
-							currentVertexOffset[primitiveType]++;
-						}
-						for (unsigned int v = 0; v < subMesh.getVertexArray().getIndexCount(); v++) {
-							uint32_t idx = subMesh.getVertexArray().getIndex(v);
-							vertices[primitiveType].addIndex(idx);
-							/*if (v == 0)
-								std::cout<<"add index : "<<baseVertex<<","<<idx<<std::endl;*/
-							
-							currentIndexOffset[primitiveType]++;
+						if (submesh.getMaterial()->getInstanceGroup() != -1 && !submesh.getMaterial()->vertsInstanceSet) {
+							submesh.getMaterial()->vertsInstanceSet = true;
+							for (unsigned int v = 0; v < subMesh.getVertexArray().getVertexCount(); v++) {
+								//std::cout<<"add vertex : "<<subMesh.getVertexBuffer()[v].position<<std::endl;
+								vertices[primitiveType].append(subMesh.getVertexArray()[v]);
+								vertices[primitiveType][baseVertex+v].drawableDataId = currentSubmeshesOffset;
+								//std::cout<<"drawable data id : "<<vertices[primitiveType][v].drawableDataId<<std::endl;
+								currentVertexOffset[primitiveType]++;
+							}
+							for (unsigned int v = 0; v < subMesh.getVertexArray().getIndexCount(); v++) {
+								uint32_t idx = subMesh.getVertexArray().getIndex(v);
+								vertices[primitiveType].addIndex(idx);
+								/*if (v == 0)
+									std::cout<<"add index : "<<baseVertex<<","<<idx<<std::endl;*/
+								
+								currentIndexOffset[primitiveType]++;
+							}
 						}
 						/*std::cout<<"new total vertex count : "<<vertices[primitiveType].getVertexCount()<<std::endl;
 						std::cout<<"new total index count : "<<vertices[primitiveType].getIndexCount()<<std::endl;*/
@@ -873,7 +884,8 @@ namespace odfaeg {
 						outputModelDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 						//std::cout<<"output model data : "<<outputModelDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 						outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(MaterialData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-						outputMeshes[j * NB_PRIMITIVE_TYPES + k].create(sizeof(entity::SubMesh) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);						
+						outputMeshes[j * NB_PRIMITIVE_TYPES + k].create(sizeof(entity::SubMesh) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+						outputClusterDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(Cluster) * currentClusterOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);						
 						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 					}
