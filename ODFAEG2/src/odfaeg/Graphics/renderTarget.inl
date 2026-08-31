@@ -1301,20 +1301,21 @@ namespace odfaeg {
 				//std::cout<<"update culling ds"<<std::endl;
 				cullingBatchingSet.updateDescriptorSet();
 				bool hasDiffuseTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
-				DescriptorSet& defaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, (hasDiffuseTextures) ? 13 : 12, 1)[0];
+				DescriptorSet& defaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, (hasDiffuseTextures) ? 12 : 11, 1)[0];
 				defaultRenderingSet.updateBufferInfos(0, outputTaskDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(1, taskCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				defaultRenderingSet.updateBufferInfos(2, outputMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				defaultRenderingSet.updateBufferInfos(3, outputModelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				defaultRenderingSet.updateBufferInfos(2, outputModelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				defaultRenderingSet.updateBufferInfos(3, outputSubmeshDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(4, true, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(5, false, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(6, lodLevel, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(7, inputMeshlets, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);	
-				defaultRenderingSet.updateBufferInfos(8, inputClusters, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);			
-				defaultRenderingSet.updateBufferInfos(9, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				defaultRenderingSet.updateBufferInfos(8, inputClusters, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				defaultRenderingSet.updateBufferInfos(9, outputVertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);				
+				defaultRenderingSet.updateBufferInfos(10, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				if (hasDiffuseTextures) {
 					//std::cout<<"textures : "<<Texture::getAllTextures().size()<<std::endl;
-					defaultRenderingSet.updateImageInfos(10, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+					defaultRenderingSet.updateImageInfos(11, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 				}
 				defaultRenderingSet.updateDescriptorSet();
 				bool hasSpecularTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR).size() != 0;
