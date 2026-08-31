@@ -48,11 +48,15 @@ import odfaeg.graphic.renderGraph;
 import odfaeg.graphic.componentManager;
 import odfaeg.graphic.iComponent;
 import odfaeg.graphic.renderTexture;*/
+#include "odfaeg/Core/macros.hpp"
 #include "odfaeg/Core/core.hpp"
 #include "odfaeg/Math/math.hpp"
 #include "odfaeg/Entity/ent.hpp"
+#include "odfaeg/Entity/pointLight.hpp",
+#include "odfaeg/Entity/directionnalLight.hpp"
 #include "odfaeg/Window/win.hpp"
 #include "odfaeg/Graphics/graphics.hpp"
+
 using namespace odfaeg::core;
 using namespace odfaeg::entity;
 using namespace odfaeg::window;
@@ -62,7 +66,43 @@ using namespace odfaeg::math;
 enum TextureNames {
 	WOOD
 };
-int main() {	
+class BoundingArea : public Registered<BoundingArea> {
+	public :
+		template <typename Archive>
+		void vtserialize(Archive& ar) {
+			//std::cout<<"serialize base"<<std::endl;
+			ar(b);
+			//std::cout<<"base serialized"<<std::endl;	
+		}
+		virtual ~BoundingArea() {}
+	protected :
+		int b = 5;
+};
+class BoundingCircle : public BoundingArea {
+	public :
+	template <typename Archive>
+		void vtserialize(Archive& ar) {	
+			//std::cout<<"serialize derived"<<std::endl;		
+			BoundingArea::vtserialize(ar);
+			ar(d);
+		}
+		virtual ~BoundingCircle() {}
+	private:
+		int d = 7;
+};
+int main() {
+	/*EXPORT_CLASS_GUID(BABC, BoundingArea, BoundingCircle, ITextArchive)
+	EXPORT_CLASS_GUID(BABC, BoundingArea, BoundingCircle, OTextArchive)		
+	std::ostringstream oss;	
+	OTextArchive oa(oss);
+	
+	BoundingCircle bc;
+	BoundingArea& ba = bc;	
+	//std::cout<<"oa : "<<&oa<<" ba : "<<&ba<<std::endl;
+	oa(std::ref(ba));
+	std::cout<<"saved : "<<oss.str()<<std::endl;*/
+	
+
 	GPUContext& ctx = GPUContext::instance();
 	//String string("Test my game");	
 	RenderWindow window(VideoMode(800, 600), "Test my game", ctx.getDevice(), odfaeg::window::Style::Default, true);
@@ -114,6 +154,7 @@ int main() {
     init_info.Queue = ctx.getDevice().getQueue(indices.graphicsFamily.value(), 0);
     init_info.DescriptorPool = imguiDescriptorPool;
     init_info.MinImageCount = window.getSwapchainMinImagesCount();
+	init_info.MSAASamples = ctx.getDevice().getMsaaSamples();
     init_info.ImageCount = window.getSwapchainImagesCount();
     init_info.RenderPass = window.getRenderPass(0).getHandle();
     ImGui_ImplVulkan_Init(&init_info);
@@ -122,20 +163,22 @@ int main() {
 	//camera.setUp(Vec3f(0.f, -1.f, 0.f));
 	camera.move(0.f, 0.f, 5.f);
 	Camera imGUICamera = window.getCamera();
-	window.setCamera(camera);
+	Camera rtRenderTextureCamera = window.getCamera();
+	rtRenderTextureCamera.move(400, 300, 0);
+
 	ResourceManager<Texture, TextureNames> textureManager;
-	/*ResourceManager<Texture, std::string> modelTextureManager;
-	ModelLoader modelLoader(GPUContext::instance().getDevice(), modelTextureManager);*/
+	ResourceManager<Texture, std::string> modelTextureManager;
+	ModelLoader modelLoader(GPUContext::instance().getDevice(), modelTextureManager);
 	//Mesh* bistroExterior = modelLoader.loadModel("Bistro_v5_2/BistroExterior.fbx");
 	//Mesh* bistroInterior = modelLoader.loadModel("Bistro_v5_2/BistroInterior.fbx");
 	//bistroExterior->getGameObject()->setScale(Vec3f(1, 1, -1));
 	//std::cout<<"test"<<std::endl;
-	/*Mesh* bistroExterior = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
-	bistroExterior->getGameObject()->setScale(Vec3f(1, 1, -1));*/
+	Mesh* bistroExterior = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
+	//bistroExterior->getGameObject()->setScale(Vec3f(1, 1, -1));
 	//std::cout<<"test"<<std::endl;
 	//GameObject* bistroExterior = modelLoader.loadModel(/*"CubeTest/cube_test.glb"*//**/"carGLTF/scene.gltf"/*"Bistro_v5_2/BistroExterior.fbx"*/);
 	//bistroExterior->getGameObject()->setRotation(90, Vec3f(0, 1, 0));
-	std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
+	/*std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
 	textureManager.fromFileWithAlias("tilesets/wood.png", WOOD, args);
 	Texture* texWood = textureManager.getResourceByAlias(WOOD);
 	texWood->setSamplerAddressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT);	
@@ -198,32 +241,33 @@ int main() {
 	window.addGameObject(&cube3Mesh);
 	window.addGameObject(&cube4Mesh);
 	window.addGameObject(&cube5Mesh);
-	/*RenderTexture sceneColorTexture(ctx.getDevice());
+	RenderTexture sceneColorTexture(ctx.getDevice());
 	sceneColorTexture.create(window.getSize().x(), window.getSize().y());
 	sceneColorTexture.setCamera(camera);
-	RenderGraph renderGraph;
-	renderGraph.addLinkedListPass(sceneColorTexture, 0, "*", window.getId());
-	ComponentManager componentManager;
+	RenderGraph renderGraph(sceneColorTexture);
+	//renderGraph.addOITPass(0, 0, "*", window.getId());
+	/*ComponentManager componentManager;
 	std::vector<IComponent*> components = renderGraph.getComponents();
 	for (unsigned int i = 0; i < components.size(); i++) {
 		componentManager.addComponent(components[i]);
 	}*/
-	//window.addGameObject(bistroExterior);	
-	//window.addGameObject(bistroInterior);	
+	window.addGameObject(bistroExterior);	
+	
 		//std::cout<<"i : "<<i<<std::endl;*/
 	
 	//std::cout<<"ok"<<std::endl;
 	Clock clock;
 	unsigned int fps = 0;
-	/*renderGraph.addShadowPass(window, sceneColorTexture, 1, "*", window.getId());
-	ShadowRenderer::DirLight dirLight;
-	dirLight.dir = Vec3f(20, 50, 20);
-	renderGraph.addDirectionnalLight<ShadowRenderer>(1, dirLight);
-	ShadowRenderer::PointLight pointLight;
-	pointLight.pos = Vec3f(0, 0, 0);
-	renderGraph.addPonctualLight<ShadowRenderer>(1, pointLight);*/
-	EnvMapRenderer envMapRenderer(window, 0, "*");
-	envMapRenderer.addReflRefrGameObject(&cube6Mesh);
+	/*renderGraph.addOITPass(0, 0, "*", window.getId());
+	renderGraph.addShadowPass(1, 0, "*", window.getId());
+	DirectionnalLight dirLight(Vec3f(50, 50, -50));
+
+	renderGraph.addDirectionnalLight(dirLight);
+	PointLight pointLight(Vec3f(10, 10, 10));
+	
+	renderGraph.addPonctualLight(pointLight);	
+	RectangleShape rect(GPUContext::instance().getDevice(), Vec3f(800, 600, 0));*/
+		
 	std::string s;	
 	while (window.isOpen()) {
 		odfaeg::window::IEvent event;
@@ -235,17 +279,23 @@ int main() {
 		}
 		
 		
-		
+		window.setCamera(camera);
 		window.setDepthStencil(true, false);
 		window.clear();
-		window.setCamera(camera);
-		//window.setTypesToRender("*", window.getCurrentFrame());
-		envMapRenderer.clear();
-		envMapRenderer.draw();
+		window.draw(Triangles);
+		/*window.setCamera(rtRenderTextureCamera);
+		
+		//sceneColorTexture.clear();
+		renderGraph.drawAllPasses();	
+		//sceneColorTexture.submit(true);
+		//sceneColorTexture.display();		
+		rect.setTexture(&sceneColorTexture.getTexture());
+		window.draw(rect);	*/
 		//window.applyCullingAndBatching();
 		
 		//std::cout<<"draw"<<std::endl;
-		//window.draw(Triangles);
+		/*window.setTypesToRender("*", window.getCurrentFrame());
+		window.draw(Triangles);*/
 		//std::cout<<"drawn"<<std::endl;
 		/*sceneColorTexture.clear(Color::Red);
 		renderGraph.render();*/
@@ -272,7 +322,7 @@ int main() {
         window.endRenderPass();
 		ImGui::UpdatePlatformWindows();
         ImGui::RenderPlatformWindowsDefault();
-		window.submit(true);		
+		window.submit(true);	
 		window.display();		
 		fps++;		
 		if (clock.getElapsedTime() >= seconds(1.f)) {
