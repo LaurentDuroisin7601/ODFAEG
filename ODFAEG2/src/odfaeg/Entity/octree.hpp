@@ -22,7 +22,7 @@ namespace odfaeg {
             std::vector<Object> getObjects(physic::BoundingBox volume);
             std::vector<physic::BoundingBox> getObjectVolumes(physic::BoundingBox volume);
             void update(Object object);
-            bool contains(Object object);
+            bool contains(Node& node, Object object);
             private :
             unsigned int maxObjectsPerNode;
             void getObjectVolumes(std::vector<physic::BoundingBox>& objects, Node node, physic::BoundingBox volume);

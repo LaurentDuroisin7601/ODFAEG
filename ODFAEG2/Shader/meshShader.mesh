@@ -156,7 +156,7 @@ void main() {
         mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId].modelMatrix;
             
         MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+id];
-        //Avoid to render it twice of the meshlet is between two clusters. (Deduplication)
+        //Avoid to render it twice if the meshlet is between two clusters. (Deduplication)
         if (meshlet.rendered == 1)
             return;
         meshletDatas.meshlet[cluster.meshletOffset+id].rendered = 1;

@@ -11,7 +11,7 @@ namespace odfaeg {
         template <typename Object>
         void Octree<Object>::addObject(Object object, physic::BoundingBox objectVolume) {                              
             for (unsigned int i = 0; i < nodes.size(); i++) {
-                if (nodes[i].leaf && !contains(object) && nodes[i].volume.intersects(objectVolume)) {
+                if (nodes[i].leaf && !contains(nodes[i], object) && nodes[i].volume.intersects(objectVolume)) {
                     nodes[i].objects.push_back(object);
                     nodes[i].objectVolumes.push_back(objectVolume);
                 }               
@@ -139,13 +139,11 @@ namespace odfaeg {
             }
         }
         template <typename Object>
-        bool Octree<Object>::contains(Object object) {
-            for (unsigned int i = 0; i < nodes.size(); i++) {
-                for (unsigned int j = 0; j < nodes[i].objects.size(); j++) {
-                    if(object == nodes[i].objects[j])
-                        return true;
-                }
-            }
+        bool Octree<Object>::contains(Node& node, Object object) {
+            for (unsigned int j = 0; j < node.objects.size(); j++) {
+                if(object == nodes[i].objects[j])
+                    return true;
+            }            
             return false;
         }
     }

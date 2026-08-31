@@ -136,6 +136,7 @@ layout(push_constant) uniform PushConstant {
     ivec3 gridCellSize;
     ivec3 nbCellsPerRow;    
     ivec3 gridSize;   
+    ivec3 gridPos;
 } pc;
 layout (set = 0, binding = 0) buffer ObjectTypesSSBO {
 	int types[];
