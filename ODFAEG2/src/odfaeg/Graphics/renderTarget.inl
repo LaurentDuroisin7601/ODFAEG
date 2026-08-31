@@ -597,14 +597,16 @@ namespace odfaeg {
 								// Ajouter triangle
 								m.minVertex = newMin;
 								m.maxVertex = newMax;
-								meshletDatas.back().minVertex = mins;
-								meshletDatas.back().maxVertex = maxs;
+								meshletDatas.back().mins = mins;
+								meshletDatas.back().maxs = maxs;
 								m.nbIndexes += 3;								
 							}
 							// Final meshlet							
 							m.vertexOffset = m.minVertex;
 							m.nbVertices   = m.maxVertex - m.minVertex + 1;
 							meshletDatas.push_back(m);
+							meshletDatas.back().mins = mins;
+							meshletDatas.back().maxs = maxs;
 							
 							//Récupérer les cellules de la grille de clusters.
 							//std::cout<<"min : "<<m.minVertex<<std::endl;
@@ -640,24 +642,24 @@ namespace odfaeg {
 						currentSubmeshesOffset++;					
 					}									
 				}
-				unsigned int currentclusterId = 0;
+				unsigned int currentClusterId = 0;
 				//Tri par lod. (D'abord clusters pour meshelts en lod0, puis 1, etc...)
-				for (unsigned int lod = 0; lod < lods.size(); lod++) {
-					meshletGrid.clear();
+				for (unsigned int lod = 0; lod < 5; lod++) {
+					meshletsGrid.clear();
 					for (unsigned int m = 0; m < meshletsDatas.size(); m++) {
-						if (meshletsDatas[i].lod == lod) {
+						if (meshletDatas[m].lod == lod) {
 							//Reconstruction de l'AABB et ajout dans la grille de meshlets.
 							physic::BoundingBox volume(
-								meshletsDatas[i].minVertex.x(), 
-								meshletsDatas[i].minVertex.y(),
-								meshletsDatas[i].minVertex.z(),
-								meshletsDatas[i].maxVertex.x() - meshletsDatas[i].minVertex.x(),
-								meshletsDatas[i].maxVertex.y() - meshletsDatas[i].minVertex.y(),
-								meshletsDatas[i].maxVertex.z() - meshletsDatas[i].minVertex.z());
-							meshletsGrid.addEntity(meshletsDatas[i], volume);
+								meshletDatas[m].mins.x(), 
+								meshletDatas[m].mins.y(),
+								meshletDatas[m].mins.z(),
+								meshletDatas[m].maxs.x() - meshletDatas[m].mins.x(),
+								meshletDatas[m].maxs.y() - meshletDatas[m].mins.y(),
+								meshletDatas[m].maxs.z() - meshletDatas[m].mins.z());
+							meshletsGrid.addEntity(meshletsDatas[m], volume);
 						}	
 					}
-					std::vector<GPUCell> gpuCells;
+					std::vector<CellData> cellDatas;
 					math::Vec3f gridPos = meshletsGrid.getMins();
 					math::Vec3f gridSize = meshletsGrid.getSize();					
 					//Ballayage de la grille.				
@@ -673,21 +675,21 @@ namespace odfaeg {
 								//Cluster rempli. 
 								} else {
 									//Ajout du root node et des enfants + création des clusters et assignation des ids.
-									std::vector<Octree::Node> nodes = gridCell->getOctreeNodes();
-									std::vector<Octree::Node> stack;
+									std::vector<entity::Octree::Node> nodes = gridCell->getOctreeNodes();
+									std::vector<entity::Octree::Node> stack;
 									stack.push_back(nodes[0]);	
 									CellData cellData;							
 									cellData.clusterId = currentClusterId;
 									cellDatas.push_back(cellData);
 									while (stack.size() > 0) {
-										Node node = stack.back();
-										ClusterData clusterData;
+										entity::Octree::Node node = stack.back();
+										Cluster clusterData;
 										clusterData.id = currentClusterId;
 										clusterData.volume = node.volume;									
 										if (!node.leaf) {										
 											for(unsigned int c = 0; c < node.children.size(); c++) {
 												currentClusterId++;
-												ClusterData childClusterData;
+												Cluster childClusterData;
 												childClusterData.id = currentClusterId;
 												childClusterData.volume = nodes[node.children[c]];
 												clusterData.children[c] = currentClusterId;
@@ -696,14 +698,15 @@ namespace odfaeg {
 												stack.push_back(nodes[node.children[c]]);
 											}
 										} else {
-											for (unsigned int c = 0; c < node.children.size(); c++) {
-												for (unsigned int i = 0; i < nodes[children[c]].objects.size(); i++) {												
+											Node parent = nodes[node.parent];
+											for (unsigned int c = 0; c < parent.children.size(); c++) {
+												for (unsigned int i = 0; i < nodes[parent.children[c]].objects.size(); i++) {												
 													meshletDatas[nodes[children[c]].objects[i].id].clusterId = currentClusterId;
 													currentClusterId++;
-													ClusterData childClusterData;
+													Cluster childClusterData;
 													childClusterData.id = currentClusterId;
-													childClusterData.globalBounds = nodes[children[c]].volume;
-													childClusterData.meshletCount = nodes[children[c]].objects.size();
+													childClusterData.globalBounds = nodes[parent.children[c]].volume;
+													childClusterData.meshletCount = nodes[parent.children[c]].objects.size();
 													childClusterData.leaf = 1;
 													childClusterData.lod = currentLod;
 													clusterData.children[c] = currentClusterId;
@@ -711,7 +714,7 @@ namespace odfaeg {
 												}											
 											}
 										}
-										stack.pop_back();
+										stack.pop_back();										
 										currentClusterId++;
 									}
 								}

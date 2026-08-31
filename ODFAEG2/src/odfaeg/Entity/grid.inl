@@ -607,16 +607,20 @@ namespace odfaeg {
             return nullptr;
         }
         template<typename Object>
-        GridMap<Object>::~GridMap () {
-            /*vector<Entity*> entities = getEntities();
-            for (unsigned int i = 0; i < entities.size(); i++) {
-                delete entities[i];
-            }*/
+        void GridMap<Object>::clear() {
             for (unsigned int i = 0; i < casesMap.size(); i++) {
                  if (casesMap[i] != nullptr)
                     delete casesMap[i];
             }
             casesMap.clear();
+        }
+        template<typename Object>
+        GridMap<Object>::~GridMap () {
+            /*vector<Entity*> entities = getEntities();
+            for (unsigned int i = 0; i < entities.size(); i++) {
+                delete entities[i];
+            }*/
+            clear();
         }
     }
 }

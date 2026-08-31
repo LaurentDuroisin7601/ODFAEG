@@ -86,19 +86,24 @@ namespace odfaeg {
 				int clusterCount;								
 			};
 			struct Cluster {
-				AABB globalBounds;
+				AABB volume;
 				int meshletOffset;
 				int meshletCount;
 				int id;
 				int lodLevel;
 			};
+			struct CellData {
+				unsigned int clusterId;
+			}
 			struct Meshlet {
 				unsigned int vertexOffset;
 				unsigned int indexOffset;
 				unsigned int nbVertices;
 				unsigned int nbIndexes;
-				alignas(16) math::Vec3f minVertex;
-				alignas(16) math::Vec3f maxVertex;
+				unsigned int minVertex;
+				unsigned int maxVertex;
+				alignas(16) math::Vec3f mins;
+				alignas(16) math::Vec3f maxs;
 				unsigned int clusterId;	
 				unsigned int lod;							
 			};			
