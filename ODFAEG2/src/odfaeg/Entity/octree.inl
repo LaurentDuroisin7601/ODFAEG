@@ -149,12 +149,24 @@ namespace odfaeg {
             return false;
         }
         template <typename Object>
+        std::vector<typename Octree<Object>::Node> Octree<Object>::getNodes() {
+            return nodes;
+        }
+        template <typename Object>
         bool Octree<Object>::contains(Node& node, Object object) {
             for (unsigned int i = 0; i < node.objects.size(); i++) {
                 if(object == node.objects[i])
                     return true;
             }            
             return false;
+        }
+        template <typename Object>
+        bool Octree<Object>::empty() {
+            for (unsigned int i = 0; i < nodes.size(); i++) {
+                if (nodes[i].objects.size() != 0)
+                    return false;
+            }
+            return true;
         }
     }
 }

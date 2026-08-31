@@ -16,6 +16,8 @@ namespace odfaeg {
                 void removeEntity (Object object);                
                 void deleteEntity (Object entity); 
                 math::Vec3f getCenter ();
+                bool empty();
+                std::vector<typename Octree<Object>::Node> getOctreeNodes();
                 bool isTraveled ();
                 void setTraveled (bool traveled);
                 Object getEntityInside (unsigned int index, physic::BoundingBox& bx);

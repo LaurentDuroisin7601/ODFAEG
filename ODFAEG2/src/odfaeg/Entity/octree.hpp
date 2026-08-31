@@ -6,6 +6,7 @@ namespace odfaeg {
     namespace entity {
         template <typename Object>
         class Octree {
+            public :
             struct Node {
                 unsigned int id;
                 physic::BoundingBox volume;
@@ -14,8 +15,7 @@ namespace odfaeg {
                 unsigned int parent;
                 std::vector<unsigned int> children;
                 bool leaf;
-            };
-            public :
+            };           
             Octree(physic::BoundingBox volume, unsigned int maxObjectsPerNodes);
             void addObject(Object object, physic::BoundingBox objectVolume);
             void removeObject(Object object, physic::BoundingBox objectVolume);
@@ -24,6 +24,8 @@ namespace odfaeg {
             void update(Object object);
             bool contains(Object object);
             bool contains(Node& node, Object object);
+            bool empty();
+            std::vector<Node> getNodes();
             private :
             unsigned int maxObjectsPerNode;
             void getObjectVolumes(std::vector<physic::BoundingBox>& objects, Node node, physic::BoundingBox volume);

@@ -30,6 +30,14 @@ namespace odfaeg {
             return false;
         }
         template <typename Object>
+        std::vector<typename Octree<Object>::Node> GridCell<Object>::getOctreeNodes() {
+            return octree.getNodes();
+        }
+        template <typename Object>
+        bool GridCell<Object>::empty() {
+            return octree.empty();
+        }
+        template <typename Object>
         vector<Object> GridCell<Object>::getEntitiesInside () {
             vector<Object> entitiesInside;
             for (unsigned int i = 0; i < octree.getObjects(volume).size(); i++)

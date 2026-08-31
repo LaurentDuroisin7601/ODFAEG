@@ -91,11 +91,14 @@ namespace odfaeg {
 				int meshletCount;
 				int id;
 				int lodLevel;
+				int leaf;				
+				std::array<unsigned int, 8> children;
 			};
 			struct CellData {
 				unsigned int clusterId;
-			}
+			};
 			struct Meshlet {
+				unsigned int id;
 				unsigned int vertexOffset;
 				unsigned int indexOffset;
 				unsigned int nbVertices;
@@ -105,7 +108,15 @@ namespace odfaeg {
 				alignas(16) math::Vec3f mins;
 				alignas(16) math::Vec3f maxs;
 				unsigned int clusterId;	
-				unsigned int lod;							
+				unsigned int lod;	
+				bool operator==(const Meshlet& other) const {
+					return mins.x() == other.mins.x()
+					&& mins.y() == other.mins.y()
+					&& mins.z() == other.mins.z()
+					&& maxs.x() == other.maxs.x() 
+					&& maxs.y() == other.maxs.y()
+					&& maxs.z() == other.maxs.z();
+				}						
 			};			
 			struct ModelData {
 				math::Matrix4f modelMatrix;
