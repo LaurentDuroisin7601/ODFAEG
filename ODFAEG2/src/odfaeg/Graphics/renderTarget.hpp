@@ -32,7 +32,7 @@
 #include "morphAnimUpdater.hpp"
 #include "boneAnimUpdater.hpp"
 #include "viewportMatrix.hpp"
-#include "Entity/grid.hpp"
+#include "../Entity/grid.hpp"
 namespace odfaeg {
 	namespace graphic {		
 		class RenderTarget {
