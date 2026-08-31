@@ -332,7 +332,7 @@ namespace odfaeg {
 			bool needToUpdateCullBatchIndCmds;
 			IndexesPC indexesPC;
 			PFN_vkCmdDrawMeshTasksEXT vkCmdDrawMeshTasksEXT;
-			entity::Grid<Meshlet> meshletsGrid;					
+			entity::GridMap<Meshlet> meshletsGrid;					
 		};
 		class Drawable {
             public :

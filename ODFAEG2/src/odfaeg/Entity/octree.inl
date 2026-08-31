@@ -139,6 +139,16 @@ namespace odfaeg {
             }
         }
         template <typename Object>
+        bool Octree<Object>::contains(Object object) {
+            for (unsigned int i = 0; i < nodes.size(); i++) {
+                for (unsigned int j = 0; j < nodes[i].objects.size(); j++) {
+                    if(object == nodes[i].objects[j])
+                        return true;
+                }  
+            }          
+            return false;
+        }
+        template <typename Object>
         bool Octree<Object>::contains(Node& node, Object object) {
             for (unsigned int i = 0; i < node.objects.size(); i++) {
                 if(object == node.objects[i])

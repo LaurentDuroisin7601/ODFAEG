@@ -10,7 +10,8 @@ namespace odfaeg {
 		vertices(GPUContext::instance().getSharedVertexBuffer(VERTEX_BUFFER)),
 		outputMeshes(GPUContext::instance().getSharedBuffers(OUTPUT_MESHES+registeredRenderTargets.size()*NB_BUFFERS)),
 		outputModelDatas(GPUContext::instance().getSharedBuffers(OUTPUT_MODELS+registeredRenderTargets.size()*NB_BUFFERS)),
-		outputMaterialDatas(GPUContext::instance().getSharedBuffers(OUTPUT_MATERIALS+registeredRenderTargets.size()*NB_BUFFERS))		
+		outputMaterialDatas(GPUContext::instance().getSharedBuffers(OUTPUT_MATERIALS+registeredRenderTargets.size()*NB_BUFFERS)),
+		meshletsGrid(50, 50, 50)		
 		{
 			
 			id = registeredRenderTargets.size();
