@@ -206,6 +206,7 @@ namespace odfaeg {
 				/*std::cout<<"nb game objects : "<<gameObjects.size()<<std::endl;
 				int i;
 				std::cin>>i;*/
+				
 				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 					outputMeshes.emplace_back(device);
 					outputMeshes.back().create(sizeof(entity::SubMesh), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
@@ -240,7 +241,7 @@ namespace odfaeg {
 				}
 				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 					outputVertices.emplace_back(device);
-					outputVertices.back().create(sizeof(Vertex), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+					outputVertices.back().getVertexBuffer().create(sizeof(entity::Vertex), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 			/*} else {
 				unsigned int totalSubMeshes=0;
@@ -446,6 +447,7 @@ namespace odfaeg {
 				std::vector<LODLevelData> lodLevelDatas;
 				std::vector<Meshlet> meshletDatas;
 				std::vector<Cluster> clusterDatas;
+				std::vector<CellData> cellDatas;
 				for (unsigned int i = 0; i < gameObjects.size(); i++) {
 					Object object;
 					physic::BoundingBox globalBounds = gameObjects[i]->getGameObject()->getGlobalBounds();
@@ -522,8 +524,8 @@ namespace odfaeg {
 						//std::cout<<"vertex offset : "<<currentVertexOffset[primitiveType]<<std::endl;
 						unsigned int baseVertex = currentVertexOffset[primitiveType];
 						//std::cout<<"base vertex : "<<subMeshData.vertexOffset <<"nb vertices : "<<subMeshData.nbVertices<<std::endl;
-						if (submesh.getMaterial()->getInstanceGroup() != -1 && !submesh.getMaterial()->vertsInstanceSet) {
-							submesh.getMaterial()->vertsInstanceSet = true;
+						if (gameObjects[i]->getMaterials()[j]->getInstanceGroupId() != -1 && !gameObjects[i]->getMaterials()[j]->materialSet) {
+							gameObjects[i]->getMaterials()[j]->materialSet = true;
 							for (unsigned int v = 0; v < subMesh.getVertexArray().getVertexCount(); v++) {
 								//std::cout<<"add vertex : "<<subMesh.getVertexBuffer()[v].position<<std::endl;
 								vertices[primitiveType].append(subMesh.getVertexArray()[v]);
@@ -666,6 +668,7 @@ namespace odfaeg {
 						currentSubmeshesOffset++;					
 					}									
 				}
+				
 				unsigned int currentClusterId = 0;
 				//Tri par lod. (D'abord clusters pour meshelts en lod0, puis 1, etc...)
 				for (unsigned int lod = 0; lod < 5; lod++) {
@@ -683,7 +686,7 @@ namespace odfaeg {
 							meshletsGrid.addEntity(meshletDatas[m], volume);
 						}	
 					}
-					std::vector<CellData> cellDatas;
+					
 					math::Vec3f gridPos = meshletsGrid.getMins();
 					math::Vec3f gridSize = meshletsGrid.getSize();					
 					//Ballayage de la grille.				
@@ -790,9 +793,9 @@ namespace odfaeg {
 				}
 				for (unsigned int i = 0; i < 1; i++) {
 					staggingGridCells[i].create(cellDatas.size() * sizeof(CellData), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
-					staggingGridCells[i].update(cellDatas.data(), cellDatas.size() * sizeof(GridCell));
-					inputGridCells[i].create(cellDatas.size() * sizeof(CellData), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-					Buffer::copyBuffer(staggingGridCells[i], inputGridCells[i], gridCellsDatas.size() * sizeof(GridCell), commandPool.getHandle(getCurrentFrame()));
+					staggingGridCells[i].update(cellDatas.data(), cellDatas.size() * sizeof(CellData));
+					inputCellDatas[i].create(cellDatas.size() * sizeof(CellData), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+					Buffer::copyBuffer(staggingGridCells[i], inputCellData[i], cellDatas.size() * sizeof(CellData), commandPool.getHandle(getCurrentFrame()));
 				}
 				for (unsigned int i = 0; i < 1; i++) {
 					staggingClusters[i].create(clusterDatas.size() * sizeof(Cluster), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
@@ -886,12 +889,13 @@ namespace odfaeg {
 				for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
 					for (unsigned int k = 0; k < NB_PRIMITIVE_TYPES; k++) {
 						//std::cout<<"update : "<<j<<","<<k<<std::endl;
+						outputVertices[j * NB_PRIMITIVE_TYPES + k].getVertexBuffer().create(sizeof(entity::Vertex), sizeof(entity::Vertex) * vertices[entity::Triangles].getVertexCount(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 						outputObjectDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 						outputModelDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 						//std::cout<<"output model data : "<<outputModelDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 						outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(MaterialData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 						outputMeshes[j * NB_PRIMITIVE_TYPES + k].create(sizeof(entity::SubMesh) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-						outputClusterDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(Cluster) * currentClusterOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);						
+						outputClusters[j * NB_PRIMITIVE_TYPES + k].create(sizeof(Cluster) * currentClustersOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);						
 						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 					}
@@ -1047,7 +1051,7 @@ namespace odfaeg {
 				for (unsigned int i = 0; i < 7; i++) {
 					cullingBatchingPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
 				}
-				cullingBatchingPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES);
+				cullingBatchingPool.updatePoolSize(7, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES);
 				for (unsigned int i = 8; i < 15; i++) {
 					cullingBatchingPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT);
 				}
@@ -1282,7 +1286,7 @@ namespace odfaeg {
 				//std::cout<<"update offset in output material data"<<std::endl;
 				resetBuffersSet.updateBufferInfos(2, offsetInOutputMaterialData, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"update offset in output indirect draw commands"<<std::endl;
-				resetBuffersSet.updateBufferInfos(3, model, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				resetBuffersSet.updateBufferInfos(3, modelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"update input material datax"<<std::endl;
 				resetBuffersSet.updateBufferInfos(4, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"update first index vertex"<<std::endl;
@@ -1301,12 +1305,12 @@ namespace odfaeg {
 				cullingBatchingSet.updateBufferInfos(3, gridCellDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				cullingBatchingSet.updateBufferInfos(4, modelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"id : "<<id<<",range model datas : "<<modelDatas[0].getRange()<<std::endl;
-				cullingBatchingSet.updateBufferInfos(5, meshletDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(5, inputMeshlets, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range material datas  : "<<materialDatas[0].getRange()<<std::endl;
 				//std::cout<<"update output vertics"<<std::endl;
-				cullingBatchingSet.updateBufferInfos(6, lodLevelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(6, lodLevel, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range output vertices : "<<outputVertexDatas[3].getVertexBuffer(0).getRange()<<std::endl;
-				cullingBatchingSet.updateVertexBufferInfos(7, vertices, true, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(7, vertices, true, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"range output indexes : "<<outputVertexDatas[3].getIndexBuffer(0).getRange()<<std::endl;
 				//std::cout<<"model data"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(8, inputMaterialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);

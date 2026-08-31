@@ -51,6 +51,14 @@ namespace odfaeg {
 				NODEPTHNOSTENCIL, DEPTHNOSTENCIL, DEPTHSTENCIL, NODEPTHSTENCIL
 			};
 			RenderTarget(Device& device, bool useDepthTest, bool useStencilTest);
+			struct Offset {
+				int previousOffsetVertex;
+				int offsetVertex;    
+				int instanceOffset;
+				int clusterOffset;
+				int submeshOffset;
+				int offsetTaskData;
+			};
 			struct alignas(16) AABB {
 				alignas(16) math::Vec3f center; //float _pad0; // vec3 + padding
 				alignas(16) math::Vec3f size;   //float _pad1; // vec3 + padding
@@ -282,6 +290,7 @@ namespace odfaeg {
 			std::deque<Buffer>& staggingLODLevel;
 			std::deque<Buffer>& lodLevel;
 			std::deque<VertexBuffer>& vertices;
+			std::deque<VertexBuffer> outputVertices;
 			std::deque<Buffer>& modelDatas;
 			std::deque<Buffer>& staggingModelDatas;
 			std::deque<Buffer>& materialDatas;
@@ -298,6 +307,7 @@ namespace odfaeg {
 			std::deque<Buffer> inputMeshlets;
 			std::deque<Buffer> inputCellDatas;
 			std::deque<Buffer> inputClusters;
+			std::deque<Buffer> outputClusters;
 			std::deque<Buffer> offsetInOutputModelData;
 			std::deque<Buffer> offsetInOutputObjectData;
 			std::deque<Buffer> offsetInOutputMaterialData;
