@@ -931,8 +931,8 @@ namespace odfaeg {
 				renderingCreateInfo.pColorAttachmentFormats = (isDepthOnly()) ? nullptr : &getImageFormat();
 				renderingCreateInfo.depthAttachmentFormat = getDepthStencilTexture().getFormat();
 				renderingCreateInfos.emplace_back(renderingCreateInfo);			
-				DescriptorSetLayout& resetBuffersLayout = GPUContext::instance().getDescriptorSetLayout(resetBuffersShader, 7, false);
-				for (unsigned int i = 0; i < 7; i++) {
+				DescriptorSetLayout& resetBuffersLayout = GPUContext::instance().getDescriptorSetLayout(resetBuffersShader, 8, false);
+				for (unsigned int i = 0; i < 8; i++) {
 					resetBuffersLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_COMPUTE_BIT);
 				}			
 				resetBuffersLayout.update();
@@ -1042,7 +1042,7 @@ namespace odfaeg {
 				//std::cout<<"descriptor and pipelines created vertex buffer"<<std::endl;
 
 				DescriptorPool& resetBuffersPool = GPUContext::instance().getDescriptorPool(resetBuffersShader, 7);
-				for (unsigned int i = 0; i < 7; i++) {
+				for (unsigned int i = 0; i < 8; i++) {
 					resetBuffersPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT);
 				}
 				resetBuffersPool.update();
@@ -1096,7 +1096,7 @@ namespace odfaeg {
 				vertexBufferPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
 				vertexBufferPool.update();
 				//std::cout<<"descriptor pool : "<<resetBuffersPool.getHandle()<<std::endl;
-				DescriptorSet::allocate(resetBuffersPool, resetBuffersLayout, GPUContext::instance().getDescriptorSets(resetBuffersShader, 7, 1));
+				DescriptorSet::allocate(resetBuffersPool, resetBuffersLayout, GPUContext::instance().getDescriptorSets(resetBuffersShader, 8, 1));
 				//std::cout<<"descriptor pool : "<<cullingBatchingPool.getHandle()<<std::endl;
 				DescriptorSet::allocate(cullingBatchingPool, cullingBatchingLayout, GPUContext::instance().getDescriptorSets(cullingBatchingShader, 18, 1));
 				//std::cout<<"descriptor pool : "<<defaultRenderingPool.getHandle()<<std::endl;
@@ -1119,8 +1119,8 @@ namespace odfaeg {
 				renderingCreateInfo.depthAttachmentFormat = getDepthStencilTexture().getFormat();
 				renderingCreateInfos.emplace_back(renderingCreateInfo);	
 						
-				DescriptorSetLayout& resetBuffersLayout = GPUContext::instance().getDescriptorSetLayout(resetBuffersShader, 7, false);
-				for (unsigned int i = 0; i < 7; i++) {
+				DescriptorSetLayout& resetBuffersLayout = GPUContext::instance().getDescriptorSetLayout(resetBuffersShader, 8, false);
+				for (unsigned int i = 0; i < 8; i++) {
 					resetBuffersLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_COMPUTE_BIT);
 				}			
 				resetBuffersLayout.update();
@@ -1216,7 +1216,7 @@ namespace odfaeg {
 				//std::cout<<"descriptor and pipelines created vertex buffer"<<std::endl;
 
 				DescriptorPool& resetBuffersPool = GPUContext::instance().getDescriptorPool(resetBuffersShader, 7);
-				for (unsigned int i = 0; i < 7; i++) {
+				for (unsigned int i = 0; i < 8; i++) {
 					resetBuffersPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT);
 				}
 				resetBuffersPool.update();
@@ -1259,7 +1259,7 @@ namespace odfaeg {
 				vertexBufferPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
 				vertexBufferPool.update();
 				//std::cout<<"descriptor pool : "<<resetBuffersPool.getHandle()<<std::endl;
-				DescriptorSet::allocate(resetBuffersPool, resetBuffersLayout, GPUContext::instance().getDescriptorSets(resetBuffersShader, 7, 1));
+				DescriptorSet::allocate(resetBuffersPool, resetBuffersLayout, GPUContext::instance().getDescriptorSets(resetBuffersShader, 8, 1));
 				//std::cout<<"descriptor pool : "<<cullingBatchingPool.getHandle()<<std::endl;
 				DescriptorSet::allocate(cullingBatchingPool, cullingBatchingLayout, GPUContext::instance().getDescriptorSets(cullingBatchingShader, 17, 1));
 				//std::cout<<"descriptor pool : "<<defaultRenderingPool.getHandle()<<std::endl;
@@ -1278,7 +1278,7 @@ namespace odfaeg {
 		void RenderTarget::updateDescriporSets() {
 			
 			if (device.areMeshShadersSupported()) {
-				DescriptorSet& resetBuffersSet = GPUContext::instance().getDescriptorSets(resetBuffersShader, 7, 1)[0];
+				DescriptorSet& resetBuffersSet = GPUContext::instance().getDescriptorSets(resetBuffersShader, 8, 1)[0];
 				//std::cout<<"update offset in output model data"<<std::endl;
 				resetBuffersSet.updateBufferInfos(0, offsetInOutputModelData, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"update offset in output object data"<<std::endl;
@@ -1291,7 +1291,8 @@ namespace odfaeg {
 				resetBuffersSet.updateBufferInfos(4, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"update first index vertex"<<std::endl;
 				resetBuffersSet.updateBufferInfos(5, taskCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				resetBuffersSet.updateBufferInfos(6, instanceBase, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);				
+				resetBuffersSet.updateBufferInfos(6, instanceBase, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				resetBuffersSet.updateBufferInfos(7, offsetBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);			
 				//std::cout<<"update reset buffer set"<<std::endl;
 				resetBuffersSet.updateDescriptorSet();
 				DescriptorSet& cullingBatchingSet = GPUContext::instance().getDescriptorSets(cullingBatchingShader, 18, 1)[0];
@@ -1412,7 +1413,8 @@ namespace odfaeg {
 				resetBuffersSet.updateBufferInfos(4, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"update first index vertex"<<std::endl;
 				resetBuffersSet.updateBufferInfos(5, drawCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				resetBuffersSet.updateBufferInfos(6, instanceBase, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);				
+				resetBuffersSet.updateBufferInfos(6, instanceBase, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				resetBuffersSet.updateBufferInfos(7, offsetBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);				
 				//std::cout<<"update reset buffer set"<<std::endl;
 				resetBuffersSet.updateDescriptorSet();
 				DescriptorSet& cullingBatchingSet = GPUContext::instance().getDescriptorSets(cullingBatchingShader, 17, 1)[0];

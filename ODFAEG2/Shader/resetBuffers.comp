@@ -5,6 +5,14 @@
 layout(push_constant) uniform PushConstant {
     uint currentFrame;
 } pc;
+struct Offset {
+    int previousOffsetVertex;
+    int offsetVertex;    
+    int instanceOffset;
+    int clusterOffset;
+    int submeshOffset;
+    int offsetTaskData;
+}; 
 struct MaterialData {       
     uint diffuseTextureIndex;
     uint specularTextureIndex;
@@ -47,6 +55,9 @@ layout (std430, set = 0, binding = 5) buffer drawCountSSBO {
 layout (std430, set = 0, binding = 6) buffer outputInstanceBaseSSBO {
 	uint instanceBase;
 } outputInstanceBase[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+layout (std430, set = 0, binding = 7) buffer offsetBufferSSBO {
+    Offset offsets;
+} offsetsData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void main() {
     //debugPrintfEXT("reset  buffers");
@@ -59,6 +70,12 @@ void main() {
     drawCountData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].drawCount = 0u;  
     //debugPrintfEXT("material id : %i : primitive type : %i, count : %i", materialId, primitiveType, drawCountData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].drawCount); 
     outputInstanceBase[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].instanceBase = 0u;
+    offsetsData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex = 0;
+    offsetsData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex = 0;    
+    offsetsData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.instanceOffset = 0;
+    offsetsData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset = 0;
+    offsetsData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.submeshOffset = 0;
+    offsetsData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetTaskData  = 0;
     //debugPrintfEXT("reset  : %i, current frame : %i", firstIndexData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].firstIndex, pc.currentFrame);
 	inputMaterialBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet = 0;
 }
