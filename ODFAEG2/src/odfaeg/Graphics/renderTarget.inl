@@ -1400,7 +1400,7 @@ namespace odfaeg {
 				/*std::cout<<"update descriptor sets"<<std::endl;
 				system("PAUSE");*/
 			} else {
-				DescriptorSet& resetBuffersSet = GPUContext::instance().getDescriptorSets(resetBuffersShader, 7, 1)[0];
+				DescriptorSet& resetBuffersSet = GPUContext::instance().getDescriptorSets(resetBuffersShader, 8, 1)[0];
 				//std::cout<<"update offset in output model data"<<std::endl;
 				resetBuffersSet.updateBufferInfos(0, offsetInOutputModelData, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"update offset in output object data"<<std::endl;
