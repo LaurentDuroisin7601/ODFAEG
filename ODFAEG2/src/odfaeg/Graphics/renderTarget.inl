@@ -712,7 +712,7 @@ namespace odfaeg {
 										entity::Octree<Meshlet>::Node node = stack.back();
 										if (!node.leaf) {										
 											for(unsigned int c = 0; c < node.children.size(); c++) {
-												currentClusterId++;
+												
 												Cluster childClusterData;												
 												childClusterData.id = currentClusterId;
 												childClusterData.volume.center = nodes[node.children[c]].volume.getCenter();
@@ -721,6 +721,7 @@ namespace odfaeg {
 												childClusterData.leaf = 0;												
 												clusterDatas.push_back(childClusterData);
 												stack.push_back(nodes[node.children[c]]);
+												currentClusterId++;
 											}
 										} else {
 											entity::Octree<Meshlet>::Node parent = nodes[node.parent];
@@ -728,7 +729,7 @@ namespace odfaeg {
 											for (unsigned int c = 0; c < parent.children.size(); c++) {
 												for (unsigned int i = 0; i < nodes[parent.children[c]].objects.size(); i++) {												
 													meshletDatas[nodes[parent.children[c]].objects[i].id].clusterId = currentClusterId;
-													currentClusterId++;
+													
 													Cluster childClusterData;
 													childClusterData.id = currentClusterId;
 													childClusterData.volume.center = nodes[parent.children[c]].volume.getCenter();
@@ -737,12 +738,12 @@ namespace odfaeg {
 													childClusterData.leaf = 1;
 													childClusterData.lodLevel = lod;
 													clusterDatas[parentCluster].children[c] = currentClusterId;
-													clusterDatas.push_back(childClusterData);													
+													clusterDatas.push_back(childClusterData);
+													currentClusterId++;													
 												}											
 											}
 										}
-										stack.pop_back();										
-										currentClusterId++;
+										stack.pop_back();
 									}
 								}
 							}
