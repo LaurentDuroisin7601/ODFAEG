@@ -702,8 +702,8 @@ namespace odfaeg {
 								//Cluster rempli. 
 								} else {
 									//Ajout du root node et des enfants + création des clusters et assignation des ids.
-									std::vector<entity::Octree<Meshlet>::Node> nodes = gridCell->getOctreeNodes();
-									std::vector<entity::Octree<Meshlet>::Node> stack;
+									std::deque<entity::Octree<Meshlet>::Node> nodes = gridCell->getOctreeNodes();
+									std::deque<entity::Octree<Meshlet>::Node> stack;
 									stack.push_back(nodes[0]);	
 									CellData cellData;							
 									cellData.clusterId = currentClusterId;

@@ -2,6 +2,7 @@
 #define ODFAEG_OCTREE_HPP
 #include "../Core/compiletime_counter.hpp"
 #include "../Physics/boundingBox.hpp"
+#include <deque>
 namespace odfaeg {
     namespace entity {
         template <typename Object>
@@ -25,15 +26,16 @@ namespace odfaeg {
             bool contains(Object object);
             bool contains(Node& node, Object object);
             bool empty();
-            std::vector<Node> getNodes();
+            std::deque<Node> getNodes();
             private :
             unsigned int maxObjectsPerNode;
             void getObjectVolumes(std::vector<physic::BoundingBox>& objects, Node node, physic::BoundingBox volume);
             void getObjects(std::vector<Object>& objects, Node node, physic::BoundingBox volume);
             void build(Node& node);
             void freeNodes(Node& node);
-            std::vector<Node> nodes;
-            inline static unsigned int compteur = 0;      
+            std::deque<Node> nodes;
+            inline static unsigned int compteur = 0;
+
         };        
     }
 }

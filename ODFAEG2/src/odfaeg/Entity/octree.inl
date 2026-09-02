@@ -28,19 +28,21 @@ namespace odfaeg {
                     Node child;
                     child.id = compteur;
                     compteur++;
-                    std::cout<<"id : "<<child.id<<std::endl;
+                    
                     child.parent = node.id;
                     child.volume = volumes[v]; 
                     nodes.push_back(child);
+                    //std::cout<<"add child : "<<nodes.size()-1<<std::endl;
                     node.children.push_back(nodes.size()-1);
                 }                
                 for (unsigned int i = 0; i < node.objects.size(); i++) {
                     for (unsigned int j = 0; j < node.children.size(); j++) {
+                        std::cout<<"size : "<<nodes.size()<<"child : "<<node.children[j]<<std::endl;
                         if (nodes[node.children[j]].volume.intersects(node.objectVolumes[i])) {
                             nodes[node.children[j]].objects.push_back(node.objects[i]);
                             nodes[node.children[j]].objectVolumes.push_back(node.objectVolumes[i]);
-                            build(nodes[node.children[j]]);
-                        }
+                            build(nodes[node.children[j]]);                            
+                        }                        
                     }
                 }
                 node.objects.clear(); 
@@ -151,7 +153,7 @@ namespace odfaeg {
             return false;
         }
         template <typename Object>
-        std::vector<typename Octree<Object>::Node> Octree<Object>::getNodes() {
+        std::deque<typename Octree<Object>::Node> Octree<Object>::getNodes() {
             return nodes;
         }
         template <typename Object>

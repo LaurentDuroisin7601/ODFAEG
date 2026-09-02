@@ -238,7 +238,7 @@ namespace odfaeg {
             //////////std::cout<<"min z : "<<minZ<<std::endl;
             int indice = (math::Math::abs(minX) + p.x())
                          + (math::Math::abs(minY) + p.y()) * nbCasesPerRow + (math::Math::abs(minZ) + p.z()) * nbCasesPerCol * nbCasesPerRow;
-            std::cout<<"create cell map at indice : "<<math::Math::abs(minZ)<<","<<p.z()<<std::endl;
+            //std::cout<<"create cell map at indice : "<<math::Math::abs(minZ)<<","<<p.z()<<std::endl;
             if (newSize > casesMap.size()) {
                 ////////std::cout<<"resize vector! > : "<<newSize<<std::endl;
                 vector<GridCell<Object>*> tmpCasesMap = casesMap;
