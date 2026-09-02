@@ -22,60 +22,61 @@ namespace odfaeg {
                 }               
             }
             //std::cout<<"ok 1"<<std::endl;
-            build(nodes[0]);
+            build(0);
+            /*for (unsigned int i = 0; i < nodes.size(); i++) {
+                if (nodes[i].objects.size() > maxObjectsPerNode)
+                std::cout<<maxObjectsPerNode<<","<<nodes[i].objects.size()<<" "<<nodes[i].objectVolumes.size()<<std::endl;
+            }*/
             //std::cout<<"ok 2"<<std::endl;            
         }
         template <typename Object>
-        void Octree<Object>::build(Node& node) {
+        void Octree<Object>::build(size_t id) {
+            Node& node = nodes[id];
+
             if (node.objects.size() > maxObjectsPerNode) {
-                //std::cout<<"subdiv"<<std::endl;
-                node.leaf = false;    
-                physic::BoundingBox volume = node.volume;
-                //std::cout<<"parent volume : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
-                std::array<physic::BoundingBox, 8> volumes = volume.subdiv();    
-                //std::cout<<"subddiv ok : "<<std::endl;
-                for (unsigned int v = 0; v < volumes.size(); v++) {
+
+                node.leaf = false;
+
+                auto volumes = node.volume.subdiv();
+
+                // créer les enfants
+                for (unsigned int v = 0; v < 8; v++) {
                     Node child;
-                    child.id = compteur;
+                    child.id = compteur++;
                     child.leaf = true;
-                    compteur++;
-                    
-                    child.parent = node.id;
-                    child.volume = volumes[v]; 
-                    
+                    child.parent = id;
+                    child.volume = volumes[v];
+
                     nodes.push_back(child);
-                    //std::cout<<"add child : "<<nodes.size()-1<<std::endl;
-                    node.children.push_back(nodes.size()-1);
-                }    
-                std::cout<<"subdivided"<<std::endl;            
-                for (unsigned int i = 0; i < node.children.size(); i++) {
-                    for (unsigned int j = 0; j < node.objects.size(); j++) {
-                        //std::cout<<"size : "<<nodes.size()<<"child : "<<node.children[j]<<std::endl;
-                       /* std::cout<<"node volume : "<<nodes[node.children[j]].volume.getPosition()<<","<<nodes[node.children[j]].volume.getSize()<<std::endl;
-                        std::cout<<"object volume : "<<node.objectVolumes[i].getPosition()<<","<<node.objectVolumes[i].getSize()<<std::endl;*/
-                        if (nodes[node.children[i]].volume.intersects(node.objectVolumes[j])) {
-                            //std::cout<<"rebuild : "<<node.objects.size()<<std::endl;
-                            nodes[node.children[i]].objects.push_back(node.objects[j]);
-                            nodes[node.children[i]].objectVolumes.push_back(node.objectVolumes[j]);
-                            
-                                                       
-                        }                                               
-                    }
-                    //build(nodes[node.children[i]]);
+                    node.children.push_back(nodes.size() - 1);
                 }
-                std::cout<<"objects added"<<std::endl;
+
+                // redistribuer les objets
+                for (unsigned int j = 0; j < node.objects.size(); j++) {
+                    for (unsigned int i = 0; i < node.children.size(); i++) {
+
+                        Node& child = nodes[node.children[i]];
+
+                        if (child.volume.intersects(node.objectVolumes[j])) {
+                            child.objects.push_back(node.objects[j]);
+                            child.objectVolumes.push_back(node.objectVolumes[j]);
+                        }
+                    }
+                }
+
+                // vider le node
+                node.objects.clear();
+                node.objectVolumes.clear();
+
+                // subdiviser les enfants qui dépassent
                 for (unsigned int i = 0; i < node.children.size(); i++) {
                     Node& child = nodes[node.children[i]];
-                    //std::cout<<"rebuild"<<std::endl;
                     if (child.objects.size() > maxObjectsPerNode) {
-                        
-                        build(child);
+                        build(node.children[i]);
                     }
                 }
-                node.objects.clear(); 
-                node.objectVolumes.clear();                            
             }
-        }  
+        }
         template <typename Object>      
         void Octree<Object>::removeObject(Object object, physic::BoundingBox objectVolume) {
             for (unsigned int i = 0; i < nodes.size(); i++) {

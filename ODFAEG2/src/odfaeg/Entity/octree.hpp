@@ -31,7 +31,7 @@ namespace odfaeg {
             unsigned int maxObjectsPerNode;
             void getObjectVolumes(std::vector<physic::BoundingBox>& objects, Node node, physic::BoundingBox volume);
             void getObjects(std::vector<Object>& objects, Node node, physic::BoundingBox volume);
-            void build(Node& node);
+            void build(std::size_t id);
             void freeNodes(Node& node);
             std::deque<Node> nodes;
             inline static unsigned int compteur = 0;
