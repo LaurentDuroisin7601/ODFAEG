@@ -26,11 +26,13 @@ namespace odfaeg {
                 std::array<physic::BoundingBox, 8> volumes = volume.subdiv();                
                 for (unsigned int v = 0; v < volumes.size(); v++) {
                     Node child;
-                    child.id = compteur.next();
+                    child.id = compteur;
+                    compteur++;
+                    std::cout<<"id : "<<child.id<<std::endl;
                     child.parent = node.id;
-                    child.volume = volumes[v];                        
-                    node.children.push_back(child.id);
+                    child.volume = volumes[v]; 
                     nodes.push_back(child);
+                    node.children.push_back(nodes.size()-1);
                 }                
                 for (unsigned int i = 0; i < node.objects.size(); i++) {
                     for (unsigned int j = 0; j < node.children.size(); j++) {

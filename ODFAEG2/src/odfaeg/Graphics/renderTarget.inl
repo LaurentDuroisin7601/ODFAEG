@@ -223,7 +223,7 @@ namespace odfaeg {
 					inputClusters.emplace_back(device);
 					inputClusters.back().create(sizeof(Cluster), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
-				for (unsigned int i = 0; i < 1; i++) {
+				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 					outputClusters.emplace_back(device);
 					outputClusters.back().create(sizeof(Cluster), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
@@ -239,7 +239,7 @@ namespace odfaeg {
 					outputMaterialDatas.emplace_back(device);
 					outputMaterialDatas.back().create(sizeof(Material), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
-				outputVertices.emplace_back(device);
+				outputVertices.emplace_back(device, entity::Triangles, MAX_FRAMES_IN_FLIGHT);
 				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {					
 					outputVertices.back().getVertexBuffer(i).create(sizeof(entity::Vertex), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
@@ -524,7 +524,7 @@ namespace odfaeg {
 						//std::cout<<"vertex offset : "<<currentVertexOffset[primitiveType]<<std::endl;
 						unsigned int baseVertex = currentVertexOffset[primitiveType];
 						//std::cout<<"base vertex : "<<subMeshData.vertexOffset <<"nb vertices : "<<subMeshData.nbVertices<<std::endl;
-						if (gameObjects[i]->getMaterials()[j]->getInstanceGroupId() != -1 && !gameObjects[i]->getMaterials()[j]->materialSet) {
+						if (gameObjects[i]->getMaterials()[j]->getInstanceGroupId() == -1 || (gameObjects[i]->getMaterials()[j]->getInstanceGroupId() != -1 && !gameObjects[i]->getMaterials()[j]->materialSet)) {
 							gameObjects[i]->getMaterials()[j]->materialSet = true;
 							for (unsigned int v = 0; v < subMesh.getVertexArray().getVertexCount(); v++) {
 								//std::cout<<"add vertex : "<<subMesh.getVertexBuffer()[v].position<<std::endl;
@@ -1043,7 +1043,7 @@ namespace odfaeg {
 				}
 				//std::cout<<"descriptor and pipelines created vertex buffer"<<std::endl;
 
-				DescriptorPool& resetBuffersPool = GPUContext::instance().getDescriptorPool(resetBuffersShader, 7);
+				DescriptorPool& resetBuffersPool = GPUContext::instance().getDescriptorPool(resetBuffersShader, 8);
 				for (unsigned int i = 0; i < 8; i++) {
 					resetBuffersPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT);
 				}
@@ -1217,7 +1217,7 @@ namespace odfaeg {
 				}
 				//std::cout<<"descriptor and pipelines created vertex buffer"<<std::endl;
 
-				DescriptorPool& resetBuffersPool = GPUContext::instance().getDescriptorPool(resetBuffersShader, 7);
+				DescriptorPool& resetBuffersPool = GPUContext::instance().getDescriptorPool(resetBuffersShader, 8);
 				for (unsigned int i = 0; i < 8; i++) {
 					resetBuffersPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT);
 				}

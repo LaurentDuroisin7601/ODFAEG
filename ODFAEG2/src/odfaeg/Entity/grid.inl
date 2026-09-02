@@ -5,8 +5,7 @@ namespace odfaeg {
         GridMap<Object>::GridMap (int cellWidth, int cellHeight, int cellDepth) {
             nbCasesPerRow = 0;
             nbCasesPerCol = 0;
-            minX = minY = minZ = std::numeric_limits<int>::max();
-            maxX = maxY = maxZ = std::numeric_limits<int>::min();
+            minX = minY = minZ = maxX = maxY = maxZ = 0;
             this->cellWidth = cellWidth;
             this->cellHeight = cellHeight;
             this->cellDepth = cellDepth;
@@ -91,7 +90,7 @@ namespace odfaeg {
                                 ////////std::cout<<"cell map get"<<std::endl;
                             }
                             added = true;
-                            ////////std::cout<<"add entity to cell"<<std::endl;
+                            //std::cout<<"add entity at : "<<objectVolume.getPosition()<<","<<std::endl;
                             cm->addEntity(entity, objectVolume);
                             ////////std::cout<<"entity added to cell"<<std::endl;
 
@@ -168,7 +167,7 @@ namespace odfaeg {
         void GridMap<Object>::createCellMap (math::Vec3f &point) {
             ////////std::cout<<"point : "<<point<<std::endl;
             math::Vec3f p = getCoordinatesAt(point);
-            ////////std::cout<<"coords caseP : "<<coordsCaseP<<std::endl;
+            //std::cout<<"coords caseP : "<<p<<std::endl;
 
             /*minX = (coordsCaseP.x < minX) ? coordsCaseP.x : minX;
             minY = (coordsCaseP.y < minY) ? coordsCaseP.y : minY;
@@ -178,17 +177,18 @@ namespace odfaeg {
             maxZ = (coordsCaseP.z > maxZ) ? coordsCaseP.z : maxZ;*/
 
             //math::Vec3f p = bm.unchangeOfBase(point);
+            /*if (p.x() <= 0)
+                p[0]--;
+            if (p.y() <= 0)
+                p[1]--;
+            if (p.z() <= 0)
+                p[2]--;*/
 
             math::Vec3f v1;
             v1[0] = (cellWidth > 0) ? (int) p.x() / cellWidth : 0;
             v1[1] = (cellHeight > 0) ? (int) p.y() / cellHeight : 0;
             v1[2] = (cellDepth > 0) ? (int) p.z() / cellDepth : 0;
-            if (p.x() <= 0)
-                v1[0]--;
-            if (p.y() <= 0)
-                v1[1]--;
-            if (p.z() <= 0)
-                v1[2]--;
+           
             v1[0] *= cellWidth;
             v1[1] *= cellHeight;
             v1[2] *= cellDepth;
@@ -238,7 +238,7 @@ namespace odfaeg {
             //////////std::cout<<"min z : "<<minZ<<std::endl;
             int indice = (math::Math::abs(minX) + p.x())
                          + (math::Math::abs(minY) + p.y()) * nbCasesPerRow + (math::Math::abs(minZ) + p.z()) * nbCasesPerCol * nbCasesPerRow;
-            ////////std::cout<<"create cell map at indice : "<<indice<<std::endl;
+            std::cout<<"create cell map at indice : "<<math::Math::abs(minZ)<<","<<p.z()<<std::endl;
             if (newSize > casesMap.size()) {
                 ////////std::cout<<"resize vector! > : "<<newSize<<std::endl;
                 vector<GridCell<Object>*> tmpCasesMap = casesMap;
@@ -504,9 +504,9 @@ namespace odfaeg {
         template<typename Object>
         GridCell<Object>* GridMap<Object>::getGridCellAt (math::Vec3f point) {
             math::Vec3f coordsCaseP = getCoordinatesAt(point);
-            ////////std::cout<<"indice : "<<coordsCaseP<<std::endl;
+            //std::cout<<"indice : "<<coordsCaseP<<std::endl;
             unsigned int indice = (math::Math::abs(minX) + coordsCaseP.x()) + (math::Math::abs(minY) + coordsCaseP.y()) * nbCasesPerRow + (math::Math::abs(minZ) + coordsCaseP.z()) * nbCasesPerCol * nbCasesPerRow;
-            ////////std::cout<<"indice : "<<indice<<std::endl;
+            //std::cout<<"indice : "<<indice<<" size : "<<casesMap.size()<<std::endl;
             //system("PAUSE");
             if (indice >= 0 && indice < casesMap.size()) {
                 return casesMap[indice];
@@ -531,13 +531,13 @@ namespace odfaeg {
                 f[2] = (int) p.z() / cellDepth;
             else
                 f[2] = 0;
-            if (p.x() <= 0 && cellWidth > 0)
+            /*if (p.x() <= 0 && cellWidth > 0)
                 f[0]--;
             if (p.y() <= 0 && cellHeight > 0)
                 f[1]--;
             if (p.z() <= 0 && cellDepth > 0)
-                f[2]--;
-            ////////std::cout<<"coordinates at : "<<f<<std::endl;
+                f[2]--;*/
+            //std::cout<<"coordinates at : "<<f<<std::endl;
             return f;
         }
         template<typename Object>
