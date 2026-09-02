@@ -43,12 +43,12 @@ namespace odfaeg {
 
             /*if (entity->getType() == "E_ANIMATION_FRAME")
                 //////std::cout<<"add global bounds : "<<entity->getGlobalBounds().getPosition()<<entity->getGlobalBounds().getWidth()<<","<<entity->getGlobalBounds().getHeight()<<","<<entity->getGlobalBounds().getDepth()<<std::endl;*/
-            int x = objectVolume.getPosition().x();
-            int y = objectVolume.getPosition().y();
-            int z = objectVolume.getPosition().z();
-            int endX = (x + objectVolume.getWidth());
-            int endY = (y + objectVolume.getHeight());
-            int endZ = (z + objectVolume.getDepth());
+            float x = objectVolume.getPosition().x();
+            float y = objectVolume.getPosition().y();
+            float z = objectVolume.getPosition().z();
+            float endX = (x + objectVolume.getWidth());
+            float endY = (y + objectVolume.getHeight());
+            float endZ = (z + objectVolume.getDepth());
             bool added = false;
             /*std::array<math::Vec2f, 4> pos;
             pos[0] = math::Vec2f(x, y);
@@ -69,9 +69,9 @@ namespace odfaeg {
             }*/
             //////////std::cout<<"offsets : "<<offsetX<<","<<offsetY<<","<<offsetZ<<std::endl<<"start : "<<x<<","<<y<<","<<z<<std::endl<<"ends : "<<endX<<","<<endY<<","<<endZ<<std::endl;
             //////////std::cout<<"add entity : "<<entity->getType()<<std::endl<<x<<","<<y<<","<<z<<","<<endX<<","<<endY<<","<<endZ<<std::endl;
-            for (int i = x; i <= endX; i+= cellWidth) {
-                for (int j = y; j <= endY; j+= cellHeight)  {
-                    for (int k = z; k <= endZ; k+= cellDepth) {
+            for (float i = x; i <= endX; i+= cellWidth) {
+                for (float j = y; j <= endY; j+= cellHeight)  {
+                    for (float k = z; k <= endZ; k+= cellDepth) {
 
                         math::Vec3f pos (i, j, k);
                         //////////std::cout<<"pos : "<<pos<<std::endl;
@@ -185,10 +185,15 @@ namespace odfaeg {
                 p[2]--;*/
 
             math::Vec3f v1;
-            v1[0] = (cellWidth > 0) ? (int) p.x() / cellWidth : 0;
-            v1[1] = (cellHeight > 0) ? (int) p.y() / cellHeight : 0;
-            v1[2] = (cellDepth > 0) ? (int) p.z() / cellDepth : 0;
-           
+            v1[0] = (cellWidth > 0) ? point.x() / cellWidth : 0;
+            v1[1] = (cellHeight > 0) ? point.y() / cellHeight : 0;
+            v1[2] = (cellDepth > 0) ? point.z() / cellDepth : 0;
+            if (point.x() < 0)
+                v1[0]--;
+            if (point.y() < 0)
+                v1[1]--;
+            if (point.z() < 0)
+                v1[2]--;
             v1[0] *= cellWidth;
             v1[1] *= cellHeight;
             v1[2] *= cellDepth;
@@ -520,23 +525,23 @@ namespace odfaeg {
             ////////std::cout<<"point : "<<point<<std::endl;
             math::Vec3f f;
             if (cellWidth > 0)
-                f[0] = (int) p.x() / cellWidth;
+                f[0] = p.x() / cellWidth;
             else
                 f[0] = 0;
             if (cellHeight > 0)
-                f[1] = (int) p.y() / cellHeight;
+                f[1] = p.y() / cellHeight;
             else
                 f[1] = 0;
             if (cellDepth > 0)
-                f[2] = (int) p.z() / cellDepth;
+                f[2] = p.z() / cellDepth;
             else
                 f[2] = 0;
-            /*if (p.x() <= 0 && cellWidth > 0)
+            if (p.x() < 0 && cellWidth > 0)
                 f[0]--;
-            if (p.y() <= 0 && cellHeight > 0)
+            if (p.y() < 0 && cellHeight > 0)
                 f[1]--;
-            if (p.z() <= 0 && cellDepth > 0)
-                f[2]--;*/
+            if (p.z() < 0 && cellDepth > 0)
+                f[2]--;
             //std::cout<<"coordinates at : "<<f<<std::endl;
             return f;
         }
@@ -553,7 +558,9 @@ namespace odfaeg {
             for (unsigned int i = 0; i < casesMap.size(); i++) {
                 if (casesMap[i] != nullptr) {
                     math::Vec3f point = casesMap[i]->getCellVolume().getCenter();
+                    
                     math::Vec3f coordsCaseP = getCoordinatesAt(point);
+                    //std::cout<<"point : "<<coordsCaseP<<std::endl;
                     minX = (coordsCaseP.x() < minX) ? coordsCaseP.x() : minX;
                     minY = (coordsCaseP.y() < minY) ? coordsCaseP.y() : minY;
                     minZ = (coordsCaseP.z() < minZ) ? coordsCaseP.z() : minZ;

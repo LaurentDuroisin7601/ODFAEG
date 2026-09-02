@@ -337,12 +337,12 @@ namespace odfaeg {
             if (width == 0 && height == 0 && depth == 0
                 || other.width == 0 && other.height == 0 && other.depth == 0)
                 return false;
-            int hx1 = width * 0.5;
-            int hy1 = height * 0.5;
-            int hz1 = depth * 0.5;
-            int hx2 = other.width * 0.5;
-            int hy2 = other.height * 0.5;
-            int hz2 = other.depth * 0.5;
+            float hx1 = width * 0.5;
+            float hy1 = height * 0.5;
+            float hz1 = depth * 0.5;
+            float hx2 = other.width * 0.5;
+            float hy2 = other.height * 0.5;
+            float hz2 = other.depth * 0.5;
             //Check the mins and max medians positions.
             float minX1 = center.x() - hx1, minX2 = other.center.x() - hx2;
             float minY1 = center.y() - hy1, minY2 = other.center.y() - hy2;
@@ -514,9 +514,10 @@ namespace odfaeg {
             std::array<BoundingBox, 8> volumes;
             unsigned int index = 0;
             math::Vec3f position = points[0];
-            for (unsigned int x = position.x(); x < position.x() + width; x+= width * 0.5f) {
-                for (unsigned int y = position.y(); y < position.y() + height; y+= height * 0.5f) {
-                    for (unsigned int z = position.z(); z < position.z() + depth; z+= depth * 0.5f) {
+            for (float x = position.x(); x < position.x() + width; x+= width * 0.5f) {
+                for (float y = position.y(); y < position.y() + height; y+= height * 0.5f) {
+                    for (float z = position.z(); z < position.z() + depth; z+= depth * 0.5f) {
+                        //std::cout<<"x : "<<x<<std::endl;
                         volumes[index] = BoundingBox(x, y, z, width * 0.5f, height * 0.5f, depth * 0.5f);
                         index++;
                         

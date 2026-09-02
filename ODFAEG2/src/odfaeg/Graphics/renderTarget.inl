@@ -736,7 +736,7 @@ namespace odfaeg {
 											for (unsigned int c = 0; c < parent.children.size(); c++) {
 												for (unsigned int o = 0; o < nodes[parent.children[c]].objects.size(); o++) {												
 													meshletDatas[nodes[parent.children[c]].objects[o].id].clusterId = clusterDatas.size();
-													//std::cout<<"o : "<<parent.id<<" "<<nodes[parent.children[c]].objects.size()<<std::endl;
+													std::cout<<"o : "<<parent.id<<" "<<nodes[parent.children[c]].objects.size()<<std::endl;
 													Cluster childClusterData;
 													childClusterData.id = currentClusterId;
 													childClusterData.volume.center = nodes[parent.children[c]].volume.getCenter();
@@ -767,7 +767,7 @@ namespace odfaeg {
 				unsigned int lastMeshletId = 0;
 				unsigned int count = 0;
 				for (unsigned int m = 0; m < meshletDatas.size(); m++) {
-					//std::cout<<"culter id : "<<meshletDatas[m].clusterId<<","<<clusterDatas.size()<<std::endl;
+					std::cout<<"culter id : "<<meshletDatas[m].clusterId<<","<<clusterDatas.size()<<std::endl;
 					if (count >= clusterDatas[meshletDatas[m].clusterId].meshletCount) {	
 						lastMeshletId = m;
 						count = 0;					

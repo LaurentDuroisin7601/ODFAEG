@@ -12,8 +12,10 @@ namespace odfaeg {
         template <typename Object>
         void Octree<Object>::addObject(Object object, physic::BoundingBox objectVolume) {                              
             for (unsigned int i = 0; i < nodes.size(); i++) {
+                
                 if (nodes[i].leaf && !contains(nodes[i], object) && nodes[i].volume.intersects(objectVolume)) {
-                    
+                    /*std::cout<<"volume : "<<nodes[0].volume.getPosition()<<","<<nodes[0].volume.getSize()<<std::endl;
+                    std::cout<<"object volume : "<<objectVolume.getPosition()<<","<<objectVolume.getSize()<<std::endl;*/
                     nodes[i].objects.push_back(object);
                     nodes[i].objectVolumes.push_back(objectVolume);
                 }               
@@ -43,10 +45,10 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < node.objects.size(); i++) {
                     for (unsigned int j = 0; j < node.children.size(); j++) {
                         //std::cout<<"size : "<<nodes.size()<<"child : "<<node.children[j]<<std::endl;
-                        //std::cout<<"node volume : "<<nodes[node.children[j]].volume.getPosition()<<","<<nodes[node.children[j]].volume.getSize()<<std::endl;
-                        std::cout<<"object volume : "<<node.objectVolumes[i].getPosition()<<","<<node.objectVolumes[i].getSize()<<std::endl;
+                       /* std::cout<<"node volume : "<<nodes[node.children[j]].volume.getPosition()<<","<<nodes[node.children[j]].volume.getSize()<<std::endl;
+                        std::cout<<"object volume : "<<node.objectVolumes[i].getPosition()<<","<<node.objectVolumes[i].getSize()<<std::endl;*/
                         if (nodes[node.children[j]].volume.intersects(node.objectVolumes[i])) {
-                            //std::cout<<"rebuild : "<<node.objects.size()<<std::endl;
+                            std::cout<<"rebuild : "<<node.objects.size()<<std::endl;
                             nodes[node.children[j]].objects.push_back(node.objects[i]);
                             nodes[node.children[j]].objectVolumes.push_back(node.objectVolumes[i]);
                                                        
