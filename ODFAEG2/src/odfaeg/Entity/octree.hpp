@@ -14,7 +14,7 @@ namespace odfaeg {
                 std::vector<Object> objects;
                 std::vector<physic::BoundingBox> objectVolumes;
                 unsigned int parent;
-                std::vector<unsigned int> children;
+                std::deque<unsigned int> children;
                 bool leaf;
             };           
             Octree(physic::BoundingBox volume, unsigned int maxObjectsPerNodes);
@@ -28,10 +28,11 @@ namespace odfaeg {
             bool empty();
             std::deque<Node> getNodes();
             private :
+            void build(size_t id);
             unsigned int maxObjectsPerNode;
             void getObjectVolumes(std::vector<physic::BoundingBox>& objects, Node node, physic::BoundingBox volume);
             void getObjects(std::vector<Object>& objects, Node node, physic::BoundingBox volume);
-            void build(std::size_t id);
+            void insert(size_t id, Object object, physic::BoundingBox objectVolume);
             void freeNodes(Node& node);
             std::deque<Node> nodes;
             inline static unsigned int compteur = 0;

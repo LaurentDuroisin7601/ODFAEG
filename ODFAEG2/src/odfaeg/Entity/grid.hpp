@@ -8,7 +8,7 @@ namespace odfaeg {
         template <typename Object>
         class GridMap {
             public:
-            GridMap (int cellWidth, int cellHeight, int cellDepth);
+            GridMap (float cellWidth, float cellHeight, float cellDepth);
             int getCellWidth();
             int getCellHeight();            
             int getCellDepth();
@@ -44,7 +44,7 @@ namespace odfaeg {
             std::vector<GridCell<Object>*> casesMap;
             int nbCasesPerRow, nbCasesPerCol;
             int minX, minY, minZ, maxX, maxY, maxZ;
-            int cellWidth, cellHeight, cellDepth;
+            float cellWidth, cellHeight, cellDepth;
         };
     }
 }

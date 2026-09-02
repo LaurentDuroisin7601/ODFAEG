@@ -511,21 +511,26 @@ namespace odfaeg {
             return faceNormals;
         }  
         std::array<BoundingBox, 8> BoundingBox::subdiv() {
-            std::array<BoundingBox, 8> volumes;
-            unsigned int index = 0;
-            math::Vec3f position = points[0];
-            float x, y, z;
-            for (unsigned int subX = 0, x = position.x(); subX < 2; x+= width * 0.5f, subX++) {
-                for (unsigned int subY = 0, y = position.y(); subY < 2; y+= height * 0.5f, subY++) {
-                    for (unsigned int subZ = 0, z = position.z(); subZ < 2; z+= depth * 0.5f, subZ++) {
-                        //std::cout<<"index : "<<index<<"x : "<<x<<" y : "<<y<<" z : "<<z<<std::endl;
-                        volumes[index] = BoundingBox(x, y, z, width * 0.5f, height * 0.5f, depth * 0.5f);
-                        index++;
-                        
+            std::array<physic::BoundingBox, 8> volumes;
+            math::Vec3f half = math::Vec3f(width, height, depth);
+
+            int index = 0;
+            for (int dx = -1; dx <= 1; dx += 2) {
+                for (int dy = -1; dy <= 1; dy += 2) {
+                    for (int dz = -1; dz <= 1; dz += 2) {
+
+                        math::Vec3f childCenter = center + math::Vec3f(dx * half.x() * 0.5f,
+                                                        dy * half.y() * 0.5f,
+                                                        dz * half.z() * 0.5f);
+
+                        math::Vec3f childHalf = half * 0.5f;
+
+                        volumes[index++] = BoundingBox(childCenter.x(), childCenter.y(), childCenter.z(), childHalf.x(), childHalf.y(), childHalf.z());
                     }
                 }
-            } 
-            return volumes;           
-        }     
+            }  
+            return volumes;
+        }
     }
-}
+}       
+       

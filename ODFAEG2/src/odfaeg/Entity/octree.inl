@@ -12,22 +12,79 @@ namespace odfaeg {
         template <typename Object>
         void Octree<Object>::addObject(Object object, physic::BoundingBox objectVolume) {                              
             //std::cout<<"add object"<<std::endl;
-            for (unsigned int i = 0; i < nodes.size(); i++) {
-                
-                if (nodes[i].leaf && !contains(nodes[i], object) && nodes[i].volume.intersects(objectVolume)) {
-                    /*std::cout<<"volume : "<<nodes[0].volume.getPosition()<<","<<nodes[0].volume.getSize()<<std::endl;
-                    std::cout<<"object volume : "<<objectVolume.getPosition()<<","<<objectVolume.getSize()<<std::endl;*/
-                    nodes[i].objects.push_back(object);
-                    nodes[i].objectVolumes.push_back(objectVolume);
-                }               
-            }
-            //std::cout<<"ok 1"<<std::endl;
-            build(0);
+            insert(0, object, objectVolume);
             /*for (unsigned int i = 0; i < nodes.size(); i++) {
-                if (nodes[i].objects.size() > maxObjectsPerNode)
-                std::cout<<maxObjectsPerNode<<","<<nodes[i].objects.size()<<" "<<nodes[i].objectVolumes.size()<<std::endl;
+                if (nodes[i].leaf && nodes[i].objects.size() > maxObjectsPerNode) {
+                std::cout<<"leaf ? "<<nodes[i].leaf<<","<<maxObjectsPerNode<<","<<nodes[i].objects.size()<<" "<<nodes[i].objectVolumes.size()<<std::endl;
+                system("PAUSE");
+                }
             }*/
             //std::cout<<"ok 2"<<std::endl;            
+        }
+        template <typename Object>
+        void Octree<Object>::insert(size_t id, Object object, physic::BoundingBox objectVolume) {
+            Node& node = nodes[id];
+
+            if (!node.leaf) {
+                // descendre dans les enfants qui intersectent
+                for (auto childIndex : node.children) {
+                    Node& child = nodes[childIndex];
+                    if (child.volume.intersects(objectVolume)) {
+                        //std::cout<<"insert"<<std::endl;
+                        insert(childIndex, object, objectVolume);
+                    }
+                }
+                return;
+            }
+
+            // feuille
+            //std::cout<<"add object"<<std::endl;
+            if (!contains(node, object)) {
+                node.objects.push_back(object);
+                node.objectVolumes.push_back(objectVolume);
+            }
+
+            if (node.objects.size() > maxObjectsPerNode) {
+                node.leaf = false;
+
+                auto volumes = node.volume.subdiv();
+                /*std::cout<<"child volume : "<<node.volume.getPosition()<<","<<node.volume.getSize()<<std::endl;
+                system("PAUSE");*/
+                // créer les enfants
+                //std::cout<<"créer enfants"<<std::endl;
+                for (unsigned int v = 0; v < 8; v++) {
+                    Node child;
+                    child.id = compteur++;
+                    child.leaf = true;
+                    child.parent = id;
+                    child.volume = volumes[v];
+
+                    nodes.push_back(child);
+                    node.children.push_back(nodes.size() - 1);
+                }
+                //std::cout<<"enfants ok"<<std::endl;
+
+                // redistribuer les objets
+                for (unsigned int j = 0; j < node.objects.size(); j++) {
+                    for (unsigned int i = 0; i < node.children.size(); i++) {
+
+                        Node& child = nodes[node.children[i]];
+                        /*std::cout<<"child volume : "<<child.volume.getPosition()<<","<<child.volume.getSize()<<std::endl;
+                          std::cout<<"volume : "<<node.objectVolumes[j].getPosition()<<","<<node.objectVolumes[j].getSize()<<std::endl;*/
+
+                        if (child.volume.intersects(node.objectVolumes[j])) {
+                            //std::cout<<"intersects!"<<std::endl;
+                            child.objects.push_back(node.objects[j]);
+                            child.objectVolumes.push_back(node.objectVolumes[j]);
+                            break;
+                       }
+                    }
+                }
+                //std::cout<<"ok"<<std::endl;
+                // vider le node
+                node.objects.clear();
+                node.objectVolumes.clear();
+            }
         }
         template <typename Object>
         void Octree<Object>::build(size_t id) {
@@ -73,9 +130,10 @@ namespace odfaeg {
                     Node& child = nodes[node.children[i]];
                     if (child.objects.size() > maxObjectsPerNode) {
                         build(node.children[i]);
+                                            
                     }
                 }
-            }
+            }                  
         }
         template <typename Object>      
         void Octree<Object>::removeObject(Object object, physic::BoundingBox objectVolume) {

@@ -11,7 +11,7 @@ namespace odfaeg {
 		outputMeshes(GPUContext::instance().getSharedBuffers(OUTPUT_MESHES+registeredRenderTargets.size()*NB_BUFFERS)),
 		outputModelDatas(GPUContext::instance().getSharedBuffers(OUTPUT_MODELS+registeredRenderTargets.size()*NB_BUFFERS)),
 		outputMaterialDatas(GPUContext::instance().getSharedBuffers(OUTPUT_MATERIALS+registeredRenderTargets.size()*NB_BUFFERS)),		
-		meshletsGrid(50, 50, 50)		
+		meshletsGrid(0.5, 0.5, 0.5)		
 		{
 			
 			id = registeredRenderTargets.size();
@@ -568,7 +568,7 @@ namespace odfaeg {
 							system("PAUSE");*/	
 							Meshlet m;
 							m.minVertex = std::numeric_limits<unsigned int>::max();
-							m.maxVertex = 0;
+							m.maxVertex = std::numeric_limits<unsigned int>::min();
 							m.nbIndexes = 0;
 							m.indexOffset = 0;
 							m.lod = l;	
@@ -601,7 +601,7 @@ namespace odfaeg {
 									// Nouveau meshlet
 									m = Meshlet();
 									m.minVertex = std::numeric_limits<unsigned int>::max();
-									m.maxVertex = 0;
+									m.maxVertex = std::numeric_limits<unsigned int>::min();;
 									m.nbIndexes = 0;
 									m.indexOffset = tri * 3;
 									m.lod = l;
@@ -683,9 +683,9 @@ namespace odfaeg {
 								meshletDatas[m].maxs.x() - meshletDatas[m].mins.x(),
 								meshletDatas[m].maxs.y() - meshletDatas[m].mins.y(),
 								meshletDatas[m].maxs.z() - meshletDatas[m].mins.z());
-								//std::cout<<"add : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
-							meshletsGrid.addEntity(meshletDatas[m], volume);
-							//std::cout<<"added!"<<std::endl;
+								std::cout<<"add : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
+								meshletsGrid.addEntity(meshletDatas[m], volume);
+								std::cout<<"added!"<<std::endl;
 							
 						}	
 					}
@@ -719,6 +719,7 @@ namespace odfaeg {
 									cellDatas.push_back(cellData);
 									while (stack.size() > 0) {
 										entity::Octree<Meshlet>::Node node = stack.back();
+										std::cout<<"leaf ? "<<node.leaf<<"size = "<<stack.size()<<std::endl;
 										if (!node.leaf) {
 																			
 											for(unsigned int c = 0; c < node.children.size(); c++) {
@@ -737,7 +738,8 @@ namespace odfaeg {
 												currentClusterId++;
 											}
 										} else {
-											//std::cout<<"leaf"<<std::endl;
+											std::cout<<"leaf"<<std::endl;
+											system("PAUSE");
 											entity::Octree<Meshlet>::Node parent = nodes[node.parent];
 											unsigned int parentCluster = clusterDatas.size()-1;
 											//std::cout<<"size : "<<parent.children.size()<<std::endl;
@@ -776,7 +778,7 @@ namespace odfaeg {
 				unsigned int lastMeshletId = 0;
 				unsigned int count = 0;
 				for (unsigned int m = 0; m < meshletDatas.size(); m++) {
-					//std::cout<<"culter id : "<<meshletDatas[m].clusterId<<","<<clusterDatas.size()<<std::endl;
+					std::cout<<"culter id : "<<meshletDatas[m].clusterId<<","<<clusterDatas.size()<<std::endl;
 					if (count >= clusterDatas[meshletDatas[m].clusterId].meshletCount) {	
 						lastMeshletId = m;
 						count = 0;					
