@@ -74,25 +74,26 @@ namespace odfaeg {
                     for (float k = z; k <= endZ; k+= cellDepth) {
 
                         math::Vec3f pos (i, j, k);
-                        //////////std::cout<<"pos : "<<pos<<std::endl;
+                        //std::cout<<"pos : "<<pos<<std::endl;
 
                         ////////std::cout<<"contains entity"<<std::endl;
                         if (!(containsEntity(entity, pos))) {
+                            //std::cout<<"contains ok"<<std::endl;
 
                             GridCell<Object> *cm = getGridCellAt(pos);
-
+                            //std::cout<<"cm ok"<<std::endl;
                             if (cm == nullptr) {
-                                ////////std::cout<<"create cell map"<<std::endl;
+                                std::cout<<"create cell map"<<std::endl;
                                 createCellMap(pos);
-                                ////////std::cout<<"cell map created"<<std::endl;
-                                ////////std::cout<<"get cell map"<<std::endl;
+                                std::cout<<"cell map created"<<std::endl;
+                                std::cout<<"get cell map"<<std::endl;
                                 cm = getGridCellAt(pos);
-                                ////////std::cout<<"cell map get"<<std::endl;
+                                std::cout<<"cell map get"<<std::endl;
                             }
                             added = true;
                             //std::cout<<"add entity at : "<<objectVolume.getPosition()<<","<<std::endl;
                             cm->addEntity(entity, objectVolume);
-                            ////////std::cout<<"entity added to cell"<<std::endl;
+                            //std::cout<<"entity added to cell"<<std::endl;
 
                             /*if (entity->getType() == "E_BIGTILE")
                               ////////std::cout<<cm->getCoords()<<std::endl;*/

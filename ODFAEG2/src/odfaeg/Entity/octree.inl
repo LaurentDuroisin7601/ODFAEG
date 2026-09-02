@@ -11,6 +11,7 @@ namespace odfaeg {
         }
         template <typename Object>
         void Octree<Object>::addObject(Object object, physic::BoundingBox objectVolume) {                              
+            //std::cout<<"add object"<<std::endl;
             for (unsigned int i = 0; i < nodes.size(); i++) {
                 
                 if (nodes[i].leaf && !contains(nodes[i], object) && nodes[i].volume.intersects(objectVolume)) {
@@ -20,15 +21,19 @@ namespace odfaeg {
                     nodes[i].objectVolumes.push_back(objectVolume);
                 }               
             }
-            build(nodes[0]);            
+            //std::cout<<"ok 1"<<std::endl;
+            build(nodes[0]);
+            //std::cout<<"ok 2"<<std::endl;            
         }
         template <typename Object>
         void Octree<Object>::build(Node& node) {
             if (node.objects.size() > maxObjectsPerNode) {
+                //std::cout<<"subdiv"<<std::endl;
                 node.leaf = false;    
                 physic::BoundingBox volume = node.volume;
                 //std::cout<<"parent volume : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
-                std::array<physic::BoundingBox, 8> volumes = volume.subdiv();                
+                std::array<physic::BoundingBox, 8> volumes = volume.subdiv();    
+                //std::cout<<"subddiv ok : "<<std::endl;
                 for (unsigned int v = 0; v < volumes.size(); v++) {
                     Node child;
                     child.id = compteur;
@@ -37,27 +42,31 @@ namespace odfaeg {
                     
                     child.parent = node.id;
                     child.volume = volumes[v]; 
-                    //std::cout<<"node volume : "<<v<<","<<child.volume.getPosition()<<","<<child.volume.getSize()<<std::endl;
+                    
                     nodes.push_back(child);
                     //std::cout<<"add child : "<<nodes.size()-1<<std::endl;
                     node.children.push_back(nodes.size()-1);
-                }                
-                for (unsigned int i = 0; i < node.objects.size(); i++) {
-                    for (unsigned int j = 0; j < node.children.size(); j++) {
+                }    
+                std::cout<<"subdivided"<<std::endl;            
+                for (unsigned int i = 0; i < node.children.size(); i++) {
+                    for (unsigned int j = 0; j < node.objects.size(); j++) {
                         //std::cout<<"size : "<<nodes.size()<<"child : "<<node.children[j]<<std::endl;
                        /* std::cout<<"node volume : "<<nodes[node.children[j]].volume.getPosition()<<","<<nodes[node.children[j]].volume.getSize()<<std::endl;
                         std::cout<<"object volume : "<<node.objectVolumes[i].getPosition()<<","<<node.objectVolumes[i].getSize()<<std::endl;*/
-                        if (nodes[node.children[j]].volume.intersects(node.objectVolumes[i])) {
-                            std::cout<<"rebuild : "<<node.objects.size()<<std::endl;
-                            nodes[node.children[j]].objects.push_back(node.objects[i]);
-                            nodes[node.children[j]].objectVolumes.push_back(node.objectVolumes[i]);
+                        if (nodes[node.children[i]].volume.intersects(node.objectVolumes[j])) {
+                            //std::cout<<"rebuild : "<<node.objects.size()<<std::endl;
+                            nodes[node.children[i]].objects.push_back(node.objects[j]);
+                            nodes[node.children[i]].objectVolumes.push_back(node.objectVolumes[j]);
+                            
                                                        
                         }                                               
                     }
+                    //build(nodes[node.children[i]]);
                 }
-                for (unsigned int j = 0; j < node.children.size(); j++) {
-                    Node& child = nodes[node.children[j]];
-                    
+                std::cout<<"objects added"<<std::endl;
+                for (unsigned int i = 0; i < node.children.size(); i++) {
+                    Node& child = nodes[node.children[i]];
+                    //std::cout<<"rebuild"<<std::endl;
                     if (child.objects.size() > maxObjectsPerNode) {
                         
                         build(child);

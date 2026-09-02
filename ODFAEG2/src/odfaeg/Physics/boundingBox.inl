@@ -514,10 +514,11 @@ namespace odfaeg {
             std::array<BoundingBox, 8> volumes;
             unsigned int index = 0;
             math::Vec3f position = points[0];
-            for (float x = position.x(); x < position.x() + width; x+= width * 0.5f) {
-                for (float y = position.y(); y < position.y() + height; y+= height * 0.5f) {
-                    for (float z = position.z(); z < position.z() + depth; z+= depth * 0.5f) {
-                        //std::cout<<"x : "<<x<<std::endl;
+            float x, y, z;
+            for (unsigned int subX = 0, x = position.x(); subX < 2; x+= width * 0.5f, subX++) {
+                for (unsigned int subY = 0, y = position.y(); subY < 2; y+= height * 0.5f, subY++) {
+                    for (unsigned int subZ = 0, z = position.z(); subZ < 2; z+= depth * 0.5f, subZ++) {
+                        //std::cout<<"index : "<<index<<"x : "<<x<<" y : "<<y<<" z : "<<z<<std::endl;
                         volumes[index] = BoundingBox(x, y, z, width * 0.5f, height * 0.5f, depth * 0.5f);
                         index++;
                         

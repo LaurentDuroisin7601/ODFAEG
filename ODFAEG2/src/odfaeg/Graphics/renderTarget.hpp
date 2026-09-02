@@ -118,7 +118,13 @@ namespace odfaeg {
 				unsigned int clusterId;	
 				unsigned int lod;	
 				bool operator==(const Meshlet& other) const {
-					return id == other.id;
+					return id == other.id 
+					&& mins.x() == other.mins.x()
+					&& mins.y() == other.mins.y()
+					&& mins.z() == other.mins.z()
+					&& maxs.x() == other.maxs.x()
+					&& maxs.y() == other.maxs.y()
+					&& maxs.z() == other.maxs.z();
 				}						
 			};			
 			struct ModelData {

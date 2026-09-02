@@ -683,9 +683,13 @@ namespace odfaeg {
 								meshletDatas[m].maxs.x() - meshletDatas[m].mins.x(),
 								meshletDatas[m].maxs.y() - meshletDatas[m].mins.y(),
 								meshletDatas[m].maxs.z() - meshletDatas[m].mins.z());
+								//std::cout<<"add : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
 							meshletsGrid.addEntity(meshletDatas[m], volume);
+							//std::cout<<"added!"<<std::endl;
+							
 						}	
 					}
+					
 					
 					math::Vec3f gridPos = meshletsGrid.getMins();
 					math::Vec3f gridSize = meshletsGrid.getSize();					
@@ -717,7 +721,7 @@ namespace odfaeg {
 										if (!node.leaf) {
 																			
 											for(unsigned int c = 0; c < node.children.size(); c++) {
-												//std::cout<<"not leaf : "<<node.children.size()<<","<<c<<","<<nodes[node.children[c]].leaf<<std::endl;													
+												std::cout<<"not leaf : "<<node.children.size()<<","<<c<<","<<nodes[node.children[c]].leaf<<std::endl;													
 												Cluster childClusterData;												
 												childClusterData.id = currentClusterId;
 												childClusterData.volume.center = nodes[node.children[c]].volume.getCenter();
