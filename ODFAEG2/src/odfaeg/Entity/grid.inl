@@ -572,7 +572,8 @@ namespace odfaeg {
         }
         template<typename Object>
         math::Vec3f GridMap<Object>::getSize() {
-            return math::Vec3f (maxX - minX, maxY - minY, maxZ - minZ);
+            
+            return (casesMap.size() == 0) ? math::Vec3f(0, 0, 0) : math::Vec3f (maxX - minX+1, maxY - minY+1, maxZ - minZ+1);
         }
         template<typename Object>
         vector<GridCell<Object>*> GridMap<Object>::getNeightbours(Object object, GridCell<Object> *cell, bool getCellOnPassable) {

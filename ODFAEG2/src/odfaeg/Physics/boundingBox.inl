@@ -518,6 +518,7 @@ namespace odfaeg {
                 for (unsigned int y = position.y(); y < position.y() + height; y+= height * 0.5f) {
                     for (unsigned int z = position.z(); z < position.z() + depth; z+= depth * 0.5f) {
                         volumes[index] = BoundingBox(x, y, z, width * 0.5f, height * 0.5f, depth * 0.5f);
+                        index++;
                         
                     }
                 }

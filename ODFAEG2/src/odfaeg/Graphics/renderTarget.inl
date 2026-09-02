@@ -689,18 +689,22 @@ namespace odfaeg {
 					
 					math::Vec3f gridPos = meshletsGrid.getMins();
 					math::Vec3f gridSize = meshletsGrid.getSize();					
-					//Ballayage de la grille.				
+					//Ballayage de la grille.
+					//std::cout<<gridPos<<","<<gridSize<<std::endl;				
 					for (unsigned int x = gridPos.x(); x < gridPos.x() + gridSize.x(); x++) {
 						for (unsigned int y = gridPos.y(); y < gridPos.y() + gridSize.y(); y++) {
 							for (unsigned int z = gridPos.x(); z < gridPos.x() + gridSize.z(); z++) {
 								entity::GridCell<Meshlet>* gridCell = meshletsGrid.getGridCellAtFromCoords(math::Vec3f(x, y, z));
 								//Trou. (Il faut les gérer pour le ballayage GPU)
+								
 								if (gridCell == nullptr || gridCell->empty()) {
+									//std::cout<<"empty : "<<gridCell<<std::endl;
 									CellData emptyCell;
 									emptyCell.clusterId = -1;
 									cellDatas.push_back(emptyCell);
 								//Cluster rempli. 
 								} else {
+									
 									//Ajout du root node et des enfants + création des clusters et assignation des ids.
 									std::deque<entity::Octree<Meshlet>::Node> nodes = gridCell->getOctreeNodes();
 									std::deque<entity::Octree<Meshlet>::Node> stack;
@@ -710,41 +714,47 @@ namespace odfaeg {
 									cellDatas.push_back(cellData);
 									while (stack.size() > 0) {
 										entity::Octree<Meshlet>::Node node = stack.back();
-										if (!node.leaf) {										
+										if (!node.leaf) {
+																			
 											for(unsigned int c = 0; c < node.children.size(); c++) {
-												
+												//std::cout<<"not leaf : "<<node.children.size()<<","<<c<<","<<nodes[node.children[c]].leaf<<std::endl;													
 												Cluster childClusterData;												
 												childClusterData.id = currentClusterId;
 												childClusterData.volume.center = nodes[node.children[c]].volume.getCenter();
 												childClusterData.volume.size = nodes[node.children[c]].volume.getSize();												
-												clusterDatas[clusterDatas.size()-1].children[c] = currentClusterId;
+												
 												childClusterData.leaf = 0;												
 												clusterDatas.push_back(childClusterData);
 												stack.push_back(nodes[node.children[c]]);
+												clusterDatas[clusterDatas.size()-1].children[c] = clusterDatas.size();
 												currentClusterId++;
 											}
 										} else {
+											//std::cout<<"leaf"<<std::endl;
 											entity::Octree<Meshlet>::Node parent = nodes[node.parent];
 											unsigned int parentCluster = clusterDatas.size()-1;
 											for (unsigned int c = 0; c < parent.children.size(); c++) {
-												for (unsigned int i = 0; i < nodes[parent.children[c]].objects.size(); i++) {												
-													meshletDatas[nodes[parent.children[c]].objects[i].id].clusterId = currentClusterId;
-													
+												for (unsigned int o = 0; o < nodes[parent.children[c]].objects.size(); o++) {												
+													meshletDatas[nodes[parent.children[c]].objects[o].id].clusterId = clusterDatas.size();
+													//std::cout<<"o : "<<parent.id<<" "<<nodes[parent.children[c]].objects.size()<<std::endl;
 													Cluster childClusterData;
 													childClusterData.id = currentClusterId;
 													childClusterData.volume.center = nodes[parent.children[c]].volume.getCenter();
 													childClusterData.volume.size = nodes[parent.children[c]].volume.getSize();
 													childClusterData.meshletCount = nodes[parent.children[c]].objects.size();
-													std::cout<<"cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
+													//std::cout<<"cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
 													childClusterData.leaf = 1;
 													childClusterData.lodLevel = lod;
-													clusterDatas[parentCluster].children[c] = currentClusterId;
+													clusterDatas[parentCluster].children[c] = clusterDatas.size();
 													clusterDatas.push_back(childClusterData);
-													currentClusterId++;													
+													currentClusterId++;	
+													//std::cout<<"size : "<<stack.size()<<std::endl;
+													if (stack.size() > 0)
+														stack.pop_back();												
 												}											
 											}
 										}
-										stack.pop_back();
+										
 									}
 								}
 							}
@@ -756,7 +766,8 @@ namespace odfaeg {
 				unsigned int clusterMeshletOffset = 0;
 				unsigned int lastMeshletId = 0;
 				unsigned int count = 0;
-				for (unsigned int m = 0; m < meshletDatas.size(); m++) {	
+				for (unsigned int m = 0; m < meshletDatas.size(); m++) {
+					//std::cout<<"culter id : "<<meshletDatas[m].clusterId<<","<<clusterDatas.size()<<std::endl;
 					if (count >= clusterDatas[meshletDatas[m].clusterId].meshletCount) {	
 						lastMeshletId = m;
 						count = 0;					
