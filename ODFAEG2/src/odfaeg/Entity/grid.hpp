@@ -33,7 +33,7 @@ namespace odfaeg {
             math::Vec3f getMins ();
             GridCell<Object>* getGridCellAt (math::Vec3f point);            
             math::Vec3f getCoordinatesAt(math::Vec3f &point);
-            std::vector<GridCell<Object>*> getCasesMap ();
+            std::vector<GridCell<Object>> getCasesMap ();
             void checkExts ();
             math::Vec3f getSize();
             vector<GridCell<Object>*> getNeightbours(Object object, GridCell<Object> *cell, bool getCellOnPassable);
@@ -41,7 +41,7 @@ namespace odfaeg {
             void clear();
             ~GridMap ();
             private:
-            std::vector<GridCell<Object>*> casesMap;
+            std::vector<GridCell<Object>> casesMap;
             int nbCasesPerRow, nbCasesPerCol;
             int minX, minY, minZ, maxX, maxY, maxZ;
             float cellWidth, cellHeight, cellDepth;

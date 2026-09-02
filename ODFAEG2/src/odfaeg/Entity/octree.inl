@@ -76,7 +76,7 @@ namespace odfaeg {
                             //std::cout<<"intersects!"<<std::endl;
                             child.objects.push_back(node.objects[j]);
                             child.objectVolumes.push_back(node.objectVolumes[j]);
-                            break;
+                            //break;
                        }
                     }
                 }

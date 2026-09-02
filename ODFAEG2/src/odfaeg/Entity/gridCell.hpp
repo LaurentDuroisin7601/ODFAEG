@@ -6,6 +6,7 @@ namespace odfaeg {
         template <typename Object>
         class GridCell {
             public :
+                GridCell ();
                 GridCell (physic::BoundingBox volume, math::Vec3f coords);
                 math::Vec3f getCoords ();
                 void addEntity (Object entity, physic::BoundingBox objectVolume);

@@ -1,6 +1,13 @@
 namespace odfaeg {
     namespace entity {
         using namespace std;
+         template <typename Object>
+        GridCell<Object>::GridCell () : octree(physic::BoundingBox(0, 0, 0, 0, 0, 0), 8) {
+            passable = true;
+            stateChanged = false;
+            traveled = false;
+
+        }
         template <typename Object>
         GridCell<Object>::GridCell (physic::BoundingBox volume, math::Vec3f coords) : octree(volume, 8) {
             this->volume = volume;
