@@ -90,6 +90,10 @@ namespace odfaeg {
             }
             is_not = false;
         }
+        Action::Action(core::FastDelegate<bool> trigger) : type(TRIGGER) { 
+            leaf = true;           
+            this->trigger = std::make_unique<core::FastDelegate<bool>>(trigger);
+        }
         Action::Action(EVENT_TYPE type, Action leftChild, Action rightChild) {
             leaf = false;
             this->type = type;
@@ -190,6 +194,11 @@ namespace odfaeg {
                     }
                     return false;
 
+                } else if (type == TRIGGER) {
+                    if (!is_not)
+                        return trigger != nullptr && (*trigger)();
+                    else
+                        return trigger != nullptr && !(*trigger)();
                 }
                 return false;
             }

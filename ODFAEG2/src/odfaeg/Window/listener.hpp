@@ -152,11 +152,9 @@ namespace odfaeg {
                 std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                 std::map<std::string, Command>::iterator it;
                 for (it = commands.begin(); it != commands.end(); it++) {                    
-                    Action* action = it->second.getAction();
-                    if (action != nullptr) {
-                        action->pushEvent(event);
-                        action->setPressed(event);
-                    }
+                    Action& action = it->second.getAction();
+                    action.pushEvent(event);
+                    action.setPressed(event);
                 }
             }
             void stop() {

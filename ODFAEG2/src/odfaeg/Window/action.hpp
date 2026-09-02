@@ -8,6 +8,7 @@
 #include "iKeyboard.hpp"
 #include "iMouse.hpp"
 #include "iEvent.hpp"
+#include "../Core/delegate.hpp"
 /*
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -41,8 +42,10 @@ namespace odfaeg {
             enum EVENT_TYPE {
                 KEY_PRESSED_ONCE, KEY_HELD_DOWN, KEY_RELEASED,
                 MOUSE_BUTTON_PRESSED_ONCE, MOUSE_BUTTON_HELD_DOWN, MOUSE_BUTTON_RELEASED,
-                JOYSTICK_BUTTON_PRESSED_ONCE, JOYSTICK_BUTTON_HELD_DOWN, JOYSTICK_BUTTON_RELEASED, CLOSED, RESIZED, LOST_FOCUS, GAIGNED_FOCUS, TEXT_ENTERED, MOUSE_WHEEL_MOVED, MOUSE_MOVED_, MOUSE_ENTERED, MOUSE_LEFT, JOYSTICK_MOVED, JOYSTICK_CONNECTED, JOYSTICK_DISCONNECTED,
-                COMBINED_WITH_OR, COMBINED_WITH_XOR, COMBINED_WITH_AND
+                JOYSTICK_BUTTON_PRESSED_ONCE, JOYSTICK_BUTTON_HELD_DOWN, JOYSTICK_BUTTON_RELEASED,
+                CLOSED, RESIZED, LOST_FOCUS, GAIGNED_FOCUS, TEXT_ENTERED, MOUSE_WHEEL_MOVED, MOUSE_MOVED_,
+                MOUSE_ENTERED, MOUSE_LEFT, JOYSTICK_MOVED, JOYSTICK_CONNECTED, JOYSTICK_DISCONNECTED,
+                TRIGGER, COMBINED_WITH_OR, COMBINED_WITH_XOR, COMBINED_WITH_AND
             };
             /**\fn Action (EVENT_TYPE)
             * \brief constructor (define an action with an event type)
@@ -61,6 +64,7 @@ namespace odfaeg {
             *  \param button : the button of the mouseevent.
             */
             Action(EVENT_TYPE type, IMouse::Button button);
+            Action(core::FastDelegate<bool> trigger);
             /**\fn bool andComparator (Action *a1, Action *a2)
             *  \brief check if two actions are triggered.
             *  \param a1 : the first action. (the left child)
@@ -142,6 +146,16 @@ namespace odfaeg {
             void pushEvent(IEvent& event);
             void clearEvents();
             void removeEvent(IEvent& event);
+            template <typename... A>
+            void setSigParams(A&&... args) {
+                if (trigger != nullptr)
+                    trigger->setParams(std::forward<A>(args)...);
+            }
+            template <typename... A>
+            void bindSigParams(A&&... args) {
+                if (trigger != nullptr)
+                    trigger->bind(std::forward<A>(args)...);
+            }
         private:
             /**\fn bool equalEvent (window::IEvent event, window::IEvent other)
             *  \brief compare two window::IEvents. (The events are equal if the event's types and params are equal)
@@ -157,6 +171,7 @@ namespace odfaeg {
             std::function<bool(Action*, Action&, Action&)> comparator;/**A pointer to the function which's used to compare two actions. (For combined actions only)*/
             bool is_not; /**<determine if the isTriggered function have to return true or false if the action is triggered*/
             std::vector<window::IEvent> events;
+            std::unique_ptr<core::FastDelegate<bool>> trigger;
         };
     }
 }

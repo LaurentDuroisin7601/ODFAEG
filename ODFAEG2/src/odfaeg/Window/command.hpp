@@ -37,26 +37,7 @@ namespace odfaeg
             *  \param action : the action on which we want to bind the slot function.
             *  \param FastDelegate<void> the function to invoke throw the delegate when the action of the command is triggered.
             */
-            Command(Action action, core::FastDelegate<void> delegate);
-            /**
-                \fn Command(FastDelegate<bool> trigger, FastDelegate<void> command)
-              \brief Constructor :Construct a command with a trigger and a slot function
-            *  \param FastDelegate<bool> : the function to invoke to check if the command is triggered.
-            *  \param FastDelegate<void> the function to invoke throw the delegate when the command is triggered.
-            */
-            Command(core::FastDelegate<bool> trigger, core::FastDelegate<void> slot);
-            /** \fn Command(Action action, FastDelegate<bool> trigger, FastDelegate<void> command)
-            *  \brief Constructor : Construct a command with an action, a trigger function and a slot function.
-            *  \param action : the action on which we want to bind the function.
-            *  \param FastDelegate<bool> : the function to invoke to check if the command is triggered.
-            *  \param FastDelegate<void> the function to invoke throw the delegate when the command is triggered.
-            */
-            Command(Action action, core::FastDelegate<bool> trigger, core::FastDelegate<void> slot);
-            /**\fn containsEvent (window::IEvent &event)
-            *  \brief check if the window::IEvent is in the events stack of the command.
-            *  \param the window::IEvent to check in.
-            *  \return true if the window::IEvent is in the events stack, false otherwise.
-            */
+            Command(Action action, core::FastDelegate<void> delegate);            
             Command(const Command& other);
             //bool containsEvent (window::IEvent &event);
             /** \fn bool isTriggered()
@@ -95,8 +76,7 @@ namespace odfaeg
             void removeEvent(IEvent& event);
             template <typename... A>
             void setSigParams(A&&... args) {
-                if (trigger != nullptr)
-                    trigger->setParams(std::forward<A>(args)...);
+                action.setSigParams(std::forward<A>(args)...);
             }
             template <typename... A>
             void setSlotParams(A&&... args) {
@@ -104,8 +84,7 @@ namespace odfaeg
             }
             template <typename... A>
             void bindSigParams(A&&... args) {
-                if (trigger != nullptr)
-                    trigger->bind(std::forward<A>(args)...);
+                action.bindSigParams(std::forward<A>(args)...);
             }
             template <typename... A>
             void bindSlotParams(A&&... args) {
@@ -115,7 +94,7 @@ namespace odfaeg
             *   \brief change params of a command.
             *   \param A... args : the arguments of the command's members functions to pass when the command is called.
             */
-            Action* getAction();
+            Action& getAction();
             Command& operator= (const Command& other);
             static bool equalEvent(IEvent event, IEvent other);
             void setName(std::string name);
@@ -133,11 +112,9 @@ namespace odfaeg
             */
 
             /** < the action mapped to the command.*/
-            std::unique_ptr<Action> action;
+            Action action;
             /** < the slot function mapped to the command.*/
-            core::FastDelegate<void> slot;
-            /** < the trigger mapped to the command.*/
-            std::unique_ptr<core::FastDelegate<bool>> trigger;
+            core::FastDelegate<void> slot;            
             /** < the ODFAEG events generated.*/
             //static std::vector<window::IEvent> events;
             std::string name;

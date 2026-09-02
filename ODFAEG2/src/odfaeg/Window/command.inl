@@ -1,65 +1,35 @@
 namespace odfaeg
 {
     namespace window {
-        Command::Command(Action action, core::FastDelegate<void> slot) : slot(slot)
+        Command::Command(Action action, core::FastDelegate<void> slot) : slot(slot), action(action)
         {
-            this->action = std::make_unique<Action>(action);
-            this->trigger = nullptr;
+                      
         }
         void Command::setName(std::string name) {
             this->name = name;
+        }       
+        Command::Command(const Command& other) : slot(other.slot), action(action) {           
+          
         }
-        Command::Command(Action action, core::FastDelegate<bool> trigger, core::FastDelegate<void> slot) : slot(slot) {
-            this->action = std::make_unique<Action>(action);
-            this->trigger = std::make_unique<core::FastDelegate<bool>>(trigger);
-        }
-        Command::Command(core::FastDelegate<bool> trigger, core::FastDelegate<void> slot) : slot(slot) {
-            this->trigger = std::make_unique<core::FastDelegate<bool>>(trigger);
-        }
-        Command::Command(const Command& other) : slot(other.slot) {
-            if (other.action != nullptr) {
-                action = std::make_unique<Action>(*other.action);
-            }
-            if (other.trigger != nullptr)
-                trigger = std::make_unique <core::FastDelegate<bool >> (*other.trigger);
-            name = other.name;
-        }
-        
-
         bool Command::isTriggered()
-        {            
-            if (trigger == nullptr && action != nullptr)
-            {                
-                return action->isTriggered();
-            }
-            if (trigger != nullptr && action != nullptr) {
-                return (*trigger)() && action->isTriggered();
-            }
-            if (trigger != nullptr && action == nullptr) {
-                return (*trigger)();
-            }
-            return false;
+        {              
+            return action.isTriggered();
         }
-
         bool Command::containsBufferEvent(window::IEvent& event) {
-            if (action != nullptr)
-                return action->containsEvent(event);
-            return false;
+            return action.containsEvent(event);            
         }
 
         void Command::clearEventsStack()
         {
-            if (action != nullptr)
-                action->clearEvents(); 
+           action.clearEvents(); 
         }
 
         void Command::pushEvent(window::IEvent& event)
         {
-            if (action != nullptr)
-                action->pushEvent(event);            
+           action.pushEvent(event);            
         }
-        Action* Command::getAction() {
-            return action.get();
+        Action& Command::getAction() {
+            return action;
         }
         void Command::operator()()
         {
@@ -67,8 +37,7 @@ namespace odfaeg
         }
 
         void Command::removeEvent(IEvent& event) {            
-            if (action != nullptr)
-                action->removeEvent(event);
+             action.removeEvent(event);
         }
         bool Command::equalEvent(IEvent event, IEvent other) {
             if (event.type != other.type) {
@@ -103,10 +72,7 @@ namespace odfaeg
         Command& Command::operator=(const Command& other) {
             if (this != &other) {
                 name = other.name;
-                if (other.action != nullptr)
-                    action = std::make_unique<Action>(*other.action);
-                if (other.trigger != nullptr)
-                    trigger = std::make_unique<core::FastDelegate<bool>>(*other.trigger);
+                action = other.action;
                 slot = core::FastDelegate<void>(other.slot);
             }
             return *this;
