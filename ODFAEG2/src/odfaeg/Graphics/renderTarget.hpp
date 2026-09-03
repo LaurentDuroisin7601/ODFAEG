@@ -204,11 +204,14 @@ namespace odfaeg {
 				int currentImageIndex;
 			};
 			struct CullingBatchingPC {
-			    /*math::Matrix4f projMatrix;
-            	math::Matrix4f viewMatrix;*/
-				int currentFrame;
-				//int totalSubmeshCount;
+			    unsigned int currentFrame;
+				unsigned int gridCellCount;    
+				alignas(16) math::Vec3f gridCellSize;
+				alignas(16) math::Vec3f nbCellsPerRow;    
+				alignas(16) math::Vec3f gridSize;   
+				alignas(16) math::Vec3f gridPos;
 			};
+			
 			inline static std::mutex mtx = std::mutex();
 			inline static std::condition_variable cv = std::condition_variable();	
 			void addGameObject(Mesh* objet);
