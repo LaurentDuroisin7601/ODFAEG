@@ -12,11 +12,14 @@ namespace odfaeg {
         template <typename Object>
         void Octree<Object>::addObject(Object object, physic::BoundingBox objectVolume) {                              
             //std::cout<<"add object"<<std::endl;
+            
+            
+            
             insert(0, object, objectVolume);
             /*for (unsigned int i = 0; i < nodes.size(); i++) {
-                if (nodes[i].leaf && nodes[i].objects.size() > maxObjectsPerNode) {
+                if (nodes[i].leaf && nodes[i].objects.size() > 0) {
                 std::cout<<"leaf ? "<<nodes[i].leaf<<","<<maxObjectsPerNode<<","<<nodes[i].objects.size()<<" "<<nodes[i].objectVolumes.size()<<std::endl;
-                system("PAUSE");
+                //system("PAUSE");
                 }
             }*/
             //std::cout<<"ok 2"<<std::endl;            
@@ -25,65 +28,63 @@ namespace odfaeg {
         void Octree<Object>::insert(size_t id, Object object, physic::BoundingBox objectVolume) {
             Node& node = nodes[id];
 
-            if (!node.leaf) {
-                // descendre dans les enfants qui intersectent
-                for (auto childIndex : node.children) {
-                    Node& child = nodes[childIndex];
-                    if (child.volume.intersects(objectVolume)) {
-                        //std::cout<<"insert"<<std::endl;
-                        insert(childIndex, object, objectVolume);
+            if (node.volume.intersects(objectVolume)) {
+                    
+                    
+                if (!node.leaf) {
+                    for (unsigned int j = 0; j < node.children.size(); j++) {
+                        Node& child = nodes[node.children[j]];
+                        if (!contains(child, object) && child.volume.intersects(objectVolume)) {
+                            //std::cout<<"insert object : "<<j<<std::endl;
+                            insert(node.children[j], object, objectVolume);
+                            return;
+                        }
                     }
-                }
-                return;
-            }
-
-            // feuille
-            //std::cout<<"add object"<<std::endl;
-            if (!contains(node, object)) {
+                } 
                 node.objects.push_back(object);
                 node.objectVolumes.push_back(objectVolume);
-            }
+                //std::cout<<"build octree"<<std::endl;
+                if (node.objects.size() > maxObjectsPerNode) {
+                    node.leaf = false;
 
-            if (node.objects.size() > maxObjectsPerNode) {
-                node.leaf = false;
+                    auto volumes = node.volume.subdiv();
+                    /*std::cout<<"child volume : "<<node.volume.getPosition()<<","<<node.volume.getSize()<<std::endl;
+                    system("PAUSE");*/
+                    // créer les enfants
+                    //std::cout<<"créer enfants"<<std::endl;
+                    for (unsigned int v = 0; v < 8; v++) {
+                        Node child;
+                        child.id = compteur++;
+                        child.leaf = true;
+                        child.parent = id;
+                        child.volume = volumes[v];
 
-                auto volumes = node.volume.subdiv();
-                /*std::cout<<"child volume : "<<node.volume.getPosition()<<","<<node.volume.getSize()<<std::endl;
-                system("PAUSE");*/
-                // créer les enfants
-                //std::cout<<"créer enfants"<<std::endl;
-                for (unsigned int v = 0; v < 8; v++) {
-                    Node child;
-                    child.id = compteur++;
-                    child.leaf = true;
-                    child.parent = id;
-                    child.volume = volumes[v];
-
-                    nodes.push_back(child);
-                    node.children.push_back(nodes.size() - 1);
-                }
-                //std::cout<<"enfants ok"<<std::endl;
-
-                // redistribuer les objets
-                for (unsigned int j = 0; j < node.objects.size(); j++) {
-                    for (unsigned int i = 0; i < node.children.size(); i++) {
-
-                        Node& child = nodes[node.children[i]];
-                        /*std::cout<<"child volume : "<<child.volume.getPosition()<<","<<child.volume.getSize()<<std::endl;
-                          std::cout<<"volume : "<<node.objectVolumes[j].getPosition()<<","<<node.objectVolumes[j].getSize()<<std::endl;*/
-
-                        if (child.volume.intersects(node.objectVolumes[j])) {
-                            //std::cout<<"intersects!"<<std::endl;
-                            child.objects.push_back(node.objects[j]);
-                            child.objectVolumes.push_back(node.objectVolumes[j]);
-                            //break;
-                       }
+                        nodes.push_back(child);
+                        node.children.push_back(nodes.size() - 1);
                     }
-                }
-                //std::cout<<"ok"<<std::endl;
-                // vider le node
-                node.objects.clear();
-                node.objectVolumes.clear();
+                    //std::cout<<"enfants ok"<<std::endl;
+
+                    // redistribuer les objets
+                    for (unsigned int j = 0; j < node.objects.size(); j++) {
+                        for (unsigned int k = 0; k < node.children.size(); k++) {
+
+                            Node& child = nodes[node.children[k]];
+                            /*std::cout<<"child volume : "<<child.volume.getPosition()<<","<<child.volume.getSize()<<std::endl;
+                            std::cout<<"volume : "<<node.objectVolumes[j].getPosition()<<","<<node.objectVolumes[j].getSize()<<std::endl;*/
+
+                            if (child.volume.intersects(node.objectVolumes[j])) {
+                                //std::cout<<"intersects!"<<std::endl;
+                                child.objects.push_back(node.objects[j]);
+                                child.objectVolumes.push_back(node.objectVolumes[j]);
+                                //break;
+                            }
+                        }
+                    }
+                    //std::cout<<"ok"<<std::endl;
+                    // vider le node
+                    node.objects.clear();
+                    node.objectVolumes.clear();
+                } 
             }
         }
         template <typename Object>

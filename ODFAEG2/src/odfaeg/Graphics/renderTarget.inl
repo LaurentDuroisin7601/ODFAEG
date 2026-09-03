@@ -683,9 +683,9 @@ namespace odfaeg {
 								meshletDatas[m].maxs.x() - meshletDatas[m].mins.x(),
 								meshletDatas[m].maxs.y() - meshletDatas[m].mins.y(),
 								meshletDatas[m].maxs.z() - meshletDatas[m].mins.z());
-								std::cout<<"add : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
+								//std::cout<<"add : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
 								meshletsGrid.addEntity(meshletDatas[m], volume);
-								std::cout<<"added!"<<std::endl;
+								//std::cout<<"added!"<<std::endl;
 							
 						}	
 					}
@@ -738,8 +738,8 @@ namespace odfaeg {
 												currentClusterId++;
 											}
 										} else {
-											std::cout<<"leaf"<<std::endl;
-											system("PAUSE");
+											std::cout<<"leaf : "<<nodes[node.parent].children.size()<<std::endl;
+											//system("PAUSE");
 											entity::Octree<Meshlet>::Node parent = nodes[node.parent];
 											unsigned int parentCluster = clusterDatas.size()-1;
 											//std::cout<<"size : "<<parent.children.size()<<std::endl;

@@ -88,11 +88,12 @@ namespace odfaeg {
                                 /*std::cout<<"cell map created"<<std::endl;
                                 std::cout<<"get cell map"<<std::endl;*/
                                 cm = getGridCellAt(pos);
-                                //std::cout<<"cell map get"<<std::endl;
+                                
                             }
                             added = true;
                             //std::cout<<"add entity at : "<<objectVolume.getPosition()<<","<<std::endl;
                             cm->addEntity(entity, objectVolume);
+                            //std::cout<<"cell map : "<<cm<<std::endl;
                             //std::cout<<"entity added to cell"<<std::endl;
 
                             /*if (entity->getType() == "E_BIGTILE")
@@ -168,7 +169,7 @@ namespace odfaeg {
         void GridMap<Object>::createCellMap (math::Vec3f &point) {
             ////////std::cout<<"point : "<<point<<std::endl;
             math::Vec3f p = getCoordinatesAt(point);
-            std::cout<<"coords caseP : "<<p<<std::endl;
+            //std::cout<<"coords caseP : "<<p<<std::endl;
 
             /*minX = (coordsCaseP.x < minX) ? coordsCaseP.x : minX;
             minY = (coordsCaseP.y < minY) ? coordsCaseP.y : minY;
