@@ -100,7 +100,7 @@ namespace odfaeg {
 				int id;
 				int lodLevel;
 				int leaf;				
-				std::array<unsigned int, 8> children;
+				std::vector<unsigned int> children;
 			};
 			struct CellData {
 				unsigned int clusterId;

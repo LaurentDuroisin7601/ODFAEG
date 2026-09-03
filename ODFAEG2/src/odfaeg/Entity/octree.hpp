@@ -26,7 +26,7 @@ namespace odfaeg {
             bool contains(Object object);
             bool contains(Node& node, Object object);
             bool empty();
-            std::deque<Node> getNodes();
+            std::deque<Node>& getNodes();
             private :
             void build(size_t id);
             unsigned int maxObjectsPerNode;

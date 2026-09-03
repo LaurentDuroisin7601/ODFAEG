@@ -16,12 +16,14 @@ namespace odfaeg {
             
             
             insert(0, object, objectVolume);
-            for (unsigned int i = 0; i < nodes.size(); i++) {
+            //std::cout<<"nb nodes : "<<nodes.size()<<std::endl;
+            //system("PAUSE");
+            /*for (unsigned int i = 0; i < nodes.size(); i++) {
                 if (nodes[i].leaf && nodes[i].objects.size() > 0) {
                 std::cout<<"leaf ? "<<nodes[i].leaf<<","<<maxObjectsPerNode<<","<<nodes[i].objects.size()<<" "<<nodes[i].objectVolumes.size()<<std::endl;
                 //system("PAUSE");
                 }
-            }
+            }*/
             //std::cout<<"ok 2"<<std::endl;            
         }
         template <typename Object>
@@ -62,6 +64,7 @@ namespace odfaeg {
 
                         nodes.push_back(child);
                         node.children.push_back(nodes.size() - 1);
+                        //std::cout<<"child : "<<node.children[v]<<" id : "<<child.id<<std::endl;
                     }
                     //std::cout<<"enfants ok"<<std::endl;
 
@@ -74,7 +77,8 @@ namespace odfaeg {
                             std::cout<<"volume : "<<node.objectVolumes[j].getPosition()<<","<<node.objectVolumes[j].getSize()<<std::endl;*/
 
                             if (child.volume.intersects(node.objectVolumes[j])) {
-                                //std::cout<<"intersects!"<<std::endl;
+                                /*std::cout<<"intersects!"<<std::endl;
+                                system("PAUSE");*/
                                 child.objects.push_back(node.objects[j]);
                                 child.objectVolumes.push_back(node.objectVolumes[j]);
                                 //break;
@@ -85,6 +89,7 @@ namespace odfaeg {
                     // vider le node
                     node.objects.clear();
                     node.objectVolumes.clear();
+                    //std::cout<<nodes.size()<<std::endl;
                 } 
             }
         }
@@ -241,7 +246,14 @@ namespace odfaeg {
             return false;
         }
         template <typename Object>
-        std::deque<typename Octree<Object>::Node> Octree<Object>::getNodes() {
+        std::deque<typename Octree<Object>::Node>& Octree<Object>::getNodes() {
+            //std::cout<<"octree nb nodes : "<<nodes.size()<<std::endl;
+            /*for (unsigned int i = 0; i < nodes.size(); i++) {
+                if (nodes[i].leaf && nodes[i].objects.size() > 0) {
+                std::cout<<"id : "<<nodes[i].id<<","<<maxObjectsPerNode<<","<<nodes[i].objects.size()<<" "<<nodes[i].objectVolumes.size()<<std::endl;
+                //system("PAUSE");
+                }
+            }*/
             return nodes;
         }
         template <typename Object>
