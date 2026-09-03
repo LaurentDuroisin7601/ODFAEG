@@ -16,12 +16,12 @@ namespace odfaeg {
             
             
             insert(0, object, objectVolume);
-            /*for (unsigned int i = 0; i < nodes.size(); i++) {
+            for (unsigned int i = 0; i < nodes.size(); i++) {
                 if (nodes[i].leaf && nodes[i].objects.size() > 0) {
                 std::cout<<"leaf ? "<<nodes[i].leaf<<","<<maxObjectsPerNode<<","<<nodes[i].objects.size()<<" "<<nodes[i].objectVolumes.size()<<std::endl;
                 //system("PAUSE");
                 }
-            }*/
+            }
             //std::cout<<"ok 2"<<std::endl;            
         }
         template <typename Object>
@@ -40,11 +40,12 @@ namespace odfaeg {
                             return;
                         }
                     }
+                    //return;
                 } 
                 node.objects.push_back(object);
                 node.objectVolumes.push_back(objectVolume);
                 //std::cout<<"build octree"<<std::endl;
-                if (node.objects.size() > maxObjectsPerNode) {
+                if (node.leaf && node.objects.size() > maxObjectsPerNode) {
                     node.leaf = false;
 
                     auto volumes = node.volume.subdiv();

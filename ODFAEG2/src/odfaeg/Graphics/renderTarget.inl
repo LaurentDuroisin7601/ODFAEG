@@ -738,7 +738,7 @@ namespace odfaeg {
 												currentClusterId++;
 											}
 										} else {
-											std::cout<<"leaf : "<<nodes[node.parent].children.size()<<std::endl;
+											//std::cout<<"leaf : "<<nodes[node.parent].children.size()<<std::endl;
 											//system("PAUSE");
 											entity::Octree<Meshlet>::Node parent = nodes[node.parent];
 											unsigned int parentCluster = clusterDatas.size()-1;
