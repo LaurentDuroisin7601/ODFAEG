@@ -27,10 +27,10 @@ struct MaterialData {
     int reflectable;
     int refractable;  
 };
-layout (std430, set = 0, binding = 9) buffer MaterialDataSSBO {
+layout (std430, set = 0, binding = 10) buffer MaterialDataSSBO {
     MaterialData materialData[];
 } materialDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
-layout(set = 0, binding = 10) uniform sampler2D diffuseTextures[MAX_TEXTURES];
+layout(set = 0, binding = 11) uniform sampler2D diffuseTextures[MAX_TEXTURES];
 layout(set = 1, binding = 0) uniform sampler2D specularTextures[MAX_TEXTURES];
 layout(set = 2, binding = 0) uniform sampler2D normalTextures[MAX_TEXTURES];
 layout(set = 3, binding = 0) uniform sampler2D metalnessTextures[MAX_TEXTURES];

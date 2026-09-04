@@ -132,7 +132,7 @@ layout (std430, set = 0, binding = 8) buffer ClustersSSBO {
 } clusterDatas;
 layout (std430, set = 0, binding = 9) buffer VerticesSSBO {
     Vertex vertices[];
-};
+} outputVertices[MAX_FRAMES_IN_FLIGHT];
 vec4 unpackColor(uint c)
 {
     float r = float((c >> 24) & 0xFFu) / 255.0;
@@ -205,7 +205,7 @@ void main() {
     } else {
         SetMeshOutputsEXT(taskData.vertexCount, taskData.primitiveCount);
         for (uint i = 0; i < taskData.vertexCount; i++) {        
-            gl_MeshVerticesEXT[i].gl_Position = vec4(vertices[taskData.vertexOffset+i].position, 1);        
+            gl_MeshVerticesEXT[i].gl_Position = vec4(outputVertices[pc.currentFrame].vertices[taskData.vertexOffset+i].position, 1);        
         }
         for (uint tri = 0; tri < taskData.primitiveCount; tri++) {
             gl_PrimitiveTriangleIndicesEXT[tri*2] = uvec3(tri*4, tri*4+1, tri*4+2);
