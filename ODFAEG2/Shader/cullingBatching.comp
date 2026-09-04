@@ -142,7 +142,11 @@ layout (std430, set = 0, binding = 14) buffer outputInstanceBaseSSBO {
 layout (std140, set = 0, binding = 15) uniform UniformBufferObject {
 	AABB frustrum;			
 	uint nbObjectTypes;
-	uint paddings[3];
+	uint gridCellCount[5];    
+    ivec3 gridCellSize[5];
+    ivec3 nbCellsPerRow[5];    
+    ivec3 gridSize[5];   
+    ivec3 gridPos[5];
 } ubo[MAX_FRAMES_IN_FLIGHT];
 layout (std430, set=0, binding = 16) buffer LodLevelBuffer {
     LODLevel lodLevel[];
