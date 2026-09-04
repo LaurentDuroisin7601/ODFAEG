@@ -692,7 +692,13 @@ namespace odfaeg {
 					
 					
 					math::Vec3f gridPos = meshletsGrid.getMins();
-					math::Vec3f gridSize = meshletsGrid.getSize();					
+					math::Vec3f gridSize = meshletsGrid.getSize();	
+					cullingInfo.gridCellCount[lod] = meshletsGrid.getCasesMap().size();
+					cullingInfo.nbCellsPerRow[lod] = 	math::Vec3f(meshletsGrid.getNbCasesPerRow(), meshletsGrid.getNbCasesPerCol(), 0); 
+					cullingInfo.gridCellSize[lod] = math::Vec3f(meshletsGrid.getCellWidth(), meshletsGrid.getCellHeight(), meshletsGrid.getCellDepth());
+					cullingInfo.gridPos[lod] = gridPos;
+					cullingInfo.gridSize[lod] = gridSize;
+							
 					//Ballayage de la grille.
 					//std::cout<<gridPos<<","<<gridSize<<std::endl;				
 					for (int x = gridPos.x(); x < gridPos.x() + gridSize.x(); x++) {
@@ -2019,6 +2025,7 @@ namespace odfaeg {
 			}
 			Shader* shader = (states.shader == nullptr) ? &defaultRenderingShader : states.shader;
 			viewProjInfos.primitiveType = primitiveType;
+			
 			/*std::cout<<"primitive type : "<<viewProjInfos.primitiveType<<std::endl;
 			system("PAUSE");*/
 			viewProjInfos.currentFrame = getCurrentFrame();

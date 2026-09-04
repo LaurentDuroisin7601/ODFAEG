@@ -172,7 +172,11 @@ namespace odfaeg {
 			struct UBO {
 				AABB frustrum;
 				unsigned int nbEntitiesTypes;
-				uint32_t _pad[3];           // padding pour arriver à 48
+				alignas(16) unsigned int gridCellCount[5];   
+				alignas(16) math::Vec3f gridCellSize[5];
+				alignas(16) math::Vec3f nbCellsPerRow[5];    
+				alignas(16) math::Vec3f gridSize[5];   
+				alignas(16) math::Vec3f gridPos[5];
 			};
 			struct ViewProjMatPC {
 				math::Matrix4f projMatrix;
@@ -204,12 +208,7 @@ namespace odfaeg {
 				int currentImageIndex;
 			};
 			struct CullingBatchingPC {
-			    unsigned int currentFrame;
-				unsigned int gridCellCount;    
-				alignas(16) math::Vec3f gridCellSize;
-				alignas(16) math::Vec3f nbCellsPerRow;    
-				alignas(16) math::Vec3f gridSize;   
-				alignas(16) math::Vec3f gridPos;
+			    unsigned int currentFrame;				
 			};
 			
 			inline static std::mutex mtx = std::mutex();

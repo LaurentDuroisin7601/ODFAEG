@@ -131,12 +131,7 @@ struct MeshLet {
 };
 /*objets en entrée.*/
 layout(push_constant) uniform PushConstant {    
-    uint currentFrame;
-    uint gridCellCount;    
-    ivec3 gridCellSize;
-    ivec3 nbCellsPerRow;    
-    ivec3 gridSize;   
-    ivec3 gridPos;
+    uint currentFrame;    
 } pc;
 layout (std430, set = 0, binding = 0) buffer inputObjectSSBO {
 	Object objects[];
@@ -199,7 +194,11 @@ layout (std430, set = 0, binding = 16) buffer outputVertexSSBO {
 layout (std140, set = 0, binding = 17) uniform UniformBufferObject {
 	AABB frustrum;			
 	uint nbObjectTypes;
-	uint paddings[3];
+	uint gridCellCount[5];    
+    ivec3 gridCellSize[5];
+    ivec3 nbCellsPerRow[5];    
+    ivec3 gridSize[5];   
+    ivec3 gridPos[5];
 } ubo[MAX_FRAMES_IN_FLIGHT];
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 bool intersects (AABB first, AABB second) {
@@ -237,23 +236,23 @@ bool intersects (AABB first, AABB second) {
     }
     return true;
 }
-bool hasNeightbour(ivec3 pos, uint axe) {
+bool hasNeightbour(ivec3 pos, int lod, uint axe) {
     ivec3 offset;
     if (axe == 0) {
-        offset = ivec3(pos.x - pc.gridCellSize.x, pos.y, pos.z);
+        offset = ivec3(pos.x - ubo[pc.currentFrame].gridCellSize[lod].x, pos.y, pos.z);
     } else if (axe == 1) {
-        offset = ivec3(pos.x + pc.gridCellSize.x, pos.y, pos.z);
+        offset = ivec3(pos.x + ubo[pc.currentFrame].gridCellSize[lod].x, pos.y, pos.z);
     } else if (axe == 2) {
-        offset = ivec3(pos.x, pos.y - pc.gridCellSize.y, pos.z);
+        offset = ivec3(pos.x, pos.y - ubo[pc.currentFrame].gridCellSize[lod].y, pos.z);
     } else if (axe == 3) {
-        offset = ivec3(pos.x, pos.y + pc.gridCellSize.y, pos.z);
+        offset = ivec3(pos.x, pos.y + ubo[pc.currentFrame].gridCellSize[lod].y, pos.z);
     } else if (axe == 4) {
-        offset = ivec3(pos.x, pos.y, pos.z - pc.gridCellSize.z);
+        offset = ivec3(pos.x, pos.y, pos.z - ubo[pc.currentFrame].gridCellSize[lod].z);
     } else {
-        offset = ivec3(pos.x, pos.y, pos.z + pc.gridCellSize.z);
+        offset = ivec3(pos.x, pos.y, pos.z + ubo[pc.currentFrame].gridCellSize[lod].z);
     }
-    int cellId = (offset.x / pc.gridCellSize.x) + (offset.y / pc.gridCellSize.y) * pc.nbCellsPerRow.x + (offset.z / pc.gridCellSize.z) * pc.nbCellsPerRow.y;
-    if (offset.x >= pc.gridSize.x || offset.y >= pc.gridSize.y || offset.z >= pc.gridSize.z || cellId  >= pc.gridCellCount || inputGridBuffer.grid[cellId].clusterId == -1) {
+    int cellId = (offset.x / ubo[pc.currentFrame].gridCellSize[lod].x) + (offset.y / ubo[pc.currentFrame].gridCellSize[lod].y) * ubo[pc.currentFrame].nbCellsPerRow[lod].x + (offset.z / ubo[pc.currentFrame].gridCellSize[lod].z) * ubo[pc.currentFrame].nbCellsPerRow[lod].y;
+    if (offset.x >= ubo[pc.currentFrame].gridSize[lod].x || offset.y >= ubo[pc.currentFrame].gridSize[lod].y || offset.z >= ubo[pc.currentFrame].gridSize[lod].z || cellId  >= ubo[pc.currentFrame].gridCellCount[lod] || inputGridBuffer.grid[cellId].clusterId == -1) {
         return false;
     }
     bool hasNVoxel = false;
@@ -292,12 +291,12 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
     int endy = starty + int(frustrum.size.y);
     int endz = startz + int(frustrum.size.z);
     //Ballayage de la grille dans la zone visible.
-    for (int x = startx; x < endx; x+= pc.gridCellSize.x) {
-        for (int y = starty; y < endy; y+= pc.gridCellSize.y) {
-            for (int z = startz; z < endz; z+= pc.gridCellSize.z) {
+    for (int x = startx; x < endx; x+= ubo[pc.currentFrame].gridCellSize[lod].x) {
+        for (int y = starty; y < endy; y+= ubo[pc.currentFrame].gridCellSize[lod].y) {
+            for (int z = startz; z < endz; z+= ubo[pc.currentFrame].gridCellSize[lod].z) {
                 //Root.
-                int cellId = (x / pc.gridCellSize.x) + (y / pc.gridCellSize.y) * pc.nbCellsPerRow.x + (z / pc.gridCellSize.z) * pc.nbCellsPerRow.y;
-                if (x < pc.gridSize.x && y < pc.gridSize.y && z < pc.gridSize.z && inputGridBuffer.grid[cellId].clusterId != -1 && cellId < pc.gridCellCount) {
+                int cellId = (x / ubo[pc.currentFrame].gridCellSize[lod].x) + (y / ubo[pc.currentFrame].gridCellSize[lod].y) * ubo[pc.currentFrame].nbCellsPerRow[lod].x + (z / ubo[pc.currentFrame].gridCellSize[lod].z) * ubo[pc.currentFrame].nbCellsPerRow[lod].y;
+                if (x < ubo[pc.currentFrame].gridSize[lod].x && y < ubo[pc.currentFrame].gridSize[lod].y && z < ubo[pc.currentFrame].gridSize[lod].z && inputGridBuffer.grid[cellId].clusterId != -1 && cellId < ubo[pc.currentFrame].gridCellCount[lod]) {
                     stack[sp++] = inputClustersBuffer.clusters[inputGridBuffer.grid[cellId].clusterId].id;
                     //Case non vide.                   
                     while (sp > 0) {
@@ -351,7 +350,7 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                                     //Voxel. 
                                 } else {
                                     //Voxel visible : on le génère.
-                                    if (!hasNeightbour(ivec3(x, y, z), f)) {                                       
+                                    if (!hasNeightbour(ivec3(x, y, z), lod, f)) {                                       
                                         uint count = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
                                         //Si on dépasse ou on arrive au dernier on créé une nouvelle tâche.
                                         if (count + 4 >= MAX_VERTICES 

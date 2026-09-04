@@ -13,7 +13,7 @@ namespace odfaeg {
             int getCellHeight();            
             int getCellDepth();
             int getNbCasesPerRow ();
-            int getNbCasesPerCol ();
+            int getNbCasesPerCol ();          
             /*void setBaseChangementMatrix(math::BaseChangementMatrix bm);
             math::BaseChangementMatrix getBaseChangementMatrix();*/
             bool addEntity (Object entity, physic::BoundingBox objectVolume);
