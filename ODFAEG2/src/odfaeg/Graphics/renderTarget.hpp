@@ -172,7 +172,7 @@ namespace odfaeg {
 			};
 			struct UBO {
 				AABB frustrum;
-				unsigned int nbEntitiesTypes;
+				alignas(16) unsigned int nbEntitiesTypes;
 				alignas(16) unsigned int gridCellCount[5];   
 				alignas(16) math::Vec3f gridCellSize[5];
 				alignas(16) math::Vec3f nbCellsPerRow[5];    

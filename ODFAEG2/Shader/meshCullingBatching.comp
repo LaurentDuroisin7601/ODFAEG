@@ -21,6 +21,7 @@ struct Object {
 	int modelDataOffset;		   
 	int nbSubMeshes;
 	int renderingType;
+    //int paddings[2];
 };
 struct LODLevel {
     int index_offset;
@@ -195,10 +196,10 @@ layout (std140, set = 0, binding = 17) uniform UniformBufferObject {
 	AABB frustrum;			
 	uint nbObjectTypes;
 	uint gridCellCount[5];    
-    ivec3 gridCellSize[5];
-    ivec3 nbCellsPerRow[5];    
-    ivec3 gridSize[5];   
-    ivec3 gridPos[5];
+    vec3 gridCellSize[5];
+    vec3 nbCellsPerRow[5];    
+    vec3 gridSize[5];   
+    vec3 gridPos[5];
 } ubo[MAX_FRAMES_IN_FLIGHT];
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 bool intersects (AABB first, AABB second) {
@@ -237,7 +238,7 @@ bool intersects (AABB first, AABB second) {
     return true;
 }
 bool hasNeightbour(ivec3 pos, int lod, uint axe) {
-    ivec3 offset;
+    vec3 offset;
     if (axe == 0) {
         offset = ivec3(pos.x - ubo[pc.currentFrame].gridCellSize[lod].x, pos.y, pos.z);
     } else if (axe == 1) {
@@ -251,7 +252,7 @@ bool hasNeightbour(ivec3 pos, int lod, uint axe) {
     } else {
         offset = ivec3(pos.x, pos.y, pos.z + ubo[pc.currentFrame].gridCellSize[lod].z);
     }
-    int cellId = (offset.x / ubo[pc.currentFrame].gridCellSize[lod].x) + (offset.y / ubo[pc.currentFrame].gridCellSize[lod].y) * ubo[pc.currentFrame].nbCellsPerRow[lod].x + (offset.z / ubo[pc.currentFrame].gridCellSize[lod].z) * ubo[pc.currentFrame].nbCellsPerRow[lod].y;
+    int cellId = int((offset.x / ubo[pc.currentFrame].gridCellSize[lod].x) + (offset.y / ubo[pc.currentFrame].gridCellSize[lod].y) * ubo[pc.currentFrame].nbCellsPerRow[lod].x + (offset.z / ubo[pc.currentFrame].gridCellSize[lod].z) * ubo[pc.currentFrame].nbCellsPerRow[lod].y);
     if (offset.x >= ubo[pc.currentFrame].gridSize[lod].x || offset.y >= ubo[pc.currentFrame].gridSize[lod].y || offset.z >= ubo[pc.currentFrame].gridSize[lod].z || cellId  >= ubo[pc.currentFrame].gridCellCount[lod] || inputGridBuffer.grid[cellId].clusterId == -1) {
         return false;
     }
@@ -282,6 +283,7 @@ bool hasNeightbour(ivec3 pos, int lod, uint axe) {
     return hasNVoxel;
 }
 void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, uint f, uint materialId) {   
+    //debugPrintfEXT("set visible mesh shader");
     uint stack[32]; 
     uint sp = 0;    
     int startx = int(frustrum.center.x - frustrum.size.x * 0.5);
@@ -291,11 +293,13 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
     int endy = starty + int(frustrum.size.y);
     int endz = startz + int(frustrum.size.z);
     //Ballayage de la grille dans la zone visible.
-    for (int x = startx; x < endx; x+= ubo[pc.currentFrame].gridCellSize[lod].x) {
-        for (int y = starty; y < endy; y+= ubo[pc.currentFrame].gridCellSize[lod].y) {
-            for (int z = startz; z < endz; z+= ubo[pc.currentFrame].gridCellSize[lod].z) {
+    debugPrintfEXT("current frame : %f", ubo[pc.currentFrame].gridCellSize[lod].x);
+    for (float x = startx; x < endx; x+= ubo[pc.currentFrame].gridCellSize[lod].x) {
+        for (float y = starty; y < endy; y+= ubo[pc.currentFrame].gridCellSize[lod].y) {
+            for (float z = startz; z < endz; z+= ubo[pc.currentFrame].gridCellSize[lod].z) {
                 //Root.
-                int cellId = (x / ubo[pc.currentFrame].gridCellSize[lod].x) + (y / ubo[pc.currentFrame].gridCellSize[lod].y) * ubo[pc.currentFrame].nbCellsPerRow[lod].x + (z / ubo[pc.currentFrame].gridCellSize[lod].z) * ubo[pc.currentFrame].nbCellsPerRow[lod].y;
+                int cellId = int((x / ubo[pc.currentFrame].gridCellSize[lod].x) + (y / ubo[pc.currentFrame].gridCellSize[lod].y) * ubo[pc.currentFrame].nbCellsPerRow[lod].x + (z / ubo[pc.currentFrame].gridCellSize[lod].z) * ubo[pc.currentFrame].nbCellsPerRow[lod].y);
+                //debugPrintfEXT("cell id : %i", cellId);
                 if (x < ubo[pc.currentFrame].gridSize[lod].x && y < ubo[pc.currentFrame].gridSize[lod].y && z < ubo[pc.currentFrame].gridSize[lod].z && inputGridBuffer.grid[cellId].clusterId != -1 && cellId < ubo[pc.currentFrame].gridCellCount[lod]) {
                     stack[sp++] = inputClustersBuffer.clusters[inputGridBuffer.grid[cellId].clusterId].id;
                     //Case non vide.                   
@@ -306,18 +310,21 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                             continue;
                         }
                         if (n.leaf == 1) {
+                            //debugPrintfEXT("lod : %i", n.lod);
                             if (n.lod == lod && n.submeshId == sm.id) { 
                                 //Cluster de modèle 3D visible : On ajoute ce cluster aux clusters visible.
+                                //debugPrintfEXT("Rendering type : %i", object.renderingType);
                                 if (object.renderingType == 0) {  
-                                    uint clusterOffset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);                        
+                                    //debugPrintfEXT("Rendering type : %i", object.renderingType);
+                                    /*uint clusterOffset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);                        
                                     outputClusters[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = n;    
                                     uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;                                
                                     outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupYCount++; 
                                     for (uint m = 0; m < n.meshletCount; m++) {
                                         inputMeshlet.meshlets[n.meshletOffset+m].rendered = 0;
-                                    }
+                                    }*/
                                     //Heightmap.                            
-                                } else if (object.renderingType == 1) {
+                                /*} else if (object.renderingType == 1) {
                                     uint count = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
                                     //Si on dépasse ou on arrive au dernier on créé une nouvelle tâche.
                                     if (count + 4 >= MAX_VERTICES 
@@ -380,7 +387,7 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                                         task.vertexCount = count;
                                         task.primitiveCount = count / 4 * 2;
                                         outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = task;
-                                    }    
+                                    }   */ 
                                 }
                             }                          
                         } else {

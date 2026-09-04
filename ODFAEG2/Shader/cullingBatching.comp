@@ -17,7 +17,8 @@ struct Object {
 	int subMeshesOffset;
 	int modelDataOffset;		   
 	int nbSubMeshes;
-	int paddings[3];
+    int renderingType;
+	//int paddings[2];
 };
 struct LODLevel {
     uint index_offset;
