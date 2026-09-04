@@ -203,12 +203,14 @@ namespace odfaeg {
 			std::map<std::string, BoneInfo>& getBoneInfoMap();
 			unsigned int subMeshOffset;
             virtual ~GameObject();
+            int renderingType = 0;
 		protected :
             void onResize(math::Vec3f& s);
             void onMove(math::Vec3f& t);
             void onScale(math::Vec3f& s);
             void onRotate(float angle);
 			void copy(GameObject* other);
+           
 		private:
             math::Vec3f shadowCenter, shadowScale, shadowRotationAxis, shadowOrigin; /**> The center of the shadow of the entity.*/
             float shadowRotationAngle;
@@ -221,6 +223,7 @@ namespace odfaeg {
             std::string name, externalObjectName;
 			std::map<std::string, BoneInfo> m_BoneInfoMap; //
 			int m_BoneCounter = 0;
+            
 		};
 	}
 }

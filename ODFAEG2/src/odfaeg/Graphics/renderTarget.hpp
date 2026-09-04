@@ -70,7 +70,8 @@ namespace odfaeg {
 				int subMeshesOffset;
 				int modelDataOffset;
 				int nbSubMeshes;
-				int paddings[3];
+				int renderingType;
+				int paddings[2];
 			};
 			struct LODLevelData {
 				int index_offset;

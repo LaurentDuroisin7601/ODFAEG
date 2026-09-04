@@ -460,6 +460,7 @@ namespace odfaeg {
 					object.subMeshesOffset = currentSubmeshesOffset;
 					object.modelDataOffset = currentModelDataOffset;
 					object.nbSubMeshes = gameObjects[i]->getGameObject()->getSubMeshesCount();
+					object.renderingType = gameObjects[i]->getGameObject()->renderingType;
 					//std::cout<<"nb submeshes : "<<object.nbSubMeshes<<std::endl;
 					objectDatas.push_back(object);
 					ModelData modelData;
