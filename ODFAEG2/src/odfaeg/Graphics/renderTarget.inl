@@ -695,10 +695,12 @@ namespace odfaeg {
 					math::Vec3f gridPos = meshletsGrid.getMins();
 					math::Vec3f gridSize = meshletsGrid.getSize();	
 					cullingInfo.gridCellCount[lod] = meshletsGrid.getCasesMap().size();
-					cullingInfo.nbCellsPerRow[lod] = 	math::Vec3f(meshletsGrid.getNbCasesPerRow(), meshletsGrid.getNbCasesPerCol(), 0); 
-					cullingInfo.gridCellSize[lod] = math::Vec3f(meshletsGrid.getCellWidth(), meshletsGrid.getCellHeight(), meshletsGrid.getCellDepth());
-					cullingInfo.gridPos[lod] = gridPos;
-					cullingInfo.gridSize[lod] = gridSize;
+					cullingInfo.nbCellsPerRow[lod] = 	math::Vec4f(meshletsGrid.getNbCasesPerRow(), meshletsGrid.getNbCasesPerCol(), 0, 0); 
+					cullingInfo.gridCellSize[lod] = math::Vec4f(meshletsGrid.getCellWidth(), meshletsGrid.getCellHeight(), meshletsGrid.getCellDepth(), 0);
+					cullingInfo.gridPos[lod] = math::Vec4f(gridPos.x(), gridPos.y(), gridPos.z(), 0);
+					cullingInfo.gridSize[lod] = math::Vec4f(gridSize.x(), gridSize.y(), gridSize.z(), 0);
+					/*std::cout<<"grid pos, size : "<<gridPos<<","<<gridSize<<std::endl;
+					system("PAUSE");*/
 							
 					//Ballayage de la grille.
 					//std::cout<<gridPos<<","<<gridSize<<std::endl;				

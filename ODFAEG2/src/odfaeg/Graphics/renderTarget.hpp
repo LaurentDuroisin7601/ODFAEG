@@ -102,6 +102,7 @@ namespace odfaeg {
 				int lodLevel;
 				int leaf;				
 				std::vector<unsigned int> children;
+				int pad[2];
 			};
 			struct CellData {
 				unsigned int clusterId;
@@ -118,6 +119,9 @@ namespace odfaeg {
 				alignas(16) math::Vec3f maxs;
 				unsigned int clusterId;	
 				unsigned int lod;	
+				int voxel;
+				int rendered;
+				int pad; 
 				bool operator==(const Meshlet& other) const {
 					return id == other.id 
 					&& mins.x() == other.mins.x()
@@ -170,14 +174,15 @@ namespace odfaeg {
 				MeshDrawCommand meshDrawCommand;
 				unsigned int baseInstance;
 			};
-			struct UBO {
+			struct alignas(16) UBO {
 				AABB frustrum;
-				alignas(16) unsigned int nbEntitiesTypes;
+				unsigned int nbEntitiesTypes;
 				alignas(16) unsigned int gridCellCount[5];   
-				alignas(16) math::Vec3f gridCellSize[5];
-				alignas(16) math::Vec3f nbCellsPerRow[5];    
-				alignas(16) math::Vec3f gridSize[5];   
-				alignas(16) math::Vec3f gridPos[5];
+				alignas(16) math::Vec4f gridCellSize[5];
+				alignas(16) math::Vec4f nbCellsPerRow[5];    
+				alignas(16) math::Vec4f gridSize[5];   
+				alignas(16) math::Vec4f gridPos[5];
+				unsigned int pads[3];
 			};
 			struct ViewProjMatPC {
 				math::Matrix4f projMatrix;
