@@ -49,7 +49,7 @@ struct Cluster {
     //int children[8]; 
 };
 struct MeshLet {
-   AABB globalBounds;
+    uint id;
     uint vertexOffset;
     uint indexOffset;
     uint nbVertices;
@@ -152,8 +152,9 @@ void main() {
     
     TaskData taskData = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId];
     //Modèles 3D.
-    debugPrintfEXT("draw");
-    if (taskData.vertexCount == 0) {    
+    
+    if (taskData.vertexCount == 0) { 
+          
         SubMesh subMesh = SubMeshDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMeshData[payload.taskId];
         Cluster cluster = clusterDatas.clusters[taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].clusterOffset+gl_WorkGroupID.y];
         
@@ -161,6 +162,7 @@ void main() {
         if (id >= cluster.meshletCount) {
             return;
         }
+        //debugPrintfEXT("mesh shader"); 
         //Instance id = taskId (base instance) + workGroupId.x (instance id).
         uint instanceId = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].baseInstance + gl_WorkGroupID.x;
         //debugPrintfEXT("Instance id : %i", gl_WorkGroupID.x); 
@@ -168,9 +170,10 @@ void main() {
             
         MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+id];
         //Avoid to render it twice if the meshlet is between two clusters. (Deduplication)
-        if (meshlet.rendered == 0) {            
+        if (meshlet.rendered == 1) {            
             return;
         }
+        //debugPrintfEXT("mesh shader"); 
         meshletDatas.meshlet[cluster.meshletOffset+id].rendered = 1;
         /*if (gl_WorkGroupID.y >= lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletCount)
             debugPrintfEXT("meshlet offets : %i, %i", lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletCount, gl_WorkGroupID.y);*/
@@ -181,8 +184,8 @@ void main() {
         uint maxPrims = 85u;
         uint vertexCount   = min(meshlet.nbVertices, maxVerts);
         uint primitiveCount = min(meshlet.nbIndexes / 3u, maxPrims);
-        /*if (vertexCount > 0)
-            debugPrintfEXT("submesh vertex count : %i, %i", meshlet.nbVertices, meshlet.nbIndexes);*/
+        if (vertexCount > 0)
+            debugPrintfEXT("submesh vertex count : %i, %i", meshlet.nbVertices, meshlet.nbIndexes);
         
             
         SetMeshOutputsEXT(vertexCount, primitiveCount);
