@@ -314,28 +314,31 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
     
     for (uint i = 0; i < ubo[pc.currentFrame].gridCellCount[lod]; i++) {
         //Root.   
-        debugPrintfEXT("cluster count : %i ", inputGridBuffer.grid[i].clusterCount);
+        //debugPrintfEXT("cluster count : %i ", inputGridBuffer.grid[i].clusterCount);
         if (inputGridBuffer.grid[i].clusterId != -1 
             && intersects(inputGridBuffer.grid[i].volume, frustrum)) {
                   
             for (uint j = 0; j < inputGridBuffer.grid[i].clusterCount; j++) {                
                 Cluster n = inputClustersBuffer.clusters[inputGridBuffer.grid[i].clusterOffset+j];
+                //debugPrintfEXT("volume : %v3f\n%v3f\n%v3f\n%v3f", n.volume.center, n.volume.size, frustrum.center, frustrum.size);
                 if (!intersects(frustrum, n.volume)) {
+                    //debugPrintfEXT("intersects!");
                     continue;
-                }                    
+                }   
+                //debugPrintfEXT("lod : %i, smid : %i, %i", n.lod, n.submeshId, sm.id);                 
                 if (n.lod == lod && n.submeshId == sm.id) { 
                     //Cluster de modèle 3D visible : On ajoute ce cluster aux clusters visible.
-                    //debugPrintfEXT("Rendering type : %i", object.renderingType);
+                    debugPrintfEXT("Rendering type : %i", object.renderingType);
                     if (object.renderingType == 0) {  
                         //debugPrintfEXT("Primitive type : %i", sm.primitiveType);
-                        /*debugPrintfEXT("cluster visible");
+                        debugPrintfEXT("cluster visible");
                         uint clusterOffset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);                        
                         outputClusters[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = n;    
                         uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;                                
                         outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupYCount++; 
                         for (uint m = 0; m < n.meshletCount; m++) {
                             inputMeshlet.meshlets[n.meshletOffset+m].rendered = 0;
-                        }*/
+                        }
                         //Heightmap.                            
                     } /*else if (object.renderingType == 1) {
                         uint count = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
