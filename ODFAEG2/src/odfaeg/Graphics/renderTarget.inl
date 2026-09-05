@@ -611,13 +611,12 @@ namespace odfaeg {
 									
 									// Nouveau meshlet
 									m = Meshlet();
-									m.minVertex = std::numeric_limits<unsigned int>::max();
-									m.maxVertex = 0;
 									m.nbIndexes = 0;
 									m.indexOffset = tri * 3;
 									m.lod = l;
 																	
-									
+									m.minVertex = std::numeric_limits<unsigned int>::max();
+									m.maxVertex = 0;
 									m.mins = math::Vec3f(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
 									m.maxs = math::Vec3f(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
 									
@@ -626,7 +625,15 @@ namespace odfaeg {
 									newMax = std::max(g0, std::max(g1, g2));
 									mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
 								    maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));
-									
+									newMin = std::min(m.minVertex, newMin);
+									newMax = std::max(m.maxVertex, newMax);
+									unsigned int newVertexCount = (newMax - newMin) + 1;
+									mins = math::Vec3f(std::min(m.mins.x(), mins.x()), std::min(m.mins.y(), mins.y()), std::min(m.mins.z(), mins.z()));
+									maxs = math::Vec3f(std::max(m.maxs.x(), maxs.x()), std::max(m.maxs.y(), maxs.y()), std::max(m.maxs.z(), maxs.z()));
+									m.minVertex = newMin;
+									m.maxVertex = newMax;
+									m.mins = mins;
+									m.maxs = maxs;
 									currentMeshletsOffset++;	
 									meshletCount++;							
 								}
@@ -636,10 +643,7 @@ namespace odfaeg {
 								m.nbIndexes += 3;								
 							}
 							// Final meshlet
-							/*m.minVertex = newMin;
-							m.maxVertex = newMax;
-							m.mins = mins;
-							m.maxs = maxs;		*/				
+									
 							m.vertexOffset = m.minVertex;
 							m.nbVertices   = (m.maxVertex - m.minVertex) + 1;
 							m.id = meshletDatas.size();
@@ -1068,13 +1072,13 @@ namespace odfaeg {
 				for (unsigned int i = 0; i < 2; i++) {
 					defaultRenderingLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_TASK_BIT_EXT | VK_SHADER_STAGE_MESH_BIT_EXT);
 				}				
-				for (unsigned int i = 2; i < 4; i++) {
+				for (unsigned int i = 2; i < 5; i++) {
 					defaultRenderingLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_MESH_BIT_EXT);
 				}
-				for (unsigned int i = 4; i < 6; i++) {
+				for (unsigned int i = 5; i < 7; i++) {
 					defaultRenderingLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_MESH_BIT_EXT);
 				}
-				for (unsigned int i = 6; i < 9; i++) {
+				for (unsigned int i = 7; i < 9; i++) {
 					defaultRenderingLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_MESH_BIT_EXT);
 				}	
 				defaultRenderingLayout.updateLayout(9, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_MESH_BIT_EXT);														
@@ -1152,13 +1156,13 @@ namespace odfaeg {
 				cullingBatchingPool.updatePoolSize(17, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT);
 				cullingBatchingPool.update();
 				DescriptorPool& defaultRenderingPool = GPUContext::instance().getDescriptorPool(defaultRenderingShader, 12);
-				for (unsigned int i = 0; i < 4; i++) {
+				for (unsigned int i = 0; i < 5; i++) {
 					defaultRenderingPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT);
 				}
-				for (unsigned int i = 4; i < 6; i++) {
+				for (unsigned int i = 5; i < 7; i++) {
 					defaultRenderingPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES);
 				}
-				for (unsigned int i = 6; i < 9; i++) {
+				for (unsigned int i = 7; i < 9; i++) {
 					defaultRenderingPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
 				}		
 				defaultRenderingPool.updatePoolSize(9, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT);		
@@ -1431,13 +1435,14 @@ namespace odfaeg {
 				DescriptorSet& defaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, (hasDiffuseTextures) ? 12 : 11, 1)[0];
 				defaultRenderingSet.updateBufferInfos(0, outputTaskDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(1, taskCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				defaultRenderingSet.updateBufferInfos(2, outputModelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				defaultRenderingSet.updateBufferInfos(3, outputMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				defaultRenderingSet.updateBufferInfos(4, true, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				defaultRenderingSet.updateBufferInfos(5, false, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				defaultRenderingSet.updateBufferInfos(6, lodLevel, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				defaultRenderingSet.updateBufferInfos(7, inputMeshlets, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);	
-				defaultRenderingSet.updateBufferInfos(8, inputClusters, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				defaultRenderingSet.updateBufferInfos(2, outputMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				defaultRenderingSet.updateBufferInfos(3, outputModelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				defaultRenderingSet.updateBufferInfos(4, outputClusters, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				defaultRenderingSet.updateBufferInfos(5, true, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				defaultRenderingSet.updateBufferInfos(6, false, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				defaultRenderingSet.updateBufferInfos(7, lodLevel, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				defaultRenderingSet.updateBufferInfos(8, inputMeshlets, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);	
+				
 				defaultRenderingSet.updateBufferInfos(9, true, outputVertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);				
 				defaultRenderingSet.updateBufferInfos(10, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				if (hasDiffuseTextures) {

@@ -79,7 +79,7 @@ namespace odfaeg {
 				int meshletOffset;
 				int meshletCount;
 			};
-			struct SubMeshData {
+			struct alignas(16) SubMeshData {
 				AABB globalBounds;
 				int vertexOffset;
 				int indexOffset;
