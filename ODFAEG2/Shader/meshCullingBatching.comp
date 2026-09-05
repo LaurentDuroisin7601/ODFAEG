@@ -119,7 +119,7 @@ struct Cluster {
     int lod;
     int leaf;	
     int submeshId;			
-    int children[8];    
+    //int children[8];    
 };
 struct MeshLet {
     AABB globalBounds;
@@ -271,7 +271,7 @@ bool hasNeightbour(ivec3 pos, int lod, uint axe) {
         return false;
     }
     bool hasNVoxel = false;
-    int stack[32];
+    /*int stack[32];
     int sp = 0;
     stack[sp++] = inputClustersBuffer.clusters[inputGridBuffer.grid[cellId].clusterId].id;
     while (sp > 0) {
@@ -293,7 +293,7 @@ bool hasNeightbour(ivec3 pos, int lod, uint axe) {
                 stack[sp++] = n.children[c];
             }
         } 
-    }
+    }*/
     return hasNVoxel;
 }
 void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, uint f, uint materialId) {   
@@ -315,12 +315,14 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
     for (uint i = 0; i < ubo[pc.currentFrame].gridCellCount[lod]; i++) {
         //Root.   
         //debugPrintfEXT("cluster count : %i ", inputGridBuffer.grid[i].clusterCount);
-        if (inputGridBuffer.grid[i].clusterId != -1 
-            && intersects(inputGridBuffer.grid[i].volume, frustrum)) {
-                  
+        if (true/*inputGridBuffer.grid[i].clusterId != -1 
+            && intersects(inputGridBuffer.grid[i].volume, frustrum)*/) {
+            if (inputGridBuffer.grid[i].clusterCount > 0)
+            debugPrintfEXT("volume : %i,%i", inputGridBuffer.grid[i].clusterOffset, inputGridBuffer.grid[i].clusterCount);
             for (uint j = 0; j < inputGridBuffer.grid[i].clusterCount; j++) {                
                 Cluster n = inputClustersBuffer.clusters[inputGridBuffer.grid[i].clusterOffset+j];
-                //debugPrintfEXT("volume : %v3f\n%v3f\n%v3f\n%v3f", n.volume.center, n.volume.size, frustrum.center, frustrum.size);
+                //if (inputGridBuffer.grid[i].clusterOffset > 0)
+                
                 if (!intersects(frustrum, n.volume)) {
                     //debugPrintfEXT("intersects!");
                     continue;
@@ -336,8 +338,8 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                         outputClusters[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = n;    
                         uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;                                
                         outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupYCount++; 
-                        if ( n.meshletOffset > 0)
-                        debugPrintfEXT("meshlet count : %i %i", n.meshletOffset, n.meshletCount);
+                        if ( n.meshletCount > 0)
+                            debugPrintfEXT("leaf, meshlet offset, meshlet count count : %i, %i %i", n.leaf, n.meshletOffset, n.meshletCount);
                         /*for (uint m = 0; m < n.meshletCount; m++) {
                             inputMeshlet.meshlets[n.meshletOffset+m].rendered = 0;
                         }*/
