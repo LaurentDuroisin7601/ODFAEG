@@ -122,7 +122,7 @@ namespace odfaeg {
 				unsigned int maxVertex;
 				alignas(16) math::Vec3f mins;
 				alignas(16) math::Vec3f maxs;
-				unsigned int clusterId;	
+				unsigned int clusterId;					
 				unsigned int lod;	
 				int voxel;
 				int rendered;

@@ -662,17 +662,20 @@ namespace odfaeg {
 								}
 							}*/						
 							meshletsGrid.clear();
-							for (unsigned int m = 0; m < meshletDatas.size(); m++) {							
+							for (unsigned int m = currentSubmeshMeshletOffset; m < meshletDatas.size(); m++) {							
 								//Reconstruction de l'AABB et ajout dans la grille de meshlets.
-								physic::BoundingBox volume(
-									meshletDatas[m].mins.x(), 
-									meshletDatas[m].mins.y(),
-									meshletDatas[m].mins.z(),
-									meshletDatas[m].maxs.x() - meshletDatas[m].mins.x(),
-									meshletDatas[m].maxs.y() - meshletDatas[m].mins.y(),
-									meshletDatas[m].maxs.z() - meshletDatas[m].mins.z());
-									//std::cout<<"add : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
-									meshletsGrid.addEntity(meshletDatas[m], volume);
+								if (meshletDatas[m].lod == l) {
+									
+									physic::BoundingBox volume(
+										meshletDatas[m].mins.x(), 
+										meshletDatas[m].mins.y(),
+										meshletDatas[m].mins.z(),
+										meshletDatas[m].maxs.x() - meshletDatas[m].mins.x(),
+										meshletDatas[m].maxs.y() - meshletDatas[m].mins.y(),
+										meshletDatas[m].maxs.z() - meshletDatas[m].mins.z());
+										//std::cout<<"add : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
+										meshletsGrid.addEntity(meshletDatas[m], volume);
+									}
 									//std::cout<<"added!"<<std::endl;
 							}
 							
