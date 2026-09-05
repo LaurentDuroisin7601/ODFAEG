@@ -340,9 +340,9 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                         outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupYCount++; 
                         /*if ( n.meshletCount > 0)
                             debugPrintfEXT("leaf, meshlet offset, meshlet count count : %i, %i %i", n.leaf, n.meshletOffset, n.meshletCount);*/
-                        /*for (uint m = 0; m < n.meshletCount; m++) {
+                        for (uint m = 0; m < n.meshletCount; m++) {
                             inputMeshlet.meshlets[n.meshletOffset+m].rendered = 0;
-                        }*/
+                        }
                         //Heightmap.                            
                     } /*else if (object.renderingType == 1) {
                         uint count = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
