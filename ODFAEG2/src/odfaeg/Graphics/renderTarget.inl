@@ -670,7 +670,7 @@ namespace odfaeg {
 							for (unsigned int m = currentSubmeshMeshletOffset; m < meshletDatas.size(); m++) {							
 								//Reconstruction de l'AABB et ajout dans la grille de meshlets.
 								if (meshletDatas[m].lod == l) {
-									std::cout<<"meshlet : "<<m<<","<<meshletDatas[m].nbVertices<<","<<meshletDatas[m].nbIndexes<<std::endl;
+									//std::cout<<"meshlet : "<<m<<","<<meshletDatas[m].nbVertices<<","<<meshletDatas[m].nbIndexes<<std::endl;
 									
 									physic::BoundingBox volume(
 										meshletDatas[m].mins.x(), 
