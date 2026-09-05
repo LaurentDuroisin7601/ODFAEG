@@ -95,6 +95,8 @@ struct ModelData {
 struct LodLevel {
     uint index_offset;
     uint nbLevels;
+    int meshletOffset;
+    int meshletCount;
 };
 struct TaskPayload {
     int taskId;

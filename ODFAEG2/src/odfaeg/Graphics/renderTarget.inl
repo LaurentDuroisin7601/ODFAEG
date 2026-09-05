@@ -1391,8 +1391,7 @@ namespace odfaeg {
 				resetBuffersSet.updateBufferInfos(7, offsetBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);				
 				//std::cout<<"update reset buffer set"<<std::endl;
 				resetBuffersSet.updateDescriptorSet();		
-				//std::cout<<"update reset buffer set"<<std::endl;
-				resetBuffersSet.updateDescriptorSet();
+				//std::cout<<"update reset buffer set"<<std::endl;				
 				DescriptorSet& cullingBatchingSet = GPUContext::instance().getDescriptorSets(cullingBatchingShader, 18, 1)[0];
 				//std::cout<<"update object types"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(0, objects, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
