@@ -315,10 +315,10 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
     for (uint i = 0; i < ubo[pc.currentFrame].gridCellCount[lod]; i++) {
         //Root.   
         //debugPrintfEXT("cluster count : %i ", inputGridBuffer.grid[i].clusterCount);
-        if (true/*inputGridBuffer.grid[i].clusterId != -1 
-            && intersects(inputGridBuffer.grid[i].volume, frustrum)*/) {
-            if (inputGridBuffer.grid[i].clusterCount > 0)
-            debugPrintfEXT("volume : %i,%i", inputGridBuffer.grid[i].clusterOffset, inputGridBuffer.grid[i].clusterCount);
+        if (inputGridBuffer.grid[i].clusterId != -1 
+            && intersects(inputGridBuffer.grid[i].volume, frustrum)) {
+            /*if (inputGridBuffer.grid[i].clusterCount > 0)
+            debugPrintfEXT("volume : %i,%i", inputGridBuffer.grid[i].clusterOffset, inputGridBuffer.grid[i].clusterCount);*/
             for (uint j = 0; j < inputGridBuffer.grid[i].clusterCount; j++) {                
                 Cluster n = inputClustersBuffer.clusters[inputGridBuffer.grid[i].clusterOffset+j];
                 //if (inputGridBuffer.grid[i].clusterOffset > 0)
@@ -338,8 +338,8 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                         outputClusters[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = n;    
                         uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;                                
                         outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupYCount++; 
-                        if ( n.meshletCount > 0)
-                            debugPrintfEXT("leaf, meshlet offset, meshlet count count : %i, %i %i", n.leaf, n.meshletOffset, n.meshletCount);
+                        /*if ( n.meshletCount > 0)
+                            debugPrintfEXT("leaf, meshlet offset, meshlet count count : %i, %i %i", n.leaf, n.meshletOffset, n.meshletCount);*/
                         /*for (uint m = 0; m < n.meshletCount; m++) {
                             inputMeshlet.meshlets[n.meshletOffset+m].rendered = 0;
                         }*/
