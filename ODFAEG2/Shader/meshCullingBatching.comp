@@ -108,6 +108,8 @@ struct Vertex {
 struct GridCell {
     AABB volume;
     int clusterId;
+    int clusterOffset;
+    int clusterCount;    
 };
 struct Cluster {
     AABB volume;

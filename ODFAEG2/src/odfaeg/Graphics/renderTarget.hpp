@@ -107,8 +107,10 @@ namespace odfaeg {
 			};
 			struct CellData {
 				AABB volume;
-				unsigned int clusterId;
-				unsigned int pad[3];
+				int clusterId;
+				int clusterOffset;
+				int clusterCount;
+				int pad;
 			};
 			struct Meshlet {
 				unsigned int id;

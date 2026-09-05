@@ -726,6 +726,7 @@ namespace odfaeg {
 									stack.push_back(0);	
 									CellData cellData;							
 									cellData.clusterId = currentClustersOffset;
+									cellData.clusterOffset = currentClustersOffset;
 									cellData.volume.center = gridCell->getCellVolume().getCenter();
 									cellData.volume.size = gridCell->getCellVolume().getSize();
 									cellDatas.push_back(cellData);
@@ -770,6 +771,7 @@ namespace odfaeg {
 												clusterDatas.push_back(childClusterData);
 												stack.push_back(node.children[c]);
 												node.id = clusterDatas.size()-1;
+												
 												//std::cout<<"size : "<<nodes.size()<<"id : "<<id<<" "<<node.children[c]<<std::endl;										clusterDatas[clusterDatas.size()-1].children.push_back(clusterDatas.size());
 												
 											}
@@ -802,6 +804,7 @@ namespace odfaeg {
 										}
 										
 									}
+									cellData.clusterCount = currentClustersOffset - cellData.clusterOffset;
 								}
 							}
 						}
