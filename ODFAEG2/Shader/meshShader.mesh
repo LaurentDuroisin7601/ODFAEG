@@ -42,22 +42,29 @@ struct AABB {
 	vec3 size;
 };
 struct Cluster {
-    int id;
-    AABB globalBounds;
+   AABB volume;
     int meshletOffset;
     int meshletCount;
-    int lodLevel;
+    int id;
+    int lod;
+    int leaf;	
+    int submeshId;			
+    int children[8]; 
 };
 struct MeshLet {
-    AABB globalBounds;
+   AABB globalBounds;
     uint vertexOffset;
     uint indexOffset;
     uint nbVertices;
     uint nbIndexes; 
     uint minVertex;
-    uint maxVertex;  
+    uint maxVertex;
+    vec3 mins;
+    vec3 max;  
     uint clusterId; 
-    uint rendered;
+    uint lod;
+    int voxel;
+    int rendered;
 };
 struct SubMesh {
 	AABB globalBounds;
@@ -68,9 +75,11 @@ struct SubMesh {
 	int nbVertices;
 	int nbIndexes;
 	int lodOffset;
-    int lodLevel;
 	int id;
-    int objectId;    
+    int lodLevel;
+    int objectId;
+    int mesheltOffset;
+    int meshletCount;
 };
 struct Vertex {
     vec3 position; ///< 3D position of the vertex
