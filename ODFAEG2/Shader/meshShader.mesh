@@ -20,9 +20,6 @@ struct MeshDrawCommand {
     uint groupYCount;
     uint groupZCount;
 };
-struct Instance {    
-    uint nbMeshletsVisible;
-};
 struct LODLevel {
     int index_offset;
     int index_count;
