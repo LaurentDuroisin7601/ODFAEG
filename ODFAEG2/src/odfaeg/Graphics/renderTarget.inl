@@ -1369,7 +1369,7 @@ namespace odfaeg {
 				//std::cout<<"update input material datax"<<std::endl;
 				resetBuffersSet.updateBufferInfos(4, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"update first index vertex"<<std::endl;
-				resetBuffersSet.updateBufferInfos(5, drawCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				resetBuffersSet.updateBufferInfos(5, taskCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				resetBuffersSet.updateBufferInfos(6, instanceBase, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				resetBuffersSet.updateBufferInfos(7, offsetBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);				
 				//std::cout<<"update reset buffer set"<<std::endl;
@@ -1405,7 +1405,7 @@ namespace odfaeg {
 				//std::cout<<"offset in output index"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(11, outputMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"offset in model data"<<std::endl;
-				cullingBatchingSet.updateBufferInfos(12, offsetInOutputTaskDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(12, taskCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"offset in output object data"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(13, outputTaskDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"uniform buffer"<<std::endl;

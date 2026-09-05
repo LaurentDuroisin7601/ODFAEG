@@ -483,6 +483,7 @@ void main() {
                         //Matériel non instanciable.                                               
                         } else {                        
                             uint offsetTaskData = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
+                            debugPrintfEXT("task count %i", offsetTaskData);
                             inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset = offsetTaskData;
                             uint instanceId = atomicAdd(offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.instanceOffset, 1);
                             MeshDrawCommand meshDrawCommand;                        
