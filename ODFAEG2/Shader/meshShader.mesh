@@ -75,7 +75,7 @@ struct SubMesh {
 	int id;
     int lodLevel;
     int objectId;
-    int mesheltOffset;
+    int meshletOffset;
     int meshletCount;
 };
 struct Vertex {
@@ -178,7 +178,7 @@ void main() {
         /*if (gl_WorkGroupID.y >= lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletCount)
             debugPrintfEXT("meshlet offets : %i, %i", lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletCount, gl_WorkGroupID.y);*/
         uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_offset + meshlet.indexOffset;
-        //debugPrintfEXT("First index : %i,%i", firstIndex, meshlet.vertexOffset);
+        //debugPrintfEXT("First index : %i,", firstIndex);
         //3 = Triangles.
         uint maxVerts = 255u;
         uint maxPrims = 85u;
@@ -204,12 +204,13 @@ void main() {
             //debugPrintfEXT("gen tri : %i", tri);
             uint g0 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 0];
             uint g1 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 1];
-            uint g2 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 2];   
+            uint g2 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 2];
+            //debugPrintfEXT("meshlet : %i",meshlet.vertexOffset);   
             uint i0 = g0 - meshlet.vertexOffset;
             uint i1 = g1 - meshlet.vertexOffset;
             uint i2 = g2 - meshlet.vertexOffset;  
-            /*if ((i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount) && pc.currentFrame == 1)
-                debugPrintfEXT("meshlet : %i,%i, %i, %i, %i, %i, %i",lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletCount, subMesh.meshletOffset, subMesh.indexOffset, meshlet.nbIndexes, meshlet.nbVertices, meshlet.indexOffset, meshlet.vertexOffset);*/  
+            if ((i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount) && pc.currentFrame == 1)
+                debugPrintfEXT("meshlet : %i %i %i %i,%i, %i, %i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, meshlet.nbVertices, meshlet.indexOffset, meshlet.vertexOffset);  
             gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
         }
     //Face de heightmap ou voxel.

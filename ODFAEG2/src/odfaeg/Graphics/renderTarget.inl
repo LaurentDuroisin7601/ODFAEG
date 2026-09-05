@@ -592,15 +592,19 @@ namespace odfaeg {
 								
 								math::Vec3f mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
 								math::Vec3f maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));
-								m.mins = math::Vec3f(std::min(m.mins.x(), mins.x()), std::min(m.mins.y(), mins.y()), std::min(m.mins.z(), mins.z()));
-								m.maxs = math::Vec3f(std::max(m.maxs.x(), maxs.x()), std::max(m.maxs.y(), maxs.y()), std::max(m.maxs.z(), maxs.z()));
+								mins = math::Vec3f(std::min(m.mins.x(), mins.x()), std::min(m.mins.y(), mins.y()), std::min(m.mins.z(), mins.z()));
+								maxs = math::Vec3f(std::max(m.maxs.x(), maxs.x()), std::max(m.maxs.y(), maxs.y()), std::max(m.maxs.z(), maxs.z()));
 								/*std::cout<<"new min max : "<<newMin<<","<<newMax<<","<<newVertexCount<<std::endl;
 								system("PAUSE");*/
 								// Si ce triangle dépasse les limites → nouveau meshlet
 								if (m.nbIndexes/3 >= MAX_PRIMS || newVertexCount > MAX_VERTS)
     							{
+									m.minVertex = newMin;
+									m.maxVertex = newMax;
+									m.mins = mins;
+									m.maxs = maxs;
 									m.vertexOffset = m.minVertex;
-									m.nbVertices   = m.maxVertex - m.minVertex + 1;
+									m.nbVertices   = (m.maxVertex - m.minVertex) + 1;
 									m.id = meshletDatas.size();
 									meshletDatas.push_back(m);
 									
@@ -625,17 +629,20 @@ namespace odfaeg {
 									currentMeshletsOffset++;	
 									meshletCount++;							
 								}
-								// Ajouter triangle
+								// Ajouter triangle								
 								m.minVertex = newMin;
 								m.maxVertex = newMax;
-								m.mins = math::Vec3f(std::min(m.mins.x(), mins.x()), std::min(m.mins.y(), mins.y()), std::min(m.mins.z(), mins.z()));
-								m.maxs = math::Vec3f(std::max(m.maxs.x(), maxs.x()), std::max(m.maxs.y(), maxs.y()), std::max(m.maxs.z(), maxs.z()));
-								
+								m.mins = mins;
+								m.maxs = maxs;
 								m.nbIndexes += 3;								
 							}
-							// Final meshlet							
+							// Final meshlet
+							/*m.minVertex = newMin;
+							m.maxVertex = newMax;
+							m.mins = mins;
+							m.maxs = maxs;		*/				
 							m.vertexOffset = m.minVertex;
-							m.nbVertices   = m.maxVertex - m.minVertex + 1;
+							m.nbVertices   = (m.maxVertex - m.minVertex) + 1;
 							m.id = meshletDatas.size();
 							meshletDatas.push_back(m);
 							
