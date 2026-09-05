@@ -285,7 +285,7 @@ int main() {
 		window.setDepthStencil(true, false);
 		window.clear();
 		window.applyCullingAndBatching();
-		//window.draw(Triangles);
+		window.draw(Triangles);
 		/*window.setCamera(rtRenderTextureCamera);
 		
 		//sceneColorTexture.clear();
