@@ -55,10 +55,10 @@ struct MeshLet {
     uint nbVertices;
     uint nbIndexes; 
     uint minVertex;
-    uint maxVertex;
+    uint maxVertex;    
+    uint clusterId; 
     vec3 mins;
     vec3 max;  
-    uint clusterId; 
     uint lod;
     int voxel;
     int rendered;
@@ -74,9 +74,7 @@ struct SubMesh {
 	int lodOffset;
 	int id;
     int lodLevel;
-    int objectId;
-    int meshletOffset;
-    int meshletCount;
+    int objectId;   
 };
 struct Vertex {
     vec3 position; ///< 3D position of the vertex
@@ -191,9 +189,7 @@ void main() {
         SetMeshOutputsEXT(vertexCount, primitiveCount);
         for (uint i = 0; i < vertexCount; i++) {
             uint v = subMesh.vertexOffset + meshlet.vertexOffset + i;
-            /*if (v < firstIndex) {
-                debugPrintfEXT("v : %i, %i", subMesh.indexOffset, v);
-            }*/
+           
             gl_MeshVerticesEXT[i].gl_Position = pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(vertexData[pc.primitiveType].vertices[v].position, 1.0);
             fragColor[i] = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
             fragTexCoord[i] = vertexData[pc.primitiveType].vertices[v].texCoords;
@@ -212,8 +208,8 @@ void main() {
             uint i0 = g0 - meshlet.vertexOffset;
             uint i1 = g1 - meshlet.vertexOffset;
             uint i2 = g2 - meshlet.vertexOffset;  
-            /*if (subMesh.vertexOffset < firstIndex)
-                debugPrintfEXT("meshlet : %i %i %i %i,%i, %i, %i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, meshlet.nbVertices, meshlet.indexOffset, meshlet.vertexOffset);  */
+            if (i0 >= meshlet.nbVertices || i1 >= meshlet.nbVertices || i2 >= meshlet.nbVertices)
+                debugPrintfEXT("meshlet : %i %i %i %i,%i, %i, %i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, meshlet.nbVertices, meshlet.indexOffset, meshlet.vertexOffset);  
             gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
         }
     //Face de heightmap ou voxel.

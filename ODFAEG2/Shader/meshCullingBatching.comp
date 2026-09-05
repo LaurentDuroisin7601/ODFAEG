@@ -41,9 +41,7 @@ struct SubMesh {
 	int lodOffset;
 	int id;
     int lodLevel;
-    int objectId;
-    int mesheltOffset;
-    int meshletCount;
+    int objectId;   
 };
 /*Matrices*/
 struct ModelData {
@@ -128,10 +126,10 @@ struct MeshLet {
     uint nbVertices;
     uint nbIndexes; 
     uint minVertex;
-    uint maxVertex;
-    vec3 mins;
-    vec3 max;  
+    uint maxVertex;     
     uint clusterId; 
+    vec3 mins;
+    vec3 max; 
     uint lod;
     int voxel;
     int rendered;

@@ -627,7 +627,7 @@ namespace odfaeg {
 								    maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));
 									newMin = std::min(m.minVertex, newMin);
 									newMax = std::max(m.maxVertex, newMax);
-									unsigned int newVertexCount = (newMax - newMin) + 1;
+									newVertexCount = (newMax - newMin) + 1;
 									mins = math::Vec3f(std::min(m.mins.x(), mins.x()), std::min(m.mins.y(), mins.y()), std::min(m.mins.z(), mins.z()));
 									maxs = math::Vec3f(std::max(m.maxs.x(), maxs.x()), std::max(m.maxs.y(), maxs.y()), std::max(m.maxs.z(), maxs.z()));
 									m.minVertex = newMin;
@@ -662,7 +662,7 @@ namespace odfaeg {
 							lodLevelData.meshletCount = meshletDatas.size() - currentLodMeshletOffset - currentSubmeshMeshletOffset;
 							//std::cout<<"meshlet count : "<<	meshletDatas.size()<<","<<currentLodMeshletOffset<<std::endl;																		
 							lodLevelDatas.push_back(lodLevelData);
-							/*for (unsigned int m = currentSubmeshMeshletOffset+lodLevelData.meshletOffset; m < currentSubmeshMeshletOffset+lodLevelData.meshletOffset + lodLevelData.meshletCount; m++) {
+							for (unsigned int m = currentSubmeshMeshletOffset+lodLevelData.meshletOffset; m < currentSubmeshMeshletOffset+lodLevelData.meshletOffset + lodLevelData.meshletCount; m++) {
 								Meshlet meshlet = meshletDatas[m];
 								unsigned int firstIndex = subMeshData.indexOffset + lods[l].indexOffset + meshlet.indexOffset; 
 								//std::cout<<"meshlet : "<<lodLevelData.meshletCount<<","<<currentSubmeshMeshletOffset<<","<<subMeshData.indexOffset<<","<<meshlet.nbIndexes<<","<<meshlet.nbVertices<<","<<meshlet.indexOffset<<","<<meshlet.vertexOffset<<std::endl;							
@@ -675,7 +675,7 @@ namespace odfaeg {
 										system("PAUSE");
 									}
 								}
-							}*/						
+							}				
 							meshletsGrid.clear();
 							for (unsigned int m = currentSubmeshMeshletOffset; m < meshletDatas.size(); m++) {							
 								//Reconstruction de l'AABB et ajout dans la grille de meshlets.
@@ -830,7 +830,8 @@ namespace odfaeg {
 							cullingInfo.gridCellCount[l] = cellDatas.size();
 						}
 						subMeshData.lodOffset = currentSubmeshesOffset * lods.size();
-						subMesh.lodOffset = currentSubmeshesOffset * lods.size();		
+						subMesh.lodOffset = currentSubmeshesOffset * lods.size();	
+						//std::cout<<"submesh index offset : "<<subMeshData.vertexOffset<<std::endl;	
 						//std::cout<<"submesh meshlet count : "<<(meshletDatas.size() - currentSubmeshMeshletOffset)<<std::endl;
 						subMeshesDatas.push_back(subMeshData);	
 						currentSubmeshesOffset++;					

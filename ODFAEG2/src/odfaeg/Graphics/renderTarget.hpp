@@ -91,8 +91,8 @@ namespace odfaeg {
 				int id;
 				int lodLevel;
 				int objectId;
-				int clusterOffset;
-				int clusterCount;								
+				int meshletOffset;
+				int meshletCount;								
 			};
 			struct alignas(16) Cluster {
 				AABB volume;
@@ -105,24 +105,24 @@ namespace odfaeg {
 				//int children[8];
 				int pad[2];
 			};
-			struct CellData {
+			struct alignas(16) CellData {
 				AABB volume;
 				int clusterId;
 				int clusterOffset;
 				int clusterCount;
 				int pad;
 			};
-			struct Meshlet {
+			struct alignas(16) Meshlet {
 				unsigned int id;
 				unsigned int vertexOffset;
 				unsigned int indexOffset;
 				unsigned int nbVertices;
 				unsigned int nbIndexes;
 				unsigned int minVertex;
-				unsigned int maxVertex;
+				unsigned int maxVertex;				
+				unsigned int clusterId;	
 				alignas(16) math::Vec3f mins;
-				alignas(16) math::Vec3f maxs;
-				unsigned int clusterId;					
+				alignas(16) math::Vec3f maxs;				
 				unsigned int lod;	
 				int voxel;
 				int rendered;
