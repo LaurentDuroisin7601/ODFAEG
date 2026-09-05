@@ -794,11 +794,7 @@ namespace odfaeg {
 												Cluster childClusterData = clusterDatas[node.id];												
 												childClusterData.meshletCount = node.objects.size();
 												//std::cout<<"nb objects : "<<nodes[parent.children[c]].objects.size()<<"AABB : cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
-												childClusterData.leaf = 1;												
-												clusterDatas[parentCluster].children.push_back(clusterDatas.size());
-												clusterDatas.push_back(childClusterData);
-												childClusterData.id = clusterDatas.size()-1;
-												currentClustersOffset++;	
+												childClusterData.leaf = 1;
 												//std::cout<<"size : "<<stack.size()<<std::endl;
 																							
 											}																										
