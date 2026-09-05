@@ -94,7 +94,7 @@ namespace odfaeg {
 				int clusterOffset;
 				int clusterCount;								
 			};
-			struct Cluster {
+			struct alignas(16) Cluster {
 				AABB volume;
 				int meshletOffset;
 				int meshletCount;
@@ -102,8 +102,8 @@ namespace odfaeg {
 				int lodLevel;
 				int leaf;
 				int submeshId;				
-				std::vector<int> children;
-				int pad;
+				int children[8];
+				int pad[2];
 			};
 			struct CellData {
 				AABB volume;

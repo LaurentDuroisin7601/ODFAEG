@@ -731,14 +731,17 @@ namespace odfaeg {
 												clusterData.volume.size = node.volume.getSize();
 												//std::cout<<"cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
 
-												clusterData.children.reserve(8);
+												
 												
 												clusterData.leaf = 0;
 												clusterData.id = clusterDatas.size();
 												clusterData.lodLevel = l;
-												node.id = clusterDatas.size();
+												clusterData.meshletCount = 0;
+												clusterData.meshletOffset = 0;
+												
 																									
 												clusterDatas.push_back(clusterData);
+												node.id = clusterDatas.size()-1;
 												currentClustersOffset++;	
 												if (!node.leaf) {
 													//std::cout<<"children : "<<node.children.size()<<std::endl;								
@@ -750,13 +753,15 @@ namespace odfaeg {
 														childClusterData.volume.center = nodes[node.children[c]].volume.getCenter();
 														childClusterData.volume.size = nodes[node.children[c]].volume.getSize();
 														//std::cout<<"cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
-
-														childClusterData.children.reserve(8);
+														
+														
 														
 														childClusterData.leaf = 0;
 														childClusterData.id = clusterDatas.size();
 														childClusterData.lodLevel = l;
-														clusterData.children.push_back(clusterDatas.size());
+														childClusterData.meshletCount = 0;
+														childClusterData.meshletOffset = 0;														
+														clusterData.children[c] = clusterDatas.size();
 																											
 														clusterDatas.push_back(childClusterData);
 														stack.push_back(node.children[c]);
@@ -770,7 +775,7 @@ namespace odfaeg {
 													//system("PAUSE");
 													//entity::Octree<Meshlet>::Node& parent = nodes[node.parent];
 													//std::cout<<"id : "<<id<<" "<<std::endl;
-													unsigned int parentCluster = clusterDatas.size()-1;
+													
 													//std::cout<<"size : "<<parent.children.size()<<std::endl;
 													
 														/*std::cout<<"id : "<<id<<" "<<parent.children[c]<<std::endl;
@@ -783,9 +788,10 @@ namespace odfaeg {
 														
 														/*std::cout<<"id, size : "<<node.id<<", "<<node.objects.size()<<std::endl;
 														system("PAUSE");*/
-														Cluster childClusterData = clusterDatas[node.id];
+														Cluster& childClusterData = clusterDatas[node.id];
 														meshletDatas[node.objects[o].id].clusterId = childClusterData.id;												
 														childClusterData.meshletCount = node.objects.size();
+														//std::cout<<"meshlet count : "<<childClusterData.meshletCount<<std::endl;
 														//std::cout<<"nb objects : "<<nodes[parent.children[c]].objects.size()<<"AABB : cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
 														childClusterData.leaf = 1;
 														//std::cout<<"size : "<<stack.size()<<std::endl;
