@@ -314,10 +314,10 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
     
     for (uint i = 0; i < ubo[pc.currentFrame].gridCellCount[lod]; i++) {
         //Root.   
-           
+        debugPrintfEXT("cluster count : %i ", inputGridBuffer.grid[i].clusterCount);
         if (inputGridBuffer.grid[i].clusterId != -1 
             && intersects(inputGridBuffer.grid[i].volume, frustrum)) {
-                //debugPrintfEXT("cluster id : %i ", inputGridBuffer.grid[i].clusterId);  
+                  
             for (uint j = 0; j < inputGridBuffer.grid[i].clusterCount; j++) {                
                 Cluster n = inputClustersBuffer.clusters[inputGridBuffer.grid[i].clusterOffset+j];
                 if (!intersects(frustrum, n.volume)) {
@@ -328,13 +328,14 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                     //debugPrintfEXT("Rendering type : %i", object.renderingType);
                     if (object.renderingType == 0) {  
                         //debugPrintfEXT("Primitive type : %i", sm.primitiveType);
+                        /*debugPrintfEXT("cluster visible");
                         uint clusterOffset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);                        
                         outputClusters[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = n;    
                         uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;                                
                         outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupYCount++; 
                         for (uint m = 0; m < n.meshletCount; m++) {
                             inputMeshlet.meshlets[n.meshletOffset+m].rendered = 0;
-                        }
+                        }*/
                         //Heightmap.                            
                     } /*else if (object.renderingType == 1) {
                         uint count = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
@@ -401,7 +402,7 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                             outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = task;
                         //}    
                     }*/
-                }                  
+                }                 
             }
         }
     }
@@ -436,11 +437,11 @@ void main() {
                     int lod = clamp(int(dist / lodStep), 0, 4);
                     subMesh.lodLevel = lod;
                     if (object.renderingType == 0) {
-                        /*Matériel instanciable.*/
+                        //Matériel instanciable.
                         if (inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].instanceGroupId != -1) {
-                            /*Nouvelle instance de matériel/primitive visible = nouvelle tâche et on enregistre l'offset de la tâche,
-                            pour les instances visibles suivantes.*/
-                            if(inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet == 0) {
+                            //Nouvelle instance de matériel/primitive visible = nouvelle tâche et on enregistre l'offset de la tâche,
+                            //pour les instances visibles suivantes.
+                            /*if(inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet == 0) {
                                     
                                 inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet = 1;
                                 uint taskDataOffset = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
@@ -471,7 +472,7 @@ void main() {
                             outputModelData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId] = modelData;
                             //nombre d'instances + 1.                           
                             outputTaskData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupXCount++;                           
-                            setVisibleMeshletsFromBox(ubo[pc.currentFrame].frustrum, lod, object, subMesh, s, materialId);
+                            setVisibleMeshletsFromBox(ubo[pc.currentFrame].frustrum, lod, object, subMesh, s, materialId);*/
                         //Matériel non instanciable.                                               
                         } else {                        
                             uint offsetTaskData = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
@@ -508,7 +509,7 @@ void main() {
                             //debugPrintfEXT("Output Model Matrix : %i\n%v4f\n%v4f\n%v4f\n%v4f",objectDataOffset,outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[0], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[1], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[2], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[3]);
                             setVisibleMeshletsFromBox(ubo[pc.currentFrame].frustrum, lod, object, subMesh, s, materialId);
                         }                                                   
-                    } else { 
+                    } /*else { 
                         uint taskOffset = inputMaterialData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;
                         //Si pas de tâche pour ce matériel on la créé.
                         if (taskOffset == -1) {
@@ -522,7 +523,7 @@ void main() {
                             inputMaterialData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset = taskDataOffset;  
                         }                       
                         setVisibleMeshletsFromBox(ubo[pc.currentFrame].frustrum, lod, object, subMesh, s, materialId);
-                    } 
+                    } */
                 }                           
             }
             //Heighmap : Regroupement des tâches par limite de sommets dans ce cas.

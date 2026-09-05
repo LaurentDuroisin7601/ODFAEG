@@ -152,9 +152,11 @@ void main() {
     
     TaskData taskData = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId];
     //Modèles 3D.
+    debugPrintfEXT("draw");
     if (taskData.vertexCount == 0) {    
         SubMesh subMesh = SubMeshDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMeshData[payload.taskId];
         Cluster cluster = clusterDatas.clusters[taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].clusterOffset+gl_WorkGroupID.y];
+        
         uint id = gl_WorkGroupID.z;
         if (id >= cluster.meshletCount) {
             return;

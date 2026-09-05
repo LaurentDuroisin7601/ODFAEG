@@ -11,7 +11,7 @@ namespace odfaeg {
 		outputMeshes(GPUContext::instance().getSharedBuffers(OUTPUT_MESHES+registeredRenderTargets.size()*NB_BUFFERS)),
 		outputModelDatas(GPUContext::instance().getSharedBuffers(OUTPUT_MODELS+registeredRenderTargets.size()*NB_BUFFERS)),
 		outputMaterialDatas(GPUContext::instance().getSharedBuffers(OUTPUT_MATERIALS+registeredRenderTargets.size()*NB_BUFFERS)),		
-		meshletsGrid(0.5, 0.5, 0.5)		
+		meshletsGrid(50, 50, 50)		
 		{
 			
 			id = registeredRenderTargets.size();
@@ -714,7 +714,9 @@ namespace odfaeg {
 								if (gridCell == nullptr || gridCell->empty()) {
 									//std::cout<<"empty : "<<gridCell<<std::endl;
 									CellData emptyCell;
-									emptyCell.clusterId = -1;									
+									emptyCell.clusterId = -1;
+									emptyCell.clusterOffset = 0;
+									emptyCell.clusterCount = 0;									
 									cellDatas.push_back(emptyCell);
 								//Cluster rempli. 
 								} else {
@@ -729,7 +731,7 @@ namespace odfaeg {
 									cellData.clusterOffset = currentClustersOffset;
 									cellData.volume.center = gridCell->getCellVolume().getCenter();
 									cellData.volume.size = gridCell->getCellVolume().getSize();
-									cellDatas.push_back(cellData);
+									
 									while (!stack.empty()) {										
 										size_t id = stack.back();
 										stack.pop_back();
@@ -805,6 +807,7 @@ namespace odfaeg {
 										
 									}
 									cellData.clusterCount = currentClustersOffset - cellData.clusterOffset;
+									cellDatas.push_back(cellData);
 								}
 							}
 						}
@@ -1635,7 +1638,7 @@ namespace odfaeg {
 		}		
 		void RenderTarget::applyCullingAndBatching() {
 			//computeCommandPool.beginRecordCommandBuffer(getCurrentFrame());
-			
+			//std::cout<<"dispatch : nbObjects  : "<<gameObjects.size()<<"nb material : "<<Material::getNbMaterials()<<std::endl;
 			if (gameObjects.size() > 0) {
 
 				updateBuffers();
@@ -1716,6 +1719,7 @@ namespace odfaeg {
 				);
 				//std::cout<<"dispatch : nbObjects  : "<<gameObjects.size()<<"nb material : "<<Material::getNbMaterials()<<std::endl;
 				//std::cout<<"nb submeshes : "<<currentSubmeshesOffset<<std::endl;
+				//std::cout<<"dispatch : nbObjects  : "<<gameObjects.size()<<"nb material : "<<Material::getNbMaterials()<<std::endl;
 				vkCmdDispatch(commandPool.getHandle(getCurrentFrame()), gameObjects.size(), Material::getNbMaterials(), NB_PRIMITIVE_TYPES);
 
 
