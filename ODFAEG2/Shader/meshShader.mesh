@@ -39,14 +39,14 @@ struct AABB {
 	vec3 size;
 };
 struct Cluster {
-   AABB volume;
+    AABB volume;
     int meshletOffset;
     int meshletCount;
     int id;
     int lod;
     int leaf;	
     int submeshId;			
-    int children[8]; 
+    //int children[8]; 
 };
 struct MeshLet {
    AABB globalBounds;
