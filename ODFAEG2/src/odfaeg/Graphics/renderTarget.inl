@@ -594,6 +594,11 @@ namespace odfaeg {
 								math::Vec3f maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));
 								mins = math::Vec3f(std::min(m.mins.x(), mins.x()), std::min(m.mins.y(), mins.y()), std::min(m.mins.z(), mins.z()));
 								maxs = math::Vec3f(std::max(m.maxs.x(), maxs.x()), std::max(m.maxs.y(), maxs.y()), std::max(m.maxs.z(), maxs.z()));
+								m.minVertex = newMin;
+								m.maxVertex = newMax;
+								m.mins = mins;
+								m.maxs = maxs;
+								newVertexCount = (newMax - newMin) + 1;										
 								/*std::cout<<"new min max : "<<newMin<<","<<newMax<<","<<newVertexCount<<std::endl;
 								system("PAUSE");*/
 								// Si ce triangle dépasse les limites → nouveau meshlet
@@ -623,17 +628,13 @@ namespace odfaeg {
 									// Recalculer pour ce triangle
 									newMin = std::min(g0, std::min(g1, g2));
 									newMax = std::max(g0, std::max(g1, g2));
-									mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
-								    maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));									
-									newVertexCount = (newMax - newMin) + 1;										
+									
 									currentMeshletsOffset++;	
 									meshletCount++;							
 								}
 								// Ajouter triangle								
-								m.minVertex = newMin;
-								m.maxVertex = newMax;
-								m.mins = mins;
-								m.maxs = maxs;
+							
+								
 								m.nbIndexes += 3;								
 							}
 							// Final meshlet
