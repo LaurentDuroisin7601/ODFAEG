@@ -42,8 +42,8 @@ struct SubMesh {
 	int id;
     int lodLevel;
     int objectId;
-    int clusterOffset;
-    int clusterCount;
+    int mesheltOffset;
+    int meshletCount;
 };
 /*Matrices*/
 struct ModelData {
@@ -52,12 +52,12 @@ struct ModelData {
 	mat4 borderMatrices;
 };  
 struct Offset {
-    int previousOffsetVertex;
-    int offsetVertex;    
-    int instanceOffset;
-    int clusterOffset;
-    int submeshOffset;
-    int offsetTaskData;
+    uint previousOffsetVertex;
+    uint offsetVertex;    
+    uint instanceOffset;
+    uint clusterOffset;
+    uint submeshOffset;
+    uint offsetTaskData;
 };      
 /*Matériaux*/
 struct MaterialData {   
@@ -106,17 +106,18 @@ struct Vertex {
     int submeshId;
 };
 struct GridCell {
+    AABB volume;
     int clusterId;
 };
 struct Cluster {
-    AABB globalBounds;
-    int id;
-    int children[8];
-    int leaf;
-    int meshletCount;
+    AABB volume;
     int meshletOffset;
+    int meshletCount;
+    int id;
     int lod;
-    int submeshId;
+    int leaf;	
+    int submeshId;			
+    int children[8];    
 };
 struct MeshLet {
     AABB globalBounds;
@@ -274,7 +275,7 @@ bool hasNeightbour(ivec3 pos, int lod, uint axe) {
     while (sp > 0) {
         uint id = stack[sp--];
         Cluster n = inputClustersBuffer.clusters[id];
-        if (!intersects(ubo[pc.currentFrame].frustrum, n.globalBounds)) {
+        if (!intersects(ubo[pc.currentFrame].frustrum, n.volume)) {
             continue;
         }
         if (n.leaf == 1) {
@@ -296,12 +297,7 @@ bool hasNeightbour(ivec3 pos, int lod, uint axe) {
 void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, uint f, uint materialId) {   
     //debugPrintfEXT("set visible mesh shader");
         
-    float startx = frustrum.center.x - frustrum.size.x * 0.5;
-    float starty = frustrum.center.y - frustrum.size.y * 0.5;
-    float startz = frustrum.center.z - frustrum.size.z * 0.5;
-    float endx = startx + frustrum.size.x;
-    float endy = starty + frustrum.size.y;
-    float endz = startz + frustrum.size.z;
+    
     //Ballayage de la grille dans la zone visible.
     /*debugPrintfEXT("current frame : %f %f %f %f %f %f %f %f %f %f %f %i", startx, starty, startz, endx, endy, endz, ubo[pc.currentFrame].gridCellSize[lod].x, ubo[pc.currentFrame].gridCellSize[lod].y, ubo[pc.currentFrame].gridCellSize[lod].z,
     ubo[pc.currentFrame].nbCellsPerRow[lod].x, ubo[pc.currentFrame].nbCellsPerRow[lod].y, ubo[pc.currentFrame].gridCellCount[lod]);
@@ -314,115 +310,109 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
     float gridStartZ = ubo[pc.currentFrame].gridPos[lod].z * ubo[pc.currentFrame].gridCellSize[lod].z;
     //debugPrintfEXT("grid limits : %f %f %f", ubo[pc.currentFrame].gridPos[lod].x, ubo[pc.currentFrame].gridPos[lod].y, ubo[pc.currentFrame].gridPos[lod].z);
     
-    for (float x = startx; x < endx; x+= ubo[pc.currentFrame].gridCellSize[lod].x) {
-        for (float y = starty; y < endy; y+= ubo[pc.currentFrame].gridCellSize[lod].y) {
-            for (float z = startz; z < endz; z+= ubo[pc.currentFrame].gridCellSize[lod].z) {
-                //Root.
-                int cellId = int(floor(x / ubo[pc.currentFrame].gridCellSize[lod].x) + floor(y / ubo[pc.currentFrame].gridCellSize[lod].y) * ubo[pc.currentFrame].nbCellsPerRow[lod].x + floor(z / ubo[pc.currentFrame].gridCellSize[lod].z) * ubo[pc.currentFrame].nbCellsPerRow[lod].y);
-                if (startx == x && starty == y && startz == z)    
-                    debugPrintfEXT("cell id : %i", cellId);
-                /*if (x >= gridStartX && y >= gridStartY && z >= gridStartZ 
-                    && x < gridEndX && y < gridEndY && z < gridEndZ 
-                    && inputGridBuffer.grid[cellId].clusterId != -1 
-                    && cellId < ubo[pc.currentFrame].gridCellCount[lod]) {
-                    uint stack[32]; 
-                    uint sp = 0;
-                    stack[sp++] = inputClustersBuffer.clusters[inputGridBuffer.grid[cellId].clusterId].id;
-                    //Case non vide.                   
-                    while (sp > 0) {
-                        uint id = stack[sp--];
-                        Cluster n = inputClustersBuffer.clusters[id];
-                        if (!intersects(frustrum, n.globalBounds)) {
-                            continue;
-                        }
-                        if (n.leaf == 1) {
-                            
-                            if (n.lod == lod && n.submeshId == sm.id) { 
-                                //Cluster de modèle 3D visible : On ajoute ce cluster aux clusters visible.
-                                //debugPrintfEXT("Rendering type : %i", object.renderingType);
-                                if (object.renderingType == 0) {  
-                                    //debugPrintfEXT("Rendering type : %i", object.renderingType);
-                                    uint clusterOffset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);                        
-                                    outputClusters[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = n;    
-                                    uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;                                
-                                    outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupYCount++; 
-                                    for (uint m = 0; m < n.meshletCount; m++) {
-                                        inputMeshlet.meshlets[n.meshletOffset+m].rendered = 0;
-                                    }
-                                    //Heightmap.                            
-                                } else if (object.renderingType == 1) {
-                                    uint count = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
-                                    //Si on dépasse ou on arrive au dernier on créé une nouvelle tâche.
-                                    if (count + 4 >= MAX_VERTICES 
-                                        || (count + 4) / 4 * 2 >= MAX_PRIMITIVES) {                                                                
-                                        TaskData taskData; 
-                                        MeshDrawCommand meshDrawCommand;                        
-                                        meshDrawCommand.groupXCount = 1;
-                                        meshDrawCommand.groupYCount = 1;
-                                        meshDrawCommand.groupZCount = 1; 
-                                        taskData.meshDrawCommand = meshDrawCommand;                      
-                                        taskData.vertexOffset = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
-                                        uint taskDataOffset = atomicAdd(outputTaskCount[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
-                                        inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset = taskDataOffset;
-                                        outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = taskData; 
-                                        offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex;                    
-                                    }   
-                                    //Sommets visible : on les génères.
-                                    uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;
-                                    TaskData taskData = outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset];
-                                    for (uint h = 0; h < 4; h++) {
-                                        uint offset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex, 1); 
-                                        outputVertices[pc.currentFrame].vertices[offset] = inputVertices[sm.primitiveType].vertices[sm.vertexOffset+h];
-                                        taskData.vertexCount++;
-                                    }
-                                    count = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;                                    
-                                    TaskData task = outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset];
-                                    task.vertexCount = count;
-                                    task.primitiveCount = count / 4 * 2;
-                                    outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = task;
-                                    //Voxel. 
-                                } else {
-                                    //Voxel visible : on le génère.
-                                    if (!hasNeightbour(ivec3(x, y, z), lod, f)) {                                       
-                                        uint count = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
-                                        //Si on dépasse ou on arrive au dernier on créé une nouvelle tâche.
-                                        if (count + 4 >= MAX_VERTICES 
-                                            || (count + 4) / 4 * 2 >= MAX_PRIMITIVES) {                        
-                                            TaskData taskData; 
-                                            MeshDrawCommand meshDrawCommand;                        
-                                            meshDrawCommand.groupXCount = 1;
-                                            meshDrawCommand.groupYCount = 1;
-                                            meshDrawCommand.groupZCount = 1; 
-                                            taskData.meshDrawCommand = meshDrawCommand;                                                             
-                                            taskData.vertexOffset = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
-                                            uint taskDataOffset = atomicAdd(outputTaskCount[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
-                                            outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = taskData; 
-                                            offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex;  
-                                            inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset = taskDataOffset;                       
-                                        }   
-                                        uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;
-                                        //Sommets visible : on les génères.
-                                        TaskData taskData = outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset];
-                                        for (uint h = 0; h < 4; h++) {
-                                            uint offset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex, 1); 
-                                            outputVertices[pc.currentFrame].vertices[offset] = inputVertices[sm.primitiveType].vertices[sm.vertexOffset+h];
-                                            taskData.vertexCount++;
-                                        }
-                                        count = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;                                    
-                                        TaskData task = outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset];
-                                        task.vertexCount = count;
-                                        task.primitiveCount = count / 4 * 2;
-                                        outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = task;
-                                    }    
-                                }
-                            }                         
-                        } else {
-                            for (uint c = 0; c < 8; c++) {
-                                stack[sp++] = n.children[c];
+    for (uint i = 0; i < ubo[pc.currentFrame].gridCellCount[lod]; i++) {
+        //Root.   
+           
+        if (inputGridBuffer.grid[i].clusterId != -1 
+            && intersects(inputGridBuffer.grid[i].volume, frustrum)) {
+                //debugPrintfEXT("cluster id : %i ", inputGridBuffer.grid[i].clusterId);  
+            uint stack[32]; 
+            uint sp = 0;
+            stack[sp++] = inputClustersBuffer.clusters[inputGridBuffer.grid[i].clusterId].id;
+            //Case non vide.                   
+            while (sp > 0) {
+                uint id = stack[sp--];
+                //debugPrintfEXT("cluster id : %i ", id);
+                Cluster n = inputClustersBuffer.clusters[id];
+                if (!intersects(frustrum, n.volume)) {
+                    continue;
+                }
+                if (n.leaf == 1) {
+                    
+                    if (n.lod == lod && n.submeshId == sm.id) { 
+                        //Cluster de modèle 3D visible : On ajoute ce cluster aux clusters visible.
+                        //debugPrintfEXT("Rendering type : %i", object.renderingType);
+                        if (object.renderingType == 0) {  
+                            //debugPrintfEXT("Primitive type : %i", sm.primitiveType);
+                            uint clusterOffset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);                        
+                            /*outputClusters[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = n;    
+                            uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;                                
+                            outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupYCount++; 
+                            for (uint m = 0; m < n.meshletCount; m++) {
+                                inputMeshlet.meshlets[n.meshletOffset+m].rendered = 0;
+                            }*/
+                            //Heightmap.                            
+                        } /*else if (object.renderingType == 1) {
+                            uint count = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
+                            //Si on dépasse ou on arrive au dernier on créé une nouvelle tâche.
+                            if (count + 4 >= MAX_VERTICES 
+                                || (count + 4) / 4 * 2 >= MAX_PRIMITIVES) {                                                                
+                                TaskData taskData; 
+                                MeshDrawCommand meshDrawCommand;                        
+                                meshDrawCommand.groupXCount = 1;
+                                meshDrawCommand.groupYCount = 1;
+                                meshDrawCommand.groupZCount = 1; 
+                                taskData.meshDrawCommand = meshDrawCommand;                      
+                                taskData.vertexOffset = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
+                                uint taskDataOffset = atomicAdd(outputTaskCount[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
+                                inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset = taskDataOffset;
+                                outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = taskData; 
+                                offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex;                    
+                            }   
+                            //Sommets visible : on les génères.
+                            uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;
+                            TaskData taskData = outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset];
+                            for (uint h = 0; h < 4; h++) {
+                                uint offset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex, 1); 
+                                outputVertices[pc.currentFrame].vertices[offset] = inputVertices[sm.primitiveType].vertices[sm.vertexOffset+h];
+                                taskData.vertexCount++;
                             }
-                        }                         
+                            count = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;                                    
+                            TaskData task = outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset];
+                            task.vertexCount = count;
+                            task.primitiveCount = count / 4 * 2;
+                            outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = task;
+                            //Voxel. 
+                        } else {
+                            //Voxel visible : on le génère.
+                            //if (!hasNeightbour(ivec3(x, y, z), lod, f)) {                                       
+                                uint count = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
+                                //Si on dépasse ou on arrive au dernier on créé une nouvelle tâche.
+                                if (count + 4 >= MAX_VERTICES 
+                                    || (count + 4) / 4 * 2 >= MAX_PRIMITIVES) {                        
+                                    TaskData taskData; 
+                                    MeshDrawCommand meshDrawCommand;                        
+                                    meshDrawCommand.groupXCount = 1;
+                                    meshDrawCommand.groupYCount = 1;
+                                    meshDrawCommand.groupZCount = 1; 
+                                    taskData.meshDrawCommand = meshDrawCommand;                                                             
+                                    taskData.vertexOffset = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
+                                    uint taskDataOffset = atomicAdd(outputTaskCount[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
+                                    outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = taskData; 
+                                    offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex;  
+                                    inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset = taskDataOffset;                       
+                                }   
+                                uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;
+                                //Sommets visible : on les génères.
+                                TaskData taskData = outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset];
+                                for (uint h = 0; h < 4; h++) {
+                                    uint offset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex, 1); 
+                                    outputVertices[pc.currentFrame].vertices[offset] = inputVertices[sm.primitiveType].vertices[sm.vertexOffset+h];
+                                    taskData.vertexCount++;
+                                }
+                                count = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;                                    
+                                TaskData task = outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset];
+                                task.vertexCount = count;
+                                task.primitiveCount = count / 4 * 2;
+                                outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = task;
+                            //}    
+                        }*/
+                    }                         
+                } else {
+                    for (uint c = 0; c < 8; c++) {
+                        stack[sp++] = n.children[c];
                     }
-                }*/
+                }                         
             }
         }
     }

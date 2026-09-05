@@ -52,12 +52,12 @@ namespace odfaeg {
 			};
 			RenderTarget(Device& device, bool useDepthTest, bool useStencilTest);
 			struct Offset {
-				int previousOffsetVertex;
-				int offsetVertex;    
-				int instanceOffset;
-				int clusterOffset;
-				int submeshOffset;
-				int offsetTaskData;
+				unsigned int previousOffsetVertex;
+				unsigned int offsetVertex;    
+				unsigned int instanceOffset;
+				unsigned int clusterOffset;
+				unsigned int submeshOffset;
+				unsigned int offsetTaskData;
 			};
 			struct alignas(16) AABB {
 				alignas(16) math::Vec3f center; //float _pad0; // vec3 + padding
@@ -100,12 +100,15 @@ namespace odfaeg {
 				int meshletCount;
 				int id;
 				int lodLevel;
-				int leaf;				
-				std::vector<unsigned int> children;
-				int pad[2];
+				int leaf;
+				int submeshId;				
+				std::vector<int> children;
+				int pad;
 			};
 			struct CellData {
+				AABB volume;
 				unsigned int clusterId;
+				unsigned int pad[3];
 			};
 			struct Meshlet {
 				unsigned int id;
