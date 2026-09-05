@@ -184,8 +184,8 @@ void main() {
         uint maxPrims = 85u;
         uint vertexCount   = min(meshlet.nbVertices, maxVerts);
         uint primitiveCount = min(meshlet.nbIndexes / 3u, maxPrims);
-        if (vertexCount > 0)
-            debugPrintfEXT("submesh vertex count : %i, %i", meshlet.nbVertices, meshlet.nbIndexes);
+        /*if (vertexCount > 0)
+            debugPrintfEXT("submesh vertex count : %i, %i", meshlet.nbVertices, meshlet.nbIndexes);*/
         
             
         SetMeshOutputsEXT(vertexCount, primitiveCount);

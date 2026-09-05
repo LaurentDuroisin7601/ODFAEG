@@ -569,7 +569,7 @@ namespace odfaeg {
 							system("PAUSE");*/	
 							Meshlet m;
 							m.minVertex = std::numeric_limits<unsigned int>::max();
-							m.maxVertex = std::numeric_limits<unsigned int>::min();
+							m.maxVertex = 0;
 							m.nbIndexes = 0;
 							m.indexOffset = 0;
 							m.lod = l;	
@@ -587,10 +587,11 @@ namespace odfaeg {
     							unsigned int newMax = std::max(g0, std::max(g1, g2));
 								newMin = std::min(m.minVertex, newMin);
 								newMax = std::max(m.maxVertex, newMax);
-								unsigned int newVertexCount = (newMin - newMax) + 1;
+								unsigned int newVertexCount = (newMax - newMin) + 1;
 								mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
 								maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));
-								
+								/*std::cout<<"new min max : "<<newMin<<","<<newMax<<","<<newVertexCount<<std::endl;
+								system("PAUSE");*/
 								// Si ce triangle dépasse les limites → nouveau meshlet
 								if (m.nbIndexes/3 >= MAX_PRIMS || newVertexCount > MAX_VERTS)
     							{
@@ -602,7 +603,7 @@ namespace odfaeg {
 									// Nouveau meshlet
 									m = Meshlet();
 									m.minVertex = std::numeric_limits<unsigned int>::max();
-									m.maxVertex = std::numeric_limits<unsigned int>::min();;
+									m.maxVertex = 0;
 									m.nbIndexes = 0;
 									m.indexOffset = tri * 3;
 									m.lod = l;
@@ -616,7 +617,7 @@ namespace odfaeg {
 									newMax = std::max(g0, std::max(g1, g2));
 									mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
 								    maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));									
-									newVertexCount = newMax - newMin + 1;										
+									newVertexCount = (newMax - newMin) + 1;										
 									currentMeshletsOffset++;	
 									meshletCount++;							
 								}
@@ -665,6 +666,7 @@ namespace odfaeg {
 							for (unsigned int m = currentSubmeshMeshletOffset; m < meshletDatas.size(); m++) {							
 								//Reconstruction de l'AABB et ajout dans la grille de meshlets.
 								if (meshletDatas[m].lod == l) {
+									std::cout<<"meshlet : "<<m<<","<<meshletDatas[m].nbVertices<<","<<meshletDatas[m].nbIndexes<<std::endl;
 									
 									physic::BoundingBox volume(
 										meshletDatas[m].mins.x(), 
