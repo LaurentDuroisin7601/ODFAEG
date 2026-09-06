@@ -738,143 +738,138 @@ namespace odfaeg {
 							system("PAUSE");*/
 									
 							//Ballayage de la grille.
-							std::cout<<gridPos<<","<<gridSize<<std::endl;				
-							for (int x = gridPos.x(); x < gridPos.x() + gridSize.x(); x++) {
-								//std::cout<<"ok"<<std::endl;
-								for (int y = gridPos.y(); y < gridPos.y() + gridSize.y(); y++) {
-									for (int z = gridPos.z(); z < gridPos.z() + gridSize.z(); z++) {
-										//std::cout<<"grid cell : "<<x<<","<<y<<","<<z<<std::endl;
+							std::vector<entity::GridCell<Meshlet>> casesMap = meshletsGrid.getCasesMap();				
+							for (unsigned int cm = 0; cm < casesMap.size(); cm++) {
+								//std::cout<<"grid cell : "<<x<<","<<y<<","<<z<<std::endl;
+								
+								entity::GridCell<Meshlet> gridCell = casesMap[cm];
+								//Trou. (Il faut les gérer pour le ballayage GPU)
+								//std::cout<<"volume : "<<gridCell->getCellVolume().getPosition()<<","<<gridCell->getCellVolume().getSize()<<std::endl;
+								if (gridCell.empty()) {
+									/*if (gridCell->empty()) {
+										std::cout<<"empty : "<<gridCell->getCellVolume().getPosition()<<","<<gridCell->getCellVolume().getSize()<<std::endl;//std::cout<<"grid cell is null"<<std::endl;
+										system("PAUSE");
+									}*/
+									//std::cout<<"empty : "<<gridCell<<std::endl;
+									CellData emptyCell;
+									emptyCell.clusterId = -1;
+									emptyCell.clusterOffset = 0;
+									emptyCell.clusterCount = 0;									
+									cellDatas.push_back(emptyCell);
+								//Cluster rempli. 
+								} else {
+									//std::cout<<"not empty"<<std::endl;
+									//Ajout du root node et des enfants + création des clusters et assignation des ids.
+									std::deque<entity::Octree<Meshlet>::Node>& nodes = gridCell.getOctreeNodes();
+									//std::cout<<"size : "<<nodes.size()<<std::endl;
+									std::deque<unsigned int> stack;
+									stack.push_back(0);	
+									CellData cellData;							
+									cellData.clusterId = currentClustersOffset;
+									cellData.clusterOffset = currentClustersOffset;
+									cellData.volume.center = gridCell.getCellVolume().getCenter();
+									cellData.volume.size = gridCell.getCellVolume().getSize();
+									
+									while (!stack.empty()) {										
+										size_t id = stack.back();
+										stack.pop_back();
+										//std::cout<<"leaf ? "<<node.leaf<<"size = "<<stack.size()<<std::endl;
+										entity::Octree<Meshlet>::Node& node = nodes[id];
+										/*Cluster clusterData;												
+										clusterData.submeshId = currentSubmeshesOffset;
+										clusterData.volume.center = node.volume.getCenter();
+										clusterData.volume.size = node.volume.getSize();
+										//std::cout<<"cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
+
 										
-										entity::GridCell<Meshlet>* gridCell = meshletsGrid.getGridCellAtFromCoords(math::Vec3f(x, y, z));
-										//Trou. (Il faut les gérer pour le ballayage GPU)
-										//std::cout<<"volume : "<<gridCell->getCellVolume().getPosition()<<","<<gridCell->getCellVolume().getSize()<<std::endl;
-										if (gridCell == nullptr || gridCell->empty()) {
-											/*if (gridCell->empty()) {
-												std::cout<<"empty : "<<gridCell->getCellVolume().getPosition()<<","<<gridCell->getCellVolume().getSize()<<std::endl;//std::cout<<"grid cell is null"<<std::endl;
-												system("PAUSE");
-											}*/
-											//std::cout<<"empty : "<<gridCell<<std::endl;
-											CellData emptyCell;
-											emptyCell.clusterId = -1;
-											emptyCell.clusterOffset = 0;
-											emptyCell.clusterCount = 0;									
-											cellDatas.push_back(emptyCell);
-										//Cluster rempli. 
-										} else {
-											//std::cout<<"not empty"<<std::endl;
-											//Ajout du root node et des enfants + création des clusters et assignation des ids.
-											std::deque<entity::Octree<Meshlet>::Node>& nodes = gridCell->getOctreeNodes();
-											//std::cout<<"size : "<<nodes.size()<<std::endl;
-											std::deque<unsigned int> stack;
-											stack.push_back(0);	
-											CellData cellData;							
-											cellData.clusterId = currentClustersOffset;
-											cellData.clusterOffset = currentClustersOffset;
-											cellData.volume.center = gridCell->getCellVolume().getCenter();
-											cellData.volume.size = gridCell->getCellVolume().getSize();
-											
-											while (!stack.empty()) {										
-												size_t id = stack.back();
-												stack.pop_back();
-												//std::cout<<"leaf ? "<<node.leaf<<"size = "<<stack.size()<<std::endl;
-												entity::Octree<Meshlet>::Node& node = nodes[id];
-												/*Cluster clusterData;												
-												clusterData.submeshId = currentSubmeshesOffset;
-												clusterData.volume.center = node.volume.getCenter();
-												clusterData.volume.size = node.volume.getSize();
-												//std::cout<<"cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
-
+										
+										clusterData.leaf = 0;
+										clusterData.id = clusterDatas.size();
+										clusterData.lodLevel = l;
+										clusterData.meshletCount = 10;
+										clusterData.meshletOffset = 0;
+										
+																							
+										clusterDatas.push_back(clusterData);
+										node.id = clusterDatas.size()-1;*/
+										//currentClustersOffset++;	
+										if (!node.leaf) {
+											//std::cout<<"children : "<<node.children.size()<<std::endl;								
+											for(unsigned int c = 0; c < node.children.size(); c++) {
+												/*std::cout<<"not leaf : "<<node.objects.size()<<"c : "<<
+												c<<","<<nodes[node.children[c]].objects.size()<<std::endl;*/													
 												
+												stack.push_back(node.children[c]);
+												//node.id = clusterDatas.size()-1;
 												
-												clusterData.leaf = 0;
-												clusterData.id = clusterDatas.size();
-												clusterData.lodLevel = l;
-												clusterData.meshletCount = 10;
-												clusterData.meshletOffset = 0;
-												
-																									
-												clusterDatas.push_back(clusterData);
-												node.id = clusterDatas.size()-1;*/
-												//currentClustersOffset++;	
-												if (!node.leaf) {
-													//std::cout<<"children : "<<node.children.size()<<std::endl;								
-													for(unsigned int c = 0; c < node.children.size(); c++) {
-														/*std::cout<<"not leaf : "<<node.objects.size()<<"c : "<<
-														c<<","<<nodes[node.children[c]].objects.size()<<std::endl;*/													
-														
-														stack.push_back(node.children[c]);
-														//node.id = clusterDatas.size()-1;
-														
-														//std::cout<<"size : "<<nodes.size()<<"id : "<<id<<" "<<node.children[c]<<std::endl;										clusterDatas[clusterDatas.size()-1].children.push_back(clusterDatas.size());
-														
-													}
-												} else if (node.objects.size() > 0) {
-													
-													//system("PAUSE");
-													//entity::Octree<Meshlet>::Node& parent = nodes[node.parent];
-													//std::cout<<"id : "<<id<<" "<<std::endl;
-													
-													//std::cout<<"size : "<<parent.children.size()<<std::endl;
-													
-														/*std::cout<<"id : "<<id<<" "<<parent.children[c]<<std::endl;
-														if (nodes[parent.children[c]].objects.size() == 0) {
-															//std::cout<<"empty cluster"<<std::endl;
-															//std::cout<<"nb Objects : "<<nodes[parent.children[c]].objects.size()<<std::endl;
-														}*/
-													
-														//std::cout<<"leaf : "<<node.objects.size()<<std::endl;
-													
-													Cluster childClusterData;												
-													childClusterData.submeshId = subMeshData.id;
-													childClusterData.volume.center = node.volume.getCenter();
-													childClusterData.volume.size = node.volume.getSize();
-													//std::cout<<"cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
-													childClusterData.id = clusterDatas.size();
-													childClusterData.lodLevel = l;														
-													childClusterData.meshletOffset = 0;	
-													childClusterData.meshletCount = node.objects.size();
-													childClusterData.leaf = 1;
-													clusterDatas.push_back(childClusterData);
-													currentClustersOffset++;
-															
-													for (unsigned int o = 0; o < node.objects.size(); o++) {												
-														
-														/*std::cout<<"id, size : "<<node.id<<", "<<node.objects.size()<<std::endl;
-														system("PAUSE");*/
-																									
-														//clusterData.children[c] = clusterDatas.size();
-														if (node.objects.size() > 8) {
-															std::cout<<"meshlet id : "<<node.objects[o].id<<","<<meshletDatas.size()<<std::endl;
-															system("PAUSE");
-														}
-														//std::cout<<"id : "<<node.objects.size()<<std::endl;
-														meshletDatas[node.objects[o].id].clusterId = childClusterData.id;												
-														//std::cout<<"meshlet : "<<meshletDatas[node.objects[o].id].id<<","<<meshletDatas[node.objects[o].id].submeshId<<","<<meshletDatas[node.objects[o].id].lod<<","<<meshletDatas[node.objects[o].id].clusterId<<std::endl;
-														/*if (childClusterData.meshletCount > 0) {
-
-															std::cout<<"meshlet count : "<<childClusterData.meshletCount<<std::endl;
-															system("PAUSE");
-														}*/
-														/*std::cout<<"meshlet count : "<<childClusterData.meshletCount<<std::endl;
-														system("PAUSE");*/
-														//std::cout<<"nb objects : "<<nodes[parent.children[c]].objects.size()<<"AABB : cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
-														
-														//std::cout<<"size : "<<stack.size()<<std::endl;
-																									
-													}																										
-													
-												}
+												//std::cout<<"size : "<<nodes.size()<<"id : "<<id<<" "<<node.children[c]<<std::endl;										clusterDatas[clusterDatas.size()-1].children.push_back(clusterDatas.size());
 												
 											}
+										} else if (node.objects.size() > 0) {
 											
-											cellData.clusterCount = currentClustersOffset - cellData.clusterOffset;
-											//std::cout<<"cluster count : "<<cellData.clusterCount<<std::endl;
+											//system("PAUSE");
+											//entity::Octree<Meshlet>::Node& parent = nodes[node.parent];
+											//std::cout<<"id : "<<id<<" "<<std::endl;
 											
-											cellDatas.push_back(cellData);
+											//std::cout<<"size : "<<parent.children.size()<<std::endl;
+											
+												/*std::cout<<"id : "<<id<<" "<<parent.children[c]<<std::endl;
+												if (nodes[parent.children[c]].objects.size() == 0) {
+													//std::cout<<"empty cluster"<<std::endl;
+													//std::cout<<"nb Objects : "<<nodes[parent.children[c]].objects.size()<<std::endl;
+												}*/
+											
+												//std::cout<<"leaf : "<<node.objects.size()<<std::endl;
+											
+											Cluster childClusterData;												
+											childClusterData.submeshId = subMeshData.id;
+											childClusterData.volume.center = node.volume.getCenter();
+											childClusterData.volume.size = node.volume.getSize();
+											//std::cout<<"cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
+											childClusterData.id = clusterDatas.size();
+											childClusterData.lodLevel = l;														
+											childClusterData.meshletOffset = 0;	
+											childClusterData.meshletCount = node.objects.size();
+											childClusterData.leaf = 1;
+											clusterDatas.push_back(childClusterData);
+											currentClustersOffset++;
+													
+											for (unsigned int o = 0; o < node.objects.size(); o++) {												
+												
+												/*std::cout<<"id, size : "<<node.id<<", "<<node.objects.size()<<std::endl;
+												system("PAUSE");*/
+																							
+												//clusterData.children[c] = clusterDatas.size();
+												if (node.objects.size() > 8) {
+													std::cout<<"meshlet id : "<<node.objects[o].id<<","<<meshletDatas.size()<<std::endl;
+													system("PAUSE");
+												}
+												//std::cout<<"id : "<<node.objects.size()<<std::endl;
+												meshletDatas[node.objects[o].id].clusterId = childClusterData.id;												
+												//std::cout<<"meshlet : "<<meshletDatas[node.objects[o].id].id<<","<<meshletDatas[node.objects[o].id].submeshId<<","<<meshletDatas[node.objects[o].id].lod<<","<<meshletDatas[node.objects[o].id].clusterId<<std::endl;
+												/*if (childClusterData.meshletCount > 0) {
+
+													std::cout<<"meshlet count : "<<childClusterData.meshletCount<<std::endl;
+													system("PAUSE");
+												}*/
+												/*std::cout<<"meshlet count : "<<childClusterData.meshletCount<<std::endl;
+												system("PAUSE");*/
+												//std::cout<<"nb objects : "<<nodes[parent.children[c]].objects.size()<<"AABB : cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
+												
+												//std::cout<<"size : "<<stack.size()<<std::endl;
+																							
+											}																										
+											
 										}
+										
 									}
+									
+									cellData.clusterCount = currentClustersOffset - cellData.clusterOffset;
+									//std::cout<<"cluster count : "<<cellData.clusterCount<<std::endl;
+									
+									cellDatas.push_back(cellData);
 								}
-							}
+							}								
 							cullingInfo.gridCellCount[l] = cellDatas.size();
 						}
 						
