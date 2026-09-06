@@ -875,7 +875,7 @@ namespace odfaeg {
 				unsigned int count = 0;
 				for (unsigned int m = 0; m < meshletDatas.size(); m++) {
 					if (meshletDatas[m].clusterId != -1) {
-						std::cout<<"id : "<<meshletDatas[m].clusterId<<","<<clusterDatas.size()<<std::endl;
+						//std::cout<<"id : "<<meshletDatas[m].clusterId<<","<<clusterDatas.size()<<std::endl;
 									
 						if (count >= clusterDatas[meshletDatas[m].clusterId].meshletCount) {	
 							lastMeshletId = m;

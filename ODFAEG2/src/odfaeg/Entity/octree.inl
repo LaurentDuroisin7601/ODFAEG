@@ -30,7 +30,7 @@ namespace odfaeg {
         void Octree<Object>::insert(size_t id, Object object, physic::BoundingBox objectVolume, unsigned int depth) {
             Node& node = nodes[id];
 
-            if (node.volume.intersects(objectVolume) && depth < 150) {
+            if (node.volume.intersects(objectVolume)/* && depth < 150*/) {
                     
                     
                 if (!node.leaf) {
@@ -78,7 +78,7 @@ namespace odfaeg {
                                     /*std::cout<<"insert object : "<<node.objectVolumes[j].getPosition()<<","<<node.objectVolumes[j].getSize()<<std::endl;
                                     std::cout<<"node volume : "<<nodes[node.children[k]].volume.getPosition()<<","<<nodes[node.children[k]].volume.getSize()<<std::endl;*/
                                     insert(node.children[k], node.objects[j], node.objectVolumes[j], depth++);
-                                    
+                                    return;
                                     //std::cout<<"inserted : "<<std::endl;*/
                                     
                                     /*nodes[node.children[k]].objects.push_back(node.objects[j]);
