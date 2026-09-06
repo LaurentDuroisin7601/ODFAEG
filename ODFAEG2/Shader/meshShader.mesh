@@ -215,11 +215,11 @@ void main() {
             uint i0 = g0 - meshlet.vertexOffset;
             uint i1 = g1 - meshlet.vertexOffset;
             uint i2 = g2 - meshlet.vertexOffset;  
-            /*if (i0 >= meshlet.nbVertices || i1 >= meshlet.nbVertices || i2 >= meshlet.nbVertices) {
+            if (i0 >= meshlet.nbVertices || i1 >= meshlet.nbVertices || i2 >= meshlet.nbVertices) {
                 
                 debugPrintfEXT("meshlet : %i %i %i %i,%i, %i, %i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, meshlet.nbVertices, firstIndex, meshlet.vertexOffset); 
-                continue;
-            } */
+                
+            }
             gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
         }
     //Face de heightmap ou voxel.

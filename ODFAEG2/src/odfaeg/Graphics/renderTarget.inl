@@ -820,11 +820,11 @@ namespace odfaeg {
 														
 														meshletDatas[node.objects[o].id].clusterId = childClusterData.id;												
 														childClusterData.meshletCount = node.objects.size();
-														if (childClusterData.meshletCount > 8) {
+														/*if (childClusterData.meshletCount > 0) {
 
 															std::cout<<"meshlet count : "<<childClusterData.meshletCount<<std::endl;
 															system("PAUSE");
-														}
+														}*/
 														/*std::cout<<"meshlet count : "<<childClusterData.meshletCount<<std::endl;
 														system("PAUSE");*/
 														//std::cout<<"nb objects : "<<nodes[parent.children[c]].objects.size()<<"AABB : cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;

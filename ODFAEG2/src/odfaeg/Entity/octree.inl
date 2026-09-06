@@ -27,10 +27,10 @@ namespace odfaeg {
             //std::cout<<"ok 2"<<std::endl;            
         }
         template <typename Object>
-        void Octree<Object>::insert(size_t id, Object object, physic::BoundingBox objectVolume, unsigned int depth) {
+        void Octree<Object>::insert(size_t id, Object object, physic::BoundingBox objectVolume) {
             Node& node = nodes[id];
 
-            if (node.volume.intersects(objectVolume) && depth < 10) {
+            if (node.volume.intersects(objectVolume)) {
                     
                     
                 if (!node.leaf) {
@@ -38,7 +38,7 @@ namespace odfaeg {
                         Node& child = nodes[node.children[j]];
                         if (!contains(child, object) && child.volume.intersects(objectVolume)) {
                             //std::cout<<"insert object : "<<j<<std::endl;
-                            insert(node.children[j], object, objectVolume, depth);
+                            insert(node.children[j], object, objectVolume);
                             return;
                         }
                     }
@@ -76,12 +76,12 @@ namespace odfaeg {
                                 if (nodes[node.children[k]].volume.intersects(node.objectVolumes[j])) {
                                     std::cout<<"insert object : "<<node.objectVolumes[j].getPosition()<<","<<node.objectVolumes[j].getSize()<<std::endl;
                                     std::cout<<"node volume : "<<nodes[node.children[k]].volume.getPosition()<<","<<nodes[node.children[k]].volume.getSize()<<std::endl;
-                                    insert(node.children[k], node.objects[j], node.objectVolumes[j], depth++);
+                                    insert(node.children[k], node.objects[j], node.objectVolumes[j]);
                                    
                                     //std::cout<<"inserted : "<<std::endl;*/
                                     
-                                    nodes[node.children[k]].objects.push_back(node.objects[j]);
-                                    nodes[node.children[k]].objectVolumes.push_back(node.objectVolumes[j]);
+                                    /*nodes[node.children[k]].objects.push_back(node.objects[j]);
+                                    nodes[node.children[k]].objectVolumes.push_back(node.objectVolumes[j]);*/
                                 }                               
                             }
                         }

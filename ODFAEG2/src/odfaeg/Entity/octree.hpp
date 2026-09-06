@@ -32,7 +32,7 @@ namespace odfaeg {
             unsigned int maxObjectsPerNode;
             void getObjectVolumes(std::vector<physic::BoundingBox>& objects, Node node, physic::BoundingBox volume);
             void getObjects(std::vector<Object>& objects, Node node, physic::BoundingBox volume);
-            void insert(size_t id, Object object, physic::BoundingBox objectVolume, unsigned int depth=0);
+            void insert(size_t id, Object object, physic::BoundingBox objectVolume);
             void freeNodes(Node& node);
             std::deque<Node> nodes;
             inline static unsigned int compteur = 0;
