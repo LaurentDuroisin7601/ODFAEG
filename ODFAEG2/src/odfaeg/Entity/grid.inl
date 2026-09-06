@@ -248,9 +248,9 @@ namespace odfaeg {
             checkExts();
             casesMap.pop_back();
 
-            nbCasesPerRow = (casesMap.size() > 0) ? math::Math::abs(minX) + maxX : 1;
-            nbCasesPerCol = (casesMap.size() > 0) ? math::Math::abs(minY) + maxY : 1;
-            int nbCasesPerDepth = (casesMap.size() > 0) ? math::Math::abs(minZ) + maxZ : 1;
+            nbCasesPerRow = (casesMap.size() > 0) ? math::Math::abs(minX) + maxX + 1 : 1;
+            nbCasesPerCol = (casesMap.size() > 0) ? math::Math::abs(minY) + maxY + 1 : 1;
+            int nbCasesPerDepth = (casesMap.size() > 0) ? math::Math::abs(minZ) + maxZ + 1 : 1;
             //////////std::cout<<"nbCasesPerRow : "<<nbCasesPerRow<<std::endl<<"nbCasesPerCol : "<<nbCasesPerCol<<"nb cases per depth"<<nbCasesPerDepth<<std::endl;
             unsigned int newSize = nbCasesPerCol * nbCasesPerRow * nbCasesPerDepth;
             //////////std::cout<<"min z : "<<minZ<<std::endl;
@@ -268,12 +268,12 @@ namespace odfaeg {
                         math::Vec3f coords = tmpCasesMap[i].getCoords();
                         int newInd = (coords.x() - minX)
                                      + (coords.y() - minY) * nbCasesPerRow + (coords.z() - minZ) * nbCasesPerCol * nbCasesPerRow;
-                        //////////std::cout<<"new ind  : "<<newInd<<std::endl;
+                        std::cout<<"new ind  : "<<newInd<<"ind : "<<indice<<std::endl;
                         casesMap[newInd] = tmpCasesMap[i];
                     //}
                 }
                 ////////std::cout<<"vector resized > "<<std::endl;
-            } /*else if (newSize < casesMap.size()) {
+            } else if (newSize < casesMap.size()) {
                 ////////std::cout<<"resize vector < ! : "<<newSize<<std::endl;
                 vector<GridCell<Object>> tmpCasesMap = casesMap;
                 casesMap.clear();
@@ -283,13 +283,13 @@ namespace odfaeg {
                     //if (tmpCasesMap[i] != nullptr) {
                         math::Vec3f coords = tmpCasesMap[i].getCoords();
                         int newInd = (coords.x() - minX)
-                                     + (minY + coords.y() - minY) * nbCasesPerRow + (minZ + coords.z() - minZ) * nbCasesPerCol * nbCasesPerRow;
+                                     + (minY + coords.y() - minY) * nbCasesPerRow + (coords.z() - minZ) * nbCasesPerCol * nbCasesPerRow;
                         //////////std::cout<<"new ind  : "<<newInd<<std::endl;
                         casesMap[newInd] = tmpCasesMap[i];
                     //}
                 }
                 ////////std::cout<<"vector resized <"<<std::endl;
-            }*/
+            }
             //////////std::cout<<"ind : "<<indice<<std::endl;
             casesMap[indice] = cell;
             //std::cout<<"volume : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
