@@ -601,9 +601,8 @@ namespace odfaeg {
 								m.minVertex = newMin;
 								m.maxVertex = newMax;
 								m.mins = mins;
-								m.maxs = maxs;
-								
-;								newVertexCount = (newMax - newMin) + 1;										
+								m.maxs = maxs;								
+								newVertexCount = (newMax - newMin) + 1;										
 								/*std::cout<<"new min max : "<<newMin<<","<<newMax<<","<<newVertexCount<<std::endl;
 								system("PAUSE");*/
 								// Si ce triangle dépasse les limites → nouveau meshlet
@@ -785,7 +784,7 @@ namespace odfaeg {
 														//std::cout<<"size : "<<nodes.size()<<"id : "<<id<<" "<<node.children[c]<<std::endl;										clusterDatas[clusterDatas.size()-1].children.push_back(clusterDatas.size());
 														
 													}
-												} else {
+												} else if (node.objects.size() > 0) {
 													
 													//system("PAUSE");
 													//entity::Octree<Meshlet>::Node& parent = nodes[node.parent];
@@ -799,27 +798,30 @@ namespace odfaeg {
 															//std::cout<<"nb Objects : "<<nodes[parent.children[c]].objects.size()<<std::endl;
 														}*/
 													
+														//std::cout<<"leaf : "<<node.objects.size()<<std::endl;
+													
+													Cluster childClusterData;												
+													childClusterData.submeshId = subMeshData.id;
+													childClusterData.volume.center = node.volume.getCenter();
+													childClusterData.volume.size = node.volume.getSize();
+													//std::cout<<"cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
+													childClusterData.id = clusterDatas.size();
+													childClusterData.lodLevel = l;														
+													childClusterData.meshletOffset = 0;	
+													childClusterData.meshletCount = node.objects.size();
+													childClusterData.leaf = 1;
+													clusterDatas.push_back(childClusterData);
+													currentClustersOffset++;		
 													for (unsigned int o = 0; o < node.objects.size(); o++) {												
 														
 														/*std::cout<<"id, size : "<<node.id<<", "<<node.objects.size()<<std::endl;
 														system("PAUSE");*/
-														Cluster childClusterData;												
-														childClusterData.submeshId = subMeshData.id;
-														childClusterData.volume.center = node.volume.getCenter();
-														childClusterData.volume.size = node.volume.getSize();
-														//std::cout<<"cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
-														
-														
-														
-														childClusterData.leaf = 0;
-														childClusterData.id = clusterDatas.size();
-														childClusterData.lodLevel = l;														
-														childClusterData.meshletOffset = 0;														
+																									
 														//clusterData.children[c] = clusterDatas.size();
 																											
 														
 														meshletDatas[node.objects[o].id].clusterId = childClusterData.id;												
-														childClusterData.meshletCount = node.objects.size();
+														
 														/*if (childClusterData.meshletCount > 0) {
 
 															std::cout<<"meshlet count : "<<childClusterData.meshletCount<<std::endl;
@@ -828,9 +830,7 @@ namespace odfaeg {
 														/*std::cout<<"meshlet count : "<<childClusterData.meshletCount<<std::endl;
 														system("PAUSE");*/
 														//std::cout<<"nb objects : "<<nodes[parent.children[c]].objects.size()<<"AABB : cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
-														childClusterData.leaf = 1;
-														clusterDatas.push_back(childClusterData);
-														currentClustersOffset++;
+														
 														//std::cout<<"size : "<<stack.size()<<std::endl;
 																									
 													}																										
@@ -866,10 +866,10 @@ namespace odfaeg {
 				unsigned int lastMeshletId = 0;
 				unsigned int count = 0;
 				for (unsigned int m = 0; m < meshletDatas.size(); m++) {
-					/*if (clusterDatas[meshletDatas[m].clusterId].meshletCount > 0) {
+					if (clusterDatas[meshletDatas[m].clusterId].meshletCount == 0) {
 						
 						std::cout<<"culter id : "<<lastMeshletId<<","<<clusterDatas[meshletDatas[m].clusterId].meshletCount<<std::endl;
-					}*/				
+					}				
 					if (count >= clusterDatas[meshletDatas[m].clusterId].meshletCount) {	
 						lastMeshletId = m;
 						count = 0;					

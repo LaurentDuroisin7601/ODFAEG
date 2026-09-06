@@ -45,6 +45,7 @@ namespace odfaeg {
                     //return;
                 } else {
                     if (!contains(node, object)) {
+                        //std::cout<<"insert object : "<<objectVolume.getPosition()<<","<<objectVolume.getSize()<<std::endl;
                         node.objects.push_back(object);
                         node.objectVolumes.push_back(objectVolume);
                     }
