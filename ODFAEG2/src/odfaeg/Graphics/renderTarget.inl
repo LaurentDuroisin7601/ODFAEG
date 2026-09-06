@@ -738,12 +738,13 @@ namespace odfaeg {
 							system("PAUSE");*/
 									
 							//Ballayage de la grille.
-							//std::cout<<gridPos<<","<<gridSize<<std::endl;				
+							std::cout<<gridPos<<","<<gridSize<<std::endl;				
 							for (int x = gridPos.x(); x < gridPos.x() + gridSize.x(); x++) {
 								//std::cout<<"ok"<<std::endl;
 								for (int y = gridPos.y(); y < gridPos.y() + gridSize.y(); y++) {
 									for (int z = gridPos.z(); z < gridPos.z() + gridSize.z(); z++) {
 										//std::cout<<"grid cell : "<<x<<","<<y<<","<<z<<std::endl;
+										
 										entity::GridCell<Meshlet>* gridCell = meshletsGrid.getGridCellAtFromCoords(math::Vec3f(x, y, z));
 										//Trou. (Il faut les gérer pour le ballayage GPU)
 										//std::cout<<"volume : "<<gridCell->getCellVolume().getPosition()<<","<<gridCell->getCellVolume().getSize()<<std::endl;

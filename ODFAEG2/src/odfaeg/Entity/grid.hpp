@@ -8,6 +8,21 @@ namespace odfaeg {
         template <typename Object>
         class GridMap {
             public:
+            struct CellKey {
+                int x, y, z;
+
+                bool operator==(const CellKey& other) const {
+                    return x == other.x && y == other.y && z == other.z;
+                }
+            };
+            struct CellKeyHash {
+                std::size_t operator()(const CellKey& k) const {
+                    // Combine les trois entiers
+                    return ((std::size_t)k.x * 73856093) ^
+                        ((std::size_t)k.y * 19349663) ^
+                        ((std::size_t)k.z * 83492791);
+                }
+            };
             GridMap (float cellWidth, float cellHeight, float cellDepth);
             int getCellWidth();
             int getCellHeight();            
@@ -33,7 +48,7 @@ namespace odfaeg {
             vector<Object> getEntities ();
             math::Vec3f getMins ();
             GridCell<Object>* getGridCellAt (math::Vec3f point);            
-            math::Vec3f getCoordinatesAt(math::Vec3f &point);
+            math::Vec3f getCoordinatesAt(math::Vec3f point);
             std::vector<GridCell<Object>> getCasesMap ();
             void checkExts ();
             math::Vec3f getSize();
@@ -42,7 +57,7 @@ namespace odfaeg {
             void clear();
             ~GridMap ();
             private:
-            std::vector<GridCell<Object>> casesMap;
+            std::unordered_map<CellKey, std::unique_ptr<GridCell<Object>>, CellKeyHash> casesMap;
             int nbCasesPerRow, nbCasesPerCol;
             int minX, minY, minZ, maxX, maxY, maxZ;
             float cellWidth, cellHeight, cellDepth;
