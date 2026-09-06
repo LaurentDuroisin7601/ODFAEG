@@ -712,7 +712,7 @@ namespace odfaeg {
 										meshletDatas[m].maxs.z() - meshletDatas[m].mins.z());
 									//std::cout<<"volume : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
 									oneAdded = true;
-									std::cout<<"add meshlet : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
+									//std::cout<<"add meshlet : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
 									meshletsGrid.addEntity(meshletDatas[m], volume);
 									
 									if (!meshletsGrid.containsEntity(meshletDatas[m])) {
@@ -746,10 +746,10 @@ namespace odfaeg {
 								//Trou. (Il faut les gérer pour le ballayage GPU)
 								//std::cout<<"volume : "<<gridCell->getCellVolume().getPosition()<<","<<gridCell->getCellVolume().getSize()<<std::endl;
 								if (gridCell.empty()) {
-									/*if (gridCell->empty()) {
-										std::cout<<"empty : "<<gridCell->getCellVolume().getPosition()<<","<<gridCell->getCellVolume().getSize()<<std::endl;//std::cout<<"grid cell is null"<<std::endl;
+									if (gridCell.empty()) {
+										std::cout<<"empty : "<<gridCell.getCellVolume().getPosition()<<","<<gridCell.getCellVolume().getSize()<<std::endl;//std::cout<<"grid cell is null"<<std::endl;
 										system("PAUSE");
-									}*/
+									}
 									//std::cout<<"empty : "<<gridCell<<std::endl;
 									CellData emptyCell;
 									emptyCell.clusterId = -1;
@@ -794,7 +794,11 @@ namespace odfaeg {
 										node.id = clusterDatas.size()-1;*/
 										//currentClustersOffset++;	
 										if (!node.leaf) {
-											//std::cout<<"children : "<<node.children.size()<<std::endl;								
+											//std::cout<<"children : "<<node.children.size()<<std::endl;
+											if (node.objects.size() > 0) {
+												std::cout<<"not leaf"<<std::endl;
+												system("PAUSE");
+											}								
 											for(unsigned int c = 0; c < node.children.size(); c++) {
 												/*std::cout<<"not leaf : "<<node.objects.size()<<"c : "<<
 												c<<","<<nodes[node.children[c]].objects.size()<<std::endl;*/													

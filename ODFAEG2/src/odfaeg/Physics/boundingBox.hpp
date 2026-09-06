@@ -35,7 +35,7 @@ namespace odfaeg {
              */
             BoundingBox(float x, float y, float z, float width, float height, float depth);
             bool intersects(BoundingBox& bx);
-            bool isInside(BoundingBox& other);
+            bool contains(BoundingBox& other);
             /** \fn bool isPointInside (Vec2f point)
             *   \brief test if a point is in the bounding box.
             *   \param the point to test in.

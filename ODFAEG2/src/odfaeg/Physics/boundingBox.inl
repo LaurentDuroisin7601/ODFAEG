@@ -332,7 +332,7 @@ namespace odfaeg {
         }        
         bool BoundingBox::isFlat() {
             return flat;
-        }
+        }        
         bool BoundingBox::intersects(BoundingBox& other) {
             if (width == 0 && height == 0 && depth == 0
                 || other.width == 0 && other.height == 0 && other.depth == 0)
@@ -367,13 +367,25 @@ namespace odfaeg {
             }
             return true;
         }        
-        bool BoundingBox::isInside(BoundingBox& other) {
-            for (unsigned int i = 0; i < other.getVertices().size(); i++) {
-                if (!isPointInside(other.getVertices()[i])) {
-                    return false;
-                }
-            }
-            return true;
+        bool BoundingBox::contains(BoundingBox& other) {
+            float hx1 = width * 0.5;
+            float hy1 = height * 0.5;
+            float hz1 = depth * 0.5;
+            float hx2 = other.width * 0.5;
+            float hy2 = other.height * 0.5;
+            float hz2 = other.depth * 0.5;
+            float minX1 = center.x() - hx1, minX2 = other.center.x() - hx2;
+            float minY1 = center.y() - hy1, minY2 = other.center.y() - hy2;
+            float minZ1 = center.z() - hz1, minZ2 = other.center.z() - hz2;
+            float maxX1 = center.x() + hx1, maxX2 = other.center.x() + hx2;
+            float maxY1 = center.y() + hy1, maxY2 = other.center.y() + hy2;
+            float maxZ1 = center.z() + hz1, maxZ2 = other.center.z() + hz2;
+            return minX1 <= minX2 &&
+                minY1 <= minY2 &&
+                minZ1 <= minZ2 &&
+                maxX1 >= maxX2 &&
+                maxY1 >= maxY2 &&
+                maxZ1 >= maxZ2;
         }
         //Test if a point is inside our box.
         bool BoundingBox::isPointInside(math::Vec3f point) {
@@ -513,7 +525,7 @@ namespace odfaeg {
         std::array<BoundingBox, 8> BoundingBox::subdiv() {
             std::array<physic::BoundingBox, 8> volumes;
             math::Vec3f half = math::Vec3f(width*0.5f, height*0.5f, depth*0.5f);
-
+            //std::cout<<center-half<<","<<width<<","<<height<<","<<depth<<std::endl;
             int index = 0;
             for (int dx = -1; dx <= 1; dx += 2) {
                 for (int dy = -1; dy <= 1; dy += 2) {
@@ -526,9 +538,11 @@ namespace odfaeg {
                         math::Vec3f childHalf = half * 0.5f;
 
                         volumes[index++] = BoundingBox(childCenter.x()-childHalf.x(), childCenter.y()-childHalf.y(), childCenter.z()-childHalf.z(), half.x(), half.y(), half.z());
+                        //std::cout<<"volume : "<<index<<","<<volumes[index-1].getPosition()<<","<<volumes[index-1].getSize()<<std::endl;
                     }
                 }
             }  
+            //system("PAUSE");
             return volumes;
         }
     }
