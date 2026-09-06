@@ -601,8 +601,7 @@ namespace odfaeg {
 								m.minVertex = newMin;
 								m.maxVertex = newMax;
 								m.mins = mins;
-								m.maxs = maxs;								
-								newVertexCount = (newMax - newMin) + 1;										
+								m.maxs = maxs;						
 								/*std::cout<<"new min max : "<<newMin<<","<<newMax<<","<<newVertexCount<<std::endl;
 								system("PAUSE");*/
 								// Si ce triangle dépasse les limites → nouveau meshlet
@@ -690,10 +689,10 @@ namespace odfaeg {
 								}
 							}				
 							meshletsGrid.clear();
-							for (unsigned int m = 0; m < meshletDatas.size(); m++) {							
+							for (unsigned int m = currentSubmeshMeshletOffset+currentLodMeshletOffset; m < meshletDatas.size(); m++) {							
 								//Reconstruction de l'AABB et ajout dans la grille de meshlets.
 								if (meshletDatas[m].lod == l && meshletDatas[m].submeshId == subMeshData.id) {
-									//std::cout<<"meshlet : "<<m<<","<<meshletDatas[m].submeshId<<","<<subMeshData.id<<std::endl;
+									//std::cout<<"meshlet : "<<meshletDatas[m].id<<","<<meshletDatas[m].submeshId<<","<<subMeshData.id<<","<<l<<std::endl;
 									
 									physic::BoundingBox volume(
 										meshletDatas[m].mins.x(), 
@@ -703,8 +702,8 @@ namespace odfaeg {
 										meshletDatas[m].maxs.y() - meshletDatas[m].mins.y(),
 										meshletDatas[m].maxs.z() - meshletDatas[m].mins.z());
 										//std::cout<<"add : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
-										meshletsGrid.addEntity(meshletDatas[m], volume);
-									}
+									meshletsGrid.addEntity(meshletDatas[m], volume);
+								}
 									//std::cout<<"added!"<<std::endl;
 							}
 							
@@ -805,13 +804,14 @@ namespace odfaeg {
 													childClusterData.volume.center = node.volume.getCenter();
 													childClusterData.volume.size = node.volume.getSize();
 													//std::cout<<"cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
-													childClusterData.id = clusterDatas.size();
+													childClusterData.id = currentClustersOffset;
 													childClusterData.lodLevel = l;														
 													childClusterData.meshletOffset = 0;	
 													childClusterData.meshletCount = node.objects.size();
 													childClusterData.leaf = 1;
 													clusterDatas.push_back(childClusterData);
-													currentClustersOffset++;		
+													currentClustersOffset++;
+															
 													for (unsigned int o = 0; o < node.objects.size(); o++) {												
 														
 														/*std::cout<<"id, size : "<<node.id<<", "<<node.objects.size()<<std::endl;
@@ -819,7 +819,7 @@ namespace odfaeg {
 																									
 														//clusterData.children[c] = clusterDatas.size();
 																											
-														
+														//std::cout<<"id : "<<node.objects[o].id<<","<<meshletDatas[node.objects[o].id].submeshId<<","<<meshletDatas[node.objects[o].id].lod<<","<<childClusterData.id<<std::endl;
 														meshletDatas[node.objects[o].id].clusterId = childClusterData.id;												
 														
 														/*if (childClusterData.meshletCount > 0) {
@@ -861,21 +861,20 @@ namespace odfaeg {
 				
 				
 				//Tri par lod. (D'abord clusters pour meshelts en lod0, puis 1, etc...)
-				std::sort(meshletDatas.begin(), meshletDatas.end(), [](Meshlet& m1, Meshlet& m2){ return m1.clusterId < m2.clusterId;});
+				/*for (unsigned int m = 0; m < meshletDatas.size(); m++) {
+					std::cout<<"meshlet : "<<meshletDatas[m].clusterId<<","<<meshletDatas[m].submeshId<<","<<meshletDatas[m].lod<<std::endl;
+				}*/
+				std::sort(meshletDatas.begin(), meshletDatas.end(), [](Meshlet m1, Meshlet m2){ return /*m1.submeshId < m2.submeshId || m1.lod < m2.lod ||*/ m1.clusterId < m2.clusterId;});
 				
 				unsigned int lastMeshletId = 0;
 				unsigned int count = 0;
 				for (unsigned int m = 0; m < meshletDatas.size(); m++) {
-					if (clusterDatas[meshletDatas[m].clusterId].meshletCount == 0) {
-						
-						std::cout<<"culter id : "<<lastMeshletId<<","<<clusterDatas[meshletDatas[m].clusterId].meshletCount<<std::endl;
-					}				
+								
 					if (count >= clusterDatas[meshletDatas[m].clusterId].meshletCount) {	
 						lastMeshletId = m;
 						count = 0;					
 					}
-					/*if (lastMeshletId == 127683)
-						std::cout<<"meshlet count : "<<clusterDatas[meshletDatas[m].clusterId].meshletCount<<std::endl;*/
+					
 					//std::cout<<"meshlet : "<<meshletDatas[m].clusterId<<","<<meshletDatas[m].submeshId<<","<<clusterDatas[meshletDatas[m].clusterId].submeshId<<","<<clusterDatas[meshletDatas[m].clusterId].meshletCount<<std::endl;
 					clusterDatas[meshletDatas[m].clusterId].meshletOffset = lastMeshletId;
 					count++;

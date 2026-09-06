@@ -53,7 +53,7 @@ namespace odfaeg {
                     //std::cout<<"build octree"<<std::endl;
                     if (node.objects.size() > maxObjectsPerNode) {
                         node.leaf = false;
-
+                        //std::cout<<"subdiv octree"<<std::endl;
                         auto volumes = node.volume.subdiv();
                         
                         // créer les enfants
@@ -74,7 +74,7 @@ namespace odfaeg {
                         // redistribuer les objets
                         for (unsigned int j = 0; j < node.objects.size(); j++) {
                             for (unsigned int k = 0; k < node.children.size(); k++) {
-                                if (nodes[node.children[k]].volume.intersects(node.objectVolumes[j])) {
+                                //if (nodes[node.children[k]].volume.intersects(node.objectVolumes[j])) {
                                     std::cout<<"insert object : "<<node.objectVolumes[j].getPosition()<<","<<node.objectVolumes[j].getSize()<<std::endl;
                                     std::cout<<"node volume : "<<nodes[node.children[k]].volume.getPosition()<<","<<nodes[node.children[k]].volume.getSize()<<std::endl;
                                     insert(node.children[k], node.objects[j], node.objectVolumes[j]);
@@ -83,7 +83,7 @@ namespace odfaeg {
                                     
                                     /*nodes[node.children[k]].objects.push_back(node.objects[j]);
                                     nodes[node.children[k]].objectVolumes.push_back(node.objectVolumes[j]);*/
-                                }                               
+                                //}                               
                             }
                         }
                         //std::cout<<"ok"<<std::endl;

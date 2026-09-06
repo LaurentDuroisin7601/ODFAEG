@@ -199,6 +199,7 @@ namespace odfaeg {
             v1[0] *= cellWidth;
             v1[1] *= cellHeight;
             v1[2] *= cellDepth;
+            //std::cout<<"create cell map at : "<<v1<<std::endl;
             /*math::Vec3f v[8];
             v[0] = math::Vec3f (v1.x(), v1.y(), v1.z());
             v[1] = math::Vec3f (v1.x() + cellWidth, v1.y(), v1.z());

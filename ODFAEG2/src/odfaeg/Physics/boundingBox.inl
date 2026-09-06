@@ -512,7 +512,7 @@ namespace odfaeg {
         }  
         std::array<BoundingBox, 8> BoundingBox::subdiv() {
             std::array<physic::BoundingBox, 8> volumes;
-            math::Vec3f half = math::Vec3f(width, height, depth);
+            math::Vec3f half = math::Vec3f(width*0.5f, height*0.5f, depth*0.5f);
 
             int index = 0;
             for (int dx = -1; dx <= 1; dx += 2) {
@@ -525,7 +525,7 @@ namespace odfaeg {
 
                         math::Vec3f childHalf = half * 0.5f;
 
-                        volumes[index++] = BoundingBox(childCenter.x()-childHalf.x(), childCenter.y()-childHalf.y(), childCenter.z()-childHalf.z(), childHalf.x(), childHalf.y(), childHalf.z());
+                        volumes[index++] = BoundingBox(childCenter.x()-childHalf.x(), childCenter.y()-childHalf.y(), childCenter.z()-childHalf.z(), half.x(), half.y(), half.z());
                     }
                 }
             }  
