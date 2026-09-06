@@ -525,7 +525,7 @@ namespace odfaeg {
 
                         math::Vec3f childHalf = half * 0.5f;
 
-                        volumes[index++] = BoundingBox(childCenter.x(), childCenter.y(), childCenter.z(), childHalf.x(), childHalf.y(), childHalf.z());
+                        volumes[index++] = BoundingBox(childCenter.x()-childHalf.x(), childCenter.y()-childHalf.y(), childCenter.z()-childHalf.z(), childHalf.x(), childHalf.y(), childHalf.z());
                     }
                 }
             }  

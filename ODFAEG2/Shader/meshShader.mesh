@@ -56,12 +56,13 @@ struct MeshLet {
     uint nbIndexes; 
     uint minVertex;
     uint maxVertex;    
-    uint clusterId; 
-    vec3 mins;
-    vec3 max;  
+    uint clusterId;      
     uint lod;
     int voxel;
     int rendered;
+    int submeshId;
+    vec3 mins;
+    vec3 max;
 };
 struct SubMesh {
 	AABB globalBounds;
@@ -169,6 +170,9 @@ void main() {
         mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId].modelMatrix;
             
         MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+id];
+        /*if (cluster.submeshId != meshlet.submeshId) {
+            debugPrintfEXT("error! %i %i", cluster.submeshId, meshlet.submeshId);
+        }*/
         //Avoid to render it twice if the meshlet is between two clusters. (Deduplication)
         if (meshlet.rendered == 1) {            
             return;
@@ -185,7 +189,7 @@ void main() {
         uint vertexCount   = min(meshlet.nbVertices, maxVerts);
         uint primitiveCount = min(meshlet.nbIndexes / 3u, maxPrims);
         /*if (vertexCount > 0)
-            debugPrintfEXT("submesh vertex count : %i, %i", meshlet.nbVertices, meshlet.nbIndexes);*/
+            debugPrintfEXT("submesh vertex count : %i, %i", vertexCount, primitiveCount);*/
         
         
         SetMeshOutputsEXT(vertexCount, primitiveCount);
@@ -199,6 +203,7 @@ void main() {
             materialID[i] = subMesh.materialId;
             primitiveType[i] = pc.primitiveType;
             currentFrame[i] = pc.currentFrame;
+            //debugPrintfEXT("materialId %i", subMesh.materialId);
             //debugPrintfEXT("position : %i",  i);
         }
         for (uint tri = 0; tri < primitiveCount; tri++) {
@@ -210,8 +215,11 @@ void main() {
             uint i0 = g0 - meshlet.vertexOffset;
             uint i1 = g1 - meshlet.vertexOffset;
             uint i2 = g2 - meshlet.vertexOffset;  
-            if (i0 >= meshlet.nbVertices || i1 >= meshlet.nbVertices || i2 >= meshlet.nbVertices)
-                debugPrintfEXT("meshlet : %i %i %i %i,%i, %i, %i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, meshlet.nbVertices, meshlet.indexOffset, meshlet.vertexOffset);  
+            /*if (i0 >= meshlet.nbVertices || i1 >= meshlet.nbVertices || i2 >= meshlet.nbVertices) {
+                
+                debugPrintfEXT("meshlet : %i %i %i %i,%i, %i, %i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, meshlet.nbVertices, firstIndex, meshlet.vertexOffset); 
+                continue;
+            } */
             gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
         }
     //Face de heightmap ou voxel.

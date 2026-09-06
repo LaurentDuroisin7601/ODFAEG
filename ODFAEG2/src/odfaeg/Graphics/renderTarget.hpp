@@ -121,12 +121,12 @@ namespace odfaeg {
 				unsigned int minVertex;
 				unsigned int maxVertex;				
 				unsigned int clusterId;	
-				alignas(16) math::Vec3f mins;
-				alignas(16) math::Vec3f maxs;				
 				unsigned int lod;	
 				int voxel;
 				int rendered;
-				int pad; 
+				int submeshId;
+				alignas(16) math::Vec3f mins;
+				alignas(16) math::Vec3f maxs;
 				bool operator==(const Meshlet& other) const {
 					return id == other.id 
 					&& mins.x() == other.mins.x()
