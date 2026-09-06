@@ -127,7 +127,7 @@ struct MeshLet {
     uint nbIndexes; 
     uint minVertex;
     uint maxVertex;     
-    uint clusterId;     
+    int clusterId;     
     uint lod;
     int voxel;
     int rendered;

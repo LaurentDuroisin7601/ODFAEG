@@ -120,7 +120,7 @@ namespace odfaeg {
 				unsigned int nbIndexes;
 				unsigned int minVertex;
 				unsigned int maxVertex;				
-				unsigned int clusterId;	
+				int clusterId;	
 				unsigned int lod;	
 				int voxel;
 				int rendered;

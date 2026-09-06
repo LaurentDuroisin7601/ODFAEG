@@ -30,7 +30,7 @@ namespace odfaeg {
         void Octree<Object>::insert(size_t id, Object object, physic::BoundingBox objectVolume, unsigned int depth) {
             Node& node = nodes[id];
 
-            if (node.volume.intersects(objectVolume) /*&& depth < 150*/) {
+            if (node.volume.intersects(objectVolume) && depth < 150) {
                     
                     
                 if (!node.leaf) {
@@ -77,12 +77,12 @@ namespace odfaeg {
                                 if (nodes[node.children[k]].volume.intersects(node.objectVolumes[j])) {
                                     /*std::cout<<"insert object : "<<node.objectVolumes[j].getPosition()<<","<<node.objectVolumes[j].getSize()<<std::endl;
                                     std::cout<<"node volume : "<<nodes[node.children[k]].volume.getPosition()<<","<<nodes[node.children[k]].volume.getSize()<<std::endl;*/
-                                    //insert(node.children[k], node.objects[j], node.objectVolumes[j], depth++);
+                                    insert(node.children[k], node.objects[j], node.objectVolumes[j], depth++);
                                     
                                     //std::cout<<"inserted : "<<std::endl;*/
                                     
-                                    nodes[node.children[k]].objects.push_back(node.objects[j]);
-                                    nodes[node.children[k]].objectVolumes.push_back(node.objectVolumes[j]);
+                                    /*nodes[node.children[k]].objects.push_back(node.objects[j]);
+                                    nodes[node.children[k]].objectVolumes.push_back(node.objectVolumes[j]);*/
                                 }                               
                             }
                             //return;

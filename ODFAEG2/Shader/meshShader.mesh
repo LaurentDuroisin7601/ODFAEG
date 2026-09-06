@@ -56,7 +56,7 @@ struct MeshLet {
     uint nbIndexes; 
     uint minVertex;
     uint maxVertex;    
-    uint clusterId;      
+    int clusterId;      
     uint lod;
     int voxel;
     int rendered;
@@ -170,7 +170,7 @@ void main() {
         mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId].modelMatrix;
             
         MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+id];
-        if (cluster.submeshId != meshlet.submeshId) {
+        if (meshlet.clusterId == -1 || cluster.submeshId != meshlet.submeshId) {
             //debugPrintfEXT("error! %i %i", cluster.submeshId, meshlet.submeshId);
             return;
         }
@@ -219,7 +219,7 @@ void main() {
             if (i0 >= meshlet.nbVertices || i1 >= meshlet.nbVertices || i2 >= meshlet.nbVertices) {
                 
                 debugPrintfEXT("meshlet : %i %i %i %i,%i, %i, %i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, meshlet.nbVertices, firstIndex, meshlet.vertexOffset); 
-                
+                continue;
             }
             gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
         }

@@ -820,10 +820,13 @@ namespace odfaeg {
 														system("PAUSE");*/
 																									
 														//clusterData.children[c] = clusterDatas.size();
-																											
-														//std::cout<<"id : "<<node.objects[o].id<<","<<meshletDatas[node.objects[o].id].submeshId<<","<<meshletDatas[node.objects[o].id].lod<<","<<childClusterData.id<<std::endl;
+														if (node.objects.size() > 8) {
+															std::cout<<"meshlet id : "<<node.objects[o].id<<","<<meshletDatas.size()<<std::endl;
+															system("PAUSE");
+														}
+														std::cout<<"id : "<<node.objects.size()<<std::endl;
 														meshletDatas[node.objects[o].id].clusterId = childClusterData.id;												
-														std::cout<<"meshlet : "<<meshletDatas[node.objects[o].id].id<<","<<meshletDatas[node.objects[o].id].submeshId<<","<<meshletDatas[node.objects[o].id].lod<<","<<meshletDatas[node.objects[o].id].clusterId<<std::endl;
+														//std::cout<<"meshlet : "<<meshletDatas[node.objects[o].id].id<<","<<meshletDatas[node.objects[o].id].submeshId<<","<<meshletDatas[node.objects[o].id].lod<<","<<meshletDatas[node.objects[o].id].clusterId<<std::endl;
 														/*if (childClusterData.meshletCount > 0) {
 
 															std::cout<<"meshlet count : "<<childClusterData.meshletCount<<std::endl;
