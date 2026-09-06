@@ -29,14 +29,15 @@ namespace odfaeg {
         template <typename Object>
         void Octree<Object>::insert(size_t id, Object object, physic::BoundingBox objectVolume, unsigned int depth) {
             Node& node = nodes[id];
-
+            std::cout<<"add : "<<node.volume.getPosition()<<","<<node.volume.getSize()<<std::endl;
+            std::cout<<"object volume : "<<objectVolume.getPosition()<<objectVolume.getSize()<<std::endl;
             if (node.volume.intersects(objectVolume)/* && depth < 150*/) {
                     
                     
                 if (!node.leaf) {
                     for (unsigned int j = 0; j < node.children.size(); j++) {
                         Node& child = nodes[node.children[j]];
-                        if (!contains(child, object) && child.volume.intersects(objectVolume)) {
+                        if (true/*!contains(child, object) && child.volume.intersects(objectVolume)*/) {
                             //std::cout<<"insert object : "<<j<<std::endl;
                             insert(node.children[j], object, objectVolume, depth);
                             //return;
@@ -44,12 +45,12 @@ namespace odfaeg {
                     }
                     //return;
                 } else {
-                    if (!contains(node, object)) {
-                        //std::cout<<"insert object : "<<objectVolume.getPosition()<<","<<objectVolume.getSize()<<std::endl;
+                    //if (!contains(node, object)) {
+                        std::cout<<"insert object : "<<objectVolume.getPosition()<<","<<objectVolume.getSize()<<std::endl;
                         //std::cout<<"insert meshlet : "<<std::endl;
                         node.objects.push_back(object);
                         node.objectVolumes.push_back(objectVolume);
-                    }
+                    //}
                     //build(0);
                     //std::cout<<"build octree"<<std::endl;
                     if (node.objects.size() > maxObjectsPerNode) {
@@ -73,16 +74,17 @@ namespace odfaeg {
                         //std::cout<<"enfants ok"<<std::endl;
 
                         // redistribuer les objets
-                        /*std::vector<Object> objects = node.objects;
-                        std::vector<physic::BoundingBox> objectVolumes = node.objectVolumes;*/
+                        std::vector<Object> objects = node.objects;
+                        std::vector<physic::BoundingBox> objectVolumes = node.objectVolumes;
                         for (unsigned int j = 0; j < node.objects.size(); j++) {
                             for (unsigned int k = 0; k < node.children.size(); k++) {
                                 //if (nodes[node.children[k]].volume.intersects(node.objectVolumes[j])) {
                                     /*std::cout<<"insert object : "<<node.objectVolumes[j].getPosition()<<","<<node.objectVolumes[j].getSize()<<std::endl;
                                     std::cout<<"node volume : "<<nodes[node.children[k]].volume.getPosition()<<","<<nodes[node.children[k]].volume.getSize()<<std::endl;*/
                                     insert(node.children[k], node.objects[j], node.objectVolumes[j], depth + 1);
-                                    node.objects.clear();
-                                    node.objectVolumes.clear();
+                                    return;
+                                    
+                                    
                                     //return;
                                     //return;
                                     //std::cout<<"inserted : "<<std::endl;*/
@@ -91,9 +93,14 @@ namespace odfaeg {
                                     nodes[node.children[k]].objectVolumes.push_back(node.objectVolumes[j]);*/
                                 //}                               
                             }
+                            /*node.objects.clear();
+                            node.objectVolumes.clear();*/
                             
-                            //return;
-                        }
+                            
+                            
+                        }                        
+                        node.objects.clear();
+                        node.objectVolumes.clear();
                         
                         //std::cout<<"ok"<<std::endl;
                         // vider le node

@@ -18,11 +18,12 @@ namespace odfaeg {
             math::BaseChangementMatrix getBaseChangementMatrix();*/
             bool addEntity (Object entity, physic::BoundingBox objectVolume);
             bool containsEntity(Object entity, math::Vec3f pos);
+            bool containsEntity(Object entity);
             Object* getEntity (int id);
             Object* getEntity (std::string name);
             void createCellMap (math::Vec3f &point);
             void replaceEntity (Object entity);
-            //Supprime une tile dans la cellule. (Sans la supprimer de la m�moire.)
+            //Supprime une tile dans la cellule. (Sans la supprimer de la mmoire.)
             bool removeEntity (Object entity, physic::BoundingBox volume);
             bool deleteEntity (Object object, physic::BoundingBox volume);
             bool deleteEntity(int id);

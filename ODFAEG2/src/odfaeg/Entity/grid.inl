@@ -91,7 +91,7 @@ namespace odfaeg {
                                 
                             }
                             added = true;
-                            //std::cout<<"add entity at : "<<objectVolume.getPosition()<<","<<std::endl;
+                            std::cout<<"add entity at : "<<objectVolume.getPosition()<<","<<cm->getCellVolume().getPosition()<<std::endl;
                             cm->addEntity(entity, objectVolume);
                             //std::cout<<"cell map : "<<cm<<std::endl;
                             //std::cout<<"entity added to cell"<<std::endl;
@@ -132,6 +132,15 @@ namespace odfaeg {
                  if (caseMap->containsEntity(entity)) {
                      return true;
                  }
+            }
+            return false;
+        }
+        template<typename Object>
+        bool GridMap<Object>::containsEntity(Object entity) {
+            for (unsigned int i = 0; i < casesMap.size(); i++) {                
+                if (casesMap[i].containsEntity(entity)) {
+                    return true;
+                }
             }
             return false;
         }
@@ -245,8 +254,8 @@ namespace odfaeg {
             //////////std::cout<<"nbCasesPerRow : "<<nbCasesPerRow<<std::endl<<"nbCasesPerCol : "<<nbCasesPerCol<<"nb cases per depth"<<nbCasesPerDepth<<std::endl;
             unsigned int newSize = nbCasesPerCol * nbCasesPerRow * nbCasesPerDepth;
             //////////std::cout<<"min z : "<<minZ<<std::endl;
-            int indice = (math::Math::abs(minX) + p.x())
-                         + (math::Math::abs(minY) + p.y()) * nbCasesPerRow + (math::Math::abs(minZ) + p.z()) * nbCasesPerCol * nbCasesPerRow;
+            int indice = (p.x() - minX)
+                         + (p.y() - minY) * nbCasesPerRow + (p.z() - minZ) * nbCasesPerCol * nbCasesPerRow;
             //std::cout<<"create cell map at indice : "<<math::Math::abs(minX)<<","<<p.x()<<","<<casesMap.size()<<std::endl;
             if (newSize > casesMap.size()) {
                 ////////std::cout<<"resize vector! > : "<<newSize<<std::endl;
@@ -257,8 +266,8 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < tmpCasesMap.size(); i++) {
                     //if (!tmpCasesMap[i].empty()) {
                         math::Vec3f coords = tmpCasesMap[i].getCoords();
-                        int newInd = (math::Math::abs(minX) + coords.x())
-                                     + (math::Math::abs(minY) + coords.y()) * nbCasesPerRow + (math::Math::abs(minZ) + coords.z()) * nbCasesPerCol * nbCasesPerRow;
+                        int newInd = (minX + coords.x() - minX)
+                                     + (coords.y() - minY) * nbCasesPerRow + (coords.z() - minZ) * nbCasesPerCol * nbCasesPerRow;
                         //////////std::cout<<"new ind  : "<<newInd<<std::endl;
                         casesMap[newInd] = tmpCasesMap[i];
                     //}
@@ -273,8 +282,8 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < tmpCasesMap.size(); i++) {
                     //if (tmpCasesMap[i] != nullptr) {
                         math::Vec3f coords = tmpCasesMap[i].getCoords();
-                        int newInd = (math::Math::abs(minX) + coords.x())
-                                     + (math::Math::abs(minY) + coords.y()) * nbCasesPerRow + (math::Math::abs(minZ) + coords.z()) * nbCasesPerCol * nbCasesPerRow;
+                        int newInd = (coords.x() - minX)
+                                     + (minY + coords.y() - minY) * nbCasesPerRow + (minZ + coords.z() - minZ) * nbCasesPerCol * nbCasesPerRow;
                         //////////std::cout<<"new ind  : "<<newInd<<std::endl;
                         casesMap[newInd] = tmpCasesMap[i];
                     //}
@@ -411,13 +420,13 @@ namespace odfaeg {
             } else if (newSize > casesMap.size()) {
                 //////////std::cout<<"new size : "<<newSize<<std::endl;
                 vector<GridCell<Object>*> tmpCasesMap = casesMap;
-                casesMap.clear();
+                //casesMap.clear();
                 casesMap.resize(newSize);
                 std::fill(casesMap.begin(), casesMap.end(), nullptr);
                 for (unsigned int i = 0; i < tmpCasesMap.size(); i++) {
                     if (tmpCasesMap[i] != nullptr) {
                         math::Vec3f coords = tmpCasesMap[i]->getCoords();
-                        int newInd = math::Math::abs(minX) + coords.x() + (math::Math::abs(minY) + coords.y()) * nbCasesPerRow + (math::Math::abs(minZ) + coords.z()) * nbCasesPerCol * nbCasesPerRow;
+                        int newInd = (coords.x() - minX) + (coords.y() - minY) * nbCasesPerRow + (coords.z() - minZ) * nbCasesPerCol * nbCasesPerRow;
                         casesMap[newInd] = tmpCasesMap[i];
                     }
                 }
@@ -515,7 +524,7 @@ namespace odfaeg {
         GridCell<Object>* GridMap<Object>::getGridCellAt (math::Vec3f point) {
             math::Vec3f coordsCaseP = getCoordinatesAt(point);
             //std::cout<<"indice : "<<coordsCaseP<<std::endl;
-            unsigned int indice = (math::Math::abs(minX) + coordsCaseP.x()) + (math::Math::abs(minY) + coordsCaseP.y()) * nbCasesPerRow + (math::Math::abs(minZ) + coordsCaseP.z()) * nbCasesPerCol * nbCasesPerRow;
+            unsigned int indice = (coordsCaseP.x() - minX) + (coordsCaseP.y() - minY) * nbCasesPerRow + (coordsCaseP.z() - minZ) * nbCasesPerCol * nbCasesPerRow;
             //std::cout<<"indice : "<<indice<<" size : "<<casesMap.size()<<std::endl;
             //system("PAUSE");
             if (indice >= 0 && indice < casesMap.size()) {

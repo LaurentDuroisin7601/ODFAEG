@@ -712,7 +712,13 @@ namespace odfaeg {
 										meshletDatas[m].maxs.z() - meshletDatas[m].mins.z());
 									//std::cout<<"volume : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
 									oneAdded = true;
+									std::cout<<"add meshlet : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
 									meshletsGrid.addEntity(meshletDatas[m], volume);
+									
+									if (!meshletsGrid.containsEntity(meshletDatas[m])) {
+										std::cout<<"meshlet not added : "<<meshletDatas[m].id<<","<<meshletDatas[m].submeshId<<","<<subMeshData.id<<","<<l<<std::endl;
+										system("PAUSE");
+									}
 								}
 									//std::cout<<"added!"<<std::endl;
 							}
@@ -737,10 +743,10 @@ namespace odfaeg {
 								//std::cout<<"ok"<<std::endl;
 								for (int y = gridPos.y(); y < gridPos.y() + gridSize.y(); y++) {
 									for (int z = gridPos.z(); z < gridPos.z() + gridSize.z(); z++) {
-										std::cout<<"grid cell : "<<x<<","<<y<<","<<z<<std::endl;
+										//std::cout<<"grid cell : "<<x<<","<<y<<","<<z<<std::endl;
 										entity::GridCell<Meshlet>* gridCell = meshletsGrid.getGridCellAtFromCoords(math::Vec3f(x, y, z));
 										//Trou. (Il faut les gérer pour le ballayage GPU)
-										std::cout<<"volume : "<<gridCell->getCellVolume().getPosition()<<","<<gridCell->getCellVolume().getSize()<<std::endl;
+										//std::cout<<"volume : "<<gridCell->getCellVolume().getPosition()<<","<<gridCell->getCellVolume().getSize()<<std::endl;
 										if (gridCell == nullptr || gridCell->empty()) {
 											if (gridCell->empty()) {
 												std::cout<<"empty : "<<gridCell->getCellVolume().getPosition()<<","<<gridCell->getCellVolume().getSize()<<std::endl;//std::cout<<"grid cell is null"<<std::endl;
