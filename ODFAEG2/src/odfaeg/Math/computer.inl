@@ -48,6 +48,48 @@ namespace odfaeg {
             store[1][1] = maxY;
             return store;
         }
+        Vec3f Computer::principalEigenVector(Matrix3f C) {
+            Vec3f v = {1, 1, 1}; // vecteur initial
+            v = v.normalize();
+            for (int i = 0; i < 20; i++) { // 20 itérations suffisent
+                v = C * v;
+                v = normalize(v);
+            }
+
+            return v; // vecteur propre principal
+        }
+        Matrix3f Computer::computeCovariance(std::vector<Vec3f> points) {
+            Vec3f moy = getMoy(points);
+            float Cxx=0, Cyy=0, Czz=0;
+            float Cxy=0, Cxz=0, Cyz=0;
+            for (auto& p : points) {
+                Vec3 q = { p.x - moy.x, p.y - moy.y, p.z - moy.z };
+                Cxx += q.x * q.x;
+                Cyy += q.y * q.y;
+                Czz += q.z * q.z;
+                Cxy += q.x * q.y;
+                Cxz += q.x * q.z;
+                Cyz += q.y * q.z;
+            }
+
+            float inv = 1.0f / points.size();
+
+            Matrix3f C;
+            C.m[0][0] = Cxx * inv;
+            C.m[1][1] = Cyy * inv;
+            C.m[2][2] = Czz * inv;
+
+            C.m[0][1] = Cxy * inv;
+            C.m[1][0] = Cxy * inv;
+
+            C.m[0][2] = Cxz * inv;
+            C.m[2][0] = Cxz * inv;
+
+            C.m[1][2] = Cyz * inv;
+            C.m[2][1] = Cyz * inv;
+
+            return C;
+        }
         /**\fn std::array<std::array<float, 3>,2> getExtends (const std::array<Vec3f, N>& verts);
         *  \brief get the minimum and the maximum x, y and z from an array of 3D vectors.
         *  \param the array of the vectors.

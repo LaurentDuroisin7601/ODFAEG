@@ -30,6 +30,8 @@ namespace odfaeg {
         public:        
             static Vec2f getMoy(std::vector<Vec2f> verts);
             static Vec3f getMoy(std::vector<Vec3f> verts);
+            static Vec3f principalEigenVector(Matrix3f mat);
+            static Matrix3f computeCovariance(std::vector<Vec3f> points);
             //Calculs les minimum est maximum d'un vecteurs pass� et les stocke dans un tableau.
             static std::array<std::array<float, 2>, 3> getExtends(std::vector<Vec3f> verts);
             static std::array<std::array<float, 2>, 2> getExtends(std::vector<Vec2f> verts);

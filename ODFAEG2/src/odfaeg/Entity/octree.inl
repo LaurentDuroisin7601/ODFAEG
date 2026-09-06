@@ -88,7 +88,7 @@ namespace odfaeg {
 
                         Node& child = nodes[node.children[i]];
 
-                        if (node.volume.contains(node.objectVolumes[j])) {
+                        if (child.volume.contains(node.objectVolumes[j])) {
                             std::cout<<"assign : "<<child.volume.getPosition()<<","<<child.volume.getSize()<<std::endl;
                             child.objects.push_back(node.objects[j]);
                             child.objectVolumes.push_back(node.objectVolumes[j]);
@@ -106,7 +106,7 @@ namespace odfaeg {
                             std::cout<<"child volume : "<<child.volume.getPosition()<<","<<child.volume.getSize()<<std::endl;
                             
                         }
-                        //system("PAUSE");
+                        system("PAUSE");
                         // cas limite : aucun enfant ne prend l'objet → le parent reste feuille pour lui
                         
                         
