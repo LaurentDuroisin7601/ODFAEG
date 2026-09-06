@@ -29,8 +29,8 @@ namespace odfaeg {
         template <typename Object>
         void Octree<Object>::insert(size_t id, Object object, physic::BoundingBox objectVolume, unsigned int depth) {
             Node& node = nodes[id];
-            std::cout<<"add : "<<node.volume.getPosition()<<","<<node.volume.getSize()<<std::endl;
-            std::cout<<"object volume : "<<objectVolume.getPosition()<<objectVolume.getSize()<<std::endl;
+            /*std::cout<<"add : "<<node.volume.getPosition()<<","<<node.volume.getSize()<<std::endl;
+            std::cout<<"object volume : "<<objectVolume.getPosition()<<objectVolume.getSize()<<std::endl;*/
             if (node.volume.intersects(objectVolume)/* && depth < 150*/) {
                     
                     
