@@ -749,10 +749,10 @@ namespace odfaeg {
 										//Trou. (Il faut les gérer pour le ballayage GPU)
 										//std::cout<<"volume : "<<gridCell->getCellVolume().getPosition()<<","<<gridCell->getCellVolume().getSize()<<std::endl;
 										if (gridCell == nullptr || gridCell->empty()) {
-											if (gridCell->empty()) {
+											/*if (gridCell->empty()) {
 												std::cout<<"empty : "<<gridCell->getCellVolume().getPosition()<<","<<gridCell->getCellVolume().getSize()<<std::endl;//std::cout<<"grid cell is null"<<std::endl;
 												system("PAUSE");
-											}
+											}*/
 											//std::cout<<"empty : "<<gridCell<<std::endl;
 											CellData emptyCell;
 											emptyCell.clusterId = -1;
