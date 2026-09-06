@@ -27,10 +27,10 @@ namespace odfaeg {
             //std::cout<<"ok 2"<<std::endl;            
         }
         template <typename Object>
-        void Octree<Object>::insert(size_t id, Object object, physic::BoundingBox objectVolume) {
+        void Octree<Object>::insert(size_t id, Object object, physic::BoundingBox objectVolume, unsigned int depth) {
             Node& node = nodes[id];
 
-            if (node.volume.intersects(objectVolume)) {
+            if (node.volume.intersects(objectVolume) && depth < 150) {
                     
                     
                 if (!node.leaf) {
@@ -38,7 +38,7 @@ namespace odfaeg {
                         Node& child = nodes[node.children[j]];
                         if (!contains(child, object) && child.volume.intersects(objectVolume)) {
                             //std::cout<<"insert object : "<<j<<std::endl;
-                            insert(node.children[j], object, objectVolume);
+                            insert(node.children[j], object, objectVolume, depth);
                             return;
                         }
                     }
@@ -53,7 +53,7 @@ namespace odfaeg {
                     //std::cout<<"build octree"<<std::endl;
                     if (node.objects.size() > maxObjectsPerNode) {
                         node.leaf = false;
-                        //std::cout<<"subdiv octree"<<std::endl;
+                        //std::cout<<"subdiv octree : "<<node.objects.size()<<std::endl;
                         auto volumes = node.volume.subdiv();
                         
                         // créer les enfants
@@ -75,10 +75,10 @@ namespace odfaeg {
                         for (unsigned int j = 0; j < node.objects.size(); j++) {
                             for (unsigned int k = 0; k < node.children.size(); k++) {
                                 //if (nodes[node.children[k]].volume.intersects(node.objectVolumes[j])) {
-                                    std::cout<<"insert object : "<<node.objectVolumes[j].getPosition()<<","<<node.objectVolumes[j].getSize()<<std::endl;
-                                    std::cout<<"node volume : "<<nodes[node.children[k]].volume.getPosition()<<","<<nodes[node.children[k]].volume.getSize()<<std::endl;
-                                    insert(node.children[k], node.objects[j], node.objectVolumes[j]);
-                                   
+                                    /*std::cout<<"insert object : "<<node.objectVolumes[j].getPosition()<<","<<node.objectVolumes[j].getSize()<<std::endl;
+                                    std::cout<<"node volume : "<<nodes[node.children[k]].volume.getPosition()<<","<<nodes[node.children[k]].volume.getSize()<<std::endl;*/
+                                    insert(node.children[k], node.objects[j], node.objectVolumes[j], depth++);
+                                    //return;
                                     //std::cout<<"inserted : "<<std::endl;*/
                                     
                                     /*nodes[node.children[k]].objects.push_back(node.objects[j]);
@@ -90,6 +90,7 @@ namespace odfaeg {
                         // vider le node
                         node.objects.clear();
                         node.objectVolumes.clear();
+                        
                         //std::cout<<nodes.size()<<std::endl;
                     }
                 }
