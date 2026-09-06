@@ -589,6 +589,7 @@ namespace odfaeg {
 								p1 = vertices[primitiveType][g0].position;
 								p2 = vertices[primitiveType][g1].position;
 								p3 = vertices[primitiveType][g2].position;
+								//std::cout<<"vertices : "<<p1<<","<<p2<<","<<p3<<std::endl;
 								unsigned int newMin = std::min(g0, std::min(g1, g2));
     							unsigned int newMax = std::max(g0, std::max(g1, g2));
 								newMin = std::min(m.minVertex, newMin);
@@ -824,7 +825,7 @@ namespace odfaeg {
 															std::cout<<"meshlet id : "<<node.objects[o].id<<","<<meshletDatas.size()<<std::endl;
 															system("PAUSE");
 														}
-														std::cout<<"id : "<<node.objects.size()<<std::endl;
+														//std::cout<<"id : "<<node.objects.size()<<std::endl;
 														meshletDatas[node.objects[o].id].clusterId = childClusterData.id;												
 														//std::cout<<"meshlet : "<<meshletDatas[node.objects[o].id].id<<","<<meshletDatas[node.objects[o].id].submeshId<<","<<meshletDatas[node.objects[o].id].lod<<","<<meshletDatas[node.objects[o].id].clusterId<<std::endl;
 														/*if (childClusterData.meshletCount > 0) {
@@ -885,6 +886,8 @@ namespace odfaeg {
 						//std::cout<<"meshlet : "<<meshletDatas[m].clusterId<<","<<meshletDatas[m].submeshId<<","<<clusterDatas[meshletDatas[m].clusterId].submeshId<<","<<clusterDatas[meshletDatas[m].clusterId].meshletCount<<std::endl;
 						clusterDatas[meshletDatas[m].clusterId].meshletOffset = lastMeshletId;
 						count++;
+					} else {
+						std::cout<<"meshlet : "<<meshletDatas[m].clusterId<<","<<meshletDatas[m].submeshId<<","<<meshletDatas[m].lod<<std::endl;
 					}
 				}
 					

@@ -77,8 +77,10 @@ namespace odfaeg {
                                 if (nodes[node.children[k]].volume.intersects(node.objectVolumes[j])) {
                                     /*std::cout<<"insert object : "<<node.objectVolumes[j].getPosition()<<","<<node.objectVolumes[j].getSize()<<std::endl;
                                     std::cout<<"node volume : "<<nodes[node.children[k]].volume.getPosition()<<","<<nodes[node.children[k]].volume.getSize()<<std::endl;*/
-                                    insert(node.children[k], node.objects[j], node.objectVolumes[j], depth++);
-                                    return;
+                                    insert(node.children[k], node.objects[j], node.objectVolumes[j], depth + 1);
+                                    node.objects.clear();
+                                    node.objectVolumes.clear();
+                                    //return;
                                     //std::cout<<"inserted : "<<std::endl;*/
                                     
                                     /*nodes[node.children[k]].objects.push_back(node.objects[j]);
@@ -89,8 +91,7 @@ namespace odfaeg {
                         }
                         //std::cout<<"ok"<<std::endl;
                         // vider le node
-                        node.objects.clear();
-                        node.objectVolumes.clear();
+                        
                        
                         
                         //std::cout<<nodes.size()<<std::endl;
