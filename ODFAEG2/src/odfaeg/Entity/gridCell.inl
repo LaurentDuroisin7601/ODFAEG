@@ -6,7 +6,7 @@ namespace odfaeg {
             passable = true;
             stateChanged = false;
             traveled = false;
-
+            volume = physic::BoundingBox(0, 0, 0, 0, 0, 0);
         }
         template <typename Object>
         GridCell<Object>::GridCell (physic::BoundingBox volume, math::Vec3f coords) : octree(volume, 8) {

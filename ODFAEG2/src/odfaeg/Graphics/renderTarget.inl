@@ -11,7 +11,7 @@ namespace odfaeg {
 		outputMeshes(GPUContext::instance().getSharedBuffers(OUTPUT_MESHES+registeredRenderTargets.size()*NB_BUFFERS)),
 		outputModelDatas(GPUContext::instance().getSharedBuffers(OUTPUT_MODELS+registeredRenderTargets.size()*NB_BUFFERS)),
 		outputMaterialDatas(GPUContext::instance().getSharedBuffers(OUTPUT_MATERIALS+registeredRenderTargets.size()*NB_BUFFERS)),		
-		meshletsGrid(2, 2, 2)		
+		meshletsGrid(50, 50, 50)		
 		{
 			
 			id = registeredRenderTargets.size();
@@ -654,8 +654,8 @@ namespace odfaeg {
 								m.nbIndexes += 3;								
 							}
 							// Final meshlet
-									
-							m.vertexOffset = m.minVertex;
+							m.id = meshletDatas.size();							
+							m.vertexOffset = m.minVertex;							
 							m.nbVertices   = (m.maxVertex - m.minVertex) + 1;							
 							meshletDatas.push_back(m);
 							
@@ -692,11 +692,17 @@ namespace odfaeg {
 								}
 							}				
 							meshletsGrid.clear();
-							for (unsigned int m = currentSubmeshMeshletOffset+currentLodMeshletOffset; m < meshletDatas.size(); m++) {							
+							bool oneAdded = false;
+							//std::cout<<"add"<<std::endl;
+							for (unsigned int m = 0; m < meshletDatas.size(); m++) {							
 								//Reconstruction de l'AABB et ajout dans la grille de meshlets.
+								//std::cout<<"meshlet : "<<meshletDatas[m].id<<","<<meshletDatas[m].submeshId<<","<<subMeshData.id<<","<<l<<std::endl;
+								if ((meshletDatas[m].lod > l && meshletDatas[m].submeshId ==  subMeshData.id) || meshletDatas[m].submeshId > subMeshData.id) {
+									system("PAUSE");
+								}
 								if (meshletDatas[m].lod == l && meshletDatas[m].submeshId == subMeshData.id) {
 									//std::cout<<"meshlet : "<<meshletDatas[m].id<<","<<meshletDatas[m].submeshId<<","<<subMeshData.id<<","<<l<<std::endl;
-									
+									//std::cout<<"meshlet : "<<meshletDatas[m].id<<","<<meshletDatas[m].submeshId<<","<<subMeshData.id<<","<<l<<std::endl;
 									physic::BoundingBox volume(
 										meshletDatas[m].mins.x(), 
 										meshletDatas[m].mins.y(),
@@ -704,10 +710,14 @@ namespace odfaeg {
 										meshletDatas[m].maxs.x() - meshletDatas[m].mins.x(),
 										meshletDatas[m].maxs.y() - meshletDatas[m].mins.y(),
 										meshletDatas[m].maxs.z() - meshletDatas[m].mins.z());
-										//std::cout<<"add : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
+									//std::cout<<"volume : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
+									oneAdded = true;
 									meshletsGrid.addEntity(meshletDatas[m], volume);
 								}
 									//std::cout<<"added!"<<std::endl;
+							}
+							if (!oneAdded) {
+								system("PAUSE");
 							}
 							
 							
@@ -727,10 +737,15 @@ namespace odfaeg {
 								//std::cout<<"ok"<<std::endl;
 								for (int y = gridPos.y(); y < gridPos.y() + gridSize.y(); y++) {
 									for (int z = gridPos.z(); z < gridPos.z() + gridSize.z(); z++) {
+										std::cout<<"grid cell : "<<x<<","<<y<<","<<z<<std::endl;
 										entity::GridCell<Meshlet>* gridCell = meshletsGrid.getGridCellAtFromCoords(math::Vec3f(x, y, z));
 										//Trou. (Il faut les gérer pour le ballayage GPU)
-										
+										std::cout<<"volume : "<<gridCell->getCellVolume().getPosition()<<","<<gridCell->getCellVolume().getSize()<<std::endl;
 										if (gridCell == nullptr || gridCell->empty()) {
+											if (gridCell->empty()) {
+												std::cout<<"empty : "<<gridCell->getCellVolume().getPosition()<<","<<gridCell->getCellVolume().getSize()<<std::endl;//std::cout<<"grid cell is null"<<std::endl;
+												system("PAUSE");
+											}
 											//std::cout<<"empty : "<<gridCell<<std::endl;
 											CellData emptyCell;
 											emptyCell.clusterId = -1;
@@ -739,7 +754,7 @@ namespace odfaeg {
 											cellDatas.push_back(emptyCell);
 										//Cluster rempli. 
 										} else {
-											
+											//std::cout<<"not empty"<<std::endl;
 											//Ajout du root node et des enfants + création des clusters et assignation des ids.
 											std::deque<entity::Octree<Meshlet>::Node>& nodes = gridCell->getOctreeNodes();
 											//std::cout<<"size : "<<nodes.size()<<std::endl;
@@ -888,6 +903,7 @@ namespace odfaeg {
 						count++;
 					} else {
 						std::cout<<"meshlet : "<<meshletDatas[m].clusterId<<","<<meshletDatas[m].submeshId<<","<<meshletDatas[m].lod<<std::endl;
+						system("PAUSE");
 					}
 				}
 					

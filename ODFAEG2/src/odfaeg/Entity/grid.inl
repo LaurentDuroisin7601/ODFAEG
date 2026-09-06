@@ -72,7 +72,7 @@ namespace odfaeg {
             for (float i = x; i <= endX; i+= cellWidth) {
                 for (float j = y; j <= endY; j+= cellHeight)  {
                     for (float k = z; k <= endZ; k+= cellDepth) {
-
+                        //std::cout<<"add meshlet to grid"<<std::endl;
                         math::Vec3f pos (i, j, k);
                         //std::cout<<"pos : "<<pos<<std::endl;
 
@@ -216,6 +216,7 @@ namespace odfaeg {
 
             //Face de devant.
             physic::BoundingBox volume (v1[0], v1[1], v1[2], cellWidth, cellHeight, cellDepth);
+            
             /*bp->addTriangle(v[0], v[2], v[3]);
             //Face gauche.
             bp->addTriangle(v[0], v[1], v[7]);
@@ -250,7 +251,7 @@ namespace odfaeg {
             if (newSize > casesMap.size()) {
                 ////////std::cout<<"resize vector! > : "<<newSize<<std::endl;
                 vector<GridCell<Object>> tmpCasesMap = casesMap;
-                casesMap.clear();
+                //casesMap.clear();
                 casesMap.resize(newSize);
                 //std::fill(casesMap.begin(), casesMap.end(), GridCell<Object>(volume, p));
                 for (unsigned int i = 0; i < tmpCasesMap.size(); i++) {
@@ -266,7 +267,7 @@ namespace odfaeg {
             } else if (newSize < casesMap.size()) {
                 ////////std::cout<<"resize vector < ! : "<<newSize<<std::endl;
                 vector<GridCell<Object>> tmpCasesMap = casesMap;
-                casesMap.clear();
+                //casesMap.clear();
                 casesMap.resize(newSize);
                 //std::fill(casesMap.begin(), casesMap.end(), nullptr);
                 for (unsigned int i = 0; i < tmpCasesMap.size(); i++) {
@@ -282,6 +283,7 @@ namespace odfaeg {
             }
             //////////std::cout<<"ind : "<<indice<<std::endl;
             casesMap[indice] = cell;
+            //std::cout<<"volume : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
             //system("PAUSE");
         }
         template<typename Object>
@@ -614,8 +616,10 @@ namespace odfaeg {
         template<typename Object>
         GridCell<Object>* GridMap<Object>::getGridCellAtFromCoords(math::Vec3f coords) {
             int indice = (math::Math::abs(minX) + coords.x()) + (math::Math::abs(minY) + coords.y()) * nbCasesPerRow + (math::Math::abs(minZ) + coords.z()) * nbCasesPerCol;
+           
             if (indice >= 0 && indice < static_cast<int>(casesMap.size()))
                 return &casesMap[indice];
+             //std::cout<<"get grid cell at from coords : "<<minX<<","<<minY<<","<<minZ<<coords<<std::endl;
             return nullptr;
         }
         template<typename Object>
