@@ -54,9 +54,9 @@ void main() {
 
     // --- Diffuse ---
     vec4 diffuse = fragColor; 
-    /*if (fragColor.r < 0.9 || fragColor.g < 0.9 || fragColor.b < 0.9) {
+    if (fragColor.r < 0.9 || fragColor.g < 0.9 || fragColor.b < 0.9) {
         debugPrintfEXT("Error %v4f", fragColor);
-    }*/
+    }
     if (currentFrame > 1)
     debugPrintfEXT("current frame : %i", currentFrame);
     

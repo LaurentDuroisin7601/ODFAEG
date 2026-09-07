@@ -310,7 +310,7 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                 
                 
                 if (!intersects(frustrum, n.volume)) {
-                    //debugPrintfEXT("intersects!");
+                    debugPrintfEXT("not intersects!");
                     continue;
                 }   
                 //debugPrintfEXT("lod : %i, smid : %i, %i", n.lod, n.submeshId, sm.id);                 

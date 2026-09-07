@@ -545,7 +545,7 @@ namespace odfaeg {
 						}
 						/*std::cout<<"new total vertex count : "<<vertices[primitiveType].getVertexCount()<<std::endl;
 						std::cout<<"new total index count : "<<vertices[primitiveType].getIndexCount()<<std::endl;*/
-
+						subMeshData.meshletOffset =  meshletDatas.size();
 						std::array<entity::VertexArray::LODLevel, 5> lods = subMesh.getVertexArray().getLODs();
 						unsigned int currentSubmeshMeshletOffset = meshletDatas.size();						
 						for (unsigned int l = 0; l < lods.size(); l++) {
