@@ -1,6 +1,6 @@
 #ifndef ODFAEG_GRIDCELL_HPP
 #define ODFAEG_GRIDCELL_HPP
-#include "octree.hpp"
+#include "bspTree.hpp"
 namespace odfaeg {
     namespace entity {
         template <typename Object>
@@ -18,7 +18,7 @@ namespace odfaeg {
                 void deleteEntity (Object entity); 
                 math::Vec3f getCenter ();
                 bool empty();
-                std::deque<typename Octree<Object>::Node>& getOctreeNodes();
+                std::deque<typename Octree<Object>::Node>& getTreeNodes();
                 bool isTraveled ();
                 void setTraveled (bool traveled);
                 Object getEntityInside (unsigned int index, physic::BoundingBox& bx);
@@ -33,7 +33,7 @@ namespace odfaeg {
                 bool passable, traveled, stateChanged;
                 math::Vec3f coords;
                 physic::BoundingBox volume;
-                Octree<Object> octree;
+                BSPTree<Object> tree;
         };
     }
 }

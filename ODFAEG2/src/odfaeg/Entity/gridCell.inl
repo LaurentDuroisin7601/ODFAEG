@@ -1,15 +1,15 @@
 namespace odfaeg {
     namespace entity {
         using namespace std;
-         template <typename Object>
-        GridCell<Object>::GridCell () : octree(physic::BoundingBox(0, 0, 0, 0, 0, 0), 8) {
+        template <typename Object>
+        GridCell<Object>::GridCell () : tree(physic::BoundingBox(0, 0, 0, 0, 0, 0), 8) {
             passable = true;
             stateChanged = false;
             traveled = false;
             volume = physic::BoundingBox(0, 0, 0, 0, 0, 0);
         }
         template <typename Object>
-        GridCell<Object>::GridCell (physic::BoundingBox volume, math::Vec3f coords) : octree(volume, 8) {
+        GridCell<Object>::GridCell (physic::BoundingBox volume, math::Vec3f coords) : tree(volume, 8) {
             this->volume = volume;
             passable = true;
             stateChanged = false;
@@ -23,7 +23,7 @@ namespace odfaeg {
         template <typename Object>
         void GridCell<Object>::addEntity (Object entity, physic::BoundingBox objectVolume) {
             if (!containsEntity(entity)) {                
-                octree.addObject(entity, objectVolume);
+                tree.addObject(entity, objectVolume);
             }
         }
         template <typename Object>
@@ -32,17 +32,17 @@ namespace odfaeg {
         }
         template <typename Object>
         bool GridCell<Object>::isEntityInside () {
-            if (octree.getObjects(volume).size() != 0)
+            if (tree.getObjects(volume).size() != 0)
                     return true;
             return false;
         }
         template <typename Object>
-        std::deque<typename Octree<Object>::Node>& GridCell<Object>::getOctreeNodes() {
-            return octree.getNodes();
+        std::deque<typename Octree<Object>::Node>& GridCell<Object>::getTreeNodes() {
+            return tree.getNodes();
         }
         template <typename Object>
         bool GridCell<Object>::empty() {
-            return octree.empty();
+            return tree.empty();
         }
         template <typename Object>
         vector<Object> GridCell<Object>::getEntitiesInside () {
@@ -55,7 +55,7 @@ namespace odfaeg {
         vector<Object> GridCell<Object>::getEntitiesInside (std::string type) {
             vector<Object> entitiesInside;
             for (unsigned int i = 0; i < octree.getObjects(volume).size(); i++)
-                if (octree.getObjects(volume)[i]->getType() == type)
+                if (tree.getObjects(volume)[i]->getType() == type)
                     entitiesInside.push_back(octree.getObjects(volume)[i]);
             return entitiesInside;
         }
@@ -65,8 +65,8 @@ namespace odfaeg {
         }
         template <typename Object>
         void GridCell<Object>::deleteEntity (Object entity) {
-            for (unsigned int i = 0; i < octree.getObjects(volume).size(); i++) {
-                if (octree.getObjects(volume)[i] == entity) {
+            for (unsigned int i = 0; i < tree.getObjects(volume).size(); i++) {
+                if (tree.getObjects(volume)[i] == entity) {
                     removeEntity(entity);
                     delete entity;
                 }
@@ -86,20 +86,20 @@ namespace odfaeg {
         }
         template<typename Object>
         Object GridCell<Object>::getEntityInside (unsigned int index, physic::BoundingBox& bx) {
-            if (index >= 0 && index < octree.getObjects(volume).size()) {
-                Object entity = octree.getObjects(volume)[index];
-                bx = octree.getObjectVolumes(volume)[index];
+            if (index >= 0 && index < tree.getObjects(volume).size()) {
+                Object entity = tree.getObjects(volume)[index];
+                bx = tree.getObjectVolumes(volume)[index];
                 return entity;
             }
             return nullptr;
         }
         template <typename Object>
         unsigned int GridCell<Object>::getNbEntitiesInside() {
-            return octree.getObjects(volume).size();
+            return tree.getObjects(volume).size();
         }
         template <typename Object>
         bool GridCell<Object>::containsEntity (Object entity) {            
-            return octree.contains(entity);
+            return tree.contains(entity);
         }
         template <typename Object>
         bool GridCell<Object>::isPassable () {
