@@ -774,7 +774,7 @@ namespace odfaeg {
 										size_t id = stack.back();
 										stack.pop_back();
 										//std::cout<<"leaf ? "<<node.leaf<<"size = "<<stack.size()<<std::endl;
-										entity::Octree<Meshlet>::Node& node = nodes[id];
+										entity::BSPTree<Meshlet>::Node& node = nodes[id];
 										/*Cluster clusterData;												
 										clusterData.submeshId = currentSubmeshesOffset;
 										clusterData.volume.center = node.volume.getCenter();
@@ -799,16 +799,17 @@ namespace odfaeg {
 												std::cout<<"not leaf"<<std::endl;
 												system("PAUSE");
 											}								
-											for(unsigned int c = 0; c < node.children.size(); c++) {
-												/*std::cout<<"not leaf : "<<node.objects.size()<<"c : "<<
-												c<<","<<nodes[node.children[c]].objects.size()<<std::endl;*/													
+											
+											/*std::cout<<"not leaf : "<<node.objects.size()<<"c : "<<
+											c<<","<<nodes[node.children[c]].objects.size()<<std::endl;*/													
+											
+											stack.push_back(node.leftChild);
+											stack.push_back(node.rightChild);
+											//node.id = clusterDatas.size()-1;
+											
+											//std::cout<<"size : "<<nodes.size()<<"id : "<<id<<" "<<node.children[c]<<std::endl;										clusterDatas[clusterDatas.size()-1].children.push_back(clusterDatas.size());
 												
-												stack.push_back(node.children[c]);
-												//node.id = clusterDatas.size()-1;
-												
-												//std::cout<<"size : "<<nodes.size()<<"id : "<<id<<" "<<node.children[c]<<std::endl;										clusterDatas[clusterDatas.size()-1].children.push_back(clusterDatas.size());
-												
-											}
+											
 										} else if (node.objects.size() > 0) {
 											
 											//system("PAUSE");
@@ -845,7 +846,7 @@ namespace odfaeg {
 																							
 												//clusterData.children[c] = clusterDatas.size();
 												if (node.objects.size() > 8) {
-													std::cout<<"meshlet id : "<<node.objects[o].id<<","<<meshletDatas.size()<<std::endl;
+													std::cout<<"error : max object exceeds 8 : "<<node.objects.size()<<std::endl;
 													system("PAUSE");
 												}
 												//std::cout<<"id : "<<node.objects.size()<<std::endl;
