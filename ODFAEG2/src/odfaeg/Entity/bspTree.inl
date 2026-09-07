@@ -85,8 +85,10 @@ namespace odfaeg {
                 for (unsigned int j = 0; j < node.objects.size(); j++) {
                     if (node.plane.whichSide(node.objectVolumes[j].getCenter()) < 0) {
                         nodes[node.leftChild].objects.push_back(node.objects[j]);
+                        nodes[node.leftChild].objectVolumes.push_back(node.objectVolumes[j]);
                     } else {
                         nodes[node.rightChild].objects.push_back(node.objects[j]);
+                        nodes[node.rightChild].objectVolumes.push_back(node.objectVolumes[j]);
                     }
                 }    
                 node.objects.clear();
