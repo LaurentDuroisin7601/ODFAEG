@@ -898,20 +898,19 @@ namespace odfaeg {
 				}*/
 				std::sort(meshletDatas.begin(), meshletDatas.end(), [](Meshlet m1, Meshlet m2){ return  m1.clusterId < m2.clusterId;});
 				
-				unsigned int lastMeshletId = 0;
-				unsigned int count = 0;
+				unsigned int lastMeshletId = 0, lastClusterId = 0;				
 				for (unsigned int m = 0; m < meshletDatas.size(); m++) {
 					if (meshletDatas[m].clusterId != -1) {
 						//std::cout<<"id : "<<meshletDatas[m].clusterId<<","<<clusterDatas.size()<<std::endl;
 									
-						if (count >= clusterDatas[meshletDatas[m].clusterId].meshletCount) {	
+						if (meshletDatas[m].clusterId > lastClusterId) {	
 							lastMeshletId = m;
-							count = 0;					
+							lastClusterId = meshletDatas[m].clusterId;				
 						}
 						
-						//std::cout<<"meshlet : "<<meshletDatas[m].clusterId<<","<<meshletDatas[m].submeshId<<","<<clusterDatas[meshletDatas[m].clusterId].submeshId<<","<<clusterDatas[meshletDatas[m].clusterId].meshletCount<<std::endl;
+						std::cout<<"meshlet : "<<meshletDatas[m].clusterId<<","<<lastMeshletId<<","<<clusterDatas[meshletDatas[m].clusterId].meshletCount<<std::endl;
 						clusterDatas[meshletDatas[m].clusterId].meshletOffset = lastMeshletId;
-						count++;
+						
 					} else {
 						std::cout<<"meshlet : "<<meshletDatas[m].clusterId<<","<<meshletDatas[m].submeshId<<","<<meshletDatas[m].lod<<std::endl;
 						system("PAUSE");
