@@ -105,9 +105,10 @@ struct Vertex {
 };
 struct GridCell {
     AABB volume;
+    vec3 coords;
     int clusterId;
     int clusterOffset;
-    int clusterCount;    
+    int clusterCount; 
 };
 struct Cluster {
     AABB volume;
@@ -270,29 +271,14 @@ bool hasNeightbour(ivec3 pos, int lod, uint axe) {
         return false;
     }
     bool hasNVoxel = false;
-    /*int stack[32];
-    int sp = 0;
-    stack[sp++] = inputClustersBuffer.clusters[inputGridBuffer.grid[cellId].clusterId].id;
-    while (sp > 0) {
-        uint id = stack[sp--];
-        Cluster n = inputClustersBuffer.clusters[id];
-        if (!intersects(ubo[pc.currentFrame].frustrum, n.volume)) {
-            continue;
-        }
-        if (n.leaf == 1) {
-            if (n.lod == 0) {
-                for (uint m = 0; m < n.meshletCount && !hasNVoxel; m++) {
-                    if (inputMeshlet.meshlets[n.meshletOffset+m].voxel == 1) {
-                        hasNVoxel = true;
-                    }
-                }
-            }                               
-        } else {
-            for (uint c = 0; c < 8; c++) {
-                stack[sp++] = n.children[c];
-            }
-        } 
-    }*/
+    for (uint j = 0; j < inputGridBuffer.grid[cellId].clusterCount; j++) {                
+        Cluster n = inputClustersBuffer.clusters[inputGridBuffer.grid[cellId].clusterOffset+j];
+        for (uint m = 0; m < n.meshletCount; m++) {
+            if (inputMeshlet.meshlets[n.meshletOffset+m].voxel == 1) {
+                hasNVoxel = true;
+            }   
+        }     
+    }  
     return hasNVoxel;
 }
 void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm, uint f, uint materialId) {   
@@ -376,7 +362,7 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                         //Voxel. 
                     } else {
                         //Voxel visible : on le génère.
-                        //if (!hasNeightbour(ivec3(x, y, z), lod, f)) {                                       
+                        if (!hasNeightbour(inputGridBuffer.grid[i].coords, lod, f)) {                                       
                             uint count = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
                             //Si on dépasse ou on arrive au dernier on créé une nouvelle tâche.
                             if (count + 4 >= MAX_VERTICES 
@@ -406,7 +392,7 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                             task.vertexCount = count;
                             task.primitiveCount = count / 4 * 2;
                             outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset] = task;
-                        //}    
+                        }    
                     }*/
                 }                 
             }
