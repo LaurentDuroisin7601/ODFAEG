@@ -17,13 +17,15 @@ struct MaterialData {
     uint aoTextureIndex;
     uint emissiveTextureIndex;
     uint materialType;
-    uint materialSet;
+    uint instanceId;   
     uint nbVertices;
     uint nbIndexes;
     int instanceGroupId;
     uint vertsInstanceSet;
+    uint taskOffset;
     uint materialId;
     uint nbBuffers;
+    int opaque;
     int reflectable;
     int refractable;      
 };

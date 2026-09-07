@@ -50,8 +50,6 @@ struct ModelData {
 };        
 /*Matériaux*/
 struct MaterialData {   
-    /*vec2 uvScale;
-    vec2 uvOffset;*/
     uint diffuseTextureIndex;
     uint specularTextureIndex;
     uint normalTextureIndex;
@@ -60,13 +58,15 @@ struct MaterialData {
     uint aoTextureIndex;
     uint emissiveTextureIndex;
     uint materialType;
-    uint materialSet;   
+    uint instanceId;   
     uint nbVertices;
     uint nbIndexes;
     int instanceGroupId;
     uint vertsInstanceSet;
+    uint taskOffset;
     uint materialId;
-    uint nbBuffers;  
+    uint nbBuffers;
+    int opaque;
     int reflectable;
     int refractable;  
 };
@@ -220,7 +220,7 @@ void main() {
                         if(inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet == 0) {
                             inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet = 1;
                             uint indirectElementsDrawCommandOffset = atomicAdd(outputDrawCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].drawCount, 1);
-                            inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].materialSet = indirectElementsDrawCommandOffset;   
+                            inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset = indirectElementsDrawCommandOffset;   
                             IndirectElementsDrawCommand indirectElementsDrawCommand;
                             indirectElementsDrawCommand.index_count = lodLevelData.lodLevel[subMesh.lodOffset+lod].index_count;
                             indirectElementsDrawCommand.first_index = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+lod].index_offset;
@@ -236,7 +236,7 @@ void main() {
                         ModelData modelData = inputModelData.modelData[object.modelDataOffset];
                         outputModelData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceBase] = modelData;
                         //nombre d'instances + 1.
-                        uint indirectElementsDrawCommandOffset = inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].materialSet;
+                        uint indirectElementsDrawCommandOffset = inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;
                         outputIndirectElementsDrawCommands[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].indirectElementsDrawCommands[indirectElementsDrawCommandOffset].instance_count++;
                         //Matériel non instancé.
                     } else {

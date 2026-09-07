@@ -9,7 +9,7 @@ layout (push_constant) uniform PushConstant {
     layout(offset=136) int currentImageIndex;
 } pc;
 struct MaterialData {
-       uint diffuseTextureIndex;
+    uint diffuseTextureIndex;
     uint specularTextureIndex;
     uint normalTextureIndex;
     uint metalnessTextureIndex;
