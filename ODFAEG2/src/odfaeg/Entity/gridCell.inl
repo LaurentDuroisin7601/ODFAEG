@@ -47,21 +47,21 @@ namespace odfaeg {
         template <typename Object>
         vector<Object> GridCell<Object>::getEntitiesInside () {
             vector<Object> entitiesInside;
-            for (unsigned int i = 0; i < octree.getObjects(volume).size(); i++)
-                entitiesInside.push_back(octree.getObjects(volume)[i]);
+            for (unsigned int i = 0; i < tree.getObjects(volume).size(); i++)
+                entitiesInside.push_back(tree.getObjects(volume)[i]);
             return entitiesInside;
         }
         template <typename Object>
         vector<Object> GridCell<Object>::getEntitiesInside (std::string type) {
             vector<Object> entitiesInside;
-            for (unsigned int i = 0; i < octree.getObjects(volume).size(); i++)
+            for (unsigned int i = 0; i < tree.getObjects(volume).size(); i++)
                 if (tree.getObjects(volume)[i]->getType() == type)
-                    entitiesInside.push_back(octree.getObjects(volume)[i]);
+                    entitiesInside.push_back(tree.getObjects(volume)[i]);
             return entitiesInside;
         }
         template <typename Object>
         void GridCell<Object>::removeEntity (Object object) {
-           octree.removeObject(object);
+           tree.removeObject(object);
         }
         template <typename Object>
         void GridCell<Object>::deleteEntity (Object entity) {

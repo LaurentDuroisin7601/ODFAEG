@@ -34,7 +34,7 @@ namespace odfaeg {
             /*std::cout<<"add : "<<node.volume.getPosition()<<","<<node.volume.getSize()<<std::endl;
             std::cout<<"object volume : "<<objectVolume.getPosition()<<objectVolume.getSize()<<std::endl;*/
             if (!node.leaf) {                    
-                if (node.plane.whichSize(objectVolume.getCenter()) < 0) {
+                if (node.plane.whichSide(objectVolume.getCenter()) < 0) {
                     //std::cout<<"insert object : "<<j<<std::endl;
                     insert(node.leftChild, object, objectVolume);
                     //return;
@@ -125,7 +125,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < node.objects.size(); i++) {
                 objects.push_back(node.objects[i]);                
             }
-            if (node.plane.whichSize(volume.getCenter()) < 0) {
+            if (node.plane.whichSide(volume.getCenter()) < 0) {
                 getObjects(objects, nodes[node.leftChild], volume);                
             } else {
                 getObjects(objects, nodes[node.rightChild], volume);  
@@ -143,7 +143,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < node.objects.size(); i++) {
                 objects.push_back(node.objectVolumes[i]);                
             }
-            if (node.plane.whichSize(volume.getCenter()) < 0) {
+            if (node.plane.whichSide(volume.getCenter()) < 0) {
                 getObjectVolumes(objects, nodes[node.leftChild], volume);                
             } else {
                 getObjectVolumes(objects, nodes[node.rightChild], volume);  
