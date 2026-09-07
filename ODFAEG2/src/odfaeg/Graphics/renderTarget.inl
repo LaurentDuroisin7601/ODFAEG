@@ -11,7 +11,7 @@ namespace odfaeg {
 		outputMeshes(GPUContext::instance().getSharedBuffers(OUTPUT_MESHES+registeredRenderTargets.size()*NB_BUFFERS)),
 		outputModelDatas(GPUContext::instance().getSharedBuffers(OUTPUT_MODELS+registeredRenderTargets.size()*NB_BUFFERS)),
 		outputMaterialDatas(GPUContext::instance().getSharedBuffers(OUTPUT_MATERIALS+registeredRenderTargets.size()*NB_BUFFERS)),		
-		meshletsGrid(0.5, 0.5, 0.5)		
+		meshletsGrid(50, 50, 50)		
 		{
 			
 			id = registeredRenderTargets.size();
@@ -728,8 +728,9 @@ namespace odfaeg {
 							
 							
 							math::Vec3f gridPos = meshletsGrid.getMins();
-							math::Vec3f gridSize = meshletsGrid.getSize();	
-							cullingInfo.gridCellCount[l] = meshletsGrid.getCasesMap().size();
+							math::Vec3f gridSize = meshletsGrid.getSize();
+							
+							
 							cullingInfo.nbCellsPerRow[l] = 	math::Vec4f(meshletsGrid.getNbCasesPerRow(), meshletsGrid.getNbCasesPerCol(), 0, 0); 
 							cullingInfo.gridCellSize[l] = math::Vec4f(meshletsGrid.getCellWidth(), meshletsGrid.getCellHeight(), meshletsGrid.getCellDepth(), 0);
 							cullingInfo.gridPos[l] = math::Vec4f(gridPos.x(), gridPos.y(), gridPos.z(), 0);
@@ -769,6 +770,7 @@ namespace odfaeg {
 									cellData.clusterOffset = currentClustersOffset;
 									cellData.volume.center = gridCell.getCellVolume().getCenter();
 									cellData.volume.size = gridCell.getCellVolume().getSize();
+									cellData.coords = gridCell.getCoords();
 									
 									while (!stack.empty()) {										
 										size_t id = stack.back();
@@ -802,9 +804,9 @@ namespace odfaeg {
 											
 											/*std::cout<<"not leaf : "<<node.objects.size()<<"c : "<<
 											c<<","<<nodes[node.children[c]].objects.size()<<std::endl;*/													
-											
-											stack.push_back(node.leftChild);
-											stack.push_back(node.rightChild);
+											for (unsigned int i = 0; i < node.children.size(); i++) {
+												stack.push_back(node.children[i]);
+											}
 											//node.id = clusterDatas.size()-1;
 											
 											//std::cout<<"size : "<<nodes.size()<<"id : "<<id<<" "<<node.children[c]<<std::endl;										clusterDatas[clusterDatas.size()-1].children.push_back(clusterDatas.size());
@@ -874,8 +876,8 @@ namespace odfaeg {
 									
 									cellDatas.push_back(cellData);
 								}
-							}								
-							cullingInfo.gridCellCount[l] = cellDatas.size();
+							}														
+							
 						}
 						
 						subMeshData.lodOffset = currentSubmeshesOffset * lods.size();
@@ -886,7 +888,9 @@ namespace odfaeg {
 						currentSubmeshesOffset++;					
 					}									
 				}
-				
+				cullingInfo.gridCellCount = cellDatas.size();
+				/*std::cout<<"cell : "<<cellDatas.size()<<std::endl;
+				system("PAUSE");*/
 				
 				//Tri par lod. (D'abord clusters pour meshelts en lod0, puis 1, etc...)
 				/*for (unsigned int m = 0; m < meshletDatas.size(); m++) {
@@ -1143,27 +1147,27 @@ namespace odfaeg {
 					VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
 				defaultRenderingLayout.update();
 				DescriptorSetLayout& specularDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader, 1, true, 1);
-				specularDefaultRenderingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES/**MAX_FRAMES_IN_FLIGHT*/, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+				specularDefaultRenderingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
 					VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
 				specularDefaultRenderingLayout.update();
 				DescriptorSetLayout& normalDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader, 1, true, 2);
-				normalDefaultRenderingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES/**MAX_FRAMES_IN_FLIGHT*/, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+				normalDefaultRenderingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
 					VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
 				normalDefaultRenderingLayout.update();
 				DescriptorSetLayout& metalnessDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader, 1, true, 3);
-				metalnessDefaultRenderingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES/**MAX_FRAMES_IN_FLIGHT*/, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+				metalnessDefaultRenderingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
 					VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
 				metalnessDefaultRenderingLayout.update();
 				DescriptorSetLayout& roughnessDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader, 1, true, 4);
-				roughnessDefaultRenderingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES/**MAX_FRAMES_IN_FLIGHT*/, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+				roughnessDefaultRenderingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
 					VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
 				roughnessDefaultRenderingLayout.update();
 				DescriptorSetLayout& aoDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader, 1, true, 5);
-				aoDefaultRenderingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES/**MAX_FRAMES_IN_FLIGHT*/, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+				aoDefaultRenderingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
 					VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
 				aoDefaultRenderingLayout.update();
 				DescriptorSetLayout& emissiveDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader, 1, true, 6);
-				emissiveDefaultRenderingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES/**MAX_FRAMES_IN_FLIGHT*/, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+				emissiveDefaultRenderingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
 					VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
 				emissiveDefaultRenderingLayout.update();
 				if (!isDepthOnly()) {
@@ -2128,7 +2132,7 @@ namespace odfaeg {
 				vkCmdDraw(commandPool.getHandle(getCurrentFrame()), vb.getVertexCount(), 1, 0, 0);
 			}
 		}
-		void RenderTarget::draw(entity::PrimitiveType primitiveType, RenderStates states) {
+		void RenderTarget::drawMesh(entity::PrimitiveType primitiveType, RenderStates states) {
 			if (needToUpdateCullBatchIndCmds) {
 				applyCullingAndBatching();
 				//std::cout<<"draw"<<std::endl;
@@ -2142,42 +2146,79 @@ namespace odfaeg {
 			viewProjInfos.currentFrame = getCurrentFrame();
 			indexesPC.currentImageIndex = getImageIndex();
 			states.blendMode.updateIds();
-			if (device.areMeshShadersSupported()) {
-				VkMemoryBarrier2 barrier{};
-				barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2;
-				barrier.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
-				barrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
-				barrier.dstStageMask = VK_PIPELINE_STAGE_2_TASK_SHADER_BIT_EXT | VK_PIPELINE_STAGE_2_MESH_SHADER_BIT_EXT;
-				barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+			VkMemoryBarrier2 barrier{};
+			barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2;
+			barrier.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+			barrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
+			barrier.dstStageMask = VK_PIPELINE_STAGE_2_TASK_SHADER_BIT_EXT | VK_PIPELINE_STAGE_2_MESH_SHADER_BIT_EXT;
+			barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
 
-				VkDependencyInfo depInfo{};
-				depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
-				depInfo.memoryBarrierCount = 1;
-				depInfo.pMemoryBarriers = &barrier;
+			VkDependencyInfo depInfo{};
+			depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+			depInfo.memoryBarrierCount = 1;
+			depInfo.pMemoryBarriers = &barrier;
 
-				vkCmdPipelineBarrier2(commandPool.getHandle(getCurrentFrame()), &depInfo);
-			} else {				
-				VkMemoryBarrier mem{};
-				mem.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-				mem.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-				mem.dstAccessMask =
-					VK_ACCESS_INDIRECT_COMMAND_READ_BIT |   // draw indirect
-					VK_ACCESS_INDEX_READ_BIT |              // index buffer
-					VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-				/*Device::QueueFamilyIndices indexes = device.findQueueFamilies(device.getPhysicalDevice());// vertex buffer
-				mem.srcQueueFamilyIndex = indexes.computeFamily.value();
-				mem.dstQueueFamilyIndex = indexes.graphicsFamily.value();*/
-				vkCmdPipelineBarrier(
-					commandPool.getHandle(getCurrentFrame()),
-					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-					VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT |
-					VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-					0,
-					1, &mem,
-					0, nullptr,
-					0, nullptr
-				);
+			vkCmdPipelineBarrier2(commandPool.getHandle(getCurrentFrame()), &depInfo);
+			beginRendering();
+			DepthStencilType depthStencilInfoId;
+			if (!useDepthTest() && !useStencilTest()) {
+				depthStencilInfoId = NODEPTHNOSTENCIL;
+			} else if (useDepthTest() && !useStencilTest()) {
+				depthStencilInfoId = DEPTHNOSTENCIL;
+			} else if (!useDepthTest() && useStencilTest()) {
+				depthStencilInfoId = NODEPTHSTENCIL;
+			} else {
+				depthStencilInfoId = DEPTHSTENCIL;
 			}
+			
+			vkCmdBindPipeline(commandPool.getHandle(getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getHandle());
+			vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getLayout(), VK_SHADER_STAGE_TASK_BIT_EXT | VK_SHADER_STAGE_MESH_BIT_EXT, 0, sizeof(ViewProjMatPC), &viewProjInfos);			
+			vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(ViewProjMatPC), sizeof(IndexesPC), &indexesPC);
+			std::vector<VkDescriptorSet> shaderDescriptorSets;
+			for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(*shader).size(); i++) {
+				shaderDescriptorSets.push_back(GPUContext::instance().getDescriptorSets(*shader)[i][0].getHandle());
+			}
+			vkCmdBindDescriptorSets(commandPool.getHandle(getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getLayout(), 0, shaderDescriptorSets.size(), shaderDescriptorSets.data(), 0, nullptr);
+
+			applyViewportAndScissor(commandPool.getHandle(getCurrentFrame()));
+			//std::cout<<"command pool : "<<commandPool.getHandle(getCurrentFrame())<<std::endl;
+			vkCmdDrawMeshTasksEXT(commandPool.getHandle(getCurrentFrame()), MAX_TASKS, 1, 1);
+			endRendering();
+		}
+		void RenderTarget::draw(entity::PrimitiveType primitiveType, RenderStates states) {
+			if (needToUpdateCullBatchIndCmds) {
+				applyCullingAndBatching();
+				//std::cout<<"draw"<<std::endl;
+				needToUpdateCullBatchIndCmds = false;
+			}
+			Shader* shader = (states.shader == nullptr) ? &defaultRenderingShader : states.shader;
+			viewProjInfos.primitiveType = primitiveType;
+			
+			/*std::cout<<"primitive type : "<<viewProjInfos.primitiveType<<std::endl;
+			system("PAUSE");*/
+			viewProjInfos.currentFrame = getCurrentFrame();
+			indexesPC.currentImageIndex = getImageIndex();
+			states.blendMode.updateIds();						
+			VkMemoryBarrier mem{};
+			mem.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+			mem.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+			mem.dstAccessMask =
+				VK_ACCESS_INDIRECT_COMMAND_READ_BIT |   // draw indirect
+				VK_ACCESS_INDEX_READ_BIT |              // index buffer
+				VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+			/*Device::QueueFamilyIndices indexes = device.findQueueFamilies(device.getPhysicalDevice());// vertex buffer
+			mem.srcQueueFamilyIndex = indexes.computeFamily.value();
+			mem.dstQueueFamilyIndex = indexes.graphicsFamily.value();*/
+			vkCmdPipelineBarrier(
+				commandPool.getHandle(getCurrentFrame()),
+				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+				VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT |
+				VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+				0,
+				1, &mem,
+				0, nullptr,
+				0, nullptr
+			);			
 			beginRendering();
 			DepthStencilType depthStencilInfoId;
 			if (!useDepthTest() && !useStencilTest()) {
@@ -2194,32 +2235,22 @@ namespace odfaeg {
 			std::cout<<"pipeline  : "<<primitiveType<<","<<shader->getId()<<","<<states.blendMode.id<<","<<depthStencilInfoId<<std::endl;
 			std::cout<<"pipeline handle : "<<GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getHandle()<<std::endl;*/
 			vkCmdBindPipeline(commandPool.getHandle(getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getHandle());
-			if (device.areMeshShadersSupported()) {
-				vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getLayout(), VK_SHADER_STAGE_TASK_BIT_EXT | VK_SHADER_STAGE_MESH_BIT_EXT, 0, sizeof(ViewProjMatPC), &viewProjInfos);
-			} else {
-				vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ViewProjMatPC), &viewProjInfos);
-			}			
+			vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ViewProjMatPC), &viewProjInfos);
+					
 			vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(ViewProjMatPC), sizeof(IndexesPC), &indexesPC);
 			VkBuffer vertexBuffers[] = { vertices[primitiveType].getVertexBuffer(0).getHandle()};
-			VkDeviceSize offsets[] = { 0, 0 };
-			if (!device.areMeshShadersSupported()) {				
-				vkCmdBindVertexBuffers(commandPool.getHandle(getCurrentFrame()), 0, 1, vertexBuffers, offsets);
-				vkCmdBindIndexBuffer(commandPool.getHandle(getCurrentFrame()), vertices[primitiveType].getIndexBuffer(0).getHandle(), 0, VK_INDEX_TYPE_UINT32);
-			}
+			VkDeviceSize offsets[] = { 0, 0 };						
+			vkCmdBindVertexBuffers(commandPool.getHandle(getCurrentFrame()), 0, 1, vertexBuffers, offsets);
+			vkCmdBindIndexBuffer(commandPool.getHandle(getCurrentFrame()), vertices[primitiveType].getIndexBuffer(0).getHandle(), 0, VK_INDEX_TYPE_UINT32);
+			
 			std::vector<VkDescriptorSet> shaderDescriptorSets;
 			for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(*shader).size(); i++) {
 				shaderDescriptorSets.push_back(GPUContext::instance().getDescriptorSets(*shader)[i][0].getHandle());
 			}
 			vkCmdBindDescriptorSets(commandPool.getHandle(getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(primitiveType, *shader, states.blendMode, depthStencilInfoId).getLayout(), 0, shaderDescriptorSets.size(), shaderDescriptorSets.data(), 0, nullptr);
 
-			applyViewportAndScissor(commandPool.getHandle(getCurrentFrame()));
-			if (device.areMeshShadersSupported()) {
-				//std::cout<<"command pool : "<<commandPool.getHandle(getCurrentFrame())<<std::endl;
-				vkCmdDrawMeshTasksEXT(commandPool.getHandle(getCurrentFrame()), MAX_TASKS, 1, 1);
-
-			} else {
-				vkCmdDrawIndexedIndirectCount(commandPool.getHandle(getCurrentFrame()), outputElementsDrawIndirectCommand[primitiveType*MAX_FRAMES_IN_FLIGHT+getCurrentFrame()].getHandle(), 0, drawCount[primitiveType*MAX_FRAMES_IN_FLIGHT+getCurrentFrame()].getHandle(), 0, MAX_DRAW_INDIRECT_COMMANDS, sizeof(DrawElementsIndirectCommand));
-			}
+			applyViewportAndScissor(commandPool.getHandle(getCurrentFrame()));			
+			vkCmdDrawIndexedIndirectCount(commandPool.getHandle(getCurrentFrame()), outputElementsDrawIndirectCommand[primitiveType*MAX_FRAMES_IN_FLIGHT+getCurrentFrame()].getHandle(), 0, drawCount[primitiveType*MAX_FRAMES_IN_FLIGHT+getCurrentFrame()].getHandle(), 0, MAX_DRAW_INDIRECT_COMMANDS, sizeof(DrawElementsIndirectCommand));			
 			endRendering();
 		}
 		Fence& RenderTarget::getComputeFences(int currentFrame) {

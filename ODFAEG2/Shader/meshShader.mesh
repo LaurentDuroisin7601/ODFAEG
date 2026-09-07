@@ -27,12 +27,12 @@ struct LODLevel {
     int meshletCount;
 };
 struct TaskData {
-    MeshDrawCommand meshDrawCommand;
+   MeshDrawCommand meshDrawCommand;
     uint baseInstance;    
     uint vertexCount;
     uint primitiveCount;
     uint vertexOffset; 
-    uint clusterOffset;  
+    uint clusterOffset; 
 };
 struct AABB {
 	vec3 center;
@@ -180,8 +180,7 @@ void main() {
         }
         //debugPrintfEXT("mesh shader"); 
         meshletDatas.meshlet[cluster.meshletOffset+id].rendered = 1;
-        /*if (gl_WorkGroupID.y >= lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletCount)
-            debugPrintfEXT("meshlet offets : %i, %i", lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].meshletCount, gl_WorkGroupID.y);*/
+        
         uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_offset + meshlet.indexOffset;
         //debugPrintfEXT("First index : %i,", firstIndex);
         //3 = Triangles.
@@ -189,8 +188,7 @@ void main() {
         uint maxPrims = 85u;
         uint vertexCount   = min(meshlet.nbVertices, maxVerts);
         uint primitiveCount = min(meshlet.nbIndexes / 3u, maxPrims);
-        /*if (vertexCount > 0)
-            debugPrintfEXT("submesh vertex count : %i, %i", vertexCount, primitiveCount);*/
+        
         
         
         SetMeshOutputsEXT(vertexCount, primitiveCount);
@@ -233,5 +231,5 @@ void main() {
             gl_PrimitiveTriangleIndicesEXT[tri*2] = uvec3(tri*4, tri*4+1, tri*4+2);
             gl_PrimitiveTriangleIndicesEXT[tri*2+1] = uvec3(tri*4, tri*4+2, tri*4+3);
         }
-    }    
+    }  
 }

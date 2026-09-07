@@ -44,7 +44,7 @@ namespace odfaeg {
                 }     
             } else {
                 
-                std::cout<<"insert object : "<<objectVolume.getPosition()<<","<<objectVolume.getSize()<<std::endl;
+                //std::cout<<"insert object : "<<objectVolume.getPosition()<<","<<objectVolume.getSize()<<std::endl;
                 //std::cout<<"insert meshlet : "<<std::endl;
                 node.objects.push_back(object);
                 node.objectVolumes.push_back(objectVolume);
@@ -56,7 +56,7 @@ namespace odfaeg {
         void BSPTree<Object>::subdivide(size_t id) {
             Node& node = nodes[id]; 
             if (node.objects.size() > maxObjectsPerNode) {
-                std::cout<<"subdivide"<<std::endl;
+                //std::cout<<"subdivide"<<std::endl;
                 node.leaf = false;
                 std::vector<math::Vec3f> centers;
                 for (unsigned int i = 0; i < node.objectVolumes.size(); i++) {

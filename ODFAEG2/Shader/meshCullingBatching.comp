@@ -201,7 +201,7 @@ layout (std430, set = 0, binding = 16) buffer outputVertexSSBO {
 layout (std140, set = 0, binding = 17) uniform UniformBufferObject {
 	AABB frustrum;			
 	uint nbObjectTypes;
-	uint gridCellCount[5];    
+	uint gridCellCount;   
     vec3 gridCellSize[5];
     vec3 nbCellsPerRow[5];    
     vec3 gridSize[5];   
@@ -243,20 +243,20 @@ bool intersects (AABB first, AABB second) {
     }
     return true;
 }
-bool hasNeightbour(ivec3 pos, int lod, uint axe) {
+bool hasNeightbour(vec3 pos, int lod, uint axe) {
     vec3 offset;
     if (axe == 0) {
-        offset = ivec3(pos.x - ubo[pc.currentFrame].gridCellSize[lod].x, pos.y, pos.z);
+        offset = vec3(pos.x - ubo[pc.currentFrame].gridCellSize[lod].x, pos.y, pos.z);
     } else if (axe == 1) {
-        offset = ivec3(pos.x + ubo[pc.currentFrame].gridCellSize[lod].x, pos.y, pos.z);
+        offset = vec3(pos.x + ubo[pc.currentFrame].gridCellSize[lod].x, pos.y, pos.z);
     } else if (axe == 2) {
-        offset = ivec3(pos.x, pos.y - ubo[pc.currentFrame].gridCellSize[lod].y, pos.z);
+        offset = vec3(pos.x, pos.y - ubo[pc.currentFrame].gridCellSize[lod].y, pos.z);
     } else if (axe == 3) {
-        offset = ivec3(pos.x, pos.y + ubo[pc.currentFrame].gridCellSize[lod].y, pos.z);
+        offset = vec3(pos.x, pos.y + ubo[pc.currentFrame].gridCellSize[lod].y, pos.z);
     } else if (axe == 4) {
-        offset = ivec3(pos.x, pos.y, pos.z - ubo[pc.currentFrame].gridCellSize[lod].z);
+        offset = vec3(pos.x, pos.y, pos.z - ubo[pc.currentFrame].gridCellSize[lod].z);
     } else {
-        offset = ivec3(pos.x, pos.y, pos.z + ubo[pc.currentFrame].gridCellSize[lod].z);
+        offset = vec3(pos.x, pos.y, pos.z + ubo[pc.currentFrame].gridCellSize[lod].z);
     }
     float gridEndX = ubo[pc.currentFrame].gridSize[lod].x * ubo[pc.currentFrame].gridCellSize[lod].x;
     float gridEndY = ubo[pc.currentFrame].gridSize[lod].y * ubo[pc.currentFrame].gridCellSize[lod].y;
@@ -267,7 +267,7 @@ bool hasNeightbour(ivec3 pos, int lod, uint axe) {
     int cellId = int(floor(offset.x / ubo[pc.currentFrame].gridCellSize[lod].x) + floor(offset.y / ubo[pc.currentFrame].gridCellSize[lod].y) * ubo[pc.currentFrame].nbCellsPerRow[lod].x + floor(offset.z / ubo[pc.currentFrame].gridCellSize[lod].z) * ubo[pc.currentFrame].nbCellsPerRow[lod].y);
     if (offset.x < gridStartX || offset.y < gridStartY || offset.z < gridStartZ
         || offset.x >= gridEndX || offset.y >= gridEndY || offset.z >= gridEndZ
-        || cellId  >= ubo[pc.currentFrame].gridCellCount[lod] || inputGridBuffer.grid[cellId].clusterId == -1) {
+        || cellId  >= ubo[pc.currentFrame].gridCellCount || inputGridBuffer.grid[cellId].clusterId == -1) {
         return false;
     }
     bool hasNVoxel = false;
@@ -296,17 +296,16 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
     float gridStartY = ubo[pc.currentFrame].gridPos[lod].y * ubo[pc.currentFrame].gridCellSize[lod].y;
     float gridStartZ = ubo[pc.currentFrame].gridPos[lod].z * ubo[pc.currentFrame].gridCellSize[lod].z;
     //debugPrintfEXT("grid limits : %f %f %f", ubo[pc.currentFrame].gridPos[lod].x, ubo[pc.currentFrame].gridPos[lod].y, ubo[pc.currentFrame].gridPos[lod].z);
-    
-    for (uint i = 0; i < ubo[pc.currentFrame].gridCellCount[lod]; i++) {
+    //debugPrintfEXT("grid cell count : %i", ubo[pc.currentFrame].gridCellCount);
+    for (uint i = 0; i < ubo[pc.currentFrame].gridCellCount; i++) {
         //Root.   
         //debugPrintfEXT("cluster count : %i ", inputGridBuffer.grid[i].clusterCount);
         if (inputGridBuffer.grid[i].clusterId != -1 
             && intersects(inputGridBuffer.grid[i].volume, frustrum)) {
-            /*if (inputGridBuffer.grid[i].clusterCount > 0)
-            debugPrintfEXT("volume : %i,%i", inputGridBuffer.grid[i].clusterOffset, inputGridBuffer.grid[i].clusterCount);*/
+            
             for (uint j = 0; j < inputGridBuffer.grid[i].clusterCount; j++) {                
                 Cluster n = inputClustersBuffer.clusters[inputGridBuffer.grid[i].clusterOffset+j];
-                //if (inputGridBuffer.grid[i].clusterOffset > 0)
+                
                 
                 if (!intersects(frustrum, n.volume)) {
                     //debugPrintfEXT("intersects!");
@@ -320,11 +319,11 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                         //debugPrintfEXT("Primitive type : %i", sm.primitiveType);
                         //debugPrintfEXT("cluster visible");
                         uint clusterOffset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);                        
+                        //debugPrintfEXT("cluster offset : %i", clusterOffset);
                         outputClusters[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = n;    
                         uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;                                
-                        atomicAdd(outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupYCount, 1); 
-                        /*if ( n.meshletCount > 0)
-                            debugPrintfEXT("leaf, meshlet offset, meshlet count count : %i, %i %i", n.leaf, n.meshletOffset, n.meshletCount);*/
+                        outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupYCount++;
+                       
                         for (uint m = 0; m < n.meshletCount; m++) {
                             inputMeshlet.meshlets[n.meshletOffset+m].rendered = 0;
                         }
@@ -497,6 +496,7 @@ void main() {
                             material.materialId = materialId;
                             //debugPrintfEXT("culling shader draw id : %i, material id : %i", indirectElementsDrawCommandOffset, materialId);
                             //debugPrintfEXT("instance base : %i", instanceBase);
+                            //debugPrintfEXT("offset task data = %i", offsetTaskData);
                             
                             //outputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[instanceId] = material;
                             

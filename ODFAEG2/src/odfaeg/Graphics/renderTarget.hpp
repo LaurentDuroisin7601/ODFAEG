@@ -183,12 +183,12 @@ namespace odfaeg {
 			struct alignas(16) UBO {
 				AABB frustrum;
 				unsigned int nbEntitiesTypes;
-				alignas(16) unsigned int gridCellCount[5];   
+				unsigned int gridCellCount;   
 				alignas(16) math::Vec4f gridCellSize[5];
 				alignas(16) math::Vec4f nbCellsPerRow[5];    
 				alignas(16) math::Vec4f gridSize[5];   
 				alignas(16) math::Vec4f gridPos[5];
-				unsigned int pads[3];
+				unsigned int pads[2];
 			};
 			struct ViewProjMatPC {
 				math::Matrix4f projMatrix;
@@ -236,6 +236,7 @@ namespace odfaeg {
 			void draw(VertexBuffer& vb, RenderStates states=RenderStates::Default);
 			void draw(CommandPool& commandPool, VertexBuffer& vb, RenderStates states=RenderStates::Default);
 			void draw(entity::PrimitiveType primitiveType, RenderStates states = RenderStates::Default);
+			void drawMesh(entity::PrimitiveType primitiveType, RenderStates states = RenderStates::Default);
 			void draw(CommandPool& commandPool, entity::PrimitiveType primitiveType, RenderStates states);
 			void setCamera(Camera camera);
 			virtual Image& getRenderingImage() = 0;

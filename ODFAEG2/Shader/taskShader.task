@@ -34,7 +34,7 @@ struct TaskData {
     uint baseInstance;    
     uint vertexCount;
     uint primitiveCount;
-    uint vertexOffset;
+    uint vertexOffset; 
     uint clusterOffset;
 };
 layout(push_constant) uniform PushConstant {

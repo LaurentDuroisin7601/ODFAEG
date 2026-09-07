@@ -91,7 +91,7 @@ namespace odfaeg {
                                 
                             }
                             added = true;
-                            std::cout<<"add entity at : "<<objectVolume.getPosition()<<","<<cm->getCellVolume().getPosition()<<std::endl;
+                            //std::cout<<"add entity at : "<<objectVolume.getPosition()<<","<<cm->getCellVolume().getPosition()<<std::endl;
                             cm->addEntity(entity, objectVolume);
                             //std::cout<<"cell map : "<<cm<<std::endl;
                             //std::cout<<"entity added to cell"<<std::endl;
