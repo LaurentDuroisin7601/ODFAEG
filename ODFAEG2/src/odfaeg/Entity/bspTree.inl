@@ -1,6 +1,58 @@
 namespace odfaeg {
     namespace entity {
-        void BSPTree::subdivide(int id) {
+        template <typename Object>
+        BSPTree<Object>::BSPTree(physic::BoundingBox volume, unsigned int maxObjectsPerNode) {
+            Node rootNode;
+            rootNode.id = 0;
+            rootNode.plane = Plane();
+            /*std::cout<<"volume : "<<volume.getSize()<<std::endl;
+            system("PAUSE");*/
+            rootNode.leaf = true;
+            this->maxObjectsPerNode = maxObjectsPerNode;
+            nodes.push_back(rootNode);       
+        }
+        template <typename Object>
+        void BSPTree<Object>::addObject(Object object, physic::BoundingBox objectVolume) {                              
+            //std::cout<<"add object"<<std::endl;
+            
+            
+            
+            insert(0, object, objectVolume);
+            //std::cout<<"nb nodes : "<<nodes.size()<<std::endl;
+            //system("PAUSE");
+            /*for (unsigned int i = 0; i < nodes.size(); i++) {
+                if (nodes[i].leaf && nodes[i].objects.size() > 0) {
+                std::cout<<"leaf ? "<<nodes[i].leaf<<","<<maxObjectsPerNode<<","<<nodes[i].objects.size()<<" "<<nodes[i].objectVolumes.size()<<std::endl;
+                //system("PAUSE");
+                }
+            }*/
+            //std::cout<<"ok 2"<<std::endl;            
+        }
+        template <typename Object>
+        void BSPTree<Object>::insert(size_t id, Object object, physic::BoundingBox objectVolume, unsigned int depth) {
+            Node& node = nodes[id];
+            /*std::cout<<"add : "<<node.volume.getPosition()<<","<<node.volume.getSize()<<std::endl;
+            std::cout<<"object volume : "<<objectVolume.getPosition()<<objectVolume.getSize()<<std::endl;*/
+               if (!node.leaf) {                    
+                    if (node.plane.whichSize(objectVolume.getCenter() < 0)) {
+                        //std::cout<<"insert object : "<<j<<std::endl;
+                        insert(node.leftChild, object, objectVolume);
+                        //return;
+                    } else {
+                        insert(node.rightChild, object, objectVolume)
+                    }     
+                } else {
+                    
+                    std::cout<<"insert object : "<<objectVolume.getPosition()<<","<<objectVolume.getSize()<<std::endl;
+                    //std::cout<<"insert meshlet : "<<std::endl;
+                    node.objects.push_back(object);
+                    node.objectVolumes.push_back(objectVolume);
+                    subdivide(id);                      
+                }
+            }
+        }
+        template <typename Object>
+        void BSPTree<Object>::subdivide(int id) {
             Node& node = nodes[id]; 
             if (node.objects.size() > maxObjectsPerNode) {
                 std::cout<<"subdivide"<<std::endl;
@@ -37,6 +89,131 @@ namespace odfaeg {
                 subdivide(node.leftChild);
                 subdivide(node.rigghtChild);
             }
+        }
+        template <typename Object>      
+        void BSPTree<Object>::removeObject(Object object, physic::BoundingBox objectVolume) {
+            for (unsigned int i = 0; i < nodes.size(); i++) {
+                if (nodes[i].leaf && nodes[i].contains(object)) {
+                    {
+                        typename std::vector<Object>::iterator it;
+                        std::vector<physic::BoundingBox>::iterator it2;
+                        for (it = nodes[i].objects.begin(), it2 = nodes[i].objectVolumes.begin(); it != nodes[i].objects.end();) {
+                            if (*it == &object) {
+                                it = nodes[i].objects.erase(it);
+                                it2 = nodes[i].objectVolumes.erase(it2); 
+                                freeNodes(nodes[i]);   
+                            }
+                        }
+                    }
+                }               
+            }
+        }
+        template <typename Object>
+        void BSPTree<Object>::update(Object object) {
+            removeObject(object);
+            addObject(object);
+        }
+        template <typename Object>
+        std::vector<Object> BSPTree<Object>::getObjects(physic::BoundingBox volume) {
+            std::vector<Object> objects;
+            Node node = nodes[0];
+            getObjects(objects, node, volume);            
+            return objects;
+        }        
+        template <typename Object>
+        void BSPTree<Object>::getObjects(std::vector<Object>& objects, Node node, physic::BoundingBox volume) {
+            for (unsigned int i = 0; i < node.objects.size(); i++) {
+                objects.push_back(node.objects[i]);                
+            }
+            if (node.plane.whichSize(volume.getCenter()) < 0)
+                getObjects(objects, nodes[node.leftChild], volume);                
+            } else {
+                getObjects(objects, nodes[node.rightChild], volume);  
+            }
+        }
+        template <typename Object>
+        std::vector<physic::BoundingBox> BSPTree<Object>::getObjectVolumes(physic::BoundingBox volume) {
+            std::vector<physic::BoundingBox> objects;
+            Node node = nodes[0];
+            getObjectVolumes(objects, node, volume);            
+            return objects;
+        }        
+        template <typename Object>
+        void BSPTree<Object>::getObjectVolumes(std::vector<physic::BoundingBox>& objects, Node node, physic::BoundingBox volume) {
+            for (unsigned int i = 0; i < node.objects.size(); i++) {
+                objects.push_back(node.objectVolumes[i]);                
+            }
+            if (node.plane.whichSize(volume.getCenter()) < 0)
+                getObjectVolumes(objects, nodes[node.leftChild], volume);                
+            } else {
+                getObjectVolumes(objects, nodes[node.rightChild], volume);  
+            }
+        }
+        template <typename Object>
+        void BSPTree<Object>::freeNodes(Node& parent) {
+            bool empty = true;
+            if (!nodes[parent.leftChild].objets.size() == 0
+                || !nodes[parent.rightChild].objets.size() == 0) {
+                empty = false;
+                return;
+            }            
+            if (empty) {  
+                freeNodes(nodes[parent.parent]);              
+                typename std::vector<Node>::iterator it;                
+                for (it = nodes.begin(); it != nodes.end;) {
+                    if (*it == &nodes[parent.leftChild] || it == &nodes[parent.rightChild]) {
+                        it = nodes.erase(it);
+                    } else {
+                        it++;
+                    }  
+                }              
+                              
+                for (it = nodes.begin(); it != nodes.end;) {
+                    if (*it == &parent) {
+                        it = nodes.erase(it);
+                    } else {
+                        it++;
+                    }
+                }
+                
+            } 
+        }       
+        template <typename Object>
+        bool BSPTree<Object>::contains(Object object) {
+            for (unsigned int i = 0; i < nodes.size(); i++) {
+                for (unsigned int j = 0; j < nodes[i].objects.size(); j++) {
+                    if(object == nodes[i].objects[j])
+                        return true;
+                }  
+            }          
+            return false;
+        }
+        template <typename Object>
+        std::deque<typename Octree<Object>::Node>& BSPTree<Object>::getNodes() {
+            //std::cout<<"octree nb nodes : "<<nodes.size()<<std::endl;
+            /*for (unsigned int i = 0; i < nodes.size(); i++) {
+                if (nodes[i].leaf && nodes[i].objects.size() > 0) {
+                std::cout<<"id : "<<nodes[i].id<<","<<maxObjectsPerNode<<","<<nodes[i].objects.size()<<" "<<nodes[i].objectVolumes.size()<<std::endl;
+                //system("PAUSE");
+                }
+            }*/
+            return nodes;
+        }
+        template <typename Object>
+        bool BSPTree<Object>::contains(Node& node, Object object) {
+            for (unsigned int i = 0; i < node.objects.size(); i++) {
+                if(object == node.objects[i])
+                    return true;
+            }            
+            return false;
+        }
+        template <typename Object>
+        bool BSPTree<Object>::empty() {
+            for (unsigned int i = 0; i < nodes.size(); i++) {
+                if (nodes[i].objects.size() != 0)
+                    return false;
+            }
+            return true;
         }
     }
 }
