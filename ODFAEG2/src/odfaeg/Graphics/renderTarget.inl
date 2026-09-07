@@ -908,7 +908,7 @@ namespace odfaeg {
 							lastClusterId = meshletDatas[m].clusterId;				
 						}
 						
-						std::cout<<"meshlet : "<<meshletDatas[m].clusterId<<","<<lastMeshletId<<","<<clusterDatas[meshletDatas[m].clusterId].meshletCount<<std::endl;
+						//std::cout<<"meshlet : "<<meshletDatas[m].clusterId<<","<<lastMeshletId<<","<<clusterDatas[meshletDatas[m].clusterId].meshletCount<<std::endl;
 						clusterDatas[meshletDatas[m].clusterId].meshletOffset = lastMeshletId;
 						
 					} else {
