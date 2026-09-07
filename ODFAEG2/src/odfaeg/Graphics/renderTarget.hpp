@@ -107,6 +107,7 @@ namespace odfaeg {
 			};
 			struct alignas(16) CellData {
 				AABB volume;
+				alignas(16) math::Vec3f coords;
 				int clusterId;
 				int clusterOffset;
 				int clusterCount;
