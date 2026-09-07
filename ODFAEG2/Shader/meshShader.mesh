@@ -168,6 +168,7 @@ void main() {
         uint instanceId = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].baseInstance + gl_WorkGroupID.x;
         //debugPrintfEXT("Instance id : %i", gl_WorkGroupID.x); 
         mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId].modelMatrix;
+        //debugPrintfEXT("model matrix : %v4f \n%v4f \n%v4f \n%v4f\n", modelMatrix[0], modelMatrix[1], modelMatrix[2], modelMatrix[3]);
             
         MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+id];
         if (meshlet.clusterId == -1 || cluster.submeshId != meshlet.submeshId) {
@@ -175,7 +176,8 @@ void main() {
             return;
         }
         //Avoid to render it twice if the meshlet is between two clusters. (Deduplication)
-        if (meshlet.rendered == 1) {            
+        if (meshlet.rendered == 1) { 
+            debugPrintfEXT("Rendered");           
             return;
         }
         //debugPrintfEXT("mesh shader"); 
@@ -189,13 +191,14 @@ void main() {
         uint vertexCount   = min(meshlet.nbVertices, maxVerts);
         uint primitiveCount = min(meshlet.nbIndexes / 3u, maxPrims);
         
-        
+        //debugPrintfEXT("vertex count : %i, primitive count : %i", meshlet.nbVertices, meshlet.nbIndexes / 3u);
         
         SetMeshOutputsEXT(vertexCount, primitiveCount);
         for (uint i = 0; i < vertexCount; i++) {
             uint v = subMesh.vertexOffset + meshlet.vertexOffset + i;
            
             gl_MeshVerticesEXT[i].gl_Position = pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(vertexData[pc.primitiveType].vertices[v].position, 1.0);
+            //debugPrintfEXT("vertex position %v3f : ",vertexData[pc.primitiveType].vertices[v].position);
             fragColor[i] = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
             fragTexCoord[i] = vertexData[pc.primitiveType].vertices[v].texCoords;
             normal[i] = mat3(transpose(inverse(modelMatrix))) * vertexData[pc.primitiveType].vertices[v].normal;
@@ -213,7 +216,8 @@ void main() {
             //debugPrintfEXT("meshlet : %i",meshlet.vertexOffset);   
             uint i0 = g0 - meshlet.vertexOffset;
             uint i1 = g1 - meshlet.vertexOffset;
-            uint i2 = g2 - meshlet.vertexOffset;  
+            uint i2 = g2 - meshlet.vertexOffset;
+            //debugPrintfEXT("indexes : %i, %i, %i", i0, i1, i2);  
             if (i0 >= meshlet.nbVertices || i1 >= meshlet.nbVertices || i2 >= meshlet.nbVertices) {
                 
                 debugPrintfEXT("erreur : %i %i %i %i,%i, %i, %i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, meshlet.nbVertices, firstIndex, meshlet.vertexOffset); 
