@@ -13,6 +13,7 @@ namespace odfaeg {
                 math::Plane plane;
                 std::vector<Object> objects;
                 std::vector<physic::BoundingBox> objectVolumes;
+                physic::BoundingBox volume;
                 unsigned int parent;
                 unsigned int leftChild;
                 unsigned int rightChild;

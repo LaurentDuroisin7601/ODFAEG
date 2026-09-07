@@ -5,6 +5,7 @@ namespace odfaeg {
             Node rootNode;
             rootNode.id = 0;
             rootNode.plane = math::Plane();
+            rootNode.volume = volume;
             /*std::cout<<"volume : "<<volume.getSize()<<std::endl;
             system("PAUSE");*/
             rootNode.leaf = true;
@@ -59,7 +60,7 @@ namespace odfaeg {
                 node.leaf = false;
                 std::vector<math::Vec3f> centers;
                 for (unsigned int i = 0; i < node.objectVolumes.size(); i++) {
-                    centers.push_back(node.objectVolumes()[i].getCenter());                    
+                    centers.push_back(node.objectVolumes[i].getCenter());                    
                 }
                 math::Vec3f mean = math::Computer::getMoy(centers);
                 math::Matrix4f C = math::Computer::computeCovariance(centers);
@@ -69,16 +70,18 @@ namespace odfaeg {
                 leftChild.id = compteur++;
                 rightChild.id = compteur++;
                 leftChild.leaf = true;
-                rightChild.lead = true;
+                rightChild.leaf = true;
                 leftChild.parent = id;
                 rightChild.parent = id;
+                leftChild.volume = node.volume;
+                rightChild.volume = node.volume;
                 nodes.push_back(leftChild);
                 node.leftChild = nodes.size() - 1;
                 nodes.push_back(rightChild);
                 node.rightChild = nodes.size() - 1;  
                 // redistribuer les objets
                 for (unsigned int j = 0; j < node.objects.size(); j++) {
-                    if (node.plane.whichSize(node.objectVolumes[j].getCenter()) < 0) {
+                    if (node.plane.whichSide(node.objectVolumes[j].getCenter()) < 0) {
                         nodes[node.leftChild].objects.push_back(node.objects[j]);
                     } else {
                         nodes[node.rightChild].objects.push_back(node.objects[j]);
@@ -87,7 +90,7 @@ namespace odfaeg {
                 node.objects.clear();
                 node.objectVolumes.clear(); 
                 subdivide(node.leftChild);
-                subdivide(node.rigghtChild);
+                subdivide(node.rightChild);
             }
         }
         template <typename Object>      

@@ -760,7 +760,7 @@ namespace odfaeg {
 								} else {
 									//std::cout<<"not empty"<<std::endl;
 									//Ajout du root node et des enfants + création des clusters et assignation des ids.
-									std::deque<entity::Octree<Meshlet>::Node>& nodes = gridCell.getOctreeNodes();
+									std::deque<entity::BSPTree<Meshlet>::Node>& nodes = gridCell.getTreeNodes();
 									//std::cout<<"size : "<<nodes.size()<<std::endl;
 									std::deque<unsigned int> stack;
 									stack.push_back(0);	
