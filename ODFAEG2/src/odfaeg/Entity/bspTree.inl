@@ -4,7 +4,7 @@ namespace odfaeg {
         BSPTree<Object>::BSPTree(physic::BoundingBox volume, unsigned int maxObjectsPerNode) {
             Node rootNode;
             rootNode.id = 0;
-            rootNode.plane = Plane();
+            rootNode.plane = math::Plane();
             /*std::cout<<"volume : "<<volume.getSize()<<std::endl;
             system("PAUSE");*/
             rootNode.leaf = true;
@@ -33,26 +33,26 @@ namespace odfaeg {
             Node& node = nodes[id];
             /*std::cout<<"add : "<<node.volume.getPosition()<<","<<node.volume.getSize()<<std::endl;
             std::cout<<"object volume : "<<objectVolume.getPosition()<<objectVolume.getSize()<<std::endl;*/
-               if (!node.leaf) {                    
-                    if (node.plane.whichSize(objectVolume.getCenter() < 0)) {
-                        //std::cout<<"insert object : "<<j<<std::endl;
-                        insert(node.leftChild, object, objectVolume);
-                        //return;
-                    } else {
-                        insert(node.rightChild, object, objectVolume)
-                    }     
+            if (!node.leaf) {                    
+                if (node.plane.whichSize(objectVolume.getCenter()) < 0) {
+                    //std::cout<<"insert object : "<<j<<std::endl;
+                    insert(node.leftChild, object, objectVolume);
+                    //return;
                 } else {
-                    
-                    std::cout<<"insert object : "<<objectVolume.getPosition()<<","<<objectVolume.getSize()<<std::endl;
-                    //std::cout<<"insert meshlet : "<<std::endl;
-                    node.objects.push_back(object);
-                    node.objectVolumes.push_back(objectVolume);
-                    subdivide(id);                      
-                }
+                    insert(node.rightChild, object, objectVolume);
+                }     
+            } else {
+                
+                std::cout<<"insert object : "<<objectVolume.getPosition()<<","<<objectVolume.getSize()<<std::endl;
+                //std::cout<<"insert meshlet : "<<std::endl;
+                node.objects.push_back(object);
+                node.objectVolumes.push_back(objectVolume);
+                subdivide(id);                      
             }
+            
         }
         template <typename Object>
-        void BSPTree<Object>::subdivide(int id) {
+        void BSPTree<Object>::subdivide(size_t id) {
             Node& node = nodes[id]; 
             if (node.objects.size() > maxObjectsPerNode) {
                 std::cout<<"subdivide"<<std::endl;
@@ -125,7 +125,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < node.objects.size(); i++) {
                 objects.push_back(node.objects[i]);                
             }
-            if (node.plane.whichSize(volume.getCenter()) < 0)
+            if (node.plane.whichSize(volume.getCenter()) < 0) {
                 getObjects(objects, nodes[node.leftChild], volume);                
             } else {
                 getObjects(objects, nodes[node.rightChild], volume);  
@@ -143,7 +143,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < node.objects.size(); i++) {
                 objects.push_back(node.objectVolumes[i]);                
             }
-            if (node.plane.whichSize(volume.getCenter()) < 0)
+            if (node.plane.whichSize(volume.getCenter()) < 0) {
                 getObjectVolumes(objects, nodes[node.leftChild], volume);                
             } else {
                 getObjectVolumes(objects, nodes[node.rightChild], volume);  
@@ -189,7 +189,7 @@ namespace odfaeg {
             return false;
         }
         template <typename Object>
-        std::deque<typename Octree<Object>::Node>& BSPTree<Object>::getNodes() {
+        std::deque<typename BSPTree<Object>::Node>& BSPTree<Object>::getNodes() {
             //std::cout<<"octree nb nodes : "<<nodes.size()<<std::endl;
             /*for (unsigned int i = 0; i < nodes.size(); i++) {
                 if (nodes[i].leaf && nodes[i].objects.size() > 0) {

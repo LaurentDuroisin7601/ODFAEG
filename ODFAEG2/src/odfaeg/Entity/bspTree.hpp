@@ -14,7 +14,8 @@ namespace odfaeg {
                 std::vector<Object> objects;
                 std::vector<physic::BoundingBox> objectVolumes;
                 unsigned int parent;
-                std::deque<unsigned int> children;
+                unsigned int leftChild;
+                unsigned int rightChild;
                 bool leaf;
             };           
             BSPTree(physic::BoundingBox volume, unsigned int maxObjectsPerNodes);
@@ -39,3 +40,5 @@ namespace odfaeg {
         };     
     }
 }
+#include "bspTree.inl"
+#endif

@@ -37,7 +37,7 @@ namespace odfaeg {
             return false;
         }
         template <typename Object>
-        std::deque<typename Octree<Object>::Node>& GridCell<Object>::getTreeNodes() {
+        std::deque<typename BSPTree<Object>::Node>& GridCell<Object>::getTreeNodes() {
             return tree.getNodes();
         }
         template <typename Object>
