@@ -79,7 +79,7 @@ namespace odfaeg {
 				int meshletOffset;
 				int meshletCount;
 			};
-			struct alignas(16) SubMeshData {
+			struct SubMeshData {
 				AABB globalBounds;
 				int vertexOffset;
 				int indexOffset;
@@ -146,23 +146,25 @@ namespace odfaeg {
 			struct MaterialData {
 				/*math::Vec2f uvScale;
 				math::Vec2f uvOffset;*/
-				unsigned int diffuseTextureIndex;
-				unsigned int specularTextureIndex;
-				unsigned int normalTextureIndex;
-				unsigned int metalnessTextureIndex;
-				unsigned int roughnessTextureIndex;
-				unsigned int aoTextureIndex;
-				unsigned int emissiveTextureIndex;
-				unsigned int materialType;
-				unsigned int materialSet;
-				unsigned int nbVertices;
-				unsigned int nbIndexes;
-				int instanceGroupId;
-				unsigned int vertsInstanceSet;
-				unsigned int materialId;
-				unsigned int nbBuffers;
-				int reflectable;
-				int refractable;
+				   unsigned int diffuseTextureIndex;
+				   unsigned int specularTextureIndex;
+				   unsigned int normalTextureIndex;
+				   unsigned int metalnessTextureIndex;
+				   unsigned int roughnessTextureIndex;
+				   unsigned int aoTextureIndex;
+				   unsigned int emissiveTextureIndex;
+				   unsigned int materialType;
+				   unsigned int instanceId;   
+				   unsigned int nbVertices;
+				   unsigned int nbIndexes;
+				   int instanceGroupId;
+				   unsigned int vertsInstanceSet;
+				   unsigned int taskOffset;
+				   unsigned int materialId;
+				   unsigned int nbBuffers;
+				   int opaque;
+				   int reflectable;
+				   int refractable;
 			};	
 			struct DrawElementsIndirectCommand {
 				unsigned int index_count;

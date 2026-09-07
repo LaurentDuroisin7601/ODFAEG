@@ -9,7 +9,7 @@ layout (push_constant) uniform PushConstant {
     layout(offset=136) int currentImageIndex;
 } pc;
 struct MaterialData {
-    uint diffuseTextureIndex;
+       uint diffuseTextureIndex;
     uint specularTextureIndex;
     uint normalTextureIndex;
     uint metalnessTextureIndex;
@@ -17,13 +17,15 @@ struct MaterialData {
     uint aoTextureIndex;
     uint emissiveTextureIndex;
     uint materialType;
-    uint materialSet;   
+    uint instanceId;   
     uint nbVertices;
     uint nbIndexes;
     int instanceGroupId;
     uint vertsInstanceSet;
+    uint taskOffset;
     uint materialId;
-    uint nbBuffers;  
+    uint nbBuffers;
+    int opaque;
     int reflectable;
     int refractable;  
 };
@@ -46,6 +48,8 @@ layout(location = 5) flat in int currentFrame;
 layout(location = 0) out vec4 outColor;
 void main() {
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[materialID];
+    if (materialID > 0)
+        debugPrintfEXT("Material id : %i", materialID);
     //if (primitiveType != 3)
         //debugPrintfEXT("primitive type : %i", currentFrame);
     vec2 uv = fragTexCoord;

@@ -432,6 +432,8 @@ namespace odfaeg {
 					material.materialId = materials[i]->getId();
 					
 					material.instanceGroupId = materials[i]->getInstanceGroupId();
+					/*if (material.instanceGroupId != -1)
+						system("PAUSE");*/
 					material.reflectable = (materials[i]->isReflectable()) ? 1 : 0;
 					material.refractable = (materials[i]->isRefractable()) ? 1 : 0;
 					/*std::cout<<"id : "<<material.materialId<<", reflectable : "<<material.reflectable<<"refractable : "<<material.refractable<<std::endl;
@@ -499,6 +501,8 @@ namespace odfaeg {
 								}*/
 								//std::cout<<"reflectable  "<<materials[m]->isReflectable()<<"refractable : "<<materials[m]->isRefractable()<<std::endl;
 								subMeshData.materialId = gameObjects[i]->getMaterials()[j]->getId();
+								/*if (subMeshData.materialId > 0)
+									system("PAUSE");*/
 								subMesh.materialId = gameObjects[i]->getMaterials()[j]->getId();
 								/*if (materials[m]->isReflectable())
 									std::cout<<"material id : "<<subMeshData.materialId<<std::endl;
