@@ -78,7 +78,9 @@ namespace odfaeg {
                 nodes.push_back(leftChild);
                 node.leftChild = nodes.size() - 1;
                 nodes.push_back(rightChild);
-                node.rightChild = nodes.size() - 1;  
+                node.rightChild = nodes.size() - 1; 
+                node.children.push_back(node.leftChild);
+                node.children.push_back(node.rightChild); 
                 // redistribuer les objets
                 for (unsigned int j = 0; j < node.objects.size(); j++) {
                     if (node.plane.whichSide(node.objectVolumes[j].getCenter()) < 0) {
@@ -89,8 +91,9 @@ namespace odfaeg {
                 }    
                 node.objects.clear();
                 node.objectVolumes.clear(); 
-                subdivide(node.leftChild);
-                subdivide(node.rightChild);
+                for (unsigned int i = 0; i < node.children.size(); i++) {
+                    subdivide(node.children[i]);
+                }
             }
         }
         template <typename Object>      
@@ -128,11 +131,9 @@ namespace odfaeg {
             for (unsigned int i = 0; i < node.objects.size(); i++) {
                 objects.push_back(node.objects[i]);                
             }
-            if (node.plane.whichSide(volume.getCenter()) < 0) {
-                getObjects(objects, nodes[node.leftChild], volume);                
-            } else {
-                getObjects(objects, nodes[node.rightChild], volume);  
-            }
+            for (unsigned int i = 0; i < node.children.size(); i++) {
+                getObjects(objects, nodes[node.children[i]], volume);                
+            } 
         }
         template <typename Object>
         std::vector<physic::BoundingBox> BSPTree<Object>::getObjectVolumes(physic::BoundingBox volume) {
@@ -146,11 +147,9 @@ namespace odfaeg {
             for (unsigned int i = 0; i < node.objects.size(); i++) {
                 objects.push_back(node.objectVolumes[i]);                
             }
-            if (node.plane.whichSide(volume.getCenter()) < 0) {
-                getObjectVolumes(objects, nodes[node.leftChild], volume);                
-            } else {
-                getObjectVolumes(objects, nodes[node.rightChild], volume);  
-            }
+            for (unsigned int i = 0; i < node.children.size(); i++) {
+                getObjectVolumes(objects, nodes[node.children[i]], volume);                
+            } 
         }
         template <typename Object>
         void BSPTree<Object>::freeNodes(Node& parent) {
@@ -162,14 +161,16 @@ namespace odfaeg {
             }            
             if (empty) {  
                 freeNodes(nodes[parent.parent]);              
-                typename std::vector<Node>::iterator it;                
-                for (it = nodes.begin(); it != nodes.end;) {
-                    if (*it == &nodes[parent.leftChild] || it == &nodes[parent.rightChild]) {
-                        it = nodes.erase(it);
-                    } else {
-                        it++;
-                    }  
-                }              
+                typename std::vector<Node>::iterator it; 
+                for (unsigned int i = 0; i < parent.children.size(); i++) {               
+                    for (it = nodes.begin(); it != nodes.end();) {                    
+                        if (*it == &nodes[parent.children[i]]) {
+                            it = nodes.erase(it);
+                        } else {
+                            it++;
+                        }  
+                    }   
+                }           
                               
                 for (it = nodes.begin(); it != nodes.end;) {
                     if (*it == &parent) {

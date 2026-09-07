@@ -17,6 +17,7 @@ namespace odfaeg {
                 unsigned int parent;
                 unsigned int leftChild;
                 unsigned int rightChild;
+                std::vector<unsigned int> children;
                 bool leaf;
             };           
             BSPTree(physic::BoundingBox volume, unsigned int maxObjectsPerNodes);
