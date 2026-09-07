@@ -17,13 +17,13 @@ struct MaterialData {
     uint aoTextureIndex;
     uint emissiveTextureIndex;
     uint materialType;
-    uint materialSet;
+    uint materialSet;   
     uint nbVertices;
     uint nbIndexes;
     int instanceGroupId;
     uint vertsInstanceSet;
     uint materialId;
-    uint nbBuffers;
+    uint nbBuffers;  
     int reflectable;
     int refractable;  
 };
@@ -49,8 +49,14 @@ void main() {
     //if (primitiveType != 3)
         //debugPrintfEXT("primitive type : %i", currentFrame);
     vec2 uv = fragTexCoord;
+    /*if (uv.x > 0 && uv.y > 0)
+    debugPrintfEXT("uvs : %v2f", uv);*/
+
     // --- Diffuse ---
     vec4 diffuse = fragColor; 
+    /*if (fragColor.r != 1 || fragColor.g != 1 || fragColor.b != 1) {
+        debugPrintfEXT("Error!");
+    }*/
     
     if (mat.diffuseTextureIndex > 0 && mat.diffuseTextureIndex < MAX_TEXTURES) {
         
@@ -90,5 +96,5 @@ void main() {
     //debugPrintfEXT("texture index : %i, normal : %v3f, fragTexCoord %v2f, color : %v4f, fragColor : %v4f", mat.diffuseTextureIndex, normal, fragTexCoord, diffuse * diff * ao + spec + emissive, fragColor);
     //debugPrintfEXT("normal : %v3f", N);
     //outColor = diffuse * diff * ao + spec + emissive;
-    outColor = diffuse;
+    outColor = vec4(1, 1, 1, 1);
 };

@@ -75,7 +75,9 @@ struct SubMesh {
 	int lodOffset;
 	int id;
     int lodLevel;
-    int objectId;   
+    int objectId; 
+    int meshletOffset;
+	int meshletCount;	  
 };
 struct Vertex {
     vec3 position; ///< 3D position of the vertex
@@ -152,10 +154,11 @@ vec4 unpackColor(uint c)
 void main() {      
     
     TaskData taskData = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId];
-    //Modèles 3D.
     
-    if (taskData.vertexCount == 0) { 
-          
+    if (taskData.vertexCount != 0)
+        debugPrintfEXT("Error!");
+    //Modèles 3D.
+    if (taskData.vertexCount == 0) {           
         SubMesh subMesh = SubMeshDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMeshData[payload.taskId];
         Cluster cluster = clusterDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].clusterOffset+gl_WorkGroupID.y];
         
@@ -171,7 +174,7 @@ void main() {
         //debugPrintfEXT("model matrix : %v4f \n%v4f \n%v4f \n%v4f\n", modelMatrix[0], modelMatrix[1], modelMatrix[2], modelMatrix[3]);
             
         MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+id];
-        if (meshlet.clusterId == -1 || cluster.submeshId != meshlet.submeshId) {
+        if (meshlet.clusterId == -1 || cluster.submeshId != meshlet.submeshId || cluster.submeshId != subMesh.id || cluster.lod != subMesh.lodLevel) {
             debugPrintfEXT("error! %i %i", cluster.submeshId, meshlet.submeshId);
             return;
         }
@@ -196,6 +199,10 @@ void main() {
         SetMeshOutputsEXT(vertexCount, primitiveCount);
         for (uint i = 0; i < vertexCount; i++) {
             uint v = subMesh.vertexOffset + meshlet.vertexOffset + i;
+            //debugPrintfEXT("v : %i", v);
+            vec4 color = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
+            if (color.r != 1 || color.g != 1 || color.b != 1)
+                debugPrintfEXT("error : %v4f", color);
            
             gl_MeshVerticesEXT[i].gl_Position = pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(vertexData[pc.primitiveType].vertices[v].position, 1.0);
             //debugPrintfEXT("vertex position %v3f : ",vertexData[pc.primitiveType].vertices[v].position);
@@ -213,12 +220,12 @@ void main() {
             uint g0 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 0];
             uint g1 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 1];
             uint g2 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 2];
-            //debugPrintfEXT("meshlet : %i",meshlet.vertexOffset);   
+            //debugPrintfEXT("indexes : %i %i %i",g0, g1, g2);   
             uint i0 = g0 - meshlet.vertexOffset;
             uint i1 = g1 - meshlet.vertexOffset;
             uint i2 = g2 - meshlet.vertexOffset;
             //debugPrintfEXT("indexes : %i, %i, %i", i0, i1, i2);  
-            if (i0 >= meshlet.nbVertices || i1 >= meshlet.nbVertices || i2 >= meshlet.nbVertices) {
+            if (i0 < 0 || i1 < 0 || i2 < 0 || i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount) {
                 
                 debugPrintfEXT("erreur : %i %i %i %i,%i, %i, %i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, meshlet.nbVertices, firstIndex, meshlet.vertexOffset); 
                 continue;
@@ -226,7 +233,7 @@ void main() {
             gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
         }
     //Face de heightmap ou voxel.
-    } else {
+    }/* else {
         SetMeshOutputsEXT(taskData.vertexCount, taskData.primitiveCount);
         for (uint i = 0; i < taskData.vertexCount; i++) {        
             gl_MeshVerticesEXT[i].gl_Position = vec4(outputVertices[pc.currentFrame].vertices[taskData.vertexOffset+i].position, 1);        
@@ -235,5 +242,5 @@ void main() {
             gl_PrimitiveTriangleIndicesEXT[tri*2] = uvec3(tri*4, tri*4+1, tri*4+2);
             gl_PrimitiveTriangleIndicesEXT[tri*2+1] = uvec3(tri*4, tri*4+2, tri*4+3);
         }
-    }  
+    }  */
 }
