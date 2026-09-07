@@ -45,8 +45,7 @@ struct Cluster {
     int id;
     int lod;
     int leaf;	
-    int submeshId;			
-    //int children[8]; 
+    int submeshId;	
 };
 struct MeshLet {
     uint id;
@@ -155,8 +154,8 @@ void main() {
     
     TaskData taskData = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId];
     
-    if (taskData.vertexCount != 0)
-        debugPrintfEXT("Error!");
+    /*if (taskData.vertexCount != 0)
+        debugPrintfEXT("Error : ", taskData.vertexCount);*/
     //Modèles 3D.
     if (taskData.vertexCount == 0) {           
         SubMesh subMesh = SubMeshDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMeshData[payload.taskId];
@@ -175,8 +174,8 @@ void main() {
             
         MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+id];
         if (meshlet.clusterId == -1 || cluster.submeshId != meshlet.submeshId || cluster.submeshId != subMesh.id || cluster.lod != subMesh.lodLevel) {
-            debugPrintfEXT("error! %i %i", cluster.submeshId, meshlet.submeshId);
-            return;
+            debugPrintfEXT("error submesh %i %i %i lod : %i %i %i\n", cluster.submeshId, meshlet.submeshId, subMesh.id, cluster.lod, subMesh.lodLevel, meshlet.lod);
+            
         }
         //Avoid to render it twice if the meshlet is between two clusters. (Deduplication)
         if (meshlet.rendered == 1) { 
@@ -196,12 +195,12 @@ void main() {
         
         //debugPrintfEXT("vertex count : %i, primitive count : %i", meshlet.nbVertices, meshlet.nbIndexes / 3u);
         if (pc.primitiveType == 3) {
-            SetMeshOutputsEXT(vertexCount, primitiveCount);
+            SetMeshOutputsEXT(maxVerts, maxPrims);
             for (uint i = 0; i < vertexCount; i++) {
                 uint v = subMesh.vertexOffset + meshlet.vertexOffset + i;
                 //debugPrintfEXT("v : %i", v);
                 vec4 color = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
-                if (color.r != 1 || color.g != 1 || color.b != 1)
+                if (color.r < 0.9 || color.g < 0.9 || color.b < 0.9)
                     debugPrintfEXT("error : %v4f", color);
             
                 gl_MeshVerticesEXT[i].gl_Position = pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(vertexData[pc.primitiveType].vertices[v].position, 1.0);
@@ -210,6 +209,20 @@ void main() {
                 fragTexCoord[i] = vertexData[pc.primitiveType].vertices[v].texCoords;
                 normal[i] = mat3(transpose(inverse(modelMatrix))) * vertexData[pc.primitiveType].vertices[v].normal;
                 materialID[i] = subMesh.materialId;
+                primitiveType[i] = pc.primitiveType;
+                currentFrame[i] = pc.currentFrame;
+                //debugPrintfEXT("materialId %i", subMesh.materialId);
+                //debugPrintfEXT("position : %i",  i);
+            }        
+            for (uint i = vertexCount; i < maxVerts; i++) {                
+                //debugPrintfEXT("i : %i", i);
+            
+                gl_MeshVerticesEXT[i].gl_Position = vec4(0, 0, 0, 0);
+                //debugPrintfEXT("vertex position %v3f : ",vertexData[pc.primitiveType].vertices[v].position);
+                fragColor[i] = vec4(1, 1, 1, 1);
+                fragTexCoord[i] = vec2(1, 1);
+                normal[i] = vec3(1, 1, 1);
+                materialID[i] = 0;
                 primitiveType[i] = pc.primitiveType;
                 currentFrame[i] = pc.currentFrame;
                 //debugPrintfEXT("materialId %i", subMesh.materialId);
@@ -232,9 +245,13 @@ void main() {
                 }
                 gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
             }
+            for (uint tri = primitiveCount; tri < maxPrims; tri++) {
+                gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(vertexCount, vertexCount+1, vertexCount+2);
+            }
         }
     //Face de heightmap ou voxel.
-    }/* else {
+    } else {
+        debugPrintfEXT("Height Map");
         SetMeshOutputsEXT(taskData.vertexCount, taskData.primitiveCount);
         for (uint i = 0; i < taskData.vertexCount; i++) {        
             gl_MeshVerticesEXT[i].gl_Position = vec4(outputVertices[pc.currentFrame].vertices[taskData.vertexOffset+i].position, 1);        
@@ -243,5 +260,5 @@ void main() {
             gl_PrimitiveTriangleIndicesEXT[tri*2] = uvec3(tri*4, tri*4+1, tri*4+2);
             gl_PrimitiveTriangleIndicesEXT[tri*2+1] = uvec3(tri*4, tri*4+2, tri*4+3);
         }
-    }  */
+    }  
 }

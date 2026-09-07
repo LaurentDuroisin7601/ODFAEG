@@ -20,8 +20,7 @@ struct Object {
 	int subMeshesOffset;
 	int modelDataOffset;		   
 	int nbSubMeshes;
-	int renderingType;
-    //int paddings[2];
+	int renderingType;    
 };
 struct LODLevel {
     int index_offset;
@@ -119,8 +118,7 @@ struct Cluster {
     int id;
     int lod;
     int leaf;	
-    int submeshId;			
-    //int children[8];    
+    int submeshId;	
 };
 struct MeshLet {
     uint id;

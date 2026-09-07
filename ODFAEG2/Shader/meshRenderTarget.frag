@@ -48,8 +48,8 @@ layout(location = 5) flat in int currentFrame;
 layout(location = 0) out vec4 outColor;
 void main() {
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[materialID];
-    if (materialID > 0)
-        debugPrintfEXT("Material id : %i", materialID);
+    /*if (materialID > 0)
+        debugPrintfEXT("Material id : %i", materialID);*/
     //if (primitiveType != 3)
         //debugPrintfEXT("primitive type : %i", currentFrame);
     vec2 uv = fragTexCoord;
