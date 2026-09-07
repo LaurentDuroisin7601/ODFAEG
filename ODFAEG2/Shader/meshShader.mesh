@@ -206,7 +206,7 @@ void main() {
            
             gl_MeshVerticesEXT[i].gl_Position = pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(vertexData[pc.primitiveType].vertices[v].position, 1.0);
             //debugPrintfEXT("vertex position %v3f : ",vertexData[pc.primitiveType].vertices[v].position);
-            fragColor[i] = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
+            fragColor[i] = color;
             fragTexCoord[i] = vertexData[pc.primitiveType].vertices[v].texCoords;
             normal[i] = mat3(transpose(inverse(modelMatrix))) * vertexData[pc.primitiveType].vertices[v].normal;
             materialID[i] = subMesh.materialId;
@@ -214,7 +214,7 @@ void main() {
             currentFrame[i] = pc.currentFrame;
             //debugPrintfEXT("materialId %i", subMesh.materialId);
             //debugPrintfEXT("position : %i",  i);
-        }
+        }        
         for (uint tri = 0; tri < primitiveCount; tri++) {
             //debugPrintfEXT("gen tri : %i", tri);
             uint g0 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 0];
@@ -228,7 +228,7 @@ void main() {
             if (i0 < 0 || i1 < 0 || i2 < 0 || i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount) {
                 
                 debugPrintfEXT("erreur : %i %i %i %i,%i, %i, %i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, meshlet.nbVertices, firstIndex, meshlet.vertexOffset); 
-                continue;
+                //continue;
             }
             gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
         }
