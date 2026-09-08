@@ -47,7 +47,8 @@ layout(location = 4) flat in int primitiveType;
 layout(location = 5) flat in int currentFrame;
 layout(location = 0) out vec4 outColor;
 void main() {
-   
+    /*if (materialID > 5)
+    debugPrintfEXT("material id %i ", materialID);*/
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[materialID];
     
     
@@ -60,7 +61,7 @@ void main() {
         debugPrintfEXT("Error %v4f", fragColor);
         return;
     }*/
-    
+    //debugPrintfEXT("material id %i, diffuse : %i", materialID, mat.diffuseTextureIndex);
     if (mat.diffuseTextureIndex > 0 && mat.diffuseTextureIndex < MAX_TEXTURES) {
         
         diffuse *= texture(diffuseTextures[mat.diffuseTextureIndex-1], uv);        

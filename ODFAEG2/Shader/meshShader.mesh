@@ -161,13 +161,14 @@ void main() {
     if (taskData.vertexCount == 0) {  
         Cluster cluster = clusterDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[taskData.clusterOffset+gl_WorkGroupID.y];         
         SubMesh subMesh = SubMeshDatas.subMeshData[cluster.submeshId];
-        
+        //
+        //debugPrintfEXT("Submesh material : %i, %i", subMesh.id, subMesh.materialId);
         uint id = gl_WorkGroupID.z;
         if (id > cluster.meshletCount) {
             return;
         }
         MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+id];
-        if (cluster.submeshId != subMesh.id || cluster.submeshId != meshlet.submeshId) {
+        if (cluster.submeshId != subMesh.id || cluster.submeshId != meshlet.submeshId || meshlet.submeshId != subMesh.id) {
             debugPrintfEXT("error submesh %i %i %i lod : %i %i %i\n", cluster.submeshId, meshlet.submeshId, subMesh.id, cluster.lod, subMesh.lodLevel, meshlet.lod);
         }
         
@@ -191,8 +192,8 @@ void main() {
         uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_offset + meshlet.indexOffset;
         //debugPrintfEXT("First index : %i,", firstIndex);
         //3 = Triangles.
-        uint maxVerts = 256u;
-        uint maxPrims = 128u;
+        uint maxVerts = 255u;
+        uint maxPrims = 85u;
         uint vertexCount   = min(meshlet.nbVertices, maxVerts);
         uint primitiveCount = min(meshlet.nbIndexes / 3u, maxPrims);
         if (primitiveCount > maxPrims)

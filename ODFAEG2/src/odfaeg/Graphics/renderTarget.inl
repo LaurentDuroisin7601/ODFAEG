@@ -408,7 +408,8 @@ namespace odfaeg {
 				Material::updateIds();
 				std::deque<Material*> materials = Material::getAllMaterials();
 				std::vector<MaterialData> materialDatas;
-				//std::cout<<"material : "<<materials.size()<<std::endl;
+				/*std::cout<<"material : "<<materials.size()<<std::endl;
+				system("PAUSE");*/
 				for (unsigned int i = 0; i < materials.size(); i++) {
 					//std::cout<<"texture id : "<<materials[i]->getTexture(entity::SubMesh::DIFFUSE)->getId()<<std::endl;
 					MaterialData material;
