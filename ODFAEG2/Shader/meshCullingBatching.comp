@@ -321,6 +321,7 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                         
                         //debugPrintfEXT("cluster offset : %i %i", clusterOffset, sm.id);
                         uint clusterOffset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);
+                        taskData.clusterOffset = clusterOffset; 
                         outputClusters[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = n;   
                         
                         //uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;                                
