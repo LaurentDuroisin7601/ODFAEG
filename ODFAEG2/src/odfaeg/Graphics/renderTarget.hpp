@@ -81,7 +81,7 @@ namespace odfaeg {
 				int meshletOffset;
 				int meshletCount;
 			};
-			struct SubMeshData {
+			struct alignas(16) SubMeshData {
 				AABB globalBounds;
 				int vertexOffset;
 				int indexOffset;
@@ -145,7 +145,7 @@ namespace odfaeg {
 				math::Matrix4f shadowProjMatrix;
 				math::Matrix4f borderMatrices;
 			};
-			struct alignas(16) MaterialData {				
+			struct /*alignas(16)*/ MaterialData {				
 				   unsigned int diffuseTextureIndex;
 				   unsigned int specularTextureIndex;
 				   unsigned int normalTextureIndex;
@@ -164,7 +164,7 @@ namespace odfaeg {
 				   unsigned int nbBuffers;
 				   int opaque;
 				   int reflectable;
-				   int refractable;				   
+				   int refractable;					   		  	   
 			};	
 			struct DrawElementsIndirectCommand {
 				unsigned int index_count;
@@ -351,8 +351,8 @@ namespace odfaeg {
 			std::deque<Buffer>& outputMeshes;			
 			std::array<std::vector<VertexBufferData>, MAX_FRAMES_IN_FLIGHT> cpuVertexBufferDatas;
 			VertexBufferPC vertexBufferPc;			
-			inline static const unsigned int MAX_VERTS = 255u;
-			inline static const unsigned int MAX_PRIMS = 85u;
+			inline static const unsigned int MAX_VERTS = 252u;
+			inline static const unsigned int MAX_PRIMS = 84u;
 			unsigned int totalMeshlets = 0;
 			unsigned int totalClusters = 0;
 			unsigned int totalSubMeshes = 0;
