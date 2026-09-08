@@ -166,7 +166,7 @@ void main() {
             return;
         }
         MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+id];
-        if (cluster.submeshId != subMesh.id) {
+        if (cluster.submeshId != subMesh.id || cluster.submeshId != meshlet.submeshId) {
             debugPrintfEXT("error submesh %i %i %i lod : %i %i %i\n", cluster.submeshId, meshlet.submeshId, subMesh.id, cluster.lod, subMesh.lodLevel, meshlet.lod);
         }
         
@@ -178,10 +178,7 @@ void main() {
         //debugPrintfEXT("model matrix : %v4f \n%v4f \n%v4f \n%v4f\n", modelMatrix[0], modelMatrix[1], modelMatrix[2], modelMatrix[3]);
             
         
-        /*if (cluster.submeshId != subMesh.id) {
-            debugPrintfEXT("error submesh %i %i %i lod : %i %i %i\n", cluster.submeshId, meshlet.submeshId, subMesh.id, cluster.lod, subMesh.lodLevel, meshlet.lod);
-            //return;
-        }*/
+        
         //Avoid to render it twice if the meshlet is between two clusters. (Deduplication)
         if (meshlet.rendered == 1) { 
             //debugPrintfEXT("Rendered");           
@@ -205,8 +202,8 @@ void main() {
                 uint v = subMesh.vertexOffset + meshlet.vertexOffset + i;
                 //debugPrintfEXT("v : %i", v);
                 vec4 color = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
-                /*if (color.r < 0.9 || color.g < 0.9 || color.b < 0.9)
-                    debugPrintfEXT("error : %v4f", color);*/
+                if (color.r < 0.9 || color.g < 0.9 || color.b < 0.9)
+                    debugPrintfEXT("error : %v4f", color);
             
                 gl_MeshVerticesEXT[i].gl_Position = pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(vertexData[pc.primitiveType].vertices[v].position, 1.0);
                 //debugPrintfEXT("vertex position %v3f : ",vertexData[pc.primitiveType].vertices[v].position);
@@ -245,8 +242,8 @@ void main() {
                 //debugPrintfEXT("indexes : %i, %i, %i", i0, i1, i2);  
                 if (i0 < 0 || i1 < 0 || i2 < 0 || i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount) {
                     
-                    //debugPrintfEXT("erreur : %i %i %i %i,%i, %i, %i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, meshlet.nbVertices, firstIndex, meshlet.vertexOffset); 
-                    continue;
+                    debugPrintfEXT("erreur : %i %i %i %i,%i, %i, %i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, meshlet.nbVertices, firstIndex, meshlet.vertexOffset); 
+                    //continue;
                 }
                 gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
             }
