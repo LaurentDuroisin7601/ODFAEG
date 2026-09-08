@@ -193,7 +193,7 @@ void main() {
         //debugPrintfEXT("First index : %i,", firstIndex);
         //3 = Triangles.
         uint maxVerts = 256u;
-        uint maxPrims = 128u;
+        uint maxPrims = 256u;
         uint vertexCount   = min(meshlet.nbVertices, maxVerts);
         uint primitiveCount = min(meshlet.nbIndexes / 3u, maxPrims);
         if (primitiveCount > maxPrims)
