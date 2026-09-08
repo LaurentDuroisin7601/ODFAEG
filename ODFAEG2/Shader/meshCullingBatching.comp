@@ -319,12 +319,15 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                         //debugPrintfEXT("Primitive type : %i", sm.primitiveType);
                         //debugPrintfEXT("cluster visible");
                         uint clusterOffset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);                        
-                        //debugPrintfEXT("cluster offset : %i", clusterOffset);
+                        //debugPrintfEXT("cluster offset : %i %i", clusterOffset, sm.id);
                         outputClusters[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = n;    
                         uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;                                
                         outputTaskData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[taskDataOffset].meshDrawCommand.groupYCount++;
                        
                         for (uint m = 0; m < n.meshletCount; m++) {
+                            if (inputMeshlet.meshlets[n.meshletOffset+m].pad != sm.id) {
+                                debugPrintfEXT("Error");
+                            }
                             inputMeshlet.meshlets[n.meshletOffset+m].rendered = 0;
                         }
                         //Heightmap.                            
@@ -499,11 +502,12 @@ void main() {
                             //debugPrintfEXT("culling shader draw id : %i, material id : %i", indirectElementsDrawCommandOffset, materialId);
                             //debugPrintfEXT("instance base : %i", instanceBase);
                             //debugPrintfEXT("offset task data = %i", offsetTaskData);
-                            if (subMesh.materialId > 0)
-                                 debugPrintfEXT("Material id %i", subMesh.materialId);
+                            /*if (subMesh.materialId > 0)
+                                 debugPrintfEXT("Material id %i", subMesh.materialId);*/
                             //outputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[instanceId] = material;
                             
                             outputMeshData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshData[instanceId] = subMesh;
+                            //debugPrintfEXT("Submesh id %i", subMesh.id);
                             //debugPrintfEXT("material datas %v2f", material.uvScale);
                             //debugPrintfEXT("Output Model Matrix : %i\n%v4f\n%v4f\n%v4f\n%v4f",objectDataOffset,outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[0], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[1], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[2], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[3]);
                             setVisibleMeshletsFromBox(ubo[pc.currentFrame].frustrum, lod, object, subMesh, s, materialId);

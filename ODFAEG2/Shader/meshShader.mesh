@@ -116,24 +116,24 @@ layout (std430, set = 0, binding = 0) buffer TastDataSSBO {
 layout(std430, set = 0, binding = 1) buffer TaskCountSSBO {
     uint taskCount;
 } TaskCounts[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 2) buffer SubMeshDataSSBO {
-    SubMesh subMeshData[];
-} SubMeshDatas[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 3) buffer ModelDataSSBO {
+layout (std430, set = 0, binding = 2) buffer ModelDataSSBO {
     ModelData modelData[];
 } modelDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 4) buffer ClustersSSBO {
+layout (std430, set = 0, binding = 3) buffer ClustersSSBO {
     Cluster clusters[];
 } clusterDatas[MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES];
-layout (std430, set = 0, binding = 5) buffer vertexBufferSSBO {
+layout (std430, set = 0, binding = 4) buffer vertexBufferSSBO {
     Vertex vertices[];
 } vertexData[NB_PRIMITIVE_TYPES];
-layout (std430, set = 0, binding = 6) buffer indexBufferSSBO {
+layout (std430, set = 0, binding = 5) buffer indexBufferSSBO {
     uint indexes[];
 } indexData[NB_PRIMITIVE_TYPES];
-layout (std430, set=0, binding = 7) buffer LodLevelBuffer {
+layout (std430, set=0, binding = 6) buffer LodLevelBuffer {
     LODLevel lodLevel[];
 } lodLevelData;
+layout (std430, set = 0, binding = 7) buffer SubMeshDataSSBO {
+    SubMesh subMeshData[];
+} SubMeshDatas;
 layout (std430, set = 0, binding = 8) buffer MeshletsSSBO {
     MeshLet meshlet[];
 } meshletDatas;
@@ -157,14 +157,19 @@ void main() {
     /*if (taskData.vertexCount != 0)
         debugPrintfEXT("Error : ", taskData.vertexCount);*/
     //Modèles 3D.
-    if (taskData.vertexCount == 0) {           
-        SubMesh subMesh = SubMeshDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMeshData[payload.taskId];
-        Cluster cluster = clusterDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].clusterOffset+gl_WorkGroupID.y];
+    if (taskData.vertexCount == 0) {  
+        Cluster cluster = clusterDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[taskData.clusterOffset+gl_WorkGroupID.y];         
+        SubMesh subMesh = SubMeshDatas.subMeshData[cluster.submeshId];
         
         uint id = gl_WorkGroupID.z;
         if (id >= cluster.meshletCount) {
             return;
         }
+        MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+id];
+        if (cluster.submeshId != subMesh.id) {
+            debugPrintfEXT("error submesh %i %i %i lod : %i %i %i\n", cluster.submeshId, meshlet.submeshId, subMesh.id, cluster.lod, subMesh.lodLevel, meshlet.lod);
+        }
+        
         //debugPrintfEXT("mesh shader"); 
         //Instance id = taskId (base instance) + workGroupId.x (instance id).
         uint instanceId = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].baseInstance + gl_WorkGroupID.x;
@@ -172,14 +177,14 @@ void main() {
         mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId].modelMatrix;
         //debugPrintfEXT("model matrix : %v4f \n%v4f \n%v4f \n%v4f\n", modelMatrix[0], modelMatrix[1], modelMatrix[2], modelMatrix[3]);
             
-        MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+id];
-        if (meshlet.clusterId == -1 || cluster.submeshId != meshlet.submeshId || cluster.submeshId != subMesh.id || cluster.lod != subMesh.lodLevel) {
+        
+        /*if (cluster.submeshId != subMesh.id) {
             debugPrintfEXT("error submesh %i %i %i lod : %i %i %i\n", cluster.submeshId, meshlet.submeshId, subMesh.id, cluster.lod, subMesh.lodLevel, meshlet.lod);
-            
-        }
+            //return;
+        }*/
         //Avoid to render it twice if the meshlet is between two clusters. (Deduplication)
         if (meshlet.rendered == 1) { 
-            debugPrintfEXT("Rendered");           
+            //debugPrintfEXT("Rendered");           
             return;
         }
         //debugPrintfEXT("mesh shader"); 
@@ -195,13 +200,13 @@ void main() {
         
         //debugPrintfEXT("vertex count : %i, primitive count : %i", meshlet.nbVertices, meshlet.nbIndexes / 3u);
         if (pc.primitiveType == 3) {
-            SetMeshOutputsEXT(maxVerts, maxPrims);
+            SetMeshOutputsEXT(vertexCount, primitiveCount);
             for (uint i = 0; i < vertexCount; i++) {
                 uint v = subMesh.vertexOffset + meshlet.vertexOffset + i;
                 //debugPrintfEXT("v : %i", v);
                 vec4 color = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
-                if (color.r < 0.9 || color.g < 0.9 || color.b < 0.9)
-                    debugPrintfEXT("error : %v4f", color);
+                /*if (color.r < 0.9 || color.g < 0.9 || color.b < 0.9)
+                    debugPrintfEXT("error : %v4f", color);*/
             
                 gl_MeshVerticesEXT[i].gl_Position = pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(vertexData[pc.primitiveType].vertices[v].position, 1.0);
                 //debugPrintfEXT("vertex position %v3f : ",vertexData[pc.primitiveType].vertices[v].position);
@@ -214,7 +219,7 @@ void main() {
                 //debugPrintfEXT("materialId %i", subMesh.materialId);
                 //debugPrintfEXT("position : %i",  i);
             }        
-            for (uint i = vertexCount; i < maxVerts; i++) {                
+            /*for (uint i = vertexCount; i < maxVerts; i++) {                
                 //debugPrintfEXT("i : %i", i);
             
                 gl_MeshVerticesEXT[i].gl_Position = vec4(0, 0, 0, 0);
@@ -227,7 +232,7 @@ void main() {
                 currentFrame[i] = pc.currentFrame;
                 //debugPrintfEXT("materialId %i", subMesh.materialId);
                 //debugPrintfEXT("position : %i",  i);
-            }        
+            }   */     
             for (uint tri = 0; tri < primitiveCount; tri++) {
                 //debugPrintfEXT("gen tri : %i", tri);
                 uint g0 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 0];
@@ -240,14 +245,14 @@ void main() {
                 //debugPrintfEXT("indexes : %i, %i, %i", i0, i1, i2);  
                 if (i0 < 0 || i1 < 0 || i2 < 0 || i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount) {
                     
-                    debugPrintfEXT("erreur : %i %i %i %i,%i, %i, %i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, meshlet.nbVertices, firstIndex, meshlet.vertexOffset); 
-                    //continue;
+                    //debugPrintfEXT("erreur : %i %i %i %i,%i, %i, %i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, meshlet.nbVertices, firstIndex, meshlet.vertexOffset); 
+                    continue;
                 }
                 gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
             }
-            for (uint tri = primitiveCount; tri < maxPrims; tri++) {
+            /*for (uint tri = primitiveCount; tri < maxPrims; tri++) {
                 gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(vertexCount, vertexCount+1, vertexCount+2);
-            }
+            }*/
         }
     //Face de heightmap ou voxel.
     } else {
