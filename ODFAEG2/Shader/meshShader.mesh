@@ -162,7 +162,7 @@ void main() {
         SubMesh subMesh = SubMeshDatas.subMeshData[cluster.submeshId];
         
         uint id = gl_WorkGroupID.z;
-        if (id >= cluster.meshletCount) {
+        if (id > cluster.meshletCount) {
             return;
         }
         MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+id];
@@ -181,7 +181,7 @@ void main() {
         
         //Avoid to render it twice if the meshlet is between two clusters. (Deduplication)
         if (meshlet.rendered == 1) { 
-            //debugPrintfEXT("Rendered");           
+            debugPrintfEXT("Rendered");           
             return;
         }
         //debugPrintfEXT("mesh shader"); 
