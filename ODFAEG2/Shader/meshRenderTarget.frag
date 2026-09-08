@@ -56,10 +56,10 @@ void main() {
 
     // --- Diffuse ---
     vec4 diffuse = fragColor; 
-    if (fragColor.r < 0.9 || fragColor.g < 0.9 || fragColor.b < 0.9) {
+    /*if (fragColor.r < 0.9 || fragColor.g < 0.9 || fragColor.b < 0.9) {
         debugPrintfEXT("Error %v4f", fragColor);
         return;
-    }
+    }*/
     
     if (mat.diffuseTextureIndex > 0 && mat.diffuseTextureIndex < MAX_TEXTURES) {
         
@@ -99,7 +99,7 @@ void main() {
     //debugPrintfEXT("texture index : %i, normal : %v3f, fragTexCoord %v2f, color : %v4f, fragColor : %v4f", mat.diffuseTextureIndex, normal, fragTexCoord, diffuse * diff * ao + spec + emissive, fragColor);
     //debugPrintfEXT("normal : %v3f", N);
     //outColor = diffuse * diff * ao + spec + emissive;
-    outColor = diffuse;
+    outColor = /*vec4(uv, 0, 1)*/diffuse;
     
     
 };

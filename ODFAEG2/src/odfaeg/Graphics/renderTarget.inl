@@ -611,7 +611,7 @@ namespace odfaeg {
 								/*std::cout<<"new min max : "<<newMin<<","<<newMax<<","<<newVertexCount<<std::endl;
 								system("PAUSE");*/
 								// Si ce triangle dépasse les limites → nouveau meshlet
-								if (m.nbIndexes/3 >= MAX_PRIMS || newVertexCount >= MAX_VERTS)
+								if (m.nbIndexes/3 > MAX_PRIMS || newVertexCount > MAX_VERTS)
     							{									
 									m.vertexOffset = m.minVertex;
 									m.nbVertices   = (m.maxVertex - m.minVertex) + 1;
