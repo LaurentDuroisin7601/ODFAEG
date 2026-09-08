@@ -12,6 +12,7 @@ struct Offset {
     int clusterOffset;
     int submeshOffset;
     int offsetTaskData;
+    int previousOffsetTaskData;
 }; 
 struct MaterialData {       
     uint diffuseTextureIndex;
@@ -76,6 +77,7 @@ void main() {
     offsetsData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset = 0;
     offsetsData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.submeshOffset = 0;
     offsetsData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetTaskData  = 0;
+    offsetsData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetTaskData  = 0;
     //debugPrintfEXT("reset  : %i, current frame : %i", firstIndexData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].firstIndex, pc.currentFrame);
 	inputMaterialBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet = 0;
 }

@@ -59,6 +59,7 @@ namespace odfaeg {
 				unsigned int clusterOffset;
 				unsigned int submeshOffset;
 				unsigned int offsetTaskData;
+				unsigned int previousOffsetTaskData;
 			};
 			struct alignas(16) AABB {
 				alignas(16) math::Vec3f center; //float _pad0; // vec3 + padding
@@ -182,6 +183,10 @@ namespace odfaeg {
 			struct TaskData {
 				MeshDrawCommand meshDrawCommand;
 				unsigned int baseInstance;
+				unsigned int vertexCount;
+				unsigned int primitiveCount;
+				unsigned int vertexOffset; 
+				unsigned int clusterOffset;     
 			};
 			struct alignas(16) UBO {
 				AABB frustrum;
