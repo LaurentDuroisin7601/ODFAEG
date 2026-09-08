@@ -196,13 +196,13 @@ void main() {
         uint maxPrims = 256u;
         uint vertexCount   = min(meshlet.nbVertices, maxVerts);
         uint primitiveCount = min(meshlet.nbIndexes / 3u, maxPrims);
-        if (primitiveCount > maxPrims)
-            debugPrintfEXT("vertex count : %i, primitive count : %i", vertexCount, primitiveCount);
+        /*if (primitiveCount > maxPrims)
+            debugPrintfEXT("vertex count : %i, primitive count : %i", vertexCount, primitiveCount);*/
         if (pc.primitiveType == 3) {
             SetMeshOutputsEXT(vertexCount, primitiveCount);
             for (uint i = 0; i < vertexCount; i++) {
-                uint v = subMesh.vertexOffset + meshlet.vertexOffset + i;
-                //debugPrintfEXT("v : %i", v);
+                uint v = meshlet.vertexOffset + subMesh.vertexOffset + i;
+                //debugPrintfEXT("v : %i", meshlet.vertexOffset);
                 vec4 color = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
                 if (color.r < 0.9 || color.g < 0.9 || color.b < 0.9)
                     debugPrintfEXT("error : %v4f", color);

@@ -402,6 +402,12 @@ namespace odfaeg {
                needToUpdateIndexBuffer[i] = true;
             indices[pos] = idx;
         }
+        std::vector<std::uint32_t> VertexBuffer::getIndexes() {
+            return indices;
+        }
+        std::vector<entity::Vertex> VertexBuffer::getVertices() {
+            return m_vertices;
+        }
         void swap(VertexBuffer& a, VertexBuffer& b) noexcept {
             a.swap(b);
         }

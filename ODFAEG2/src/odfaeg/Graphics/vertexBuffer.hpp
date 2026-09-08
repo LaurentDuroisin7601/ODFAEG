@@ -91,6 +91,8 @@ namespace odfaeg {
 
                 return attributeDescriptions;
             }
+            std::vector<std::uint32_t> getIndexes();
+            std::vector<entity::Vertex> getVertices();
         private:
             bool commandBuffersCreated;            
             unsigned int nbBuffers;                     
