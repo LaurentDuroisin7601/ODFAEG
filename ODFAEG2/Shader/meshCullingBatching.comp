@@ -524,9 +524,9 @@ void main() {
                             //debugPrintfEXT("Output Model Matrix : %i\n%v4f\n%v4f\n%v4f\n%v4f",objectDataOffset,outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[0], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[1], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[2], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[3]);
                             
                             setVisibleMeshletsFromBox(ubo[pc.currentFrame].frustrum, lod, object, subMesh, s, taskData);  
-                                       
-                            outputTaskData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[offsetTaskData] = taskData;
                             offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetTaskData = outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount;
+                            outputTaskData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[offsetTaskData] = taskData;
+                            
 
                         }                                                   
                     } /*else { 
