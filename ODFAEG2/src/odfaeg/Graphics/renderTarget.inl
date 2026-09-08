@@ -1031,6 +1031,9 @@ namespace odfaeg {
 					throw std::runtime_error("Echec de l'envoi d'un command buffer!");
 				}
 				vkDeviceWaitIdle(device.getDevice());
+				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+					ubo[i].update(&cullingInfo, sizeof(UBO));
+				}
 				//system("PAUSE");				
 				commandPool.beginRecordCommandBuffer(getCurrentFrame());
 				//vertices.clear();
@@ -2311,9 +2314,7 @@ namespace odfaeg {
 			cullingInfo.frustrum.center = camera.getViewVolume().getCenter();
 			cullingInfo.frustrum.size = camera.getViewVolume().getSize();
 			cullingInfo.nbEntitiesTypes = entity::Entity::getNbEntitiesTypes();
-			for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-				ubo[i].update(&cullingInfo, sizeof(UBO));
-			}
+			
 			viewProjInfos.projMatrix = camera.getProjMatrix().getMatrix().transpose();
 			viewProjInfos.viewMatrix = camera.getViewMatrix().getMatrix().transpose();
 			/*cullingBatchingPc.projMatrix = viewProjInfos.projMatrix;
