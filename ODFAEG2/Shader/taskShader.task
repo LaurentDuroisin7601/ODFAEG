@@ -23,6 +23,7 @@ struct SubMesh {
     int lodLevel;
     int objectId;
     int meshletOffset;
+    int meshletCount;
 };
 struct MeshDrawCommand {
     uint groupXCount;

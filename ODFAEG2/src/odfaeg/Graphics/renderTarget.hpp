@@ -73,7 +73,7 @@ namespace odfaeg {
 				int modelDataOffset;
 				int nbSubMeshes;
 				int renderingType;
-				int paddings[2];
+				//int paddings[2];
 			};
 			struct LODLevelData {
 				int index_offset;
@@ -105,7 +105,7 @@ namespace odfaeg {
 				int leaf;
 				int submeshId;				
 				//int children[8];
-				int pad[2];
+				//int pad[2];
 			};
 			struct alignas(16) CellData {
 				AABB volume;
@@ -113,7 +113,7 @@ namespace odfaeg {
 				int clusterId;
 				int clusterOffset;
 				int clusterCount;
-				int pad;
+				//int pad;
 			};
 			struct alignas(16) Meshlet {
 				unsigned int id;
@@ -145,9 +145,7 @@ namespace odfaeg {
 				math::Matrix4f shadowProjMatrix;
 				math::Matrix4f borderMatrices;
 			};
-			struct MaterialData {
-				/*math::Vec2f uvScale;
-				math::Vec2f uvOffset;*/
+			struct alignas(16) MaterialData {				
 				   unsigned int diffuseTextureIndex;
 				   unsigned int specularTextureIndex;
 				   unsigned int normalTextureIndex;
@@ -166,7 +164,7 @@ namespace odfaeg {
 				   unsigned int nbBuffers;
 				   int opaque;
 				   int reflectable;
-				   int refractable;
+				   int refractable;				   
 			};	
 			struct DrawElementsIndirectCommand {
 				unsigned int index_count;
