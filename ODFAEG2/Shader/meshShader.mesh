@@ -164,7 +164,7 @@ void main() {
         //
         //debugPrintfEXT("Submesh material : %i, %i", subMesh.id, subMesh.materialId);
         uint id = gl_WorkGroupID.z;
-        if (id > cluster.meshletCount) {
+        if (id >= cluster.meshletCount) {
             return;
         }
         MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+id];
