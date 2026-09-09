@@ -21,7 +21,7 @@ namespace odfaeg {
             create(handle);
         }
         void RenderWindow::createColorResources() {
-            colorImage.create(swapchain.getSwapchainExtents().width, swapchain.getSwapchainExtents().height, 1, VK_IMAGE_TYPE_2D, swapchain.getSwapchainImageFormat(), VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,VMA_MEMORY_USAGE_GPU_ONLY, 1, 1, device.getMsaaSamples(), VK_IMAGE_TILING_OPTIMAL);
+            colorImage.create(swapchain.getSwapchainExtents().width, swapchain.getSwapchainExtents().height, 1, VK_IMAGE_TYPE_2D, swapchain.getSwapchainImageFormat(), /*VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT |*/ VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,VMA_MEMORY_USAGE_GPU_ONLY, 1, 1, device.getMsaaSamples(), VK_IMAGE_TILING_OPTIMAL);
             colorImage.createImageView(VK_IMAGE_VIEW_TYPE_2D, swapchain.getSwapchainImageFormat(), VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
         }
 	    void RenderWindow::onClose() {
@@ -134,7 +134,7 @@ namespace odfaeg {
                 VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
             );*/
-            if (colorImage.getLayout() == VK_IMAGE_LAYOUT_UNDEFINED) {
+            /*if (colorImage.getLayout() == VK_IMAGE_LAYOUT_UNDEFINED) {
                     Texture::transitionImageLayout(
                     colorImage,
                     getCommandPool().getHandle(currentFrame),
@@ -152,7 +152,7 @@ namespace odfaeg {
             VkImageMemoryBarrier toPresent = {
                 .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                 .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+                .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT,
                 .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
                 .newLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
                 .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -202,9 +202,9 @@ namespace odfaeg {
                 .pDepthAttachment = &depthAttachmentInfo
             };            
             vkCmdBeginRendering(getCommandPool().getHandle(getCurrentFrame()),&renderingInfo);
-            vkCmdEndRendering(getCommandPool().getHandle(getCurrentFrame()));
+            vkCmdEndRendering(getCommandPool().getHandle(getCurrentFrame()));*/
            
-            /*VkClearColorValue clearValue = { clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f };
+            VkClearColorValue clearValue = { clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f };
 
 
             VkImageSubresourceRange imageRange = {
@@ -242,7 +242,7 @@ namespace odfaeg {
             //std::cout<<"begin record command buffer : "<<currentFrame<<std::endl;
             
             vkCmdPipelineBarrier(getCommandPool().getHandle(currentFrame), VK_PIPELINE_STAGE_NONE, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentToClearBarrier);
-            vkCmdClearColorImage(getCommandPool().getHandle(currentFrame), swapchain.getSwapchainImages()[imageIndex].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearValue, 1, &imageRange);
+            vkCmdClearColorImage(getCommandPool().getHandle(currentFrame), colorImage.getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearValue, 1, &imageRange);
             vkCmdPipelineBarrier(getCommandPool().getHandle(currentFrame), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToPresentBarrier);
             if (useDepthTest() || useStencilTest()) {
                 VkClearDepthStencilValue clearDepthStencilValue = {
@@ -289,7 +289,7 @@ namespace odfaeg {
                 vkCmdClearDepthStencilImage(getCommandPool().getHandle(currentFrame), getDepthStencilTexture().getImage().getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearDepthStencilValue, 1, &imageRange2);
                 vkCmdPipelineBarrier(getCommandPool().getHandle(currentFrame), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
                     VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToDepthStencilBarrier);
-            }*/
+            }
         }       
         uint32_t RenderWindow::getImageIndex() {
             return imageIndex;
