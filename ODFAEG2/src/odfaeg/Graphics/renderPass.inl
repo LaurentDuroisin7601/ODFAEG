@@ -133,8 +133,8 @@ namespace odfaeg {
             VkAttachmentDescription colorAttachment{};
             colorAttachment.format = format;
             colorAttachment.samples = GPUContext::instance().getDevice().getMsaaSamples();
-            colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-            colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             colorAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -144,7 +144,7 @@ namespace odfaeg {
                 colorAttachmentResolve.format = format;
                 colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
                 colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-                colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
                 colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                 colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
                 colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -258,8 +258,8 @@ namespace odfaeg {
             VkAttachmentDescription colorAttachment{};
             colorAttachment.format = format;
             colorAttachment.samples = GPUContext::instance().getDevice().getMsaaSamples();
-            colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-            colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             colorAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -270,7 +270,7 @@ namespace odfaeg {
                 colorAttachmentResolve.format = format;
                 colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
                 colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-                colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
                 colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                 colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
                 colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -282,8 +282,8 @@ namespace odfaeg {
             VkAttachmentDescription depthAttachment{};
             depthAttachment.format = depthStencilFormat;
             depthAttachment.samples = GPUContext::instance().getDevice().getMsaaSamples();
-            depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-            depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
             depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
             depthAttachment.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;

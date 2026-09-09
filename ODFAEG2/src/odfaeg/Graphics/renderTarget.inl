@@ -103,7 +103,7 @@ namespace odfaeg {
 			}
 			Device::QueueFamilyIndices queueFamilyIndices = device.findQueueFamilies(device.getPhysicalDevice(), getSurface());
 			commandPool.create(queueFamilyIndices.graphicsFamily.value());
-			computeCommandPool.create(queueFamilyIndices.computeFamily.value());
+			computeCommandPool.create(queueFamilyIndices.graphicsFamily.value());
 			commandPool.createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT);
 			//std::cout<<"comand buffers : "<<commandPool.getHandle(0)<<','<<commandPool.getHandle(1)<<std::endl;
 			computeCommandPool.createCommandBuffers(true, MAX_FRAMES_IN_FLIGHT);
@@ -997,11 +997,12 @@ namespace odfaeg {
 				totalMeshlets = meshletDatas.size();
 				/*std::cout<<"total sub meshes"<<totalSubMeshes<<std::endl;
 				system("PAUSE");*/
+				computeCommandPool.beginRecordCommandBuffer(0);
 				for (unsigned int i = 0; i < 1; i++) {
 					for (unsigned int j = 0; j < NB_PRIMITIVE_TYPES; j++) {
 						//std::cout<<"update vertices"<<std::endl;
 						vertices[j].setPrimitiveType(static_cast<entity::PrimitiveType>(j));
-						vertices[j].update(commandPool.getHandle(i), i);
+						vertices[j].update(computeCommandPool.getHandle(0), i);
 					}
 				}
 				//std::cout<<"max lod index : "<<subMeshesDatas.size() * 5<<std::endl;
@@ -1010,7 +1011,7 @@ namespace odfaeg {
 					staggingObjects[i].create(objectDatas.size() * sizeof(Object), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 					staggingObjects[i].update(objectDatas.data(), objectDatas.size() * sizeof(Object));
 					objects[i].create(objectDatas.size() * sizeof(Object), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-					Buffer::copyBuffer(staggingObjects[i], objects[i], objectDatas.size() * sizeof(Object), commandPool.getHandle(getCurrentFrame()));
+					Buffer::copyBuffer(staggingObjects[i], objects[i], objectDatas.size() * sizeof(Object), computeCommandPool.getHandle(0));
 					//std::cout<<"stagging object buffer : "<<staggingObjects[i].getHandle()<<std::endl;
 					//std::cout<<"object buffer : "<<staggingObjects[i].getHandle()<<std::endl;
 				}
@@ -1019,7 +1020,7 @@ namespace odfaeg {
 					staggingSubMeshes[i].create(subMeshesDatas.size() * sizeof(SubMeshData), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 					staggingSubMeshes[i].update(subMeshesDatas.data(), subMeshesDatas.size() * sizeof(SubMeshData));
 					subMeshes[i].create(subMeshesDatas.size() * sizeof(SubMeshData), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-					Buffer::copyBuffer(staggingSubMeshes[i], subMeshes[i], subMeshesDatas.size() * sizeof(SubMeshData), commandPool.getHandle(getCurrentFrame()));
+					Buffer::copyBuffer(staggingSubMeshes[i], subMeshes[i], subMeshesDatas.size() * sizeof(SubMeshData), computeCommandPool.getHandle(0));
 					//std::cout<<"stagging submeshes buffer : "<<staggingObjects[i].getHandle()<<std::endl;
 					//std::cout<<"submeshes buffer : "<<staggingObjects[i].getHandle()<<std::endl;
 				}
@@ -1027,26 +1028,26 @@ namespace odfaeg {
 					staggingGridCells[i].create(cellDatas.size() * sizeof(CellData), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 					staggingGridCells[i].update(cellDatas.data(), cellDatas.size() * sizeof(CellData));
 					inputCellDatas[i].create(cellDatas.size() * sizeof(CellData), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-					Buffer::copyBuffer(staggingGridCells[i], inputCellDatas[i], cellDatas.size() * sizeof(CellData), commandPool.getHandle(getCurrentFrame()));
+					Buffer::copyBuffer(staggingGridCells[i], inputCellDatas[i], cellDatas.size() * sizeof(CellData), computeCommandPool.getHandle(0));
 				}
 				for (unsigned int i = 0; i < 1; i++) {
 					staggingClusters[i].create(clusterDatas.size() * sizeof(Cluster), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 					staggingClusters[i].update(clusterDatas.data(), clusterDatas.size() * sizeof(Cluster));
 					inputClusters[i].create(clusterDatas.size() * sizeof(Cluster), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-					Buffer::copyBuffer(staggingClusters[i], inputClusters[i], clusterDatas.size() * sizeof(Cluster), commandPool.getHandle(getCurrentFrame()));
+					Buffer::copyBuffer(staggingClusters[i], inputClusters[i], clusterDatas.size() * sizeof(Cluster), computeCommandPool.getHandle(0));
 				}
 				for (unsigned int i = 0; i < 1; i++) {
 					staggingMeshlets[i].create(meshletDatas.size() * sizeof(Meshlet), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 					staggingMeshlets[i].update(meshletDatas.data(), meshletDatas.size() * sizeof(Meshlet));
 					inputMeshlets[i].create(meshletDatas.size() * sizeof(Meshlet), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-					Buffer::copyBuffer(staggingMeshlets[i], inputMeshlets[i], meshletDatas.size() * sizeof(Meshlet), commandPool.getHandle(getCurrentFrame()));
+					Buffer::copyBuffer(staggingMeshlets[i], inputMeshlets[i], meshletDatas.size() * sizeof(Meshlet), computeCommandPool.getHandle(0));
 				}
 				for (unsigned int i = 0; i < 1; i++) {
 					//std::cout<<"copy submeshes"<<std::endl;
 					staggingLODLevel[i].create(lodLevelDatas.size() * sizeof(LODLevelData), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 					staggingLODLevel[i].update(lodLevelDatas.data(), lodLevelDatas.size() * sizeof(LODLevelData));
 					lodLevel[i].create(lodLevelDatas.size() * sizeof(LODLevelData), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-					Buffer::copyBuffer(staggingLODLevel[i], lodLevel[i], lodLevelDatas.size() * sizeof(LODLevelData), commandPool.getHandle(getCurrentFrame()));
+					Buffer::copyBuffer(staggingLODLevel[i], lodLevel[i], lodLevelDatas.size() * sizeof(LODLevelData), computeCommandPool.getHandle(0));
 					//std::cout<<"stagging submeshes buffer : "<<staggingObjects[i].getHandle()<<std::endl;
 					//std::cout<<"submeshes buffer : "<<staggingObjects[i].getHandle()<<std::endl;
 				}
@@ -1055,7 +1056,7 @@ namespace odfaeg {
 					staggingModelDatas[i].create(modelDatas.size() * sizeof(ModelData), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 					staggingModelDatas[i].update(modelDatas.data(), modelDatas.size() * sizeof(ModelData));
 					this->modelDatas[i].create(modelDatas.size() * sizeof(ModelData), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-					Buffer::copyBuffer(staggingModelDatas[i], this->modelDatas[i], modelDatas.size() * sizeof(ModelData), commandPool.getHandle(getCurrentFrame()));
+					Buffer::copyBuffer(staggingModelDatas[i], this->modelDatas[i], modelDatas.size() * sizeof(ModelData), computeCommandPool.getHandle(0));
 					//std::cout<<"stagging object buffer : "<<staggingObjects[i].getHandle()<<std::endl;
 				}
 				for (unsigned int i = 0; i < 1; i++) {
@@ -1064,13 +1065,13 @@ namespace odfaeg {
 					for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
 						for (unsigned int k = 0; k < NB_PRIMITIVE_TYPES; k++) {
 							this->materialDatas[k * MAX_FRAMES_IN_FLIGHT + j].create(materialDatas.size() * sizeof(MaterialData), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-							Buffer::copyBuffer(staggingMaterialDatas[i], this->materialDatas[k * MAX_FRAMES_IN_FLIGHT + j], materialDatas.size() * sizeof(MaterialData), commandPool.getHandle(getCurrentFrame()));
+							Buffer::copyBuffer(staggingMaterialDatas[i], this->materialDatas[k * MAX_FRAMES_IN_FLIGHT + j], materialDatas.size() * sizeof(MaterialData), computeCommandPool.getHandle(0));
 						}
 					}
 				}
 				//std::cout<<"buffers updated"<<std::endl;
 				needToUpdateBuffers = false;
-				commandPool.endRecordCommandBuffer(getCurrentFrame());
+				computeCommandPool.endRecordCommandBuffer(0);
 				/*std::unique_lock lock(mtx);	
 					//std::cout<<"wait!"<<std::endl;				
 				cv.wait(lock, [this]{return ParticleSystemUpdater::instance(cv, mtx).isSubmitReady() && MorphAnimUpdater::instance(cv, mtx).isSubmitReady() && BoneAnimUpdater::instance(cv, mtx).isSubmitReady();});
@@ -1087,7 +1088,7 @@ namespace odfaeg {
 				VkSubmitInfo submitInfo{};
 				submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 				submitInfo.commandBufferCount = 1;
-				submitInfo.pCommandBuffers = &commandPool.getHandle(getCurrentFrame());
+				submitInfo.pCommandBuffers = &computeCommandPool.getHandle(0);
 				Device::QueueFamilyIndices indices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice());
 				
 				std::unique_lock lock(mtx);	
@@ -1105,7 +1106,7 @@ namespace odfaeg {
 					ubo[i].update(&cullingInfo, sizeof(UBO));
 				}
 				//system("PAUSE");				
-				commandPool.beginRecordCommandBuffer(getCurrentFrame());
+				//commandPool.beginRecordCommandBuffer(getCurrentFrame());
 				//vertices.clear();
 				needToUpdateDescriptorSets = true;
 
@@ -2255,10 +2256,10 @@ namespace odfaeg {
 				imgs.push_back(img);
 			}
 			depInfo.imageMemoryBarrierCount = imgs.size();
-			depInfo.pImageMemoryBarriers    = imgs.data();
+			depInfo.pImageMemoryBarriers    = imgs.data();*/
 			
 
-			vkCmdPipelineBarrier2(commandPool.getHandle(getCurrentFrame()), &depInfo);*/
+			vkCmdPipelineBarrier2(commandPool.getHandle(getCurrentFrame()), &depInfo);
 			beginRendering();
 			DepthStencilType depthStencilInfoId;
 			if (!useDepthTest() && !useStencilTest()) {

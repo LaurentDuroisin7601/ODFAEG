@@ -50,7 +50,7 @@ struct ModelData {
 };        
 /*Matériaux*/
 struct MaterialData {   
-    uint diffuseTextureIndex;
+   uint diffuseTextureIndex;
     uint specularTextureIndex;
     uint normalTextureIndex;
     uint metalnessTextureIndex;
@@ -58,17 +58,15 @@ struct MaterialData {
     uint aoTextureIndex;
     uint emissiveTextureIndex;
     uint materialType;
-    uint instanceId;   
+    uint taskOffset;
     uint nbVertices;
     uint nbIndexes;
     int instanceGroupId;
     uint vertsInstanceSet;
-    uint taskOffset;
     uint materialId;
     uint nbBuffers;
-    int opaque;
     int reflectable;
-    int refractable;  
+    int refractable;    
 };
 struct IndirectElementsDrawCommand {
     uint index_count;
@@ -189,7 +187,7 @@ bool intersects (AABB first, AABB second) {
     return true;
 }
 void main() {
-    debugPrintfEXT("nb object types : %i, %i, %i",gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
+    //debugPrintfEXT("nb object types : %i, %i, %i",gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
     Object object = inputObjectBuffer.objects[gl_GlobalInvocationID.x];
 	uint materialId = gl_GlobalInvocationID.y;
 	uint primitiveType = gl_GlobalInvocationID.z;
