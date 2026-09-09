@@ -2234,7 +2234,7 @@ namespace odfaeg {
 			barrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
 			barrier.dstStageMask = VK_PIPELINE_STAGE_2_TASK_SHADER_BIT_EXT | VK_PIPELINE_STAGE_2_MESH_SHADER_BIT_EXT |
     		VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
-			barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+			barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT |  VK_ACCESS_2_SHADER_WRITE_BIT;
 			VkDependencyInfo depInfo{};
 			depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
 			depInfo.memoryBarrierCount = 1;
@@ -2245,7 +2245,7 @@ namespace odfaeg {
 				VkImageMemoryBarrier2 img{};
 				img.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
 				img.srcStageMask  = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
-				img.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
+				img.srcAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
 				img.dstStageMask  =
 					VK_PIPELINE_STAGE_2_TASK_SHADER_BIT_EXT |
 					VK_PIPELINE_STAGE_2_MESH_SHADER_BIT_EXT |
