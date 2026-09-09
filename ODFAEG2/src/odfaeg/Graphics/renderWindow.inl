@@ -334,7 +334,7 @@ namespace odfaeg {
                     VkImageMemoryBarrier toPresent = {
                         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                         .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                        .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+                        .dstAccessMask = 0,
                         .oldLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
                         .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -382,8 +382,8 @@ namespace odfaeg {
                 if (vkQueueSubmit(device.getQueue(indices.graphicsFamily.value(), queueIndex), 1, &submitInfo, (fenceToSubmit == nullptr) ? inFlightFences[currentFrame].getHandle() : fenceToSubmit) != VK_SUCCESS) {
                     throw std::runtime_error("échec de l'envoi d'un command buffer window!");
                 }
-                inFlightFences[currentFrame].waitForFences(VK_TRUE, UINT64_MAX);
-                inFlightFences[currentFrame].resetFences();
+                vkWaitForFences(device.getDevice(), 1, &inFlightFences[currentFrame].getHandle(), VK_TRUE, UINT64_MAX);
+                vkResetFences(device.getDevice(), 1, &inFlightFences[currentFrame].getHandle());
                 //std::cout<<"submitted"<<std::endl;
                 //Cette image est utilisée par cette frame.
                 //imagesInFlight[imageIndex] = inFlightFences[currentFrame].getHandle();

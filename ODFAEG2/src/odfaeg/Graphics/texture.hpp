@@ -89,6 +89,7 @@ namespace odfaeg {
             math::Vector2u getSize();
             unsigned int getNbBuffers() const;
             unsigned int getLayerCount();  
+            unsigned int getMipLevels();
             bool isCubeMapTex();  
             void resolve(Texture& resolved, VkCommandBuffer cmd, unsigned int imgIndex = 0);        
         private : 
