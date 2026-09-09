@@ -473,7 +473,7 @@ void main() {
                             setVisibleMeshletsFromBox(ubo[pc.currentFrame].frustrum, lod, object, subMesh, s, materialId);*/
                         //Matériel non instanciable.                                               
                         } else {                                               
-                            while (offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetTaskData != outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount);
+                            //while (offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetTaskData != outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount);
                             //debugPrintfEXT("task offsets : %i, %i", offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetTaskData, outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount);             
                             uint offsetTaskData = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
                             uint clusterOffset = atomicAdd(offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);                           
