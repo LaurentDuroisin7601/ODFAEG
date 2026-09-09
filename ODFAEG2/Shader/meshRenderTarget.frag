@@ -27,8 +27,7 @@ struct MaterialData {
     uint nbBuffers;
     int opaque;
     int reflectable;
-    int refractable; 
-    //int pad;
+    int refractable;     
 };
 layout (std430, set = 0, binding = 10) buffer MaterialDataSSBO {
     MaterialData materialData[];
@@ -48,8 +47,8 @@ layout(location = 4) flat in int primitiveType;
 layout(location = 5) flat in int currentFrame;
 layout(location = 0) out vec4 outColor;
 void main() {
-    /*if (materialID > 5)
-    debugPrintfEXT("material id %i ", materialID);*/
+    //if (materialID > 6)
+    //debugPrintfEXT("material id %i ", materialID);
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[materialID];
     
     

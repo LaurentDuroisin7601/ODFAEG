@@ -44,25 +44,25 @@ struct Cluster {
     int meshletOffset;
     int meshletCount;
     int id;
-    int lod;
-    int leaf;	
-    int submeshId;	
+    int lodLevel;
+    int leaf;
+    int submeshId;
 };
 struct MeshLet {
     uint id;
     uint vertexOffset;
     uint indexOffset;
     uint nbVertices;
-    uint nbIndexes; 
+    uint nbIndexes;
     uint minVertex;
-    uint maxVertex;    
-    int clusterId;      
-    uint lod;
+    uint maxVertex;				
+    int clusterId;	
+    uint lod;	
     int voxel;
     int rendered;
     int submeshId;
     vec3 mins;
-    vec3 max;
+    vec3 maxs;
 };
 struct SubMesh {
 	AABB globalBounds;
@@ -163,13 +163,17 @@ void main() {
         SubMesh subMesh = SubMeshDatas.subMeshData[cluster.submeshId];
         //
         //debugPrintfEXT("Submesh material : %i, %i", subMesh.id, subMesh.materialId);
-        uint id = gl_WorkGroupID.z;
-        if (id >= cluster.meshletCount) {
+      
+        if (gl_WorkGroupID.z >= cluster.meshletCount) {
             return;
         }
-        MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+id];
+        MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+gl_WorkGroupID.z];
+        if (meshlet.rendered == 1) { 
+            //debugPrintfEXT("Rendered");           
+            return;
+        }
         if (cluster.submeshId != subMesh.id || cluster.submeshId != meshlet.submeshId || meshlet.submeshId != subMesh.id) {
-            debugPrintfEXT("error submesh %i %i %i lod : %i %i %i\n", cluster.submeshId, meshlet.submeshId, subMesh.id, cluster.lod, subMesh.lodLevel, meshlet.lod);
+            debugPrintfEXT("error submesh %i %i %i lod : %i %i %i\n", cluster.submeshId, meshlet.submeshId, subMesh.id, cluster.lodLevel, subMesh.lodLevel, meshlet.lod);
         }
         
         //debugPrintfEXT("mesh shader"); 
@@ -182,14 +186,11 @@ void main() {
         
         
         //Avoid to render it twice if the meshlet is between two clusters. (Deduplication)
-        if (meshlet.rendered == 1) { 
-            //debugPrintfEXT("Rendered");           
-            return;
-        }
-        //debugPrintfEXT("mesh shader"); 
-        meshletDatas.meshlet[cluster.meshletOffset+id].rendered = 1;
         
-        uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+subMesh.lodLevel].index_offset + meshlet.indexOffset;
+        //debugPrintfEXT("mesh shader"); 
+        meshletDatas.meshlet[cluster.meshletOffset+gl_WorkGroupID.z].rendered = 1;
+        
+        uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+cluster.lodLevel].index_offset + meshlet.indexOffset;
         //debugPrintfEXT("First index : %i,", firstIndex);
         //3 = Triangles.
         uint maxVerts = 255u;

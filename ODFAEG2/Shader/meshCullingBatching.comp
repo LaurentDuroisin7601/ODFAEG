@@ -79,7 +79,7 @@ struct MaterialData {
     uint nbBuffers;
     int opaque;
     int reflectable;
-    int refractable;    
+    int refractable;
 };
 struct MeshDrawCommand {
     uint groupXCount;
@@ -117,7 +117,7 @@ struct Cluster {
     int meshletOffset;
     int meshletCount;
     int id;
-    int lod;
+    int lodLevel;
     int leaf;	
     int submeshId;	
 };
@@ -133,7 +133,7 @@ struct MeshLet {
     uint lod;
     int voxel;
     int rendered;
-    int pad;
+    int submeshId;
     vec3 mins;
     vec3 maxs; 
 };
@@ -313,7 +313,7 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                     continue;
                 }   
                 //debugPrintfEXT("lod : %i, smid : %i, %i", n.lod, n.submeshId, sm.id);                 
-                if (n.lod == lod && n.submeshId == sm.id) { 
+                if (n.lodLevel == lod && n.submeshId == sm.id) { 
                     //Cluster de modèle 3D visible : On ajoute ce cluster aux clusters visible.
                     //debugPrintfEXT("Rendering type : %i", object.renderingType);
                     if (object.renderingType == 0) {  
@@ -321,15 +321,15 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                         //debugPrintfEXT("cluster visible");
                         
                         //debugPrintfEXT("cluster offset : %i %i", clusterOffset, sm.id);
-                        
-                        uint clusterOffset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);
-                        outputClusters[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[clusterOffset] = n;   
                         taskData.meshDrawCommand.groupYCount++;
+                        
+                        outputClusters[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[taskData.clusterOffset+taskData.meshDrawCommand.groupYCount] = n;   
+                        atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);
                         //uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;                                
                         
                        
                         for (uint m = 0; m < n.meshletCount; m++) {
-                            if (inputMeshlet.meshlets[n.meshletOffset+m].pad != sm.id) {
+                            if (inputMeshlet.meshlets[n.meshletOffset+m].submeshId != sm.id) {
                                 debugPrintfEXT("Error");
                             }
                             inputMeshlet.meshlets[n.meshletOffset+m].rendered = 0;
@@ -451,7 +451,7 @@ void main() {
                                 MeshDrawCommand meshDrawCommand;
                                 meshDrawCommand.groupXCount = 0;
                                 meshDrawCommand.groupYCount = 0;
-                                meshDrawCommand.groupZCount = 8;
+                                meshDrawCommand.groupZCount = 1;
                                 TaskData taskData;
                                 taskData.baseInstance = instanceId;
                                 taskData.vertexCount = 0;
@@ -524,6 +524,7 @@ void main() {
                             //debugPrintfEXT("Output Model Matrix : %i\n%v4f\n%v4f\n%v4f\n%v4f",objectDataOffset,outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[0], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[1], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[2], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[3]);
                             
                             setVisibleMeshletsFromBox(ubo[pc.currentFrame].frustrum, lod, object, subMesh, s, taskData);  
+                            //atomicAdd(offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, taskData.meshDrawCommand.groupYCount);
                             offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetTaskData = outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount;
                             outputTaskData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[offsetTaskData] = taskData;
                             

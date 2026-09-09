@@ -614,7 +614,8 @@ namespace odfaeg {
 								math::Vec3f p1, p2, p3;
 								p1 = vertices[primitiveType][g0].position;
 								p2 = vertices[primitiveType][g1].position;
-								p3 = vertices[primitiveType][g2].position;unsigned int newMin = std::min(g0, std::min(g1, g2));
+								p3 = vertices[primitiveType][g2].position;
+								unsigned int newMin = std::min(g0, std::min(g1, g2));
     							unsigned int newMax = std::max(g0, std::max(g1, g2));
 								newMin = std::min(m.minVertex, newMin);
 								newMax = std::max(m.maxVertex, newMax);
@@ -1164,7 +1165,7 @@ namespace odfaeg {
 				renderingCreateInfo.colorAttachmentCount = (isDepthOnly()) ? 0 : 1;
 				renderingCreateInfo.pColorAttachmentFormats = (isDepthOnly()) ? nullptr : &getImageFormat();
 				renderingCreateInfo.depthAttachmentFormat = getDepthStencilTexture().getFormat();
-				renderingCreateInfos.emplace_back(renderingCreateInfo);			
+				renderingCreateInfos.emplace_back(renderingCreateInfo);		
 				DescriptorSetLayout& resetBuffersLayout = GPUContext::instance().getDescriptorSetLayout(resetBuffersShader, 8, false);
 				for (unsigned int i = 0; i < 8; i++) {
 					resetBuffersLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_COMPUTE_BIT);
@@ -2096,7 +2097,7 @@ namespace odfaeg {
 				barrier.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
 				barrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
 				barrier.dstStageMask = VK_PIPELINE_STAGE_2_TASK_SHADER_BIT_EXT | VK_PIPELINE_STAGE_2_MESH_SHADER_BIT_EXT;
-				barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+				barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT;
 
 				VkDependencyInfo depInfo{};
 				depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
@@ -2226,7 +2227,8 @@ namespace odfaeg {
 			barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2;
 			barrier.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
 			barrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
-			barrier.dstStageMask = VK_PIPELINE_STAGE_2_TASK_SHADER_BIT_EXT | VK_PIPELINE_STAGE_2_MESH_SHADER_BIT_EXT;
+			barrier.dstStageMask = VK_PIPELINE_STAGE_2_TASK_SHADER_BIT_EXT | VK_PIPELINE_STAGE_2_MESH_SHADER_BIT_EXT |
+    		VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
 			barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
 
 			VkDependencyInfo depInfo{};

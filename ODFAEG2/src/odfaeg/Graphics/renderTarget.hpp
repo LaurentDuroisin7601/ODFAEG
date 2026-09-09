@@ -81,7 +81,7 @@ namespace odfaeg {
 				int meshletOffset;
 				int meshletCount;
 			};
-			struct alignas(16) SubMeshData {
+			struct /*alignas(16)*/ SubMeshData {
 				AABB globalBounds;
 				int vertexOffset;
 				int indexOffset;
@@ -115,7 +115,7 @@ namespace odfaeg {
 				int clusterCount;
 				//int pad;
 			};
-			struct alignas(16) Meshlet {
+			struct /*alignas(16)*/ Meshlet {
 				unsigned int id;
 				unsigned int vertexOffset;
 				unsigned int indexOffset;
@@ -145,7 +145,7 @@ namespace odfaeg {
 				math::Matrix4f shadowProjMatrix;
 				math::Matrix4f borderMatrices;
 			};
-			struct /*alignas(16)*/ MaterialData {				
+			struct MaterialData {				
 				   unsigned int diffuseTextureIndex;
 				   unsigned int specularTextureIndex;
 				   unsigned int normalTextureIndex;
@@ -194,7 +194,7 @@ namespace odfaeg {
 				alignas(16) math::Vec4f nbCellsPerRow[5];    
 				alignas(16) math::Vec4f gridSize[5];   
 				alignas(16) math::Vec4f gridPos[5];
-				unsigned int pads[2];
+				//unsigned int pads[2];
 			};
 			struct ViewProjMatPC {
 				math::Matrix4f projMatrix;
