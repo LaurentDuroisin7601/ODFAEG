@@ -25,8 +25,7 @@ struct MaterialData {
     uint materialId;
     uint nbBuffers;
     int reflectable;
-    int refractable; 
-    int pad;          
+    int refractable;
 };
 layout (std430, set = 0, binding = 10) buffer MaterialDataSSBO {
     MaterialData materialData[];
@@ -48,12 +47,12 @@ layout(location = 0) out vec4 outColor;
 void main() {
     float epsilon = 0.0000001;
     
-    if (materialID < 0 || materialID >= 7 || primitiveType != 3 || currentFrame < 0 || currentFrame >= MAX_FRAMES_IN_FLIGHT
+    /*if (materialID < 0 || materialID >= 7 || primitiveType != 3 || currentFrame < 0 || currentFrame >= MAX_FRAMES_IN_FLIGHT
     || fragColor.r < 1 - epsilon || fragColor.g < 1 - epsilon || fragColor.g < 1 - epsilon || fragColor.a < 1 - epsilon) {
         
         outColor = vec4(0, 0, 0, 0);
         return;
-    }
+    }*/
     /*if (fragColor.r != 1 || fragColor.g != 1 || fragColor.b != 1)
     debugPrintfEXT("Flag : %i %i %i %i %v4f", flag, primitiveType, materialID, currentFrame, fragColor);*/
     //if (materialID > 6)

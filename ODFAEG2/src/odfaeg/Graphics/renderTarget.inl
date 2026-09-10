@@ -1517,7 +1517,7 @@ namespace odfaeg {
 				//std::cout<<"offset in output index"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(11, outputMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"offset in model data"<<std::endl;
-				cullingBatchingSet.updateBufferInfos(12, taskCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				cullingBatchingSet.updateBufferInfos(12, drawCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"offset in output object data"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(13, outputTaskDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"uniform buffer"<<std::endl;
@@ -1530,7 +1530,7 @@ namespace odfaeg {
 				bool hasDiffuseTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
 				DescriptorSet& defaultRenderingSet = GPUContext::instance().getDescriptorSets(meshDefaultRenderingShader, (hasDiffuseTextures) ? 12 : 11, 1)[0];
 				defaultRenderingSet.updateBufferInfos(0, outputTaskDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				defaultRenderingSet.updateBufferInfos(1, taskCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);				
+				defaultRenderingSet.updateBufferInfos(1, drawCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);				
 				defaultRenderingSet.updateBufferInfos(2, outputModelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(3, outputClusters, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(4, true, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);

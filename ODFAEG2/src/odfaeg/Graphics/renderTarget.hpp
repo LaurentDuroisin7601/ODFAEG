@@ -145,7 +145,7 @@ namespace odfaeg {
 				math::Matrix4f shadowProjMatrix;
 				math::Matrix4f borderMatrices;
 			};
-			struct alignas(8) MaterialData {				
+			struct MaterialData {				
 				unsigned int diffuseTextureIndex;
 				unsigned int specularTextureIndex;
 				unsigned int normalTextureIndex;
@@ -162,8 +162,7 @@ namespace odfaeg {
 				unsigned int materialId;
 				unsigned int nbBuffers;
 				int reflectable;
-				int refractable;  
-				int pad;	   
+				int refractable;  					   
 			};	
 			struct DrawElementsIndirectCommand {
 				unsigned int index_count;

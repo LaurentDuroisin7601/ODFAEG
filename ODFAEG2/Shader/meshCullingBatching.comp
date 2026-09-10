@@ -77,8 +77,7 @@ struct MaterialData {
     uint materialId;
     uint nbBuffers;
     int reflectable;
-    int refractable; 
-    int pad;  
+    int refractable;  
 };
 struct MeshDrawCommand {
     uint groupXCount;
