@@ -8,7 +8,7 @@
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 // Déclaration du type de primitive + limites
-layout (triangles, max_vertices = 255, max_primitives = 85) out;
+layout (triangles, max_vertices = 256, max_primitives = 256) out;
 layout(location = 0) out vec4 fragColor[];
 layout(location = 1) out vec2 fragTexCoord[];
 layout(location = 2) out vec3 normal[];
@@ -199,8 +199,8 @@ void main() {
         uint maxPrims = 85u;
         uint vertexCount   = min(meshlet.nbVertices, maxVerts);
         uint primitiveCount = min(meshlet.nbIndexes / 3u, maxPrims);
-        /*if (primitiveCount > maxPrims)
-            debugPrintfEXT("vertex count : %i, primitive count : %i", vertexCount, primitiveCount);*/
+        /*if (primitiveCount > maxPrims)*/
+            //debugPrintfEXT("vertex count : %i, primitive count : %i", vertexCount, primitiveCount);
         if (pc.primitiveType == 3) {
             SetMeshOutputsEXT(vertexCount, primitiveCount);
             for (uint i = 0; i < vertexCount; i++) {
