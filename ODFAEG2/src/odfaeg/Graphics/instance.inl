@@ -46,7 +46,7 @@ namespace odfaeg {
                     };
 
                     VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
-                        /*VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,*/
+                        VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
                         VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT,
                         VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
                         VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT

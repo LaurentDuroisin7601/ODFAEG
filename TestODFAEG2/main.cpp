@@ -285,7 +285,7 @@ int main() {
 		window.setDepthStencil(true, false);
 		window.clear();
 		window.setTypesToRender("*", window.getCurrentFrame());
-		//window.applyCullingAndBatching();
+		window.applyCullingAndBatching();
 		window.drawMesh(Triangles);
 		/*window.setCamera(rtRenderTextureCamera);
 		

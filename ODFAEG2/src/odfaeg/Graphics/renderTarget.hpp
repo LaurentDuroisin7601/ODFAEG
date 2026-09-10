@@ -234,7 +234,7 @@ namespace odfaeg {
 			void resetVertexBufferDatas();
 			void createDescriptorAndPipelines();
 			void setTypesToRender(std::string expression, unsigned int currentFrame);
-			void applyCullingAndBatching();
+			void applyCullingAndBatching(bool useMeshShader=false);			
 			template <typename D>
 			void draw(D& drawable, RenderStates states=RenderStates::Default);
 			void draw(VertexBuffer& vb, RenderStates states=RenderStates::Default);
@@ -291,7 +291,7 @@ namespace odfaeg {
 				const VkPipelineDepthStencilStateCreateInfo& b);
 			void enableDepthStencil(bool enableDepth, bool enableStencil);
 			Texture& getDepthStencilTexture();
-			void applyComputeGraphicsBarrier();
+			void applyComputeGraphicsBarrier();			
 			void applyComputeGraphicsBarrier(VertexBuffer& vertexBuffer);
 			int getId();
 			static unsigned int getNbRenderTarget();			
@@ -367,6 +367,7 @@ namespace odfaeg {
 			std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> maxVertexBufferDataSizes = {};
 			CommandPool commandPool, computeCommandPool;
 			Shader defaultRenderingShader, cullingBatchingShader, resetBuffersShader, vertexBufferShader;
+			Shader meshDefaultRenderingShader, meshCullingBatchingShader;
 			bool depthTestEnabled, stencilTestEnabled;
 			Device& device;
 			std::vector<VkPipelineDepthStencilStateCreateInfo> depthStencilInfos;

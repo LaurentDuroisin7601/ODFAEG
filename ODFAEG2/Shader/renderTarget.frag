@@ -22,7 +22,7 @@ struct MaterialData {
     uint nbIndexes;
     int instanceGroupId;
     uint vertsInstanceSet;
-    uint taskOffset;
+    uint materialId;
     uint nbBuffers;
     int reflectable;
     int refractable;      

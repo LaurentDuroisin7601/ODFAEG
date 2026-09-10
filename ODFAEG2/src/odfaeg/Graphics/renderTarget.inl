@@ -1,7 +1,9 @@
 namespace odfaeg {
 	namespace graphic {
 
-		RenderTarget::RenderTarget(Device& device, bool enableDepthTest, bool enableStencilTest) : enableDepthTest(enableDepthTest), enableStencilTest(enableStencilTest), device(device), commandPool(device), computeCommandPool(device), defaultRenderingShader(device), cullingBatchingShader(device), resetBuffersShader(device), vertexBufferShader(device), depthStencilTexture(device),
+		RenderTarget::RenderTarget(Device& device, bool enableDepthTest, bool enableStencilTest) : enableDepthTest(enableDepthTest), enableStencilTest(enableStencilTest), device(device), 
+		commandPool(device), computeCommandPool(device),
+		defaultRenderingShader(device), cullingBatchingShader(device), resetBuffersShader(device), meshDefaultRenderingShader(device), meshCullingBatchingShader(device), vertexBufferShader(device), depthStencilTexture(device),
 		gameObjects(getGameObjects()), objects(GPUContext::instance().getSharedBuffers(OBJECT_BUFFER)), staggingObjects(GPUContext::instance().getSharedBuffers(OBJECT_STAGGING_BUFFER)),
 		subMeshes(GPUContext::instance().getSharedBuffers(SUBMESHES_BUFFER)), staggingSubMeshes(GPUContext::instance().getSharedBuffers(SUBMESHES_STAGGING_BUFFER)),
 		lodLevel(GPUContext::instance().getSharedBuffers(LOD_BUFFER)), staggingLODLevel(GPUContext::instance().getSharedBuffers(LOD_STAGGING_BUFFER)),
@@ -82,26 +84,22 @@ namespace odfaeg {
 				throw std::runtime_error("Failed to compile reset buffers shader!");
 			}
 			if (device.areMeshShadersSupported()) {
-				if (!cullingBatchingShader.loadFromFile(shaderDir+"/meshCullingBatching.comp")) {
+				if (!meshCullingBatchingShader.loadFromFile(shaderDir+"/meshCullingBatching.comp")) {
 					throw std::runtime_error("Failed to compile culling batching shader!");
 				}
-				if (!defaultRenderingShader.loadMeshFromFileSpv(shaderDir+"/meshShader.mesh.spv", shaderDir+"/meshRenderTarget.frag.spv", shaderDir+"/taskShader.task.spv")) {
+				if (!meshDefaultRenderingShader.loadMeshFromFileSpv(shaderDir+"/meshShader.mesh.spv", shaderDir+"/meshRenderTarget.frag.spv", shaderDir+"/taskShader.task.spv")) {
 					throw std::runtime_error("Failed to compile render target default shader!");
-				}
-				if (!vertexBufferShader.loadFromFile(shaderDir+"/vertexBuffer.vert", shaderDir+"/vertexBuffer.frag")) {
-					throw std::runtime_error("Failed to compile vertex buffer shader!");
-				}
-			} else {
-				if (!cullingBatchingShader.loadFromFile(shaderDir+"/cullingBatching.comp")) {
-					throw std::runtime_error("Failed to compile culling batching shader!");
-				}
-				if (!defaultRenderingShader.loadFromFile(shaderDir+"/renderTarget.vert", shaderDir+"/renderTarget.frag")) {
-					throw std::runtime_error("Failed to compile render target default shader!");
-				}
-				if (!vertexBufferShader.loadFromFile(shaderDir+"/vertexBuffer.vert", shaderDir+"/vertexBuffer.frag")) {
-					throw std::runtime_error("Failed to compile vertex buffer shader!");
-				}
+				}				
+			} 
+			if (!cullingBatchingShader.loadFromFile(shaderDir+"/cullingBatching.comp")) {
+				throw std::runtime_error("Failed to compile culling batching shader!");
 			}
+			if (!defaultRenderingShader.loadFromFile(shaderDir+"/renderTarget.vert", shaderDir+"/renderTarget.frag")) {
+				throw std::runtime_error("Failed to compile render target default shader!");
+			}
+			if (!vertexBufferShader.loadFromFile(shaderDir+"/vertexBuffer.vert", shaderDir+"/vertexBuffer.frag")) {
+				throw std::runtime_error("Failed to compile vertex buffer shader!");
+			}			
 			Device::QueueFamilyIndices queueFamilyIndices = device.findQueueFamilies(device.getPhysicalDevice(), getSurface());
 			commandPool.create(queueFamilyIndices.graphicsFamily.value());
 			computeCommandPool.create(queueFamilyIndices.graphicsFamily.value());
@@ -134,7 +132,9 @@ namespace odfaeg {
 				}
 			}
 			if (staggingGridCells.empty()) {
-				staggingGridCells.emplace_back(device);
+				for (unsigned int i = 0; i < 1; i++) {
+					staggingGridCells.emplace_back(device);
+				}
 			}
 			if (staggingClusters.empty()) {
 				for (unsigned int i = 0; i < 1; i++) {
@@ -964,6 +964,8 @@ namespace odfaeg {
 						currentSubmeshesOffset++;					
 					}									
 				}
+				/*std::cout<<"size : "<<vertices[entity::Triangles].getIndexCount()<<std::endl;
+				system("PAUSE");*/
 				cullingInfo.gridCellCount = cellDatas.size();
 				/*std::cout<<"cell : "<<cellDatas.size()<<std::endl;
 				system("PAUSE");*/
@@ -999,6 +1001,7 @@ namespace odfaeg {
 				totalMeshlets = meshletDatas.size();
 				/*std::cout<<"total sub meshes"<<totalSubMeshes<<std::endl;
 				system("PAUSE");*/
+				vkDeviceWaitIdle(device.getDevice());
 				computeCommandPool.beginRecordCommandBuffer(getCurrentFrame());
 				for (unsigned int i = 0; i < 1; i++) {
 					for (unsigned int j = 0; j < NB_PRIMITIVE_TYPES; j++) {
@@ -1131,9 +1134,9 @@ namespace odfaeg {
 					for (unsigned int k = 0; k < NB_PRIMITIVE_TYPES; k++) {
 						//std::cout<<"update : "<<j<<","<<k<<std::endl;						
 						outputObjectDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-						outputModelDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+						outputModelDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset * Material::getAllMaterials().size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 						//std::cout<<"output model data : "<<outputModelDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
-						outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(MaterialData) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+						outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(MaterialData) * currentSubmeshesOffset * Material::getAllMaterials().size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 						outputMeshes[j * NB_PRIMITIVE_TYPES + k].create(sizeof(entity::SubMesh) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 						outputClusters[j * NB_PRIMITIVE_TYPES + k].create(sizeof(Cluster) * currentClustersOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);						
 						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
@@ -1170,21 +1173,15 @@ namespace odfaeg {
 				renderingCreateInfo.colorAttachmentCount = (isDepthOnly()) ? 0 : 1;
 				renderingCreateInfo.pColorAttachmentFormats = (isDepthOnly()) ? nullptr : &getImageFormat();
 				renderingCreateInfo.depthAttachmentFormat = getDepthStencilTexture().getFormat();
-				renderingCreateInfos.emplace_back(renderingCreateInfo);		
-				DescriptorSetLayout& resetBuffersLayout = GPUContext::instance().getDescriptorSetLayout(resetBuffersShader, 8, false);
-				for (unsigned int i = 0; i < 8; i++) {
-					resetBuffersLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_COMPUTE_BIT);
-				}			
-				resetBuffersLayout.update();
+				renderingCreateInfos.emplace_back(renderingCreateInfo);	
 				std::vector<VkPushConstantRange> pushConstants;
 				VkPushConstantRange pushConstant;
 				pushConstant.offset = 0;
 				pushConstant.size = sizeof(CullingBatchingPC);
 				pushConstant.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 				pushConstants.push_back(pushConstant);
-				//std::cout<<"reset compute pipeline"<<std::endl;
-				GPUContext::instance().getComputePipeline(resetBuffersShader).createComputePipeline(resetBuffersShader, GPUContext::instance().getDescriptorSetLayout(resetBuffersShader), pushConstants);
-				DescriptorSetLayout& cullingBatchingLayout = GPUContext::instance().getDescriptorSetLayout(cullingBatchingShader, 18, false);				
+				//std::cout<<"reset compute pipeline"<<std::endl;				
+				DescriptorSetLayout& cullingBatchingLayout = GPUContext::instance().getDescriptorSetLayout(meshCullingBatchingShader, 18, false);				
 				for (unsigned int i = 0; i < 7; i++) {
 					cullingBatchingLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT);
 				}
@@ -1198,7 +1195,7 @@ namespace odfaeg {
 				cullingBatchingLayout.updateLayout(17, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_COMPUTE_BIT);
 				cullingBatchingLayout.update();
 				//std::cout<<"create culling compute pipeline"<<std::endl;
-				GPUContext::instance().getComputePipeline(cullingBatchingShader).createComputePipeline(cullingBatchingShader, GPUContext::instance().getDescriptorSetLayout(cullingBatchingShader), pushConstants);
+				GPUContext::instance().getComputePipeline(meshCullingBatchingShader).createComputePipeline(meshCullingBatchingShader, GPUContext::instance().getDescriptorSetLayout(meshCullingBatchingShader), pushConstants);
 				BlendMode blendMode;				
 				pushConstants.clear();
 				pushConstant.offset = 0;
@@ -1210,7 +1207,7 @@ namespace odfaeg {
 				frag_push_constant.size = sizeof(IndexesPC);
 				frag_push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 				pushConstants.push_back(frag_push_constant);
-				DescriptorSetLayout& defaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader, 12, true);				
+				DescriptorSetLayout& defaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(meshDefaultRenderingShader, 12, true);				
 				for (unsigned int i = 0; i < 2; i++) {
 					defaultRenderingLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_TASK_BIT_EXT | VK_SHADER_STAGE_MESH_BIT_EXT);
 				}				
@@ -1228,27 +1225,27 @@ namespace odfaeg {
 				defaultRenderingLayout.updateLayout(11, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
 					VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
 				defaultRenderingLayout.update();
-				DescriptorSetLayout& specularDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader, 1, true, 1);
+				DescriptorSetLayout& specularDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(meshDefaultRenderingShader, 1, true, 1);
 				specularDefaultRenderingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
 					VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
 				specularDefaultRenderingLayout.update();
-				DescriptorSetLayout& normalDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader, 1, true, 2);
+				DescriptorSetLayout& normalDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(meshDefaultRenderingShader, 1, true, 2);
 				normalDefaultRenderingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
 					VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
 				normalDefaultRenderingLayout.update();
-				DescriptorSetLayout& metalnessDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader, 1, true, 3);
+				DescriptorSetLayout& metalnessDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(meshDefaultRenderingShader, 1, true, 3);
 				metalnessDefaultRenderingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
 					VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
 				metalnessDefaultRenderingLayout.update();
-				DescriptorSetLayout& roughnessDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader, 1, true, 4);
+				DescriptorSetLayout& roughnessDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(meshDefaultRenderingShader, 1, true, 4);
 				roughnessDefaultRenderingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
 					VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
 				roughnessDefaultRenderingLayout.update();
-				DescriptorSetLayout& aoDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader, 1, true, 5);
+				DescriptorSetLayout& aoDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(meshDefaultRenderingShader, 1, true, 5);
 				aoDefaultRenderingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
 					VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
 				aoDefaultRenderingLayout.update();
-				DescriptorSetLayout& emissiveDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader, 1, true, 6);
+				DescriptorSetLayout& emissiveDefaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(meshDefaultRenderingShader, 1, true, 6);
 				emissiveDefaultRenderingLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
 					VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
 				emissiveDefaultRenderingLayout.update();
@@ -1257,34 +1254,13 @@ namespace odfaeg {
 						/*blendMode = BlendAlpha;
 						blendMode.updateIds();
 						std::cout<<"pipeline  : "<<Triangles<<","<<defaultRenderingShader.getId()<<","<<blendMode.id<<","<<i<<std::endl;*/
-						GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, defaultRenderingShader, blendMode,i).createGraphicPipeline( defaultRenderingShader, GPUContext::instance().getDescriptorSetLayout(defaultRenderingShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, device.getMsaaSamples(), VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
+						GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, meshDefaultRenderingShader, blendMode,i).createGraphicPipeline(meshDefaultRenderingShader, GPUContext::instance().getDescriptorSetLayout(meshDefaultRenderingShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, device.getMsaaSamples(), VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
 					}
 				}
 				//std::cout<<"descriptor and pipelines created default render target"<<std::endl;
-				DescriptorSetLayout& vertexBufferLayout = GPUContext::instance().getDescriptorSetLayout(vertexBufferShader, 1, true);				
-				vertexBufferLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES/**MAX_FRAMES_IN_FLIGHT*/, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
-					VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
-				pushConstants.clear();
-				pushConstant.offset = 0;
-				pushConstant.size = sizeof(VertexBufferPC);
-				pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-				pushConstants.push_back(pushConstant);
-				vertexBufferLayout.update();
-				if (!isDepthOnly()) {
-					for (unsigned int i = 0; i < depthStencilInfos.size(); i++) {
-						for (unsigned int p = 0; p < NB_PRIMITIVE_TYPES; p++) {
-							GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(p), vertexBufferShader, blendMode,i).createGraphicPipeline( vertexBufferShader, static_cast<entity::PrimitiveType>(p),GPUContext::instance().getDescriptorSetLayout(vertexBufferShader), renderingCreateInfos.back(), depthStencilInfos[i], blendMode, device.getMsaaSamples(), VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
-						}
-					}
-				}
-				//std::cout<<"descriptor and pipelines created vertex buffer"<<std::endl;
-
-				DescriptorPool& resetBuffersPool = GPUContext::instance().getDescriptorPool(resetBuffersShader, 8);
-				for (unsigned int i = 0; i < 8; i++) {
-					resetBuffersPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT);
-				}
-				resetBuffersPool.update();
-				DescriptorPool& cullingBatchingPool = GPUContext::instance().getDescriptorPool(cullingBatchingShader, 18);				
+				
+				//std::cout<<"descriptor and pipelines created vertex buffer"<<std::endl;				
+				DescriptorPool& cullingBatchingPool = GPUContext::instance().getDescriptorPool(meshCullingBatchingShader, 18);				
 				for (unsigned int i = 0; i < 7; i++) {
 					cullingBatchingPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
 				}
@@ -1297,7 +1273,7 @@ namespace odfaeg {
 				}				
 				cullingBatchingPool.updatePoolSize(17, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT);
 				cullingBatchingPool.update();
-				DescriptorPool& defaultRenderingPool = GPUContext::instance().getDescriptorPool(defaultRenderingShader, 12);
+				DescriptorPool& defaultRenderingPool = GPUContext::instance().getDescriptorPool(meshDefaultRenderingShader, 12);
 				for (unsigned int i = 0; i < 4; i++) {
 					defaultRenderingPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT);
 				}
@@ -1311,43 +1287,38 @@ namespace odfaeg {
 				defaultRenderingPool.updatePoolSize(10, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT);
 				defaultRenderingPool.updatePoolSize(11, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
 				defaultRenderingPool.update();
-				DescriptorPool& specularDefaultRenderingPool = GPUContext::instance().getDescriptorPool(defaultRenderingShader, 1, 1);
+				DescriptorPool& specularDefaultRenderingPool = GPUContext::instance().getDescriptorPool(meshDefaultRenderingShader, 1, 1);
 				specularDefaultRenderingPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
 				specularDefaultRenderingPool.update();
-				DescriptorPool& normalDefaultRenderingPool = GPUContext::instance().getDescriptorPool(defaultRenderingShader, 1, 2);
+				DescriptorPool& normalDefaultRenderingPool = GPUContext::instance().getDescriptorPool(meshDefaultRenderingShader, 1, 2);
 				normalDefaultRenderingPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
 				normalDefaultRenderingPool.update();
-				DescriptorPool& metalnessDefaultRenderingPool = GPUContext::instance().getDescriptorPool(defaultRenderingShader, 1, 3);
+				DescriptorPool& metalnessDefaultRenderingPool = GPUContext::instance().getDescriptorPool(meshDefaultRenderingShader, 1, 3);
 				metalnessDefaultRenderingPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
 				metalnessDefaultRenderingPool.update();
-				DescriptorPool& roughnessDefaultRenderingPool = GPUContext::instance().getDescriptorPool(defaultRenderingShader, 1, 4);
+				DescriptorPool& roughnessDefaultRenderingPool = GPUContext::instance().getDescriptorPool(meshDefaultRenderingShader, 1, 4);
 				roughnessDefaultRenderingPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
 				roughnessDefaultRenderingPool.update();
-				DescriptorPool& aoDefaultRenderingPool = GPUContext::instance().getDescriptorPool(defaultRenderingShader, 1, 5);
+				DescriptorPool& aoDefaultRenderingPool = GPUContext::instance().getDescriptorPool(meshDefaultRenderingShader, 1, 5);
 				aoDefaultRenderingPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
 				aoDefaultRenderingPool.update();
-				DescriptorPool& emissiveDefaultRenderingPool = GPUContext::instance().getDescriptorPool(defaultRenderingShader, 1, 6);
+				DescriptorPool& emissiveDefaultRenderingPool = GPUContext::instance().getDescriptorPool(meshDefaultRenderingShader, 1, 6);
 				emissiveDefaultRenderingPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
 				emissiveDefaultRenderingPool.update();
-				DescriptorPool& vertexBufferPool = GPUContext::instance().getDescriptorPool(vertexBufferShader, 1);				
-				vertexBufferPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
-				vertexBufferPool.update();
-				//std::cout<<"descriptor pool : "<<resetBuffersPool.getHandle()<<std::endl;
-				DescriptorSet::allocate(resetBuffersPool, resetBuffersLayout, GPUContext::instance().getDescriptorSets(resetBuffersShader, 8, 1));
-				//std::cout<<"descriptor pool : "<<cullingBatchingPool.getHandle()<<std::endl;
-				DescriptorSet::allocate(cullingBatchingPool, cullingBatchingLayout, GPUContext::instance().getDescriptorSets(cullingBatchingShader, 18, 1));
+				
+				DescriptorSet::allocate(cullingBatchingPool, cullingBatchingLayout, GPUContext::instance().getDescriptorSets(meshCullingBatchingShader, 18, 1));
 				//std::cout<<"descriptor pool : "<<defaultRenderingPool.getHandle()<<std::endl;
-				DescriptorSet::allocate(defaultRenderingPool, defaultRenderingLayout, GPUContext::instance().getDescriptorSets(defaultRenderingShader, 12, 1), MAX_TEXTURES);
-				DescriptorSet::allocate(specularDefaultRenderingPool, specularDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 1), MAX_TEXTURES);
-				DescriptorSet::allocate(normalDefaultRenderingPool, normalDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 2), MAX_TEXTURES);
-				DescriptorSet::allocate(metalnessDefaultRenderingPool, metalnessDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 3), MAX_TEXTURES);
-				DescriptorSet::allocate(roughnessDefaultRenderingPool, roughnessDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 4), MAX_TEXTURES);
-				DescriptorSet::allocate(aoDefaultRenderingPool, aoDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 5), MAX_TEXTURES);
-				DescriptorSet::allocate(emissiveDefaultRenderingPool, emissiveDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 6), MAX_TEXTURES);
-				//std::cout<<"descriptor pool : "<<vertexBufferPool.getHandle()<<std::endl;
-				DescriptorSet::allocate(vertexBufferPool, vertexBufferLayout, GPUContext::instance().getDescriptorSets(vertexBufferShader, 1,1), MAX_TEXTURES);
+				DescriptorSet::allocate(defaultRenderingPool, defaultRenderingLayout, GPUContext::instance().getDescriptorSets(meshDefaultRenderingShader, 12, 1), MAX_TEXTURES);
+				DescriptorSet::allocate(specularDefaultRenderingPool, specularDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(meshDefaultRenderingShader, 1, 1, 1), MAX_TEXTURES);
+				DescriptorSet::allocate(normalDefaultRenderingPool, normalDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(meshDefaultRenderingShader, 1, 1, 2), MAX_TEXTURES);
+				DescriptorSet::allocate(metalnessDefaultRenderingPool, metalnessDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(meshDefaultRenderingShader, 1, 1, 3), MAX_TEXTURES);
+				DescriptorSet::allocate(roughnessDefaultRenderingPool, roughnessDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(meshDefaultRenderingShader, 1, 1, 4), MAX_TEXTURES);
+				DescriptorSet::allocate(aoDefaultRenderingPool, aoDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(meshDefaultRenderingShader, 1, 1, 5), MAX_TEXTURES);
+				DescriptorSet::allocate(emissiveDefaultRenderingPool, emissiveDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(meshDefaultRenderingShader, 1, 1, 6), MAX_TEXTURES);
+				//std::cout<<"descriptor pool : "<<vertexBufferPool.getHandle()<<std::endl;				
 				//std::cout<<"descriptor set vertex buffer allocated"<<std::endl;
-			} else {
+			}
+			{
 				std::vector<VkPipelineRenderingCreateInfo> renderingCreateInfos = {};		
 				VkPipelineRenderingCreateInfo renderingCreateInfo = {};
 				renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
@@ -1514,26 +1485,9 @@ namespace odfaeg {
 		}
 		void RenderTarget::updateDescriporSets() {
 			
-			if (device.areMeshShadersSupported()) {
-				DescriptorSet& resetBuffersSet = GPUContext::instance().getDescriptorSets(resetBuffersShader, 8, 1)[0];
-				//std::cout<<"update offset in output model data"<<std::endl;
-				resetBuffersSet.updateBufferInfos(0, offsetInOutputModelData, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				//std::cout<<"update offset in output object data"<<std::endl;
-				resetBuffersSet.updateBufferInfos(1, offsetInOutputMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				//std::cout<<"update offset in output material data"<<std::endl;
-				resetBuffersSet.updateBufferInfos(2, offsetInOutputMaterialData, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				//std::cout<<"update offset in output indirect draw commands"<<std::endl;
-				resetBuffersSet.updateBufferInfos(3, offsetInOutputElementsIndirectCommands, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				//std::cout<<"update input material datax"<<std::endl;
-				resetBuffersSet.updateBufferInfos(4, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				//std::cout<<"update first index vertex"<<std::endl;
-				resetBuffersSet.updateBufferInfos(5, taskCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				resetBuffersSet.updateBufferInfos(6, instanceBase, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				resetBuffersSet.updateBufferInfos(7, offsetBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);				
-				//std::cout<<"update reset buffer set"<<std::endl;
-				resetBuffersSet.updateDescriptorSet();		
+			if (device.areMeshShadersSupported()) {				
 				//std::cout<<"update reset buffer set"<<std::endl;				
-				DescriptorSet& cullingBatchingSet = GPUContext::instance().getDescriptorSets(cullingBatchingShader, 18, 1)[0];
+				DescriptorSet& cullingBatchingSet = GPUContext::instance().getDescriptorSets(meshCullingBatchingShader, 18, 1)[0];
 				//std::cout<<"update object types"<<std::endl;
 				cullingBatchingSet.updateBufferInfos(0, objects, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				//std::cout<<"update objects"<<std::endl;
@@ -1573,12 +1527,14 @@ namespace odfaeg {
 				//std::cout<<"update culling ds"<<std::endl;
 				cullingBatchingSet.updateDescriptorSet();
 				bool hasDiffuseTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
-				DescriptorSet& defaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, (hasDiffuseTextures) ? 12 : 11, 1)[0];
+				DescriptorSet& defaultRenderingSet = GPUContext::instance().getDescriptorSets(meshDefaultRenderingShader, (hasDiffuseTextures) ? 12 : 11, 1)[0];
 				defaultRenderingSet.updateBufferInfos(0, outputTaskDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(1, taskCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);				
 				defaultRenderingSet.updateBufferInfos(2, outputModelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(3, outputClusters, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(4, true, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				/*std::cout<<"nb buffers : "<<vertices[entity::Triangles].getNbBuffers()<<std::endl;
+				system("PAUSE");*/
 				defaultRenderingSet.updateBufferInfos(5, false, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(6, lodLevel, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(7, subMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -1593,52 +1549,49 @@ namespace odfaeg {
 				defaultRenderingSet.updateDescriptorSet();
 				bool hasSpecularTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR).size() != 0;
 				if (hasSpecularTextures) {
-					DescriptorSet& specularDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 1)[0];
+					DescriptorSet& specularDefaultRenderingSet = GPUContext::instance().getDescriptorSets(meshDefaultRenderingShader, 1, 1, 1)[0];
 					specularDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					specularDefaultRenderingSet.updateDescriptorSet();
 				}
 				bool hasNormalTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::NORMAL).size() != 0;
 				if (hasNormalTextures) {
-					DescriptorSet& normalDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader,  1, 1, 2)[0];
+					DescriptorSet& normalDefaultRenderingSet = GPUContext::instance().getDescriptorSets(meshDefaultRenderingShader,  1, 1, 2)[0];
 					normalDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::NORMAL), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					normalDefaultRenderingSet.updateDescriptorSet();
 				}
 
 				bool hasMetalnessTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::METALNESS).size() != 0;
 				if (hasMetalnessTextures) {
-					DescriptorSet& metalnessDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader,  1, 1, 3)[0];
+					DescriptorSet& metalnessDefaultRenderingSet = GPUContext::instance().getDescriptorSets(meshDefaultRenderingShader,  1, 1, 3)[0];
 					metalnessDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::METALNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					metalnessDefaultRenderingSet.updateDescriptorSet();
 				}
 				bool hasRoughnessTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::ROUGHNESS).size() != 0;
 				if (hasRoughnessTextures) {
-					DescriptorSet& roughnessDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader,  1, 1, 4)[0];
+					DescriptorSet& roughnessDefaultRenderingSet = GPUContext::instance().getDescriptorSets(meshDefaultRenderingShader,  1, 1, 4)[0];
 					roughnessDefaultRenderingSet .updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::ROUGHNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					roughnessDefaultRenderingSet .updateDescriptorSet();
 				}
 				bool hasAOTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::AO).size() != 0;
 				if (hasAOTextures) {
-					DescriptorSet& aoDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 5)[0];
+					DescriptorSet& aoDefaultRenderingSet = GPUContext::instance().getDescriptorSets(meshDefaultRenderingShader, 1, 1, 5)[0];
 					aoDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::AO), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					aoDefaultRenderingSet.updateDescriptorSet();
 				}
 				bool hasEmissiveTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::EMISSIVE).size() != 0;
 				if (hasEmissiveTextures) {
-					DescriptorSet& emissiveDefaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, 1, 1, 6)[0];
+					DescriptorSet& emissiveDefaultRenderingSet = GPUContext::instance().getDescriptorSets(meshDefaultRenderingShader, 1, 1, 6)[0];
 					emissiveDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::EMISSIVE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 					emissiveDefaultRenderingSet.updateDescriptorSet();
 				}
 				//std::cout<<"update descriptor sets : "<<vertexBufferDatas[0].getRange()<<","<<vertexBufferDatas[1].getRange()<<std::endl;
 				
 				
-				if (hasDiffuseTextures) {
-					DescriptorSet& vertexBufferSet = GPUContext::instance().getDescriptorSets(vertexBufferShader, 1, 1)[0];
-					vertexBufferSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(0), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-					vertexBufferSet.updateDescriptorSet();
-				}				
+						
 				/*std::cout<<"update descriptor sets"<<std::endl;
 				system("PAUSE");*/
-			} else {
+			} 
+			{
 				DescriptorSet& resetBuffersSet = GPUContext::instance().getDescriptorSets(resetBuffersShader, 8, 1)[0];
 				//std::cout<<"update offset in output model data"<<std::endl;
 				resetBuffersSet.updateBufferInfos(0, offsetInOutputModelData, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -1811,7 +1764,7 @@ namespace odfaeg {
 			//std::cout<<"end record command buffer : "<<getCurrentFrame()<<std::endl;
 			commandPool.endRecordCommandBuffer(getCurrentFrame());
 		}		
-		void RenderTarget::applyCullingAndBatching() {
+		void RenderTarget::applyCullingAndBatching(bool useMeshShader) {
 			//computeCommandPool.beginRecordCommandBuffer(getCurrentFrame());
 			//std::cout<<"dispatch : nbObjects  : "<<gameObjects.size()<<"nb material : "<<Material::getNbMaterials()<<std::endl;
 			if (gameObjects.size() > 0) {
@@ -1872,26 +1825,49 @@ namespace odfaeg {
 				cullingBatchingPc.currentFrame = getCurrentFrame();
 				vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getComputePipeline(resetBuffersShader).getLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(CullingBatchingPC), &cullingBatchingPc);
 				vkCmdDispatch(commandPool.getHandle(getCurrentFrame()), Material::getNbMaterials(), NB_PRIMITIVE_TYPES, 1);
-				vkCmdBindPipeline(commandPool.getHandle(getCurrentFrame()), VK_PIPELINE_BIND_POINT_COMPUTE, GPUContext::instance().getComputePipeline(cullingBatchingShader).getHandle());
-				sets.clear();
-				for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(cullingBatchingShader).size(); i++) {
-					sets.push_back(GPUContext::instance().getDescriptorSets(cullingBatchingShader)[i][0].getHandle());
+				if (useMeshShader) {
+					vkCmdBindPipeline(commandPool.getHandle(getCurrentFrame()), VK_PIPELINE_BIND_POINT_COMPUTE, GPUContext::instance().getComputePipeline(meshCullingBatchingShader).getHandle());
+					sets.clear();
+					for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(meshCullingBatchingShader).size(); i++) {
+						sets.push_back(GPUContext::instance().getDescriptorSets(meshCullingBatchingShader)[i][0].getHandle());
+					}
+					vkCmdBindDescriptorSets(commandPool.getHandle(getCurrentFrame()), VK_PIPELINE_BIND_POINT_COMPUTE, GPUContext::instance().getComputePipeline(meshCullingBatchingShader).getLayout(), 0, sets.size(), sets.data(), 0, 0);
+					vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getComputePipeline(meshCullingBatchingShader).getLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(CullingBatchingPC), &cullingBatchingPc);
+					VkMemoryBarrier mem{};
+					mem.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+					mem.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+					mem.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+					vkCmdPipelineBarrier(
+						commandPool.getHandle(getCurrentFrame()),
+						VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+						VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+						0,
+						1, &mem,
+						0, nullptr,
+						0, nullptr
+					);
+				} else {
+					vkCmdBindPipeline(commandPool.getHandle(getCurrentFrame()), VK_PIPELINE_BIND_POINT_COMPUTE, GPUContext::instance().getComputePipeline(cullingBatchingShader).getHandle());
+					sets.clear();
+					for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(cullingBatchingShader).size(); i++) {
+						sets.push_back(GPUContext::instance().getDescriptorSets(cullingBatchingShader)[i][0].getHandle());
+					}
+					vkCmdBindDescriptorSets(commandPool.getHandle(getCurrentFrame()), VK_PIPELINE_BIND_POINT_COMPUTE, GPUContext::instance().getComputePipeline(cullingBatchingShader).getLayout(), 0, sets.size(), sets.data(), 0, 0);
+					vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getComputePipeline(cullingBatchingShader).getLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(CullingBatchingPC), &cullingBatchingPc);
+					VkMemoryBarrier mem{};
+					mem.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+					mem.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+					mem.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+					vkCmdPipelineBarrier(
+						commandPool.getHandle(getCurrentFrame()),
+						VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+						VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+						0,
+						1, &mem,
+						0, nullptr,
+						0, nullptr
+					);
 				}
-				vkCmdBindDescriptorSets(commandPool.getHandle(getCurrentFrame()), VK_PIPELINE_BIND_POINT_COMPUTE, GPUContext::instance().getComputePipeline(cullingBatchingShader).getLayout(), 0, sets.size(), sets.data(), 0, 0);
-				vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getComputePipeline(cullingBatchingShader).getLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(CullingBatchingPC), &cullingBatchingPc);
-				VkMemoryBarrier mem{};
-				mem.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-				mem.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-				mem.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-				vkCmdPipelineBarrier(
-					commandPool.getHandle(getCurrentFrame()),
-					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-					0,
-					1, &mem,
-					0, nullptr,
-					0, nullptr
-				);
 				//std::cout<<"dispatch : nbObjects  : "<<gameObjects.size()<<"nb material : "<<Material::getNbMaterials()<<std::endl;
 				//std::cout<<"nb submeshes : "<<currentSubmeshesOffset<<std::endl;
 				//std::cout<<"dispatch : nbObjects  : "<<gameObjects.size()<<"nb material : "<<Material::getNbMaterials()<<std::endl;
@@ -2216,11 +2192,11 @@ namespace odfaeg {
 		}
 		void RenderTarget::drawMesh(entity::PrimitiveType primitiveType, RenderStates states) {
 			if (needToUpdateCullBatchIndCmds) {
-				applyCullingAndBatching();
+				applyCullingAndBatching(true);
 				//std::cout<<"draw"<<std::endl;
 				needToUpdateCullBatchIndCmds = false;
 			}
-			Shader* shader = (states.shader == nullptr) ? &defaultRenderingShader : states.shader;
+			Shader* shader = (states.shader == nullptr) ? &meshDefaultRenderingShader : states.shader;
 			viewProjInfos.primitiveType = primitiveType;
 			
 			/*std::cout<<"primitive type : "<<viewProjInfos.primitiveType<<std::endl;
@@ -2228,7 +2204,7 @@ namespace odfaeg {
 			viewProjInfos.currentFrame = getCurrentFrame();
 			indexesPC.currentImageIndex = getImageIndex();
 			states.blendMode.updateIds();
-			VkMemoryBarrier2 barrier{};
+			/*VkMemoryBarrier2 barrier{};
 			barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2;
 			barrier.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
 			barrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
@@ -2239,7 +2215,7 @@ namespace odfaeg {
 			depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
 			depInfo.memoryBarrierCount = 1;
 			depInfo.pMemoryBarriers = &barrier;
-			/*std::vector<VkImageMemoryBarrier2> imgs{};
+			std::vector<VkImageMemoryBarrier2> imgs{};
 			for (unsigned int i = 0; i < GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size(); i++) {
 			
 				VkImageMemoryBarrier2 img{};
@@ -2260,10 +2236,27 @@ namespace odfaeg {
 				imgs.push_back(img);
 			}
 			depInfo.imageMemoryBarrierCount = imgs.size();
-			depInfo.pImageMemoryBarriers    = imgs.data();*/
+			depInfo.pImageMemoryBarriers    = imgs.data();
 			
 
-			vkCmdPipelineBarrier2(commandPool.getHandle(getCurrentFrame()), &depInfo);
+			vkCmdPipelineBarrier2(commandPool.getHandle(getCurrentFrame()), &depInfo);*/
+			VkMemoryBarrier mem{};
+			mem.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+			mem.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+			mem.dstAccessMask = VK_ACCESS_SHADER_READ_BIT |  VK_ACCESS_SHADER_WRITE_BIT;
+			/*Device::QueueFamilyIndices indexes = device.findQueueFamilies(device.getPhysicalDevice());// vertex buffer
+			mem.srcQueueFamilyIndex = indexes.computeFamily.value();
+			mem.dstQueueFamilyIndex = indexes.graphicsFamily.value();*/
+			vkCmdPipelineBarrier(
+				commandPool.getHandle(getCurrentFrame()),
+				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+				VK_PIPELINE_STAGE_TASK_SHADER_BIT_EXT | VK_PIPELINE_STAGE_MESH_SHADER_BIT_EXT |
+    		    VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				0,
+				1, &mem,
+				0, nullptr,
+				0, nullptr
+			);			
 			beginRendering();
 			DepthStencilType depthStencilInfoId;
 			if (!useDepthTest() && !useStencilTest()) {

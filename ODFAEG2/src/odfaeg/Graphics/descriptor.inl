@@ -238,6 +238,7 @@ namespace odfaeg {
 				for (unsigned int j = 0; j < buffers[i].getNbBuffers(); j++) {
 					//std::cout<<"i :"<<i<<std::endl;
 					if (vertices) {
+						
 						bufferInfos[binding][i * buffers[i].getNbBuffers() + j].buffer = buffers[i].getVertexBuffer(j).getHandle();
 						bufferInfos[binding][i * buffers[i].getNbBuffers() + j].offset = buffers[i].getVertexBuffer(j).getOffset();
 						bufferInfos[binding][i * buffers[i].getNbBuffers() + j].range = buffers[i].getVertexBuffer(j).getRange();

@@ -8,13 +8,14 @@
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 // Déclaration du type de primitive + limites
-layout (triangles, max_vertices = 256, max_primitives = 256) out;
+layout (triangles, max_vertices = 255, max_primitives = 85) out;
 layout(location = 0) out vec4 fragColor[];
 layout(location = 1) out vec2 fragTexCoord[];
 layout(location = 2) out vec3 normal[];
 layout(location = 3) flat out int materialID[];
 layout(location = 4) flat out int primitiveType[];
 layout(location = 5) flat out int currentFrame[];
+layout(location = 6) flat out int flag[];
 
 struct MeshDrawCommand {
     uint groupXCount;
@@ -154,9 +155,11 @@ vec4 unpackColor(uint c)
 void main() {      
     
     TaskData taskData = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId];
-    
-    /*if (taskData.vertexCount != 0)
-        debugPrintfEXT("Error : ", taskData.vertexCount);*/
+    if (pc.currentFrame >= MAX_FRAMES_IN_FLIGHT || pc.primitiveType > 3) {
+        debugPrintfEXT("Current frame : %i %i", pc.currentFrame, pc.primitiveType);
+    }
+    if (taskData.vertexCount != 0)
+        debugPrintfEXT("Error : ", taskData.vertexCount);
     //Modèles 3D.
     if (taskData.vertexCount == 0) {  
         Cluster cluster = clusterDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[taskData.clusterOffset+gl_WorkGroupID.y];         
@@ -202,28 +205,43 @@ void main() {
         if (pc.primitiveType == 3) {
             SetMeshOutputsEXT(vertexCount, primitiveCount);
             for (uint i = 0; i < vertexCount; i++) {
+                /*if (flag[i] == 0 || flag[i] > 1 || flag[i] < 0 || materialID[i] < 0 || materialID[i] >= 7 || primitiveType[i] != 3 || currentFrame[i] < 0 || currentFrame[i] >= MAX_FRAMES_IN_FLIGHT) {
+                    
+                    return;
+                }
+                debugPrintfEXT("Flag : %i %i %i %i", flag[i], primitiveType[i], materialID[i], currentFrame[i]);*/
+                    
                 uint v = meshlet.vertexOffset + subMesh.vertexOffset + i;
-                //debugPrintfEXT("v : %i", meshlet.vertexOffset);
+                if (v >= 77067)
+                    debugPrintfEXT("v : %i", v);
                 vec4 color = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
                 if (color.r < 0.9 || color.g < 0.9 || color.b < 0.9)
                     debugPrintfEXT("error : %v4f", color);
             
                 gl_MeshVerticesEXT[i].gl_Position = pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(vertexData[pc.primitiveType].vertices[v].position, 1.0);
-                //debugPrintfEXT("vertex position %v3f : ",vertexData[pc.primitiveType].vertices[v].position);
+                //debugPrintfEXT("vertex position %v3f : ",gl_MeshVerticesEXT[i].gl_Position);
                 fragColor[i] = color;
+                //debugPrintfEXT("color : %v4f", fragColor[i]);
                 fragTexCoord[i] = vertexData[pc.primitiveType].vertices[v].texCoords;
+                //debugPrintfEXT("tex coords : %v2f", fragTexCoord[i]);
                 normal[i] = mat3(transpose(inverse(modelMatrix))) * vertexData[pc.primitiveType].vertices[v].normal;
+                //debugPrintfEXT("normal %v3f", normal[i]);
                 materialID[i] = subMesh.materialId;
                 primitiveType[i] = pc.primitiveType;
                 currentFrame[i] = pc.currentFrame;
+                flag[i] = 1;
                 //debugPrintfEXT("materialId %i", subMesh.materialId);
                 //debugPrintfEXT("position : %i",  i);
-            } 
+            }  
+                     
             for (uint tri = 0; tri < primitiveCount; tri++) {
                 //debugPrintfEXT("gen tri : %i", tri);
                 uint g0 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 0];
                 uint g1 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 1];
                 uint g2 = indexData[pc.primitiveType].indexes[firstIndex + tri * 3 + 2];
+                if (firstIndex + tri * 3 + 2 >= 383400) {
+                    debugPrintfEXT("erreur : %i", firstIndex + tri * 3 + 2);
+                }
                 //debugPrintfEXT("indexes : %i %i %i",g0, g1, g2);   
                 uint i0 = g0 - meshlet.vertexOffset;
                 uint i1 = g1 - meshlet.vertexOffset;
@@ -235,7 +253,9 @@ void main() {
                     //continue;
                 }
                 gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
-            }
+            }            
+        } else {
+            SetMeshOutputsEXT(0, 0);
         }
     //Face de heightmap ou voxel.
     } else {

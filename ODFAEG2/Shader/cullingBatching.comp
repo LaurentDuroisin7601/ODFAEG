@@ -210,7 +210,7 @@ void main() {
                     //Vérifie si les sommets pour l'instance n'ont pas déjà été ajoutés. (Les instances sont regroupée par instanceGroupId dans matériaux)
                     //Si le matériel est instancé.
                     if (inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].instanceGroupId != -1) {
-                            //debugPrintfEXT("Instanced! %i", inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].instanceGroupId);
+                            debugPrintfEXT("Instanced! %i", inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].instanceGroupId);
 
                         uint instanceBase = atomicAdd(outputInstanceBase[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].instanceBase, 1);
                             

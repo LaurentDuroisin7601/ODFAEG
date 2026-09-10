@@ -43,10 +43,26 @@ layout(location = 2) in vec3 normal;
 layout(location = 3) flat in int materialID;
 layout(location = 4) flat in int primitiveType;
 layout(location = 5) flat in int currentFrame;
+layout(location = 6) flat in int flag; 
 layout(location = 0) out vec4 outColor;
 void main() {
+    float epsilon = 0.0000001;
+    
+    if (flag == 0 || flag > 1 || flag < 0 || materialID < 0 || materialID >= 7 || primitiveType != 3 || currentFrame < 0 || currentFrame >= MAX_FRAMES_IN_FLIGHT
+    || fragColor.r < 1 - epsilon || fragColor.g < 1 - epsilon || fragColor.g < 1 - epsilon || fragColor.a < 1 - epsilon) {
+        
+        outColor = vec4(0, 0, 0, 0);
+        return;
+    }
+    /*if (fragColor.r != 1 || fragColor.g != 1 || fragColor.b != 1)
+    debugPrintfEXT("Flag : %i %i %i %i %v4f", flag, primitiveType, materialID, currentFrame, fragColor);*
     //if (materialID > 6)
     //debugPrintfEXT("material id %i ", materialID);
+    /*if (primitiveType > 6 || currentFrame > MAX_FRAMES_IN_FLIGHT) {
+        outColor = vec4(0, 0, 0, 0);
+        return;
+    }*/
+    
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[materialID];
     
     
@@ -54,9 +70,11 @@ void main() {
 
 
     // --- Diffuse ---
-    vec4 diffuse = fragColor; 
-    /*if (fragColor.r < 0.9 || fragColor.g < 0.9 || fragColor.b < 0.9) {
-        debugPrintfEXT("Error %v4f", fragColor);
+    vec4 diffuse = fragColor;
+    //diffuse = vec4(1, 1, 1, 1); 
+    /*if (fragColor.r < 0.99 || fragColor.g < 0.99 || fragColor.b < 0.99) {
+        //debugPrintfEXT("Error %v4f", fragColor);
+        outColor = vec4(0, 0, 0, 0);
         return;
     }*/
     //debugPrintfEXT("material id %i, diffuse : %i", materialID, mat.diffuseTextureIndex);
@@ -64,6 +82,7 @@ void main() {
         
         diffuse *= texture(diffuseTextures[mat.diffuseTextureIndex-1], uv);        
     }
+    //diffuse = vec4(1, 1, 1, 1);
     // --- Normal map ---
     vec3 N = normalize(normal);
     if (mat.normalTextureIndex > 0 && mat.normalTextureIndex < MAX_TEXTURES) {
@@ -98,7 +117,7 @@ void main() {
     //debugPrintfEXT("texture index : %i, normal : %v3f, fragTexCoord %v2f, color : %v4f, fragColor : %v4f", mat.diffuseTextureIndex, normal, fragTexCoord, diffuse * diff * ao + spec + emissive, fragColor);
     //debugPrintfEXT("normal : %v3f", N);
     //outColor = diffuse * diff * ao + spec + emissive;
-    outColor = /*vec4(uv, 0, 1)*/diffuse;
+    outColor = diffuse;
     
     
 };
