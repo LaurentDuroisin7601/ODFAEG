@@ -1166,14 +1166,15 @@ namespace odfaeg {
 			return depthStencilInfos;
 		}
 		void RenderTarget::createDescriptorAndPipelines() {
+			std::vector<VkPipelineRenderingCreateInfo> renderingCreateInfos = {};		
+			VkPipelineRenderingCreateInfo renderingCreateInfo = {};
+			renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+			renderingCreateInfo.colorAttachmentCount = (isDepthOnly()) ? 0 : 1;
+			renderingCreateInfo.pColorAttachmentFormats = (isDepthOnly()) ? nullptr : &getImageFormat();
+			renderingCreateInfo.depthAttachmentFormat = getDepthStencilTexture().getFormat();
+			renderingCreateInfos.emplace_back(renderingCreateInfo);	
 			if (device.areMeshShadersSupported()) {
-				std::vector<VkPipelineRenderingCreateInfo> renderingCreateInfos = {};		
-				VkPipelineRenderingCreateInfo renderingCreateInfo = {};
-				renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
-				renderingCreateInfo.colorAttachmentCount = (isDepthOnly()) ? 0 : 1;
-				renderingCreateInfo.pColorAttachmentFormats = (isDepthOnly()) ? nullptr : &getImageFormat();
-				renderingCreateInfo.depthAttachmentFormat = getDepthStencilTexture().getFormat();
-				renderingCreateInfos.emplace_back(renderingCreateInfo);	
+				
 				std::vector<VkPushConstantRange> pushConstants;
 				VkPushConstantRange pushConstant;
 				pushConstant.offset = 0;

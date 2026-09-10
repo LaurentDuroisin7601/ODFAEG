@@ -378,6 +378,23 @@ namespace odfaeg {
 				fragmentShaderStageInfo.pName = "main";
 				shaderStages.push_back(fragmentShaderStageInfo);
 			}			
+			/*VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+			auto bindingDescription = VertexBuffer::getBindingDescription();
+			auto attributeDescriptions = VertexBuffer::getAttributeDescriptions();
+			vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+			vertexInputInfo.vertexBindingDescriptionCount = 1;
+			vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+			vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+			vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+			VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
+			inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+			//VkPrimitiveTopology modes[] = { VK_PRIMITIVE_TOPOLOGY_POINT_LIST, VK_PRIMITIVE_TOPOLOGY_LINE_LIST, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN };
+			inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+			inputAssembly.primitiveRestartEnable =
+				(inputAssembly.topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP ||
+					inputAssembly.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP ||
+					inputAssembly.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN)
+				? VK_TRUE : VK_FALSE;*/
 			VkPipelineViewportStateCreateInfo viewportState{};
 			viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 			viewportState.viewportCount = MAX_SCISSORS_AND_VIEWPORTS;
@@ -398,14 +415,20 @@ namespace odfaeg {
 			rasterizer.polygonMode = polygonMode;
 			rasterizer.lineWidth = 1.0f;
 			rasterizer.cullMode = VK_CULL_MODE_NONE;
-			rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+			rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
 
 			VkPipelineMultisampleStateCreateInfo multisampling{};
 			multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 			multisampling.sampleShadingEnable = VK_FALSE;
+			/*if (GPUContext::instance().getDevice().getMsaaSamples() == VK_SAMPLE_COUNT_1_BIT) {
+				std::cout<<"erreur!"<<std::endl;
+				system("PAUSE");
+			}*/
 			multisampling.rasterizationSamples = msaaSamples;
-
-			VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+			bool hasColorAttachment = renderingCreateInfo.colorAttachmentCount > 0;
+			/*if (hasColorAttachment)
+				std::cout<<"color attachment"<<std::endl;*/
+			VkPipelineColorBlendAttachmentState colorBlendAttachment{};			
 			colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 			colorBlendAttachment.blendEnable = VK_TRUE;
 
@@ -424,7 +447,7 @@ namespace odfaeg {
 			colorBlending.logicOpEnable = VK_FALSE;
 			colorBlending.logicOp = VK_LOGIC_OP_COPY;
 			colorBlending.attachmentCount = 1;
-			colorBlending.pAttachments = &colorBlendAttachment;
+			colorBlending.pAttachments = &colorBlendAttachment;						
 			colorBlending.blendConstants[0] = 0.0f;
 			colorBlending.blendConstants[1] = 0.0f;
 			colorBlending.blendConstants[2] = 0.0f;
@@ -445,7 +468,7 @@ namespace odfaeg {
 
 				throw std::runtime_error("failed to create pipeline layout!");
 			}
-			//std::cout<<"shader stages : "<<shaderStages.size()<<std::endl;
+			//std::cout<<"piepline layout : "<<shaderStages.size()<<std::endl;
 			VkGraphicsPipelineCreateInfo pipelineInfo{};
 			pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 			pipelineInfo.pNext = &renderingCreateInfo;
@@ -456,13 +479,14 @@ namespace odfaeg {
 			pipelineInfo.pViewportState = &viewportState;
 			pipelineInfo.pRasterizationState = &rasterizer;
 			pipelineInfo.pMultisampleState = &multisampling;
-			pipelineInfo.pColorBlendState = &colorBlending;
+			pipelineInfo.pColorBlendState = (hasColorAttachment) ? &colorBlending : nullptr;
 			pipelineInfo.pDynamicState = &dynamicState;
 			pipelineInfo.layout = pipelineLayout;
 			pipelineInfo.renderPass = VK_NULL_HANDLE;
 			pipelineInfo.subpass = 0;
 			pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 			pipelineInfo.pDepthStencilState = &depthStencil;
+			//std::cout<<"create graphics pipeline"<<std::endl;
 			if (vkCreateGraphicsPipelines(device.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS) {
 				throw std::runtime_error("failed to create graphics pipeline!");
 			}
