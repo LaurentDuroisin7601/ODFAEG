@@ -41,6 +41,7 @@ namespace odfaeg {
             void copyFrom(Texture& texture);
             void copyFrom(CommandPool& commandPool, Texture& texture);
             void generateMipmaps();
+            void generateDepthMipmaps();
             Texture& operator=(Texture&& texture) noexcept;
 			void createCommandBuffers();
 			void setTexType(unsigned int texType);

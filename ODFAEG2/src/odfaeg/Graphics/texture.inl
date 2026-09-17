@@ -38,6 +38,7 @@ namespace odfaeg {
         }      
         void Texture::generateMipmaps() {
             //system("PAUSE");
+            mipLevels = std::floor(std::log2(std::max(m_size.x(), m_size.y()))) + 1;
             VkFormatProperties formatProperties;
             vkGetPhysicalDeviceFormatProperties(device.getPhysicalDevice(), m_format, &formatProperties);
 
@@ -88,6 +89,71 @@ namespace odfaeg {
                 }
                 //std::cout<<"mip : "<<mipLevels-1<<std::endl;
                 transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels-1, 0, 1, layerCount);
+                commandPool.endRecordCommandBuffer(i);
+            }
+            VkSubmitInfo submitInfo{};
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = commandPool.getHandles().size();
+            submitInfo.pCommandBuffers = commandPool.getHandles().data();
+            Device::QueueFamilyIndices indices = device.findQueueFamilies(device.getPhysicalDevice(), VK_NULL_HANDLE);
+            if (vkQueueSubmit(device.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+                throw std::runtime_error("Echec de l'envoi d'un command buffer!");
+            }
+            vkDeviceWaitIdle(device.getDevice());            
+        }
+        void Texture::generateDepthMipmaps() {
+            //system("PAUSE");
+            VkFormatProperties formatProperties;
+            vkGetPhysicalDeviceFormatProperties(device.getPhysicalDevice(), m_format, &formatProperties);
+
+            if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
+                throw std::runtime_error("texture image format does not support linear blitting!");
+            }
+            mipLevels = std::floor(std::log2(std::max(m_size.x(), m_size.y()))) + 1;
+            int32_t mipWidth = m_size.x();
+            int32_t mipHeight = m_size.y();
+            for (unsigned int i = 0; i < nbBuffers; i++) {
+                commandPool.beginRecordCommandBuffer(i);                
+                for (unsigned int mip = 1; mip < mipLevels; mip++) {
+                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, mip-1, 0, 1, layerCount);
+                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mip, 0, 1, layerCount);                                       
+                    VkImageBlit blit{};
+                    blit.srcOffsets[0] = {0, 0, 0};
+                    blit.srcOffsets[1] = {mipWidth, mipHeight, 1};
+                    blit.srcSubresource.aspectMask = images[i].getImageAspectFlags();
+                    blit.srcSubresource.mipLevel = mip - 1;
+                    blit.srcSubresource.baseArrayLayer = 0;
+                    blit.srcSubresource.layerCount = layerCount;
+                    blit.dstOffsets[0] = {0, 0, 0};
+                    blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
+                    blit.dstSubresource.aspectMask = images[i].getImageAspectFlags();
+                    blit.dstSubresource.mipLevel = mip;
+                    blit.dstSubresource.baseArrayLayer = 0;
+                    blit.dstSubresource.layerCount = layerCount;
+                    vkCmdBlitImage(commandPool.getHandle(i),
+                    images[i].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                    images[i].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                    1, &blit,
+                    VK_FILTER_LINEAR);
+                    //std::cout<<"mip : "<<mip-1<<", mip levels  : "<<mipLevels<<std::endl;
+                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mip-1, 0, 1, layerCount);
+                    if (i == 0) {
+                        MipInfo mipInfo;
+                        mipInfo.width = mipWidth;
+                        mipInfo.height = mipHeight;
+                        mipsInfos.push_back(mipInfo);
+                    }
+                    if (mipWidth > 1) mipWidth /= 2;
+                    if (mipHeight > 1) mipHeight /= 2;
+                }         
+                if (i == 0) {       
+                    MipInfo mipInfo;
+                    mipInfo.width = mipWidth;
+                    mipInfo.height = mipHeight;
+                    mipsInfos.push_back(mipInfo);
+                }
+                //std::cout<<"mip : "<<mipLevels-1<<std::endl;
+                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, mipLevels-1, 0, 1, layerCount);
                 commandPool.endRecordCommandBuffer(i);
             }
             VkSubmitInfo submitInfo{};
@@ -549,7 +615,7 @@ namespace odfaeg {
             return true;
         }
         bool Texture::loadCubeMapFromMemory(const void* data, std::size_t size, const entity::IntRect& area) {
-             for (unsigned int i = 0; i < 6; i++) {
+            for (unsigned int i = 0; i < 6; i++) {
                 ImageLoader imageLoader;
                 if (!imageLoader.loadFromMemory(data, size) || !loadCubeMapFromImage(imageLoader, i, area))
                     return false;
@@ -611,7 +677,7 @@ namespace odfaeg {
                 //std::cout<<"load from image format : "<<m_format<<std::endl;
                 m_format = VK_FORMAT_R8G8B8A8_SRGB;
             }            
-            mipLevels = std::floor(std::log2(std::max(imageLoader.getSize().x(), imageLoader.getSize().y()))) + 1;
+            //mipLevels = std::floor(std::log2(std::max(imageLoader.getSize().x(), imageLoader.getSize().y()))) + 1;
             m_DataSize = imageLoader.getDataSize();
             create(imageLoader.getSize().x(), imageLoader.getSize().y(), VK_SAMPLE_COUNT_1_BIT, 1, mipLevels);
 
