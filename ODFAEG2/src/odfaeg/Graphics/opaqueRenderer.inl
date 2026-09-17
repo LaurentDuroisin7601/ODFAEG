@@ -61,12 +61,14 @@ namespace odfaeg {
             states.shader = &hzShader;   
             hzVertPC.projMatrix = parentRenderer.getCamera().getProjMatrix().getMatrix().transpose();
             hzVertPC.projMatrix = parentRenderer.getCamera().getViewMatrix().getMatrix().transpose(); 
-            hzVertPC.currentFrame = parentRenderer.getCurrentFrame();         
+            hzVertPC.currentFrame = parentRenderer.getCurrentFrame(); 
+            parentRenderer.beginRendering();        
             for(unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
                 hzVertPC.primitiveType = i;
                 vkCmdPushConstants(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), hzShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(RenderTarget::ViewProjMatPC), &hzVertPC);
                 parentRenderer.draw(parentRenderer.getCommandPool(),static_cast<entity::PrimitiveType>(i), states);
             }
+            parentRenderer.endRendering();
             parentRenderer.submit(true);            
             parentRenderer.getDepthStencilTexture().generateDepthMipmaps();
         }
