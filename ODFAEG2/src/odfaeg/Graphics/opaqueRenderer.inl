@@ -69,7 +69,7 @@ namespace odfaeg {
                 parentRenderer.draw(parentRenderer.getCommandPool(),static_cast<entity::PrimitiveType>(i), states);
             }
             parentRenderer.endRendering();
-            parentRenderer.submit(true);            
+            parentRenderer.submit();            
             parentRenderer.getDepthStencilTexture().generateDepthMipmaps();
         }
     }
