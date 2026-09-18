@@ -23,6 +23,7 @@
 #include "mesh.hpp"
 #include "modelLoader.hpp"
 #include "morphAnimUpdater.hpp"
+#include "opaqueRenderer.hpp"
 #include "particleSystemUpdater.hpp"
 #include "pipeline.hpp"
 #include "projMatrix.hpp"

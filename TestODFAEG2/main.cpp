@@ -269,7 +269,7 @@ int main() {
 	
 	renderGraph.addPonctualLight(pointLight);	
 	RectangleShape rect(GPUContext::instance().getDevice(), Vec3f(800, 600, 0));*/
-		
+	OpaqueRenderer opaqueRenderer(window, 0, "*", window.getId());	
 	std::string s;	
 	while (window.isOpen()) {
 		odfaeg::window::IEvent event;
@@ -284,8 +284,9 @@ int main() {
 		window.setCamera(camera);
 		window.setDepthStencil(true, false);
 		window.clear();
-		window.setTypesToRender("*", window.getCurrentFrame());	
-		window.drawMesh(Triangles);
+		opaqueRenderer.draw();
+		/*window.setTypesToRender("*", window.getCurrentFrame());	
+		window.drawMesh(Triangles);*/
 		/*window.setCamera(rtRenderTextureCamera);
 		
 		//sceneColorTexture.clear();

@@ -4,7 +4,8 @@
 namespace odfaeg {
     namespace graphic {
         class OpaqueRenderer {
-            OpaqueRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId, bool useThread);
+        public :
+            OpaqueRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId, bool useThread=false);
             void createDescriptorAndPipelines();
             void updateDescriptorSets();
             void drawNextFrame();

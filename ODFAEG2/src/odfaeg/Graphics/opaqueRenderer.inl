@@ -5,8 +5,8 @@ namespace odfaeg {
         hzShader(GPUContext::instance().getDevice()) {                
             needToUpdateDescriptorSets = true;           
             std::string shaderDir = std::string(ODFAEG_INSTALL_DIR) + "/Shader";
-            if (!hzShader.loadFromFile(shaderDir + "/hz.vert", shaderDir + "hz.frag")) {
-                throw std::runtime_error("Failed to load shadow pass csm shader");
+            if (!hzShader.loadFromFile(shaderDir + "/hz.vert", shaderDir + "/hz.frag")) {
+                throw std::runtime_error("Failed to load hz shader");
             }   
             createDescriptorAndPipelines();
         } 
@@ -87,7 +87,13 @@ namespace odfaeg {
             emissiveDefaultRenderingPool.update();
                         
             
-            DescriptorSet::allocate(defaultRenderingPool, defaultRenderingLayout, GPUContext::instance().getDescriptorSets(hzShader, 1, 1));
+            DescriptorSet::allocate(defaultRenderingPool, defaultRenderingLayout, GPUContext::instance().getDescriptorSets(hzShader, 4, 1), MAX_TEXTURES);
+            DescriptorSet::allocate(specularDefaultRenderingPool, specularDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(hzShader, 1, 1, 1), MAX_TEXTURES);
+			DescriptorSet::allocate(normalDefaultRenderingPool, normalDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(hzShader, 1, 1, 2), MAX_TEXTURES);
+			DescriptorSet::allocate(metalnessDefaultRenderingPool, metalnessDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(hzShader, 1, 1, 3), MAX_TEXTURES);
+			DescriptorSet::allocate(roughnessDefaultRenderingPool, roughnessDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(hzShader, 1, 1, 4), MAX_TEXTURES);
+			DescriptorSet::allocate(aoDefaultRenderingPool, aoDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(hzShader, 1, 1, 5), MAX_TEXTURES);
+			DescriptorSet::allocate(emissiveDefaultRenderingPool, emissiveDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(hzShader, 1, 1, 6), MAX_TEXTURES);
         }
         void OpaqueRenderer::updateDescriptorSets() {            
             bool hasDiffuseTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
@@ -158,14 +164,24 @@ namespace odfaeg {
             hzVertPC.projMatrix = parentRenderer.getCamera().getProjMatrix().getMatrix().transpose();
             hzVertPC.projMatrix = parentRenderer.getCamera().getViewMatrix().getMatrix().transpose(); 
             hzVertPC.currentFrame = parentRenderer.getCurrentFrame(); 
-            parentRenderer.beginRendering();        
+            parentRenderer.applyCullingAndBatching();
+            parentRenderer.applyComputeGraphicsBarrier();
+            parentRenderer.beginRendering(); 
+            std::vector<VkDescriptorSet> sets;
+            for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(hzShader).size(); i++) {
+                //std::cout<<"set : "<<linkedListSets[i][0].getHandle()<<std::endl;
+                sets.push_back(GPUContext::instance().getDescriptorSets(hzShader)[i][0].getHandle());
+            } 
+                  
             for(unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
                 hzVertPC.primitiveType = i;
-                vkCmdPushConstants(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), hzShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(RenderTarget::ViewProjMatPC), &hzVertPC);
+                vkCmdBindDescriptorSets(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), hzShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
+                vkCmdBindPipeline(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), hzShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
+                vkCmdPushConstants(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), hzShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(RenderTarget::ViewProjMatPC), &hzVertPC);
                 parentRenderer.draw(parentRenderer.getCommandPool(),static_cast<entity::PrimitiveType>(i), states);
             }
             parentRenderer.endRendering();                      
-            parentRenderer.getDepthStencilTexture().generateDepthMipmaps();
+            //parentRenderer.getDepthStencilTexture().generateDepthMipmaps();
         }
     }
 }
