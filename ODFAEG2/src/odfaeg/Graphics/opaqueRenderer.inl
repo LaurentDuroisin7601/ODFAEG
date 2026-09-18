@@ -103,6 +103,8 @@ namespace odfaeg {
             defaultRenderingSet.updateBufferInfos(2, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             if (hasDiffuseTextures ) {
                 //std::cout<<"textures : "<<Texture::getAllTextures().size()<<std::endl;
+                /*std::cout<<"layout : "<<GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE)[0].getImage(0).getLayout()<<std::endl;
+                system("PAUSE");*/
                 defaultRenderingSet.updateImageInfos(3, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             }
             defaultRenderingSet.updateDescriptorSet();
