@@ -45,7 +45,7 @@ namespace odfaeg {
             }
             vkDeviceWaitIdle(GPUContext::instance().getDevice().getDevice());
             std::string shaderDir = std::string(ODFAEG_INSTALL_DIR) + "/Shader";
-            if (!linkedListShader.loadFromFile(shaderDir + "/renderTarget.vert", shaderDir + "/linkedList.frag")) {
+            if (!linkedListShader.loadFromFile(shaderDir + "/linkedList.vert", shaderDir + "/linkedList.frag")) {
                 throw std::runtime_error("Could not load linked list shader");
             }
             if (!quadLinkedListShader.loadFromFile(shaderDir + "/linkedListQuad.vert", shaderDir + "/linkedListQuad.frag")) {
@@ -81,18 +81,19 @@ namespace odfaeg {
                 GPUContext::instance().getSharedSemaphore(0)[0].create(true, 0);
             }
             needToUpdateDescriptorSets = true;
-            rendererReady.store(true);
+            rendererReady.store(true);            
         }
         void LinkedListRenderer::createDescriptorsAndPipelines() {
-            DescriptorSetLayout& linkedListLayout = GPUContext::instance().getDescriptorSetLayout(linkedListShader, 7, true);
+            DescriptorSetLayout& linkedListLayout = GPUContext::instance().getDescriptorSetLayout(linkedListShader, 8, true);
             linkedListLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_VERTEX_BIT);
             linkedListLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_VERTEX_BIT);
-            linkedListLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
-            linkedListLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_FRAGMENT_BIT);
-            for (unsigned int i = 4; i < 6; i++) {
+            linkedListLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_VERTEX_BIT);
+            linkedListLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
+            linkedListLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_FRAGMENT_BIT);
+            for (unsigned int i = 5; i < 7; i++) {
                 linkedListLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
-            }
-            linkedListLayout.updateLayout(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+            }            
+            linkedListLayout.updateLayout(8, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
                 VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
             linkedListLayout.update();
             BlendMode blendMode;
@@ -131,18 +132,19 @@ namespace odfaeg {
             DescriptorPool& linkedListPool = GPUContext::instance().getDescriptorPool(linkedListShader, 7);
             linkedListPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES);
             linkedListPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES);
-            linkedListPool.updatePoolSize(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT);
-            linkedListPool.updatePoolSize(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES);
-            for (unsigned int i = 4; i < 6; i++) {
+            linkedListPool.updatePoolSize(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1);
+            linkedListPool.updatePoolSize(3, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT);
+            linkedListPool.updatePoolSize(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES);
+            for (unsigned int i = 5; i < 7; i++) {
                 linkedListPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT);
             }
-            linkedListPool.updatePoolSize(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
+            linkedListPool.updatePoolSize(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
             linkedListPool.update();
             DescriptorPool& quadLinkedListPool = GPUContext::instance().getDescriptorPool(quadLinkedListShader, 2);
             quadLinkedListPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT);
             quadLinkedListPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT);
             quadLinkedListPool.update();
-            DescriptorSet::allocate(linkedListPool, linkedListLayout, GPUContext::instance().getDescriptorSets(linkedListShader, 7, 1), MAX_TEXTURES);
+            DescriptorSet::allocate(linkedListPool, linkedListLayout, GPUContext::instance().getDescriptorSets(linkedListShader, 8, 1), MAX_TEXTURES);
             DescriptorSet::allocate(quadLinkedListPool, quadLinkedListLayout, GPUContext::instance().getDescriptorSets(quadLinkedListShader, 2, 1));
             //std::cout<<"pipeline descritpors created"<<std::endl;
         }
@@ -151,13 +153,14 @@ namespace odfaeg {
             DescriptorSet& linkedListSet = GPUContext::instance().getDescriptorSets(linkedListShader, (hasDiffuseTexture) ? 7 : 6, 1)[0];
             linkedListSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             linkedListSet.updateBufferInfos(1, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MESHES+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-            linkedListSet.updateImageInfos(2, headPtrsStorageImage, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
-            linkedListSet.updateBufferInfos(3, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-            linkedListSet.updateBufferInfos(4, linkedListBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-            linkedListSet.updateBufferInfos(5, nodeCounterBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            linkedListSet.updateImageInfos(2, GPUContext::instance().getSharedTextures(15)[parentRenderer.getDepthStencilTexture().getId()-1], VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            linkedListSet.updateImageInfos(3, headPtrsStorageImage, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);            
+            linkedListSet.updateBufferInfos(4, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            linkedListSet.updateBufferInfos(5, linkedListBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            linkedListSet.updateBufferInfos(6, nodeCounterBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             if (hasDiffuseTexture) {
                 //std::cout<<"diffuse texture"<<std::endl;
-                linkedListSet.updateImageInfos(6, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                linkedListSet.updateImageInfos(7, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             }
             linkedListSet.updateDescriptorSet();
             DescriptorSet& linkedListQuadSet = GPUContext::instance().getDescriptorSets(quadLinkedListShader, 2, 1)[0];
@@ -181,8 +184,7 @@ namespace odfaeg {
             memoryBarrier0.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
             memoryBarrier0.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
             vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier0, 0, nullptr, 0, nullptr);
-            parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
-            parentRenderer.applyCullingAndBatching();
+            
             registerFramesJob[parentRenderer.getCurrentFrame()].store(true);
             //std::cout<<"cleared"<<std::endl;
             cv.notify_one();
@@ -202,11 +204,7 @@ namespace odfaeg {
                 semaphoreWaitInfo.pValues = &GPUContext::instance().getSharedSemaphore(0)[0].getValue();
                 //vkWaitSemaphores(GPUContext::instance().getDevice().getDevice(), &semaphoreWaitInfo, UINT64_MAX);
                 //std::cout<<"frame : "<<parentRenderer.getCurrentFrame()<<" ready!"<<std::endl;
-                if (needToUpdateDescriptorSets) {
-                    //std::cout<<"update ds"<<std::endl;
-                    updateDescriptorSets();
-                    needToUpdateDescriptorSets = false;
-                }
+                
                 jobFence[parentRenderer.getCurrentFrame()].reset(2);
                 threadPool.enqueue([this] {
                     bool useDepthTest = parentRenderer.useDepthTest();
@@ -305,11 +303,18 @@ namespace odfaeg {
                 return commandBuffersReady[parentRenderer.getCurrentFrame()].load() || stop.load();
             });
             commandBuffersReady[parentRenderer.getCurrentFrame()].store(false);
-            if (!stop.load()) {
+            if (!stop.load()) {                
                 bool useDepthTest = parentRenderer.useDepthTest();
                 bool useStencilTest = parentRenderer.useStencilTest();
-                parentRenderer.setDepthStencil(false, false);                
+                parentRenderer.setDepthStencil(false, false);
+                parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
+                parentRenderer.applyCullingAndBatching();                
                 parentRenderer.applyComputeGraphicsBarrier();
+                if (needToUpdateDescriptorSets) {
+                    //std::cout<<"update ds"<<std::endl;
+                    updateDescriptorSets();
+                    needToUpdateDescriptorSets = false;
+                }                                
                 //std::cout<<"commands : !"<<parentRenderer.getCurrentFrame()<<" registered!"<<std::endl;
                 parentRenderer.beginRendering(true);
                 vkCmdExecuteCommands(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &linkedListCmdPool.getHandle(parentRenderer.getCurrentFrame()));

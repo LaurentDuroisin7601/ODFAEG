@@ -186,7 +186,9 @@ namespace odfaeg {
                 vkCmdPushConstants(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), hzShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(RenderTarget::ViewProjMatPC), &hzVertPC);
                 parentRenderer.draw(parentRenderer.getCommandPool(),static_cast<entity::PrimitiveType>(i), states);
             }
-            parentRenderer.endRendering();                      
+            parentRenderer.endRendering(); 
+            parentRenderer.submit();
+            GPUContext::instance().getSharedTextures(15)[parentRenderer.getDepthStencilTexture().getId()-1].generateDepthMipmaps();                     
             //parentRenderer.getDepthStencilTexture().generateDepthMipmaps();
         }
     }

@@ -23,8 +23,7 @@ namespace odfaeg {
             }
         }  
         void Texture::createDescriptorAndPipelines() {
-            if (!mipComputeCreated) {
-                Shader mipShader(GPUContext::instance().getDevice());    
+            if (!mipComputeCreated) {                
                 DescriptorSetLayout& mipLayout = GPUContext::instance().getDescriptorSetLayout(mipShader, 2);
                 mipLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
                 mipLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
@@ -128,14 +127,23 @@ namespace odfaeg {
             }
             vkDeviceWaitIdle(device.getDevice());            
         }
-        void Texture::generateDepthMipmaps() {                                   
+        void Texture::generateDepthMipmaps() { 
+            createDescriptorAndPipelines();                                  
             int32_t mipWidth = m_size.x();
-            int32_t mipHeight = m_size.y();
+            int32_t mipHeight = m_size.y();            
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 commandPool.beginRecordCommandBuffer(i);                
                 for (unsigned int mip = 1; mip < mipLevels; mip++) {
                     transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, mip-1, 0, 1, layerCount);   
                     transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, mip, 0, 1, layerCount);                                   
+                    updateDescriptorSets(mip);
+                    std::vector<VkDescriptorSet> sets;
+                    for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(mipShader).size(); i++) {
+                        //std::cout<<"set : "<<linkedListSets[i][0].getHandle()<<std::endl;
+                        sets.push_back(GPUContext::instance().getDescriptorSets(mipShader)[i][0].getHandle());
+                    }            
+                    vkCmdBindDescriptorSets(commandPool.getHandle(i), VK_PIPELINE_BIND_POINT_COMPUTE, GPUContext::instance().getComputePipeline(mipShader).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
+                    vkCmdBindPipeline(commandPool.getHandle(i), VK_PIPELINE_BIND_POINT_COMPUTE,GPUContext::instance().getComputePipeline(mipShader).getHandle());
                     //std::cout<<"mip : "<<mip-1<<", mip levels  : "<<mipLevels<<std::endl;                   
                     if (i == 0) {
                         MipInfo mipInfo;
@@ -162,7 +170,8 @@ namespace odfaeg {
                         VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                         0, 0, nullptr, 0, nullptr,
                         1, &barrier);
-                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, mip-1, 0, 1, layerCount); 
+                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, mip-1, 0, 1, layerCount);
+                    commandPool.endRecordCommandBuffer(i); 
                 }         
                 if (i == 0) {       
                     MipInfo mipInfo;

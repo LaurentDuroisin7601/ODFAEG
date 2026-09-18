@@ -38,6 +38,9 @@ namespace odfaeg {
 				math::Matrix4f viewMatrix;
 				int primitiveType;
 				int currentFrame;
+                int maxMip;
+                int screenWidth;
+                int screenHeight;
 			};
             LinkedListRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
             void createCommandPools();
