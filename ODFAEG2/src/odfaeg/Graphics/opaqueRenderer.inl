@@ -187,7 +187,8 @@ namespace odfaeg {
                 parentRenderer.draw(parentRenderer.getCommandPool(),static_cast<entity::PrimitiveType>(i), states);
             }
             parentRenderer.endRendering(); 
-            parentRenderer.submit();
+            //parentRenderer.submit();
+            //std::cout<<"image : "<<GPUContext::instance().getSharedTextures(15)[parentRenderer.getDepthStencilTexture().getId()-1].getImage().getHandle()<<std::endl;
             GPUContext::instance().getSharedTextures(15)[parentRenderer.getDepthStencilTexture().getId()-1].generateDepthMipmaps();                     
             //parentRenderer.getDepthStencilTexture().generateDepthMipmaps();
         }

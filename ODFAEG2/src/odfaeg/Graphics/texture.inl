@@ -134,6 +134,8 @@ namespace odfaeg {
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 commandPool.beginRecordCommandBuffer(i);                
                 for (unsigned int mip = 1; mip < mipLevels; mip++) {
+                    /*std::cout<<"image : "<<images[i].getHandle()<<std::endl;
+                    system("PAUSE");*/
                     transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, mip-1, 0, 1, layerCount);   
                     transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, mip, 0, 1, layerCount);                                   
                     updateDescriptorSets(mip);
@@ -164,6 +166,7 @@ namespace odfaeg {
                     barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
                     barrier.subresourceRange.baseMipLevel = mip;
                     barrier.subresourceRange.levelCount = 1;
+                    barrier.image = images[i].getHandle();
 
                     vkCmdPipelineBarrier(commandPool.getHandle(i),
                         VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
@@ -171,7 +174,7 @@ namespace odfaeg {
                         0, 0, nullptr, 0, nullptr,
                         1, &barrier);
                     transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, mip-1, 0, 1, layerCount);
-                    commandPool.endRecordCommandBuffer(i); 
+                    
                 }         
                 if (i == 0) {       
                     MipInfo mipInfo;
@@ -205,7 +208,7 @@ namespace odfaeg {
             commandPool.createCommandBuffers(true, nbBuffers);
         }
 	    void Texture::copyFrom(Texture& texture) {            
-            m_format = texture.m_format;            
+            m_format = (!texture.isDepth) ? texture.m_format : VK_FORMAT_R32_SFLOAT;            
             id = texture.id;
             /*std::cout<<"is depth texture "<<texture.isDepth<<std::endl;
             system("PAUSE");*/
@@ -223,18 +226,15 @@ namespace odfaeg {
             isDepth = texture.isDepth;          
             if (isCubeMap) {
                 //std::cout<<"create cube map : "<<layerCount / 6<<std::endl;
-                createCubeMap(texture.m_size.x(), layerCount / 6, texture.mipLevels, (layerCount / 6 > 1));
-                update(texture, 0, 0);
-            } else if (isDepth) {
-                createDepthTexture(texture.m_size.x(), texture.m_size.y(), VK_SAMPLE_COUNT_1_BIT);
+                createCubeMap(texture.m_size.x(), layerCount / 6, texture.mipLevels, (layerCount / 6 > 1));                
             } else {
                
                 /*std::cout<<"create"<<std::endl;
                 system("PAUSE");*/
-                create(texture.m_size.x(), texture.m_size.y(), VK_SAMPLE_COUNT_1_BIT, 1, texture.mipLevels);
-                update(texture, 0, 0);
+                create(texture.m_size.x(), texture.m_size.y(), VK_SAMPLE_COUNT_1_BIT, 1, texture.mipLevels);                
             }            
-        }
+            update(texture, 0, 0);
+        }               
 	    void Texture::copyFrom(CommandPool& commandPool, Texture& texture) {
             nbBuffers = texture.nbBuffers;
             isFBOTexture = texture.isFBOTexture;
@@ -443,7 +443,7 @@ namespace odfaeg {
             this->layered = layered; 
             VkImageType imageType;
             VkImageViewType viewType;
-            layerCount = (layered) ? texDepth : 1;
+            layerCount = (layered) ? texDepth : 1;            
             
             if (texHeight > 1) {
                 if (!layered) {
@@ -495,16 +495,19 @@ namespace odfaeg {
                 int i;
                 std::cin>>i;    
             }  */  
-            //std::cout<<"nb buffers : "<<nbBuffers<<std::endl;         
+            //std::cout<<"nb buffers : "<<nbBuffers<<std::endl;   
+                   
             for (unsigned int i = 0; i < nbBuffers; i++) {  
+                /*std::cout<<"depth texture id : "<<texWidth<<std::endl;
+                system("PAUSE");*/
                 images[i].create(texWidth, texHeight, 1, imageType, m_format, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                     VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, (layered) ? texDepth : 1, msaaSamples, VK_IMAGE_TILING_OPTIMAL);
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_DEPTH_BIT /*| VK_IMAGE_ASPECT_STENCIL_BIT*/, 0, 0, mipLevels, (layered) ? texDepth : 1);
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
                 //if (!isDepth) {
-                    commandPool.beginRecordCommandBuffer(i);
-                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 0, 0, mipLevels, (layered) ? texDepth : 1);                
-                    commandPool.endRecordCommandBuffer(i);
+                commandPool.beginRecordCommandBuffer(i);
+                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 0, 0, mipLevels, (layered) ? texDepth : 1);                
+                commandPool.endRecordCommandBuffer(i);
                 //}
                 if (texDepth > 1 && layered) {
                     for (unsigned int v = 0; v < layerCount; v+=layersPerView) {
@@ -513,6 +516,8 @@ namespace odfaeg {
                     }                    
                 } 
                 if (mipLevels > 1) {
+                    /*std::cout<<"add mip subview : "<<mipLevels<<std::endl;
+                    system("PAUSE");*/
                     for (unsigned int mip = 0; mip < mipLevels; mip++) {
                         images[i].addMipSubView(viewType, m_format, VK_IMAGE_ASPECT_DEPTH_BIT, mip, 0, 1, layerCount);
                     }
@@ -530,7 +535,8 @@ namespace odfaeg {
                 mipLevels = std::floor(std::log2(std::max(m_size.x(), m_size.y()))) + 1;
                 auto& vec = GPUContext::instance().getSharedTextures(texType);
                 id = vec.size()+1;
-                //std::cout<<"FBO texture id : "<<id<<std::endl;                
+                /*std::cout<<"depth texture id : "<<id<<std::endl;
+                system("PAUSE");       */                        
                 //vec.push_back(std::move(*this));
                 vec.emplace_back(device);
                 vec.back().copyFrom(*this);
@@ -916,7 +922,12 @@ namespace odfaeg {
                 barrier.srcAccessMask = 0;
                 barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                 sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-                destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+                destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;                
+            } else if (oldLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_GENERAL) {
+                barrier.srcAccessMask = 0;
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+                destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;      
             } else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
                 barrier.srcAccessMask = 0;
                 barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
