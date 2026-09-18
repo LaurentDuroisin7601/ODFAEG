@@ -307,6 +307,21 @@ namespace odfaeg {
 			descriptorWrites[binding].descriptorCount = imageInfos[binding].size();
 			descriptorWrites[binding].pImageInfo = imageInfos[binding].data();
 		}
+		void DescriptorSet::updateImageInfos(unsigned int binding, Texture& images, VkDescriptorType descriptorType, uint32_t mip) {
+			imageInfos[binding].resize(images.getNbBuffers());
+			for (unsigned int i = 0; i < images.getNbBuffers(); i++) {
+				imageInfos[binding][i].imageLayout = images.getImage(i).getLayout();
+				imageInfos[binding][i].imageView = images.getImage(i).getImageMipSubViews()[mip].getHandle();
+				imageInfos[binding][i].sampler = images.getImage(i).getSampler().getHandle();
+			}
+			descriptorWrites[binding].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[binding].dstSet = descriptorSet;
+			descriptorWrites[binding].dstBinding = binding;
+			descriptorWrites[binding].dstArrayElement = 0;
+			descriptorWrites[binding].descriptorType = descriptorType;
+			descriptorWrites[binding].descriptorCount = imageInfos[binding].size();
+			descriptorWrites[binding].pImageInfo = imageInfos[binding].data();
+		}
 		void DescriptorSet::updateAccelerationStructureInfos(unsigned int binding, std::vector<VkAccelerationStructureKHR> handles) {
 			
 			descriptorAccelerationStructureInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;

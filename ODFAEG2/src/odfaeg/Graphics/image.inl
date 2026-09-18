@@ -97,6 +97,12 @@ namespace odfaeg {
                 image = VK_NULL_HANDLE;
                 imageView.cleanup();
                 sampler.cleanup();
+                for (unsigned int i = 0; i < subViews.size(); i++) {
+                    subViews[i].cleanup();                   
+                }
+                for (unsigned int i = 0; i < mipSubViews.size(); i++) {
+                    mipSubViews[i].cleanup();
+                }
             }
         }
         void Image::createImageView(VkImageViewType viewType, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t baseMipLevel, uint32_t baseArrayLayer, uint32_t levelCount, uint32_t layerCount) {
@@ -108,8 +114,16 @@ namespace odfaeg {
             subViews.emplace_back(device);
             subViews.back().create(image, viewType, format, aspectFlags, baseMipLevel, baseArrayLayer, levelCount, layerCount);
         }
+        void Image::addMipSubView(VkImageViewType viewType, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t baseMipLevel, uint32_t baseArrayLayer, uint32_t levelCount, uint32_t layerCount) {
+            this->aspectFlags = aspectFlags;
+            mipSubViews.emplace_back(device);
+            mipSubViews.back().create(image, viewType, format, aspectFlags, baseMipLevel, baseArrayLayer, levelCount, layerCount);
+        }
         std::deque<ImageView>& Image::getImageSubViews() {
             return subViews;
+        }
+        std::deque<ImageView>& Image::getImageMipSubViews() {
+            return mipSubViews;
         }
         void Image::copyBufferToImage(VkCommandBuffer cmd, Buffer& buffer, uint32_t width, uint32_t height, uint32_t x, uint32_t y, size_t srcStart, size_t mipLevel, uint32_t face) {
             VkBufferImageCopy region{};

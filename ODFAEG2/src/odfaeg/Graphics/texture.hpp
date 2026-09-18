@@ -6,6 +6,7 @@
 #include <vector>
 #include <deque>
 #include "image.hpp"
+#include "shader.hpp"
 #include "device.hpp"
 #include "../Math/vec.hpp"
 #include "imageLoader.hpp"
@@ -94,6 +95,9 @@ namespace odfaeg {
             bool isCubeMapTex();  
             void resolve(Texture& resolved, VkCommandBuffer cmd, unsigned int imgIndex = 0);        
         private : 
+            void updateDescriptorSets(uint32_t currentMip);
+            void createDescriptorAndPipelines();
+            static inline bool mipComputeCreated = false; 
             bool layered;
             VkSampleCountFlagBits msaaSamples;                     
             unsigned int texType, mipLevels;
@@ -111,6 +115,7 @@ namespace odfaeg {
 			VkSamplerAddressMode wrapU, wrapV;
 			std::vector<MipInfo> mipsInfos;
             bool isCubeMap, isDepth;
+            Shader mipShader;
 		};         
 	}    
 }

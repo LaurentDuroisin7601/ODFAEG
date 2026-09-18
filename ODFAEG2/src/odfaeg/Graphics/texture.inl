@@ -1,6 +1,7 @@
 namespace odfaeg {
 	namespace graphic {
-        Texture::Texture(Device& device, unsigned int nbBuffers) : device(device), texType(0), nbBuffers(nbBuffers), m_Smooth(false), m_Repeated(false), m_size(0u, 0u), commandPool(device), id(0), unormalized(false), isFBOTexture(false) {
+        Texture::Texture(Device& device, unsigned int nbBuffers) : device(device), texType(0), nbBuffers(nbBuffers), m_Smooth(false), m_Repeated(false), m_size(0u, 0u), commandPool(device), id(0), unormalized(false), isFBOTexture(false),
+        mipShader(device) {
             
             for (unsigned int i = 0; i < nbBuffers; i++) {                    
                 images.emplace_back(device);
@@ -16,7 +17,33 @@ namespace odfaeg {
             msaaSamples = VK_SAMPLE_COUNT_1_BIT;
             m_format = VK_FORMAT_R8G8B8A8_SRGB;
             isDepth = false;
+            std::string shaderDir = std::string(ODFAEG_INSTALL_DIR) + "/Shader";
+            if (!mipShader.loadFromFile(shaderDir + "/generateHIZ.comp")) {
+                throw std::runtime_error("Failed to load hz mip genertion shader");
+            }
         }  
+        void Texture::createDescriptorAndPipelines() {
+            if (!mipComputeCreated) {
+                Shader mipShader(GPUContext::instance().getDevice());    
+                DescriptorSetLayout& mipLayout = GPUContext::instance().getDescriptorSetLayout(mipShader, 2);
+                mipLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
+                mipLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
+                mipLayout.update();
+                GPUContext::instance().getComputePipeline(mipShader).createComputePipeline(mipShader, GPUContext::instance().getDescriptorSetLayout(mipShader));
+                DescriptorPool& mipPool = GPUContext::instance().getDescriptorPool(mipShader, 2);
+                mipPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1);
+                mipPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1);
+                mipPool.update();
+                DescriptorSet::allocate(mipPool, mipLayout, GPUContext::instance().getDescriptorSets(mipShader, 2, 1));
+                mipComputeCreated = true;
+            }
+        }
+        void Texture::updateDescriptorSets(uint32_t currentMip) {
+            DescriptorSet& mipSet = GPUContext::instance().getDescriptorSets(mipShader, 2, 1)[0];
+            mipSet.updateImageInfos(0, *this, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, currentMip-1);
+            mipSet.updateImageInfos(1, *this, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, currentMip);
+            mipSet.updateDescriptorSet();
+        }
         void Texture::resolve(Texture& resolved, VkCommandBuffer cmd, unsigned int i) {
             VkImageResolve resolvedRegion;
             resolvedRegion.srcOffset = {0, 0, 0};
@@ -101,50 +128,41 @@ namespace odfaeg {
             }
             vkDeviceWaitIdle(device.getDevice());            
         }
-        void Texture::generateDepthMipmaps() {
-            //system("PAUSE");
-            VkFormatProperties formatProperties;
-            vkGetPhysicalDeviceFormatProperties(device.getPhysicalDevice(), m_format, &formatProperties);
-
-            if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
-                throw std::runtime_error("texture image format does not support linear blitting!");
-            }
-            
+        void Texture::generateDepthMipmaps() {                                   
             int32_t mipWidth = m_size.x();
             int32_t mipHeight = m_size.y();
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 commandPool.beginRecordCommandBuffer(i);                
                 for (unsigned int mip = 1; mip < mipLevels; mip++) {
-                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, mip-1, 0, 1, layerCount);
-                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mip, 0, 1, layerCount);                                       
-                    VkImageBlit blit{};
-                    blit.srcOffsets[0] = {0, 0, 0};
-                    blit.srcOffsets[1] = {mipWidth, mipHeight, 1};
-                    blit.srcSubresource.aspectMask = images[i].getImageAspectFlags();
-                    blit.srcSubresource.mipLevel = mip - 1;
-                    blit.srcSubresource.baseArrayLayer = 0;
-                    blit.srcSubresource.layerCount = layerCount;
-                    blit.dstOffsets[0] = {0, 0, 0};
-                    blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
-                    blit.dstSubresource.aspectMask = images[i].getImageAspectFlags();
-                    blit.dstSubresource.mipLevel = mip;
-                    blit.dstSubresource.baseArrayLayer = 0;
-                    blit.dstSubresource.layerCount = layerCount;
-                    vkCmdBlitImage(commandPool.getHandle(i),
-                    images[i].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                    images[i].getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                    1, &blit,
-                    VK_FILTER_LINEAR);
-                    //std::cout<<"mip : "<<mip-1<<", mip levels  : "<<mipLevels<<std::endl;
-                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, mip-1, 0, 1, layerCount);
+                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, mip-1, 0, 1, layerCount);   
+                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, mip, 0, 1, layerCount);                                   
+                    //std::cout<<"mip : "<<mip-1<<", mip levels  : "<<mipLevels<<std::endl;                   
                     if (i == 0) {
                         MipInfo mipInfo;
                         mipInfo.width = mipWidth;
                         mipInfo.height = mipHeight;
                         mipsInfos.push_back(mipInfo);
-                    }
+                    }                    
                     if (mipWidth > 1) mipWidth /= 2;
                     if (mipHeight > 1) mipHeight /= 2;
+                    vkCmdDispatch(commandPool.getHandle(i),
+                    (mipWidth  + 7) / 8,
+                    (mipHeight + 7) / 8,
+                    1);                    
+                    VkImageMemoryBarrier barrier{};
+                    barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                    barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+                    barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+                    barrier.subresourceRange.baseMipLevel = mip;
+                    barrier.subresourceRange.levelCount = 1;
+
+                    vkCmdPipelineBarrier(commandPool.getHandle(i),
+                        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                        0, 0, nullptr, 0, nullptr,
+                        1, &barrier);
+                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, mip-1, 0, 1, layerCount); 
                 }         
                 if (i == 0) {       
                     MipInfo mipInfo;
@@ -153,7 +171,7 @@ namespace odfaeg {
                     mipsInfos.push_back(mipInfo);
                 }
                 //std::cout<<"mip : "<<mipLevels-1<<std::endl;
-                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, mipLevels-1, 0, 1, layerCount);
+                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, mipLevels-1, 0, 1, layerCount);
                 commandPool.endRecordCommandBuffer(i);
             }
             VkSubmitInfo submitInfo{};
@@ -234,7 +252,7 @@ namespace odfaeg {
                 }
             }
         }
-        Texture::Texture(Texture&& other) noexcept : device(other.device), commandPool(other.device) {
+        Texture::Texture(Texture&& other) noexcept : device(other.device), commandPool(other.device), mipShader(other.device) {
             nbBuffers = other.nbBuffers;
             images = std::move(other.images);
             m_format = other.m_format;
@@ -479,11 +497,17 @@ namespace odfaeg {
                     transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 0, 0, mipLevels, (layered) ? texDepth : 1);                
                     commandPool.endRecordCommandBuffer(i);
                 //}
-                //if (layerCount > 1) {
+                if (texDepth > 1 && layered) {
                     for (unsigned int v = 0; v < layerCount; v+=layersPerView) {
-                       //std::cout<<"add sub view"<<std::endl; 
-                       images[i].addSubView(viewType, m_format, VK_IMAGE_ASPECT_DEPTH_BIT /*| VK_IMAGE_ASPECT_STENCIL_BIT*/, 0, v, mipLevels, layersPerView); 
+                        //std::cout<<"add sub view"<<std::endl; 
+                        images[i].addSubView(viewType, m_format, VK_IMAGE_ASPECT_DEPTH_BIT /*| VK_IMAGE_ASPECT_STENCIL_BIT*/, 0, v, mipLevels, layersPerView); 
+                    }                    
+                } 
+                if (mipLevels > 1) {
+                    for (unsigned int mip = 0; mip < mipLevels; mip++) {
+                        images[i].addMipSubView(viewType, m_format, VK_IMAGE_ASPECT_DEPTH_BIT, mip, 0, 1, layerCount);
                     }
+                }
                 //}                
             }             
             VkSubmitInfo submitInfo{};
