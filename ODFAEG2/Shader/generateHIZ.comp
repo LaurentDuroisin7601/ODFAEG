@@ -1,0 +1,17 @@
+#version 460
+layout(binding = 0, r32f) uniform readonly image2D srcMip;
+layout(binding = 1, r32f) uniform writeonly image2D dstMip;
+void main() {
+    ivec2 gid = ivec2(gl_GlobalInvocationID.xy);
+
+    // Lire 4 pixels du mip courant
+    float d00 = imageLoad(srcMip, gid * 2 + ivec2(0,0)).r;
+    float d10 = imageLoad(srcMip, gid * 2 + ivec2(1,0)).r;
+    float d01 = imageLoad(srcMip, gid * 2 + ivec2(0,1)).r;
+    float d11 = imageLoad(srcMip, gid * 2 + ivec2(1,1)).r;
+
+    // Reversed-Z → on prend le MIN
+    float d = min(min(d00, d10), min(d01, d11));
+
+    imageStore(dstMip, gid, vec4(d));
+}
