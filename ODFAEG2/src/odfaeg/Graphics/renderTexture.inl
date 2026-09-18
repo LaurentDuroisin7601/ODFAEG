@@ -466,7 +466,10 @@ namespace odfaeg {
                 .imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                 .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
                 .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                .clearValue = {.depthStencil{1.f, 0}}
+                .clearValue = {.depthStencil{1.f, 0}},
+                .resolveMode = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT,
+                .resolveImageView = GPUContext::instance().getSharedTextures(15)[getDepthStencilTexture().getId()-1].getImage().getImageView().getHandle(),
+                .resolveImageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL
             };
             renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
             renderingInfo.renderArea = {
