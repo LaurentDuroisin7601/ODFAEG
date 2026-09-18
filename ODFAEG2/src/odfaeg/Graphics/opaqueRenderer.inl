@@ -154,10 +154,7 @@ namespace odfaeg {
             return layer;
         }    
         void OpaqueRenderer::draw() {
-            if (needToUpdateDescriptorSets) {
-                updateDescriptorSets();
-                needToUpdateDescriptorSets  = false;
-            }
+            
             BlendMode blendMode;
             RenderStates states;
             states.shader = &hzShader;   
@@ -165,6 +162,11 @@ namespace odfaeg {
             hzVertPC.projMatrix = parentRenderer.getCamera().getViewMatrix().getMatrix().transpose(); 
             hzVertPC.currentFrame = parentRenderer.getCurrentFrame(); 
             parentRenderer.applyCullingAndBatching();
+            if (needToUpdateDescriptorSets) {
+                //std::cout<<"update ds"<<std::endl;
+                updateDescriptorSets();
+                needToUpdateDescriptorSets  = false;
+            }
             parentRenderer.applyComputeGraphicsBarrier();
             parentRenderer.beginRendering(); 
             std::vector<VkDescriptorSet> sets;
@@ -172,7 +174,9 @@ namespace odfaeg {
                 //std::cout<<"set : "<<linkedListSets[i][0].getHandle()<<std::endl;
                 sets.push_back(GPUContext::instance().getDescriptorSets(hzShader)[i][0].getHandle());
             } 
-                  
+            hzVertPC.projMatrix = parentRenderer.getCamera().getProjMatrix().getMatrix().transpose();
+            hzVertPC.viewMatrix = parentRenderer.getCamera().getViewMatrix().getMatrix().transpose();  
+            hzVertPC.currentFrame = parentRenderer.getCurrentFrame();
             for(unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
                 hzVertPC.primitiveType = i;
                 vkCmdBindDescriptorSets(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), hzShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
