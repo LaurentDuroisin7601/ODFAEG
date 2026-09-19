@@ -36,7 +36,7 @@ namespace odfaeg {
                 converterPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
                 converterPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1);
                 converterPool.update();
-                DescriptorSet::allocate(converterPool, converterLayout, GPUContext::instance().getDescriptorSets(mipShader, 2, 1));                 
+                DescriptorSet::allocate(converterPool, converterLayout, GPUContext::instance().getDescriptorSets(convertShader, 2, 1));                 
                 DescriptorSetLayout& mipLayout = GPUContext::instance().getDescriptorSetLayout(mipShader, 2);
                 mipLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
                 mipLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
@@ -149,23 +149,46 @@ namespace odfaeg {
         void Texture::generateDepthMipmaps() { 
             createDescriptorAndPipelines();             
             auto& vec = GPUContext::instance().getSharedTextures(texType+1);            
-            //std::cout<<"FBO texture id : "<<id<<std::endl;                
-            //vec.push_back(std::move(*this));
-            vec.emplace_back(device);
-            vec.back().create(m_size.x(), m_size.y(), VK_SAMPLE_COUNT_1_BIT, 1, mipLevels);
-            updateDescriptorSets();
+                //std::cout<<"FBO texture id : "<<id<<std::endl;                
+                //vec.push_back(std::move(*this));
+            if (vec.empty()) {
+                for (unsigned int i = 0; i < nbBuffers; i++) {
+                    vec.emplace_back(device);
+                    vec.back().images[i].create(m_size.x(), m_size.y(), 1, VK_IMAGE_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
+                            VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
+                    vec.back().images[i].createImageView(VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, mipLevels, 1);
+                }
+            }
+            
+            
                                       
             int32_t mipWidth = m_size.x();
             int32_t mipHeight = m_size.y();            
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 for (unsigned int mip = 0; mip < mipLevels; mip++) {
                     
+                    
                     /*std::cout<<"image : "<<images[i].getHandle()<<std::endl;
                     system("PAUSE");*/
                     commandPool.beginRecordCommandBuffer(i); 
-                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, mip-1, 0, 1, layerCount);   
+                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, mip, 0, 1, layerCount);   
+                    transitionImageLayout(GPUContext::instance().getSharedTextures(16)[id-1].getImage(), commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, mip, 0, 1, layerCount); 
                     updateDescriptorSets();                                   
-                    VkImageMemoryBarrier barrier;    
+                    std::vector<VkDescriptorSet> sets;
+                    for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(convertShader).size(); i++) {
+                        //std::cout<<"set : "<<linkedListSets[i][0].getHandle()<<std::endl;
+                        sets.push_back(GPUContext::instance().getDescriptorSets(convertShader)[i][0].getHandle());
+                    }
+                    vkCmdBindDescriptorSets(commandPool.getHandle(i), VK_PIPELINE_BIND_POINT_COMPUTE, GPUContext::instance().getComputePipeline(convertShader).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
+                    vkCmdBindPipeline(commandPool.getHandle(i), VK_PIPELINE_BIND_POINT_COMPUTE,GPUContext::instance().getComputePipeline(convertShader).getHandle());                    
+                    if (mipWidth > 1) mipWidth /= 2;
+                    if (mipHeight > 1) mipHeight /= 2;
+                    vkCmdDispatch(commandPool.getHandle(i),
+                    (mipWidth  + 7) / 8,
+                    (mipHeight + 7) / 8,
+                    1);                   
+                    
+                    VkImageMemoryBarrier barrier{};    
                     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                     barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
                     barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
@@ -173,8 +196,8 @@ namespace odfaeg {
                     barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
                     barrier.subresourceRange.baseMipLevel = mip;
                     barrier.subresourceRange.levelCount = 1;
-                    barrier.image = images[i].getHandle();
-                    barrier.subresourceRange.aspectMask = images[i].getImageAspectFlags();
+                    barrier.image = GPUContext::instance().getSharedTextures(16)[id-1].getImage().getHandle();
+                    barrier.subresourceRange.aspectMask = GPUContext::instance().getSharedTextures(16)[id-1].getImage().getImageAspectFlags();
                     barrier.subresourceRange.layerCount = layerCount;
                     barrier.subresourceRange.levelCount = 1;
                     vkCmdPipelineBarrier(commandPool.getHandle(i),
@@ -182,6 +205,9 @@ namespace odfaeg {
                     VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                     0, 0, nullptr, 0, nullptr,
                     1, &barrier);
+                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, mip, 0, 1, layerCount);   
+              
+                    commandPool.endRecordCommandBuffer(i);
                     VkSubmitInfo submitInfo{};
                     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
                     submitInfo.commandBufferCount = commandPool.getHandles().size();
@@ -192,6 +218,9 @@ namespace odfaeg {
                     }
                     vkDeviceWaitIdle(device.getDevice());                      
                 }
+                mipWidth = m_size.x();
+                mipHeight = m_size.y();           
+            
                 for(unsigned int mip = 1; mip < mipLevels; mip++) {
                     updateDescriptorSets(mip);
                     std::vector<VkDescriptorSet> sets;
@@ -231,7 +260,7 @@ namespace odfaeg {
                         VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                         0, 0, nullptr, 0, nullptr,
                         1, &barrier);
-                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mip-1, 0, 1, layerCount);
+                    transitionImageLayout(GPUContext::instance().getSharedTextures(16)[id-1].getImage(), commandPool.getHandle(i), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mip-1, 0, 1, layerCount);
                     commandPool.endRecordCommandBuffer(i);
                     VkSubmitInfo submitInfo{};
                     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -251,7 +280,7 @@ namespace odfaeg {
                 }
                 //std::cout<<"mip : "<<mipLevels-1<<std::endl;
                 commandPool.beginRecordCommandBuffer(i); 
-                transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels-1, 0, 1, layerCount);
+                transitionImageLayout(GPUContext::instance().getSharedTextures(16)[id-1].getImage(), commandPool.getHandle(i), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels-1, 0, 1, layerCount);
                 commandPool.endRecordCommandBuffer(i); 
                 
             }
@@ -558,7 +587,7 @@ namespace odfaeg {
             }
             m_size = math::Vector2u(texWidth, texHeight);
             
-            m_format = (isDepth) ? VK_FORMAT_D32_SFLOAT : findDepthFormat();
+            m_format = findDepthFormat();
             imageAspectMask = VK_IMAGE_ASPECT_DEPTH_BIT /*| VK_IMAGE_ASPECT_STENCIL_BIT*/;
             createCommandBuffers(); 
             /*if (layered) {
