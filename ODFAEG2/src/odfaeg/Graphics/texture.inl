@@ -25,8 +25,8 @@ namespace odfaeg {
         void Texture::createDescriptorAndPipelines() {
             if (!mipComputeCreated) {                
                 DescriptorSetLayout& mipLayout = GPUContext::instance().getDescriptorSetLayout(mipShader, 2);
-                mipLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
-                mipLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
+                mipLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_COMPUTE_BIT);
+                mipLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_COMPUTE_BIT);
                 mipLayout.update();
                 GPUContext::instance().getComputePipeline(mipShader).createComputePipeline(mipShader, GPUContext::instance().getDescriptorSetLayout(mipShader));
                 DescriptorPool& mipPool = GPUContext::instance().getDescriptorPool(mipShader, 2);
@@ -39,7 +39,7 @@ namespace odfaeg {
         }
         void Texture::updateDescriptorSets(uint32_t currentMip) {
             DescriptorSet& mipSet = GPUContext::instance().getDescriptorSets(mipShader, 2, 1)[0];
-            mipSet.updateImageInfos(0, *this, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, currentMip-1);
+            mipSet.updateImageInfos(0, *this, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, currentMip-1);
             mipSet.updateImageInfos(1, *this, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, currentMip);
             mipSet.updateDescriptorSet();
         }
@@ -132,8 +132,9 @@ namespace odfaeg {
             int32_t mipWidth = m_size.x();
             int32_t mipHeight = m_size.y();            
             for (unsigned int i = 0; i < nbBuffers; i++) {
-                commandPool.beginRecordCommandBuffer(i);                
+                               
                 for (unsigned int mip = 1; mip < mipLevels; mip++) {
+                    commandPool.beginRecordCommandBuffer(i); 
                     /*std::cout<<"image : "<<images[i].getHandle()<<std::endl;
                     system("PAUSE");*/
                     transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, mip-1, 0, 1, layerCount);   
@@ -174,7 +175,16 @@ namespace odfaeg {
                         0, 0, nullptr, 0, nullptr,
                         1, &barrier);
                     transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mip-1, 0, 1, layerCount);
-                    
+                    commandPool.endRecordCommandBuffer(i);
+                    VkSubmitInfo submitInfo{};
+                    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+                    submitInfo.commandBufferCount = commandPool.getHandles().size();
+                    submitInfo.pCommandBuffers = commandPool.getHandles().data();
+                    Device::QueueFamilyIndices indices = device.findQueueFamilies(device.getPhysicalDevice(), VK_NULL_HANDLE);
+                    if (vkQueueSubmit(device.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+                        throw std::runtime_error("Echec de l'envoi d'un command buffer!");
+                    }
+                    vkDeviceWaitIdle(device.getDevice());    
                 }         
                 if (i == 0) {       
                     MipInfo mipInfo;
@@ -183,8 +193,10 @@ namespace odfaeg {
                     mipsInfos.push_back(mipInfo);
                 }
                 //std::cout<<"mip : "<<mipLevels-1<<std::endl;
+                commandPool.beginRecordCommandBuffer(i); 
                 transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels-1, 0, 1, layerCount);
-                commandPool.endRecordCommandBuffer(i);
+                commandPool.endRecordCommandBuffer(i); 
+                
             }
             VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -489,7 +501,7 @@ namespace odfaeg {
             }
             m_size = math::Vector2u(texWidth, texHeight);
             
-            m_format = findDepthFormat();
+            m_format = (isDepth) ? VK_FORMAT_D32_SFLOAT : findDepthFormat();
             imageAspectMask = VK_IMAGE_ASPECT_DEPTH_BIT /*| VK_IMAGE_ASPECT_STENCIL_BIT*/;
             createCommandBuffers(); 
             /*if (layered) {
@@ -502,8 +514,10 @@ namespace odfaeg {
             for (unsigned int i = 0; i < nbBuffers; i++) {  
                 /*std::cout<<"depth texture id : "<<texWidth<<std::endl;
                 system("PAUSE");*/
+                
                 images[i].create(texWidth, texHeight, 1, imageType, m_format, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                     VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, (layered) ? texDepth : 1, msaaSamples, VK_IMAGE_TILING_OPTIMAL);
+                    
                 images[i].createImageView(viewType, m_format, VK_IMAGE_ASPECT_DEPTH_BIT /*| VK_IMAGE_ASPECT_STENCIL_BIT*/, 0, 0, mipLevels, (layered) ? texDepth : 1);
                 images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
                 //if (!isDepth) {
