@@ -2,7 +2,7 @@
 layout(local_size_x = 8, local_size_y = 8) in;
 
 layout(set = 0, binding = 0) uniform sampler2D depthTex;
-layout(set = 0, binding = 1, r32f) uniform writeonly image2D hizLevel0;
+layout(set = 0, binding = 1, r32ui) uniform writeonly uimage2D hizLevel0;
 
 void main() {
     ivec2 gid = ivec2(gl_GlobalInvocationID.xy);
@@ -10,5 +10,5 @@ void main() {
     float d = texelFetch(depthTex, gid, 0).r;
 
     // reversed-Z ? near=1, far=0
-    imageStore(hizLevel0, gid, vec4(d));
+    imageStore(hizLevel0, gid, uvec4(d));
 }

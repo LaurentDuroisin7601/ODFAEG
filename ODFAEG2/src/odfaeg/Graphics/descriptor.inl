@@ -308,6 +308,8 @@ namespace odfaeg {
 			descriptorWrites[binding].pImageInfo = imageInfos[binding].data();
 		}
 		void DescriptorSet::updateImageInfos(unsigned int binding, Texture& images, VkDescriptorType descriptorType, uint32_t mip) {
+			/*std::cout<<"mip : "<<mip<<std::endl;
+			system("PAUSE");*/
 			imageInfos[binding].resize(images.getNbBuffers());
 			for (unsigned int i = 0; i < images.getNbBuffers(); i++) {
 				imageInfos[binding][i].imageLayout = images.getImage(i).getLayout();

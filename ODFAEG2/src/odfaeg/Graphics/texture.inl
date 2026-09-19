@@ -151,18 +151,22 @@ namespace odfaeg {
             auto& vec = GPUContext::instance().getSharedTextures(texType+1);            
                 //std::cout<<"FBO texture id : "<<id<<std::endl;                
                 //vec.push_back(std::move(*this));
+            unsigned int mipLevels = GPUContext::instance().getSharedTextures(15)[id-1].mipLevels;      
             if (vec.empty()) {
                 for (unsigned int i = 0; i < nbBuffers; i++) {
                     vec.emplace_back(device);
                     vec.back().images[i].create(m_size.x(), m_size.y(), 1, VK_IMAGE_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
                             VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
                     vec.back().images[i].createImageView(VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, mipLevels, 1);
-                    
+                    for (unsigned int mip = 0; mip < mipLevels; mip++) {
+                        vec.back().images[i].addMipSubView(VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_ASPECT_COLOR_BIT, mip, 0, 1, layerCount);
+                    }
                 }
             }           
                                      
             int32_t mipWidth = m_size.x();
-            int32_t mipHeight = m_size.y();            
+            int32_t mipHeight = m_size.y(); 
+                 
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 commandPool.beginRecordCommandBuffer(i);  
                 transitionImageLayout(GPUContext::instance().getSharedTextures(15)[id-1].getImage(i), commandPool.getHandle(i), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 0, mipLevels, layerCount);   
@@ -221,6 +225,7 @@ namespace odfaeg {
                 mipHeight = m_size.y();           
             
                 for(unsigned int mip = 1; mip < mipLevels; mip++) {
+                    commandPool.beginRecordCommandBuffer(i);
                     updateDescriptorSets(mip);
                     std::vector<VkDescriptorSet> sets;
                     for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(mipShader).size(); i++) {
