@@ -358,7 +358,7 @@ namespace odfaeg {
                 vertices[i].normal[1] = mesh->mNormals[i].y;
                 vertices[i].normal[2] = mesh->mNormals[i].z;
                 //vertices[i].color = entity::Color::White;
-            }
+            }            
             {
                 std::lock_guard<std::recursive_mutex>(getGlobalMutex());
                 extractBoneWeightForVertices(vertices, mesh, scene, model);
@@ -402,7 +402,11 @@ namespace odfaeg {
                 }
                 //baseIndex += face.mNumIndices;
             }
-            
+            if (isLeftHanded) {
+                for (unsigned int tri = 0; tri < indexes.size() / 3; tri++) {
+                    std::swap(indexes[tri*3], indexes[tri*3+1]);
+                }
+            }            
             /*math::Vec3f center = vb.getBounds().getCenter();
             math::Vec3f worldPos = finalTransform * center;
 
@@ -502,6 +506,9 @@ namespace odfaeg {
                         pos = math::Vec4f(va[i].normal.x(), va[i].normal.y(), va[i].normal.z(), 1);
                         tpos = finalTransform * pos;
                         va[i].normal = math::Vec3f(tpos.x(), tpos.y(), tpos.z());
+                        if (isLeftHanded) {
+                            va[i].normal = -va[i].normal;
+                        }
                         //std::cout<<"vertex position : "<<va[i].position<<std::endl;
                     }
                 }
