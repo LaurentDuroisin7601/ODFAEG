@@ -7,6 +7,7 @@ namespace odfaeg {
         }
         void RenderGraph::addOpaquePass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId) {
             OpaqueRenderer* opaqueRenderer = new OpaqueRenderer(input, layer, typesToRender, windowId);
+            renderers.insert(std::make_pair(order, opaqueRenderer));
         }
         void RenderGraph::addOITPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId) {
             LinkedListRenderer* llr = new LinkedListRenderer(input, input, layer, typesToRender, windowId);
