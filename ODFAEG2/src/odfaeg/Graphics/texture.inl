@@ -161,6 +161,7 @@ namespace odfaeg {
                     (mipHeight + 7) / 8,
                     1);                    
                     VkImageMemoryBarrier barrier{};
+                    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                     barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
                     barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
                     barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -168,7 +169,9 @@ namespace odfaeg {
                     barrier.subresourceRange.baseMipLevel = mip;
                     barrier.subresourceRange.levelCount = 1;
                     barrier.image = images[i].getHandle();
-
+                    barrier.subresourceRange.aspectMask = images[i].getImageAspectFlags();
+                    barrier.subresourceRange.layerCount = layerCount;
+                    barrier.subresourceRange.levelCount = 1;
                     vkCmdPipelineBarrier(commandPool.getHandle(i),
                         VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                         VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
