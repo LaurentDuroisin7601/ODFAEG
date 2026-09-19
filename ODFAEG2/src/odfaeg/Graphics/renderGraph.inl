@@ -1,21 +1,24 @@
 namespace odfaeg {
     namespace graphic {
-        RenderGraph::RenderGraph(RenderTexture& output) : output(output),
+        RenderGraph::RenderGraph(RenderTexture& output) : output(output), input(GPUContext::instance().getDevice(), true), rayInput(GPUContext::instance().getDevice()),
         csmShadowMap(GPUContext::instance().getDevice(), true), pointShadowMap(GPUContext::instance().getDevice(), true),
         environmentMap(GPUContext::instance().getDevice()) {
             
         }
+        void RenderGraph::addOpaquePass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId) {
+            OpaqueRenderer* opaqueRenderer = new OpaqueRenderer(input, layer, typesToRender, windowId);
+        }
         void RenderGraph::addOITPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId) {
-            LinkedListRenderer* llr = new LinkedListRenderer(output, layer, typesToRender, windowId);
+            LinkedListRenderer* llr = new LinkedListRenderer(input, input, layer, typesToRender, windowId);
             renderers.insert(std::make_pair(order, llr));            
         }
         void RenderGraph::addShadowPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId) {
             
-            ShadowRenderer* sr = new ShadowRenderer(output, output, csmShadowMap, pointShadowMap, layer, typesToRender, windowId);
+            ShadowRenderer* sr = new ShadowRenderer(input, input, csmShadowMap, pointShadowMap, layer, typesToRender, windowId);
             renderers.insert(std::make_pair(order, sr));
         }
         void RenderGraph::addRTPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId) {
-             RTRenderer* rtRenderer = new RTRenderer(output, environmentMap, output, csmShadowMap, pointShadowMap, layer, typesToRender, windowId);
+             RTRenderer* rtRenderer = new RTRenderer(rayInput, environmentMap, output, csmShadowMap, pointShadowMap, layer, typesToRender, windowId);
              renderers.insert(std::make_pair(order, rtRenderer));           
         }
         void RenderGraph::addDirectionnalLight(entity::DirectionnalLight& dirLight) {

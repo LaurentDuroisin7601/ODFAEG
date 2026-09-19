@@ -7,6 +7,7 @@
 #include <iostream>
 #include "iComponent.hpp"
 #include "iRenderer.hpp"
+#include "opaqueRenderer.hpp"
 #include "shadowRenderer.hpp"
 #include "linkedListRenderer.hpp"
 #include "rtRenderer.hpp"
@@ -20,6 +21,7 @@ namespace odfaeg {
         class RenderGraph {
             public :                     
             RenderGraph(RenderTexture& output);
+            void addOpaquePass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId);        
             void addOITPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId=-1);
             void addShadowPass(unsigned int order,  unsigned int layer, std::string typesToRender, unsigned int windowId=-1);
             void addLightningPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId=-1);
@@ -36,6 +38,7 @@ namespace odfaeg {
             RenderTexture& output;
             RenderTexture csmShadowMap, pointShadowMap;
             Texture environmentMap;
+            RenderTexture input, rayInput;
         };
     }
 }

@@ -1,9 +1,10 @@
 #ifndef ODFAEG_OPAQUE_RENDERER_HPP
 #define ODFAEG_OPAQUE_RENDERER_HPP
 #include "renderTexture.hpp"
+#include "iRenderer.hpp"
 namespace odfaeg {
     namespace graphic {
-        class OpaqueRenderer {
+        class OpaqueRenderer : public IRenderer {
         public :
             OpaqueRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId, bool useThread=false);
             void createDescriptorAndPipelines();

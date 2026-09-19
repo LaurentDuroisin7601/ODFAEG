@@ -25,6 +25,7 @@
 #include "commandPool.hpp"
 #include "../Core/threadPool.hpp"
 #include "../Window/listener.hpp"
+#include "renderTexture.hpp"
 namespace odfaeg {
     namespace graphic {
         class LinkedListRenderer : public IRenderer {
@@ -42,7 +43,7 @@ namespace odfaeg {
                 int screenWidth;
                 int screenHeight;
 			};
-            LinkedListRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
+            LinkedListRenderer(RenderTarget& parentRenderer, RenderTexture& opaqueSceneColors, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
             void createCommandPools();
             void createDescriptorsAndPipelines();
             void updateDescriptorSets();            
@@ -65,6 +66,7 @@ namespace odfaeg {
             int layer;
             unsigned int maxNodes;
             RenderTarget& parentRenderer;
+            RenderTexture& opaqueSceneColors;
             std::mutex mtx;
             std::condition_variable cv;
             std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> commandBuffersReady={};

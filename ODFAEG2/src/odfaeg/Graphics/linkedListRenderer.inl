@@ -1,7 +1,8 @@
 namespace odfaeg {
     namespace graphic {
-        LinkedListRenderer::LinkedListRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId, bool useThread) : IRenderer(windowId), threadPool(6),
+        LinkedListRenderer::LinkedListRenderer(RenderTarget& parentRenderer, RenderTexture& opaqueSceneColors, unsigned int layer, std::string typesToRenderExpression, int windowId, bool useThread) : IRenderer(windowId), threadPool(6),
         typesToRenderExpression(typesToRenderExpression),
+        opaqueSceneColors(opaqueSceneColors),
         layer(layer),
         fullScreenQuad(GPUContext::instance().getDevice(), entity::PrimitiveType::Triangles),
         linkedListShader(GPUContext::instance().getDevice()),

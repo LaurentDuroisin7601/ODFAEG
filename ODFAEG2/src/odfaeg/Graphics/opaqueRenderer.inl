@@ -1,6 +1,7 @@
 namespace odfaeg {
     namespace graphic {       
         OpaqueRenderer::OpaqueRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId, bool useThread) :
+        IRenderer(windowId),
         parentRenderer(parentRenderer),
         hzShader(GPUContext::instance().getDevice()) {                
             needToUpdateDescriptorSets = true;           
