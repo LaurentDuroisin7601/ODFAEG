@@ -171,7 +171,7 @@ namespace odfaeg {
                     /*std::cout<<"image : "<<images[i].getHandle()<<std::endl;
                     system("PAUSE");*/
                     commandPool.beginRecordCommandBuffer(i); 
-                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, mip, 0, 1, layerCount);   
+                    transitionImageLayout(GPUContext::instance().getSharedTextures(15)[id-1].getImage(), commandPool.getHandle(i), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, mip, 0, 1, layerCount);   
                     transitionImageLayout(GPUContext::instance().getSharedTextures(16)[id-1].getImage(), commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, mip, 0, 1, layerCount); 
                     updateDescriptorSets();                                   
                     std::vector<VkDescriptorSet> sets;
@@ -205,7 +205,7 @@ namespace odfaeg {
                     VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                     0, 0, nullptr, 0, nullptr,
                     1, &barrier);
-                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, mip, 0, 1, layerCount);   
+                    transitionImageLayout(GPUContext::instance().getSharedTextures(15)[id-1].getImage(), commandPool.getHandle(i), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, mip, 0, 1, layerCount);   
               
                     commandPool.endRecordCommandBuffer(i);
                     VkSubmitInfo submitInfo{};
@@ -251,8 +251,8 @@ namespace odfaeg {
                     barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
                     barrier.subresourceRange.baseMipLevel = mip;
                     barrier.subresourceRange.levelCount = 1;
-                    barrier.image = images[i].getHandle();
-                    barrier.subresourceRange.aspectMask = images[i].getImageAspectFlags();
+                    barrier.image = GPUContext::instance().getSharedTextures(16)[id-1].getImage().getHandle();
+                    barrier.subresourceRange.aspectMask = GPUContext::instance().getSharedTextures(16)[id-1].getImage().getImageAspectFlags();
                     barrier.subresourceRange.layerCount = layerCount;
                     barrier.subresourceRange.levelCount = 1;
                     vkCmdPipelineBarrier(commandPool.getHandle(i),
