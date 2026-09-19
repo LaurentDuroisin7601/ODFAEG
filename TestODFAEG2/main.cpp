@@ -285,6 +285,7 @@ int main() {
 		window.setDepthStencil(true, false);
 		window.clear();
 		opaqueRenderer.draw();
+		
 		/*window.setTypesToRender("*", window.getCurrentFrame());	
 		window.drawMesh(Triangles);*/
 		/*window.setCamera(rtRenderTextureCamera);
@@ -310,6 +311,7 @@ int main() {
 		
 		
 	 	window.submit();
+		window.getDepthStencilTexture().generateDepthMipmaps();
 		//std::cout<<"submited"<<std::endl;
 		window.beginRecordCommandBuffer();
 		window.setCamera(imGUICamera);
