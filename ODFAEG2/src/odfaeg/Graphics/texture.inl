@@ -264,7 +264,6 @@ namespace odfaeg {
                         VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                         0, 0, nullptr, 0, nullptr,
                         1, &barrier);
-                    transitionImageLayout(GPUContext::instance().getSharedTextures(16)[id-1].getImage(), commandPool.getHandle(i), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mip-1, 0, 1, layerCount);
                     commandPool.endRecordCommandBuffer(i);
                     VkSubmitInfo submitInfo{};
                     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -284,7 +283,7 @@ namespace odfaeg {
                 }
                 //std::cout<<"mip : "<<mipLevels-1<<std::endl;
                 commandPool.beginRecordCommandBuffer(i); 
-                transitionImageLayout(GPUContext::instance().getSharedTextures(16)[id-1].getImage(), commandPool.getHandle(i), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels-1, 0, 1, layerCount);
+                transitionImageLayout(GPUContext::instance().getSharedTextures(16)[id-1].getImage(), commandPool.getHandle(i), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 0, mipLevels, layerCount);
                 commandPool.endRecordCommandBuffer(i); 
                 
             }
