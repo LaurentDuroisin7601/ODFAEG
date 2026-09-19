@@ -1,7 +1,7 @@
 namespace odfaeg {
 	namespace graphic {
         Texture::Texture(Device& device, unsigned int nbBuffers) : device(device), texType(0), nbBuffers(nbBuffers), m_Smooth(false), m_Repeated(false), m_size(0u, 0u), commandPool(device), id(0), unormalized(false), isFBOTexture(false),
-        mipShader(device) {
+        mipShader(device), convertShader(device) {
             
             for (unsigned int i = 0; i < nbBuffers; i++) {                    
                 images.emplace_back(device);
@@ -21,12 +21,25 @@ namespace odfaeg {
             if (!mipShader.loadFromFile(shaderDir + "/generateHIZ.comp")) {
                 throw std::runtime_error("Failed to load hz mip genertion shader");
             }
+            if (!convertShader.loadFromFile(shaderDir + "/depthToColorFormat.comp")) {
+                throw std::runtime_error("Failed to load convert formats shader");
+            }
         }  
         void Texture::createDescriptorAndPipelines() {
-            if (!mipComputeCreated) {                
+            if (!mipComputeCreated) {
+                DescriptorSetLayout& converterLayout = GPUContext::instance().getDescriptorSetLayout(convertShader, 2);
+                converterLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_COMPUTE_BIT);
+                converterLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
+                converterLayout.update();
+                GPUContext::instance().getComputePipeline(convertShader).createComputePipeline(convertShader, GPUContext::instance().getDescriptorSetLayout(convertShader));
+                DescriptorPool& converterPool = GPUContext::instance().getDescriptorPool(convertShader, 2);
+                converterPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
+                converterPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1);
+                converterPool.update();
+                DescriptorSet::allocate(converterPool, converterLayout, GPUContext::instance().getDescriptorSets(mipShader, 2, 1));                 
                 DescriptorSetLayout& mipLayout = GPUContext::instance().getDescriptorSetLayout(mipShader, 2);
-                mipLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_COMPUTE_BIT);
-                mipLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_COMPUTE_BIT);
+                mipLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
+                mipLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
                 mipLayout.update();
                 GPUContext::instance().getComputePipeline(mipShader).createComputePipeline(mipShader, GPUContext::instance().getDescriptorSetLayout(mipShader));
                 DescriptorPool& mipPool = GPUContext::instance().getDescriptorPool(mipShader, 2);
@@ -34,13 +47,19 @@ namespace odfaeg {
                 mipPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1);
                 mipPool.update();
                 DescriptorSet::allocate(mipPool, mipLayout, GPUContext::instance().getDescriptorSets(mipShader, 2, 1));
-                mipComputeCreated = true;
+                mipComputeCreated = true;               
             }
+        }
+        void Texture::updateDescriptorSets() {
+            DescriptorSet& convertSet = GPUContext::instance().getDescriptorSets(convertShader, 2, 1)[0];
+            convertSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(15)[id-1], VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            convertSet.updateImageInfos(1, GPUContext::instance().getSharedTextures(16)[id-1], VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+            convertSet.updateDescriptorSet();
         }
         void Texture::updateDescriptorSets(uint32_t currentMip) {
             DescriptorSet& mipSet = GPUContext::instance().getDescriptorSets(mipShader, 2, 1)[0];
-            mipSet.updateImageInfos(0, *this, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, currentMip-1);
-            mipSet.updateImageInfos(1, *this, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, currentMip);
+            mipSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(16)[id-1], VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, currentMip-1);
+            mipSet.updateImageInfos(1, GPUContext::instance().getSharedTextures(16)[id-1], VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, currentMip);
             mipSet.updateDescriptorSet();
         }
         void Texture::resolve(Texture& resolved, VkCommandBuffer cmd, unsigned int i) {
@@ -128,17 +147,52 @@ namespace odfaeg {
             vkDeviceWaitIdle(device.getDevice());            
         }
         void Texture::generateDepthMipmaps() { 
-            createDescriptorAndPipelines();                                  
+            createDescriptorAndPipelines();             
+            auto& vec = GPUContext::instance().getSharedTextures(texType+1);            
+            //std::cout<<"FBO texture id : "<<id<<std::endl;                
+            //vec.push_back(std::move(*this));
+            vec.emplace_back(device);
+            vec.back().create(m_size.x(), m_size.y(), VK_SAMPLE_COUNT_1_BIT, 1, mipLevels);
+            updateDescriptorSets();
+                                      
             int32_t mipWidth = m_size.x();
             int32_t mipHeight = m_size.y();            
             for (unsigned int i = 0; i < nbBuffers; i++) {
-                               
-                for (unsigned int mip = 1; mip < mipLevels; mip++) {
-                    commandPool.beginRecordCommandBuffer(i); 
+                for (unsigned int mip = 0; mip < mipLevels; mip++) {
+                    
                     /*std::cout<<"image : "<<images[i].getHandle()<<std::endl;
                     system("PAUSE");*/
+                    commandPool.beginRecordCommandBuffer(i); 
                     transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, mip-1, 0, 1, layerCount);   
-                    transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, mip, 0, 1, layerCount);                                   
+                    updateDescriptorSets();                                   
+                    VkImageMemoryBarrier barrier;    
+                    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                    barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                    barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+                    barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+                    barrier.subresourceRange.baseMipLevel = mip;
+                    barrier.subresourceRange.levelCount = 1;
+                    barrier.image = images[i].getHandle();
+                    barrier.subresourceRange.aspectMask = images[i].getImageAspectFlags();
+                    barrier.subresourceRange.layerCount = layerCount;
+                    barrier.subresourceRange.levelCount = 1;
+                    vkCmdPipelineBarrier(commandPool.getHandle(i),
+                    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                    0, 0, nullptr, 0, nullptr,
+                    1, &barrier);
+                    VkSubmitInfo submitInfo{};
+                    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+                    submitInfo.commandBufferCount = commandPool.getHandles().size();
+                    submitInfo.pCommandBuffers = commandPool.getHandles().data();
+                    Device::QueueFamilyIndices indices = device.findQueueFamilies(device.getPhysicalDevice(), VK_NULL_HANDLE);
+                    if (vkQueueSubmit(device.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+                        throw std::runtime_error("Echec de l'envoi d'un command buffer!");
+                    }
+                    vkDeviceWaitIdle(device.getDevice());                      
+                }
+                for(unsigned int mip = 1; mip < mipLevels; mip++) {
                     updateDescriptorSets(mip);
                     std::vector<VkDescriptorSet> sets;
                     for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(mipShader).size(); i++) {
@@ -278,7 +332,7 @@ namespace odfaeg {
                 }
             }
         }
-        Texture::Texture(Texture&& other) noexcept : device(other.device), commandPool(other.device), mipShader(other.device) {
+        Texture::Texture(Texture&& other) noexcept : device(other.device), commandPool(other.device), mipShader(other.device), convertShader(other.device) {
             nbBuffers = other.nbBuffers;
             images = std::move(other.images);
             m_format = other.m_format;

@@ -95,6 +95,7 @@ namespace odfaeg {
             bool isCubeMapTex();  
             void resolve(Texture& resolved, VkCommandBuffer cmd, unsigned int imgIndex = 0);        
         private : 
+            void updateDescriptorSets();
             void updateDescriptorSets(uint32_t currentMip);
             void createDescriptorAndPipelines();
             static inline bool mipComputeCreated = false; 
@@ -115,7 +116,7 @@ namespace odfaeg {
 			VkSamplerAddressMode wrapU, wrapV;
 			std::vector<MipInfo> mipsInfos;
             bool isCubeMap, isDepth;
-            Shader mipShader;
+            Shader mipShader, convertShader;
 		};         
 	}    
 }
