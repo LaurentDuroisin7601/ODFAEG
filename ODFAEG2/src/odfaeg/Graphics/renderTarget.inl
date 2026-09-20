@@ -2197,7 +2197,7 @@ namespace odfaeg {
 		}
 		void RenderTarget::drawMesh(entity::PrimitiveType primitiveType, RenderStates states) {
 			if (needToUpdateCullBatchIndCmds) {
-				applyCullingAndBatching(true);
+				applyCullingAndBatching(Material::opaqueMask, true);
 				//std::cout<<"draw"<<std::endl;
 				needToUpdateCullBatchIndCmds = false;
 			}

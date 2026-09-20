@@ -43,7 +43,7 @@ struct SubMesh {
 	int id;
     int lodLevel;
     int objectId;
-    int mesheltOffset;
+    int meshletOffset;
     int meshletCount;
 };
 /*Matrices*/
@@ -251,6 +251,7 @@ void main() {
                         
                         uint indirectElementsDrawCommandOffset = atomicAdd(outputDrawCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].drawCount, 1);
                         uint instanceBase = atomicAdd(outputInstanceBase[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].instanceBase, 1);
+                        
                         //debugPrintfEXT("indexes! %i, draw count : %i", instanceBase, indirectElementsDrawCommandOffset );
                         IndirectElementsDrawCommand indirectElementsDrawCommand;
                         /*if (subMesh.id == 1590)
@@ -280,8 +281,8 @@ void main() {
                         /*if (subMesh.materialId == 1)
                             debugPrintfEXT("sm id : %i, diffuse tex id : %i", subMesh.id, material.diffuseTextureIndex);*/
                         outputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[indirectElementsDrawCommandOffset] = material;
-                        uint offsetInOutputMeshData = atomicAdd(offsetInOutputMeshData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshDataOffset, 1);
-                        outputMeshesData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshData[instanceBase]  = subMesh;
+                        uint offsetInOutputMeshData = atomicAdd(offsetInOutputMeshData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshDataOffset, 1);                        
+                        outputMeshesData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshData[offsetInOutputMeshData]  = subMesh;
                         //debugPrintfEXT("material datas %v2f", material.uvScale);
                         //debugPrintfEXT("Output Model Matrix : %i\n%v4f\n%v4f\n%v4f\n%v4f",objectDataOffset,outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[0], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[1], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[2], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[3]);
                     } 
