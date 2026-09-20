@@ -8,7 +8,7 @@
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 // Déclaration du type de primitive + limites
-layout (triangles, max_vertices = 256, max_primitives = 85) out;
+layout (triangles, max_vertices = 256, max_primitives = 256) out;
 layout(location = 0) out vec4 fragColor[];
 layout(location = 1) out vec2 fragTexCoord[];
 layout(location = 2) out vec3 normal[];
@@ -195,8 +195,8 @@ void main() {
         uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+cluster.lodLevel].index_offset + meshlet.indexOffset;
         //debugPrintfEXT("First index : %i,", firstIndex);
         //3 = Triangles.
-        uint maxVerts = 255u;
-        uint maxPrims = 85u;
+        uint maxVerts = 256u;
+        uint maxPrims = 256u;
         uint vertexCount   = min(meshlet.nbVertices, maxVerts);
         uint primitiveCount = min(meshlet.nbIndexes / 3u, maxPrims);
         /*if (primitiveCount > maxPrims)*/
