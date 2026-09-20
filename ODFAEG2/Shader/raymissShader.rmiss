@@ -29,9 +29,8 @@ struct Material {
     uint vertsInstanceSet;
     uint materialId;
     uint nbBuffers;  
-    int reflectable;
-    int refractable;
     int opaque;  
+    int pipelineType;
 };
 struct TransportRayPayload {
     bool lastBounce;

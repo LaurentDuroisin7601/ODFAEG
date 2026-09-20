@@ -436,9 +436,7 @@ namespace odfaeg {
 					
 					material.instanceGroupId = materials[i]->getInstanceGroupId();
 					/*if (material.instanceGroupId != -1)
-						system("PAUSE");*/
-					material.reflectable = (materials[i]->isReflectable()) ? 1 : 0;
-					material.refractable = (materials[i]->isRefractable()) ? 1 : 0;
+						system("PAUSE");*/					
 					material.opaque = materials[i]->opaque;
 					material.pipelineType = materials[i]->pipelineType;
 					/*std::cout<<"id : "<<material.materialId<<", reflectable : "<<material.reflectable<<"refractable : "<<material.refractable<<std::endl;

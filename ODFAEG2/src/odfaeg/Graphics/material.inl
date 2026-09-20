@@ -24,9 +24,7 @@ namespace odfaeg {
         Material::Material() {
             specularIntensity = 0;
             specularPower = 0;
-            refractionFactor = 0;
-            refractable = false;
-            reflectable = false; 
+            refractionFactor = 0;           
             opaque = opaqueMask; 
             pipelineType = rasterPipeline;          
             id = 0;            
@@ -73,10 +71,7 @@ namespace odfaeg {
 
             //materials.push_back(this);
             return *this;
-        }*/
-        void Material::setOpaque(bool opaque) {
-            this->opaque = opaque;
-        }
+        }*/        
         bool Material::isOpaque() {
             return opaque;
         }
@@ -145,18 +140,6 @@ namespace odfaeg {
         float Material::getSpecularPower() {
             return specularPower;
         }
-        void Material::setRefractable(bool refractable) {
-            this->refractable = refractable;
-        }
-        void Material::setReflectable(bool reflectable) {
-            this->reflectable = reflectable;
-        }
-        bool Material::isRefractable() {
-            return refractable;
-        }
-        bool Material::isReflectable() {
-            return reflectable;
-        }
         void Material::setSpecularIntensity(float specularIntensity) {
             this->specularIntensity = specularIntensity;
             maxSpecularIntensity = (specularIntensity > maxSpecularIntensity) ? specularIntensity : maxSpecularIntensity;
@@ -212,8 +195,7 @@ namespace odfaeg {
                 && specularIntensity == material.specularIntensity
                 && specularPower == material.specularPower
                 && refractionFactor == material.refractionFactor
-                && refractable == material.refractable
-                && reflectable == material.reflectable
+                && opaque == material.opaque
                 && instanceGroup == material.instanceGroup
                 && layer == material.layer
                 && center == material.center

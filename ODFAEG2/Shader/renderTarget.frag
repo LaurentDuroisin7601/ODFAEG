@@ -23,9 +23,7 @@ struct MaterialData {
     int instanceGroupId;
     uint vertsInstanceSet;
     uint materialId;
-    uint nbBuffers;
-    int reflectable;
-    int refractable;   
+    uint nbBuffers;       
     uint opaque;  
     uint pipelineType;     
 };

@@ -191,10 +191,8 @@ namespace odfaeg {
                 material.nbIndexes = 0;
                 material.materialId = materials[i]->getId();
                 
-                material.instanceGroupId = materials[i]->getInstanceGroupId();
-                material.reflectable = (materials[i]->isReflectable()) ? 1 : 0;
-                material.refractable = (materials[i]->isRefractable()) ? 1 : 0;
-                material.opaque = (materials[i]->isOpaque()) ? 1 : 0;
+                material.instanceGroupId = materials[i]->getInstanceGroupId();                
+                material.opaque = materials[i]->opaque;
                 /*std::cout<<"id : "<<material.materialId<<", reflectable : "<<material.reflectable<<"refractable : "<<material.refractable<<std::endl;
                 system("PAUSE");*/
                 /*if (material.instanceGroupId != -1)
@@ -414,22 +412,20 @@ namespace odfaeg {
             std::vector<Mesh*> gameObjects = RenderTarget::getGameObjects(); 
             std::vector<Mesh*> nonOpaqueObjects; 
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
-                for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
-                    if (!gameObjects[i]->getMaterials()[0]->isOpaque() || gameObjects[i]->getMaterials()[0]->isReflectable() || gameObjects[i]->getMaterials()[0]->isRefractable()) {
-                        nonOpaqueObjects.push_back(gameObjects[i]);
-                        unsigned int instanceID = gameObjects[i]->getGameObject()->getSubMeshes()[j].instanceId;
-                        VkTransformMatrixKHR transformMatrix = toVulkanMatrix(gameObjects[i]->getGameObject()->getTransform().getMatrix());
-                        VkAccelerationStructureInstanceKHR instance{};
-                        instance.transform = transformMatrix;
-                        instance.instanceCustomIndex = instanceID;
-                        instance.mask = 0xFF;
-                        instance.instanceShaderBindingTableRecordOffset = 0;
-                        instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
-                        instance.accelerationStructureReference = bottomLevelASBuffers[instanceID].getDeviceAddress();
-                        //std::cout<<"blas reference : "<<instance.accelerationStructureReference<<std::endl;                    
-                        instances.push_back(instance);
-                        totalInstancesCount++;
-                    }
+                for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {                    
+                    nonOpaqueObjects.push_back(gameObjects[i]);
+                    unsigned int instanceID = gameObjects[i]->getGameObject()->getSubMeshes()[j].instanceId;
+                    VkTransformMatrixKHR transformMatrix = toVulkanMatrix(gameObjects[i]->getGameObject()->getTransform().getMatrix());
+                    VkAccelerationStructureInstanceKHR instance{};
+                    instance.transform = transformMatrix;
+                    instance.instanceCustomIndex = instanceID;
+                    instance.mask = 0xFF;
+                    instance.instanceShaderBindingTableRecordOffset = 0;
+                    instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
+                    instance.accelerationStructureReference = bottomLevelASBuffers[instanceID].getDeviceAddress();
+                    //std::cout<<"blas reference : "<<instance.accelerationStructureReference<<std::endl;                    
+                    instances.push_back(instance);
+                    totalInstancesCount++;                    
                 }
             }
             commandPool.beginRecordCommandBuffer(parentRenderer.getCurrentFrame());

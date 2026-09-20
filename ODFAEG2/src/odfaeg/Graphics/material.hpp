@@ -63,7 +63,9 @@ namespace odfaeg {
             inline static const unsigned int opaqueMask = 1 << 0;
             inline static const unsigned int transparentMask = 1 << 1;
             inline static const unsigned int rtPipeline = 2 << 1;
-            inline static const unsigned int rasterPipeline = 3 << 1; 		
+            inline static const unsigned int rasterPipeline = 3 << 1;
+            inline static const unsigned int reflectMask = 4 << 1;
+            inline static const unsigned int refractMask = 5 << 1; 		
             Material();
             unsigned int getId();
             static unsigned int getNbMaterials();
@@ -88,7 +90,6 @@ namespace odfaeg {
             void setType(entity::SubMesh::Type type);
             entity::SubMesh::Type getType();
             bool isOpaque();
-            void setOpaque(bool opaque);
             /**
             * \fn const Texture* getTexture(int texUnit = 0)
             * \brief get the texture of the given unit. (0 = the first texture by default)
@@ -126,11 +127,7 @@ namespace odfaeg {
             void setSpecularIntensity(float specularIntensity);
             void setSpecularPower(float specularPower);            
             void setRefractionFactor(float refractionFactor);
-            float getRefractionFactor();
-            void setReflectable(bool reflectable);
-            void setRefractable(bool refractable);
-            bool isReflectable();
-            bool isRefractable();
+            float getRefractionFactor();            
 
             static void updateIds();
             static bool contains(Material& material);
@@ -146,8 +143,7 @@ namespace odfaeg {
                 ////////std::cout<<"specular intensity "<<specularIntensity<<std::endl;
                 ar(specularPower);
                 ////////std::cout<<"specular power : "<<specularPower<<std::endl;
-                ar(reflectable);
-                ar(refractable);
+                ar(opaque);
                 ar(refractionFactor);
                 ar(type);
                 ar(instanceGroup);
@@ -183,8 +179,7 @@ namespace odfaeg {
             unsigned int id, layer;
 		    int instanceGroup;
             inline static std::deque<Material*> materials = std::deque<Material*>();
-            inline static std::deque<Material*> sameMaterials = std::deque<Material*>();
-            bool reflectable, refractable;            
+            inline static std::deque<Material*> sameMaterials = std::deque<Material*>();                        
             math::Vec4f center;
             entity::Color albedo;            
             inline static unsigned int maxSpecularIntensity = 0;

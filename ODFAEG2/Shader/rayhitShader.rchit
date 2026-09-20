@@ -8,6 +8,12 @@
 #define MAX_BONES_INFLUENCE 4
 #define NB_CASCADES 4
 const float epsilon = 0.001;
+const uint opaqueMask = 1 << 0;
+const uint transparentMask = 1 << 1;
+const uint rtPipeline = 2 << 1;
+const uint rasterPipeline = 3 << 1; 
+const uint reflectable = 4 << 1;
+const uint refractable = 5 << 1; 
 struct Vertex {
     vec3 position; ///< 3D position of the vertex
     uint color; ///< Color of the vertex
@@ -49,10 +55,9 @@ struct Material {
     int instanceGroupId;
     uint vertsInstanceSet;
     uint materialId;
-    uint nbBuffers;  
-    int reflectable;
-    int refractable; 
-    int opaque; 
+    uint nbBuffers;
+    int opaque;
+    int pipelineType; 
 };
 layout (binding = 0, set =  1) buffer vertexBuffer {
     Vertex vertices[];
@@ -156,13 +161,13 @@ void main() {
         transport.localASID = int(geomOffs.tlasID);
         transport.origin = hitPos + N * epsilon;
         transport.direction = rayDir; 
-        if(material.reflectable == 1) {
+        if((material.opaque & reflectable) != 0) {
             transport.R = reflect(I, N);
             transport.reflectable = true;          
         } else {
             transport.reflectable = false;
         }   
-        if (material.refractable == 1) {
+        if ((material.opaque & reflectable) != 0) {
             float IOR = 1;
             if (material.materialType == 1) {
                 IOR = 1.00 / 1.33;        

@@ -64,10 +64,9 @@ namespace odfaeg {
                     int instanceGroupId;
                     unsigned int vertsInstanceSet;
                     unsigned int materialId;
-                    unsigned int nbBuffers;
-                    int reflectable;
-                    int refractable;
+                    unsigned int nbBuffers;                    
                     int opaque;
+                    int pipelineType;
                 };	
                 struct UBOData {
                     math::Matrix4f viewInverse;
