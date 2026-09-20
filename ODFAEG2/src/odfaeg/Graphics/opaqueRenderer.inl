@@ -101,7 +101,7 @@ namespace odfaeg {
             DescriptorSet& defaultRenderingSet = GPUContext::instance().getDescriptorSets(hzShader, (hasDiffuseTextures) ? 4 : 3, 1)[0];
             defaultRenderingSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             defaultRenderingSet.updateBufferInfos(1, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MESHES), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-            defaultRenderingSet.updateBufferInfos(2, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            defaultRenderingSet.updateBufferInfos(2, GPUContext::instance().getSharedBuffers(RenderTarget::MATERIAL_DATA_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             if (hasDiffuseTextures ) {
                 //std::cout<<"textures : "<<Texture::getAllTextures().size()<<std::endl;
                 /*std::cout<<"layout : "<<GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE)[0].getImage(0).getLayout()<<std::endl;
