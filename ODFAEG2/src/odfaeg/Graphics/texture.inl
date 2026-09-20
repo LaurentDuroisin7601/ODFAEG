@@ -1596,6 +1596,6 @@ namespace odfaeg {
         }
         unsigned int Texture::getMipLevels() {
             return mipLevels;
-        }
+        }        
 	}
 }

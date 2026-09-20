@@ -77,7 +77,7 @@ void main() {
         float hizDepth = textureLod(hiz, uv, mip).r;
         vec4 meshletPos =  pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(inPosition, 1);
         float meshletDepth = (meshletPos / meshletPos.w).z;
-        if (meshletDepth > hizDepth) {
+        if (meshletDepth < hizDepth) {
             return;
         }
     }    
