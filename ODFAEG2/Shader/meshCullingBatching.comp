@@ -7,6 +7,10 @@
 #define MAX_BONES_INFLUENCE 4
 #define MAX_VERTICES 255
 #define MAX_PRIMITIVES 85
+const uint opaqueMask = 1 << 0;
+const uint transparentMask = 1 << 1;
+const uint rtPipeline = 2 << 1;
+const uint rasterPipeline = 3 << 1; 
 /*Boîtes englobantes des objets*/
 struct AABB {
 	vec3 center;
@@ -139,7 +143,8 @@ struct MeshLet {
 };
 /*objets en entrée.*/
 layout(push_constant) uniform PushConstant {    
-    uint currentFrame;    
+    uint currentFrame;   
+    uint opaqueMask; 
 } pc;
 layout (std430, set = 0, binding = 0) buffer inputObjectSSBO {
 	Object objects[];
@@ -425,8 +430,10 @@ void main() {
             for (uint s = 0; s < object.nbSubMeshes; s++) { 
                 //debugPrintfEXT("SubmeshOffset %i", object.nbSubMeshes);                   
                 SubMesh subMesh = inputSubmeshesBuffer.subMeshes[object.subMeshesOffset+s]; 
-                
-                if (subMesh.materialId == materialId 
+                MaterialData material = inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId];
+                if (((pc.opaqueMask & material.opaque) != 0)
+                    && ((rasterPipeline & material.pipelineType) != 0) 
+                    && subMesh.materialId == materialId 
                     && inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].reflectable != 1
                     && inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].refractable != 1
                     && subMesh.primitiveType == primitiveType 
