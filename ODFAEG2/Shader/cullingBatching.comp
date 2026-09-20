@@ -72,7 +72,7 @@ struct MaterialData {
     int reflectable;
     int refractable; 
     uint opaque;
-    uint pipelineType;
+    uint pipelineType;    
 };
 struct IndirectElementsDrawCommand {
     uint index_count;
@@ -281,7 +281,7 @@ void main() {
                             debugPrintfEXT("sm id : %i, diffuse tex id : %i", subMesh.id, material.diffuseTextureIndex);*/
                         outputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[indirectElementsDrawCommandOffset] = material;
                         uint offsetInOutputMeshData = atomicAdd(offsetInOutputMeshData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshDataOffset, 1);
-                        outputMeshesData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshData[offsetInOutputMeshData]  = subMesh;
+                        outputMeshesData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshData[instanceBase]  = subMesh;
                         //debugPrintfEXT("material datas %v2f", material.uvScale);
                         //debugPrintfEXT("Output Model Matrix : %i\n%v4f\n%v4f\n%v4f\n%v4f",objectDataOffset,outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[0], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[1], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[2], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[3]);
                     } 

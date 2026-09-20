@@ -164,7 +164,7 @@ namespace odfaeg {
 				int reflectable;
 				int refractable; 
 				unsigned int opaque;
-				unsigned int pipelineType;
+				unsigned int pipelineType;				
 			};	
 			struct DrawElementsIndirectCommand {
 				unsigned int index_count;

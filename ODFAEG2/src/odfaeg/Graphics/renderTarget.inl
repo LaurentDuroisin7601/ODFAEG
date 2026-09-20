@@ -1656,7 +1656,7 @@ namespace odfaeg {
 				DescriptorSet& defaultRenderingSet = GPUContext::instance().getDescriptorSets(defaultRenderingShader, (hasDiffuseTextures) ? 4 : 3, 1)[0];
 				defaultRenderingSet.updateBufferInfos(0, outputModelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(1, outputMeshes, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-				defaultRenderingSet.updateBufferInfos(2, outputMaterialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				defaultRenderingSet.updateBufferInfos(2, materialDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				if (hasDiffuseTextures ) {
 					//std::cout<<"textures : "<<Texture::getAllTextures().size()<<std::endl;
 					defaultRenderingSet.updateImageInfos(3, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
@@ -2321,7 +2321,43 @@ namespace odfaeg {
 				1, &mem,
 				0, nullptr,
 				0, nullptr
-			);			
+			);
+			/*VkMemoryBarrier2 barrier{};
+			barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2;
+			barrier.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+			barrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
+			barrier.dstStageMask = VK_PIPELINE_STAGE_2_TASK_SHADER_BIT_EXT | VK_PIPELINE_STAGE_2_MESH_SHADER_BIT_EXT |
+    		VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+			barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT |  VK_ACCESS_2_SHADER_WRITE_BIT;
+			VkDependencyInfo depInfo{};
+			depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+			depInfo.memoryBarrierCount = 1;
+			depInfo.pMemoryBarriers = &barrier;
+			std::vector<VkImageMemoryBarrier2> imgs{};
+			for (unsigned int i = 0; i < GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size(); i++) {
+			
+				VkImageMemoryBarrier2 img{};
+				img.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+				img.srcStageMask  = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+				img.srcAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+				img.dstStageMask  =
+					VK_PIPELINE_STAGE_2_TASK_SHADER_BIT_EXT |
+					VK_PIPELINE_STAGE_2_MESH_SHADER_BIT_EXT |
+					VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+				img.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+
+				img.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;      // layout utilisé par le compute
+				img.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // layout utilisé par mesh/frag
+				Texture& texture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE)[i];
+				img.image = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE)[i].getImage().getHandle();
+				img.subresourceRange = { texture.getImage().getImageAspectFlags(), 0, texture.getMipLevels(), 0, texture.getLayerCount()};
+				imgs.push_back(img);
+			}
+			depInfo.imageMemoryBarrierCount = imgs.size();
+			depInfo.pImageMemoryBarriers    = imgs.data();
+			
+
+			vkCmdPipelineBarrier2(commandPool.getHandle(getCurrentFrame()), &depInfo);*/			
 			beginRendering();
 			DepthStencilType depthStencilInfoId;
 			if (!useDepthTest() && !useStencilTest()) {
