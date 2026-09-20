@@ -34,11 +34,11 @@ namespace odfaeg {
             std::vector<IComponent*> getComponents();            
             private :            
             std::map<unsigned int, IRenderer*> renderers;
+            std::map<unsigned int, IRenderer*> rayRenderers; 
             std::map<unsigned int, Widget*> widgets;
             RenderTexture& output;
             RenderTexture csmShadowMap, pointShadowMap;
             Texture environmentMap;
-            RenderTexture input, rayInput;
         };
     }
 }

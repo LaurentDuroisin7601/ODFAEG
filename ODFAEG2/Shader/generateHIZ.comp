@@ -11,7 +11,7 @@ void main() {
     uint d11 = imageLoad(srcMip, gid * 2 + ivec2(1,1)).r;
 
     // Reversed-Z → on prend le MIN
-    uint d = max(max(d00, d10), max(d01, d11));
+    uint d = min(min(d00, d10), min(d01, d11));
 
     imageStore(dstMip, gid, uvec4(d));
 }

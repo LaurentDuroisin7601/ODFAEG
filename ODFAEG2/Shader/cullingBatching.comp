@@ -5,6 +5,10 @@
 #define NB_PRIMITIVE_TYPES 6
 #define MAX_FRAMES_IN_FLIGHT 2
 /*Boîtes englobantes des objets*/
+const uint opaqueMask = 1 << 0;
+const uint transparentMask = 1 << 1;
+const uint rtPipeline = 2 << 1;
+const uint rasterPipeline = 3 << 1; 
 struct AABB {
 	vec3 center;
 	vec3 size;
@@ -67,6 +71,8 @@ struct MaterialData {
     uint nbBuffers;
     int reflectable;
     int refractable; 
+    uint opaque;
+    uint pipelineType;
 };
 struct IndirectElementsDrawCommand {
     uint index_count;
@@ -80,7 +86,7 @@ layout(push_constant) uniform PushConstant {
     /*mat4 viewMatrix;
     mat4 projMatrix;*/
     uint currentFrame;
-    //uint totalSubMeshesCount;
+    uint opaqueMask;
 } pc;
 layout (set = 0, binding = 0) buffer ObjectTypesSSBO {
 	int types[];
@@ -201,7 +207,11 @@ void main() {
             //Regroupement des données par matériaux et par type de primitive. (Batching)
             for (uint s = 0; s < object.nbSubMeshes; s++) {
                 SubMesh subMesh = inputSubmeshesBuffer.subMeshes[object.subMeshesOffset+s];
-                if (subMesh.materialId == materialId && subMesh.primitiveType == primitiveType && intersects(subMesh.globalBounds, ubo[pc.currentFrame].frustrum)) {
+                MaterialData material = inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId];
+                //debugPrintfEXT("opaque mask : %i %i", rasterPipeline, material.pipelineType);
+                if (((pc.opaqueMask & material.opaque) != 0)
+                    && ((rasterPipeline & material.pipelineType) != 0) && subMesh.materialId == materialId && subMesh.primitiveType == primitiveType 
+                    && intersects(subMesh.globalBounds, ubo[pc.currentFrame].frustrum)) {
                     //debugPrintfEXT("submesh in frustrum %i", s);
                     float dist = distance(ubo[pc.currentFrame].frustrum.center, subMesh.globalBounds.center);
                     float lodStep = 20.0;

@@ -27,7 +27,8 @@ namespace odfaeg {
             refractionFactor = 0;
             refractable = false;
             reflectable = false; 
-            opaque = false;           
+            opaque = opaqueMask; 
+            pipelineType = rasterPipeline;          
             id = 0;            
             instanceGroup = -1;
             layer = 0;

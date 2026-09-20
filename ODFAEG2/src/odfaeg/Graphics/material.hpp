@@ -19,7 +19,7 @@ namespace odfaeg {
 		class Material {
             class TextureInfo {
             private:
-                const Texture* texture; /**> A texture used by the material.*/                
+                const Texture* texture; /**> A texture used by the material.*/                 
             public:
                 /**
                 * \fn TextureInfo()
@@ -59,7 +59,11 @@ namespace odfaeg {
 
                 }
             };
-        public:			
+        public:	
+            inline static const unsigned int opaqueMask = 1 << 0;
+            inline static const unsigned int transparentMask = 1 << 1;
+            inline static const unsigned int rtPipeline = 2 << 1;
+            inline static const unsigned int rasterPipeline = 3 << 1; 		
             Material();
             unsigned int getId();
             static unsigned int getNbMaterials();
@@ -165,6 +169,8 @@ namespace odfaeg {
             static unsigned int getMaxSpecularPower();
             static unsigned int getNbLayers();
             unsigned int materialSet;
+            unsigned int opaque;
+            unsigned int pipelineType;
         private:
             Material(const Material&) = delete;
             Material& operator=(const Material&) = delete;
@@ -178,7 +184,7 @@ namespace odfaeg {
 		    int instanceGroup;
             inline static std::deque<Material*> materials = std::deque<Material*>();
             inline static std::deque<Material*> sameMaterials = std::deque<Material*>();
-            bool reflectable, refractable, opaque;
+            bool reflectable, refractable;            
             math::Vec4f center;
             entity::Color albedo;            
             inline static unsigned int maxSpecularIntensity = 0;

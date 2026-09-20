@@ -439,6 +439,8 @@ namespace odfaeg {
 						system("PAUSE");*/
 					material.reflectable = (materials[i]->isReflectable()) ? 1 : 0;
 					material.refractable = (materials[i]->isRefractable()) ? 1 : 0;
+					material.opaque = materials[i]->opaque;
+					material.pipelineType = materials[i]->pipelineType;
 					/*std::cout<<"id : "<<material.materialId<<", reflectable : "<<material.reflectable<<"refractable : "<<material.refractable<<std::endl;
 					system("PAUSE");*/
 					/*if (material.instanceGroupId != -1)
@@ -1766,7 +1768,7 @@ namespace odfaeg {
 			//std::cout<<"end record command buffer : "<<getCurrentFrame()<<std::endl;
 			commandPool.endRecordCommandBuffer(getCurrentFrame());
 		}		
-		void RenderTarget::applyCullingAndBatching(bool useMeshShader) {
+		void RenderTarget::applyCullingAndBatching(unsigned int materialMask, bool useMeshShader) {
 			//computeCommandPool.beginRecordCommandBuffer(getCurrentFrame());
 			//std::cout<<"dispatch : nbObjects  : "<<gameObjects.size()<<"nb material : "<<Material::getNbMaterials()<<std::endl;
 			if (gameObjects.size() > 0) {
@@ -1825,6 +1827,7 @@ namespace odfaeg {
 				//std::cout<<"nb sets : "<<sets.size()<<std::endl;
 				vkCmdBindDescriptorSets(commandPool.getHandle(getCurrentFrame()), VK_PIPELINE_BIND_POINT_COMPUTE, GPUContext::instance().getComputePipeline(resetBuffersShader).getLayout(), 0, sets.size(), sets.data(), 0, 0);
 				cullingBatchingPc.currentFrame = getCurrentFrame();
+				cullingBatchingPc.materialMask = materialMask;
 				vkCmdPushConstants(commandPool.getHandle(getCurrentFrame()), GPUContext::instance().getComputePipeline(resetBuffersShader).getLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(CullingBatchingPC), &cullingBatchingPc);
 				vkCmdDispatch(commandPool.getHandle(getCurrentFrame()), Material::getNbMaterials(), NB_PRIMITIVE_TYPES, 1);
 				if (useMeshShader) {

@@ -162,7 +162,9 @@ namespace odfaeg {
 				unsigned int materialId;
 				unsigned int nbBuffers;
 				int reflectable;
-				int refractable;  					   
+				int refractable; 
+				unsigned int opaque;
+				unsigned int pipelineType;
 			};	
 			struct DrawElementsIndirectCommand {
 				unsigned int index_count;
@@ -198,7 +200,7 @@ namespace odfaeg {
 				math::Matrix4f projMatrix;
 				math::Matrix4f viewMatrix;
 				int primitiveType;
-				int currentFrame;
+				int currentFrame;				
 			};
 			struct IndexesPC {
             	int currentImageIndex;
@@ -224,7 +226,8 @@ namespace odfaeg {
 				int currentImageIndex;
 			};
 			struct CullingBatchingPC {
-			    unsigned int currentFrame;				
+			    unsigned int currentFrame;
+				unsigned int materialMask;				
 			};
 			
 			inline static std::mutex mtx = std::mutex();
@@ -234,7 +237,7 @@ namespace odfaeg {
 			void resetVertexBufferDatas();
 			void createDescriptorAndPipelines();
 			void setTypesToRender(std::string expression, unsigned int currentFrame);
-			void applyCullingAndBatching(bool useMeshShader=false);			
+			void applyCullingAndBatching(unsigned int materialMast = Material::opaqueMask, bool useMeshShader=false);			
 			template <typename D>
 			void draw(D& drawable, RenderStates states=RenderStates::Default);
 			void draw(VertexBuffer& vb, RenderStates states=RenderStates::Default);

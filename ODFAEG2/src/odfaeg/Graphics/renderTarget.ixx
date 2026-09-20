@@ -320,7 +320,11 @@ namespace odfaeg {
 			unsigned int id;
 			bool needToUpdateCullBatchIndCmds;
 			IndexesPC indexesPC;
-			PFN_vkCmdDrawMeshTasksEXT vkCmdDrawMeshTasksEXT;					
+			PFN_vkCmdDrawMeshTasksEXT vkCmdDrawMeshTasksEXT;
+			inline static const unsigned int opaqueMask = 0b00000001;
+			inline static const unsigned int transparentMask = 0b00000010;
+			inline static const unsigned int rtPipeline = 0b00000100;
+			inline static const unsigned int rasterPipeline = 0b000010000; 					
 		};
 		export class Drawable {
             public :
