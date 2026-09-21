@@ -225,9 +225,9 @@ namespace odfaeg {
 			    vkResetFences(device.getDevice(), 1, &fence.getHandle(currentFrame));     
                 mipWidth = m_size.x();
                 mipHeight = m_size.y();           
-            
+                commandPool.beginRecordCommandBuffer(i);
                 for(unsigned int mip = 1; mip < mipLevels; mip++) {
-                    commandPool.beginRecordCommandBuffer(i);
+                    
                     updateDescriptorSets(mip);
                     std::vector<VkDescriptorSet> sets;
                     for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(mipShader).size(); i++) {
@@ -266,8 +266,8 @@ namespace odfaeg {
                         VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                         0, 0, nullptr, 0, nullptr,
                         1, &barrier);
-                    commandPool.endRecordCommandBuffer(i);
-                    VkSubmitInfo submitInfo{};
+                    
+                    /*VkSubmitInfo submitInfo{};
                     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
                     submitInfo.commandBufferCount = commandPool.getHandles().size();
                     submitInfo.pCommandBuffers = commandPool.getHandles().data();
@@ -276,7 +276,7 @@ namespace odfaeg {
                         throw std::runtime_error("Echec de l'envoi d'un command buffer!");
                     }
                     vkWaitForFences(device.getDevice(), 1, &fence.getHandle(currentFrame), VK_TRUE, UINT64_MAX);
-			        vkResetFences(device.getDevice(), 1, &fence.getHandle(currentFrame));        
+			        vkResetFences(device.getDevice(), 1, &fence.getHandle(currentFrame));*/        
                 }         
                 if (i == 0) {       
                     MipInfo mipInfo;
@@ -285,9 +285,10 @@ namespace odfaeg {
                     mipsInfos.push_back(mipInfo);
                 }
                 //std::cout<<"mip : "<<mipLevels-1<<std::endl;
-                commandPool.beginRecordCommandBuffer(i); 
+                //commandPool.beginRecordCommandBuffer(i); 
                 transitionImageLayout(GPUContext::instance().getSharedTextures(16)[id-1].getImage(), commandPool.getHandle(i), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 0, mipLevels, layerCount);
-                commandPool.endRecordCommandBuffer(i); 
+                commandPool.endRecordCommandBuffer(i);
+                //commandPool.endRecordCommandBuffer(i); 
                 
             }
             VkSubmitInfo submitInfo{};
