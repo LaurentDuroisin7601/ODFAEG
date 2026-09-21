@@ -15,6 +15,7 @@
 #include "../Core/nonCopyable.hpp"
 #include "../Core/resourceManager.hpp"
 #include "buffer.hpp"
+#include "fence.hpp"
 namespace
 {
     std::mutex idMutex;
@@ -42,7 +43,7 @@ namespace odfaeg {
             void copyFrom(Texture& texture);
             void copyFrom(CommandPool& commandPool, Texture& texture);
             void generateMipmaps();
-            void generateDepthMipmaps();
+            void generateDepthMipmaps(unsigned int currentFrame);
             Texture& operator=(Texture&& texture) noexcept;
 			void createCommandBuffers();
 			void setTexType(unsigned int texType);
@@ -117,6 +118,7 @@ namespace odfaeg {
 			std::vector<MipInfo> mipsInfos;
             bool isCubeMap, isDepth;
             Shader mipShader, convertShader;
+            Fence fence;
 		};         
 	}    
 }

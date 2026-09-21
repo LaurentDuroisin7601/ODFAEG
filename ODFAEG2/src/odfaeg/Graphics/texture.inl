@@ -1,7 +1,7 @@
 namespace odfaeg {
 	namespace graphic {
         Texture::Texture(Device& device, unsigned int nbBuffers) : device(device), texType(0), nbBuffers(nbBuffers), m_Smooth(false), m_Repeated(false), m_size(0u, 0u), commandPool(device), id(0), unormalized(false), isFBOTexture(false),
-        mipShader(device), convertShader(device) {
+        mipShader(device), convertShader(device), fence(device) {
             
             for (unsigned int i = 0; i < nbBuffers; i++) {                    
                 images.emplace_back(device);
@@ -24,6 +24,7 @@ namespace odfaeg {
             if (!convertShader.loadFromFile(shaderDir + "/depthToColorFormat.comp")) {
                 throw std::runtime_error("Failed to load convert formats shader");
             }
+            fence.create(2);
         }  
         void Texture::createDescriptorAndPipelines() {
             if (!mipComputeCreated) {
@@ -146,7 +147,7 @@ namespace odfaeg {
             }
             vkDeviceWaitIdle(device.getDevice());            
         }
-        void Texture::generateDepthMipmaps() { 
+        void Texture::generateDepthMipmaps(unsigned int currentFrame) { 
             createDescriptorAndPipelines();             
             auto& vec = GPUContext::instance().getSharedTextures(texType+1);            
                 //std::cout<<"FBO texture id : "<<id<<std::endl;                
@@ -217,10 +218,11 @@ namespace odfaeg {
                 submitInfo.commandBufferCount = commandPool.getHandles().size();
                 submitInfo.pCommandBuffers = commandPool.getHandles().data();
                 Device::QueueFamilyIndices indices = device.findQueueFamilies(device.getPhysicalDevice(), VK_NULL_HANDLE);
-                if (vkQueueSubmit(device.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+                if (vkQueueSubmit(device.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, fence.getHandle(currentFrame)) != VK_SUCCESS) {
                     throw std::runtime_error("Echec de l'envoi d'un command buffer!");
                 }
-                vkDeviceWaitIdle(device.getDevice());
+                vkWaitForFences(device.getDevice(), 1, &fence.getHandle(currentFrame), VK_TRUE, UINT64_MAX);
+			    vkResetFences(device.getDevice(), 1, &fence.getHandle(currentFrame));     
                 mipWidth = m_size.x();
                 mipHeight = m_size.y();           
             
@@ -270,10 +272,11 @@ namespace odfaeg {
                     submitInfo.commandBufferCount = commandPool.getHandles().size();
                     submitInfo.pCommandBuffers = commandPool.getHandles().data();
                     Device::QueueFamilyIndices indices = device.findQueueFamilies(device.getPhysicalDevice(), VK_NULL_HANDLE);
-                    if (vkQueueSubmit(device.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+                    if (vkQueueSubmit(device.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, fence.getHandle(currentFrame)) != VK_SUCCESS) {
                         throw std::runtime_error("Echec de l'envoi d'un command buffer!");
                     }
-                    vkDeviceWaitIdle(device.getDevice());    
+                    vkWaitForFences(device.getDevice(), 1, &fence.getHandle(currentFrame), VK_TRUE, UINT64_MAX);
+			        vkResetFences(device.getDevice(), 1, &fence.getHandle(currentFrame));        
                 }         
                 if (i == 0) {       
                     MipInfo mipInfo;
@@ -292,10 +295,11 @@ namespace odfaeg {
             submitInfo.commandBufferCount = commandPool.getHandles().size();
             submitInfo.pCommandBuffers = commandPool.getHandles().data();
             Device::QueueFamilyIndices indices = device.findQueueFamilies(device.getPhysicalDevice(), VK_NULL_HANDLE);
-            if (vkQueueSubmit(device.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+            if (vkQueueSubmit(device.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, fence.getHandle(currentFrame)) != VK_SUCCESS) {
                 throw std::runtime_error("Echec de l'envoi d'un command buffer!");
             }
-            vkDeviceWaitIdle(device.getDevice());            
+            vkWaitForFences(device.getDevice(), 1, &fence.getHandle(currentFrame), VK_TRUE, UINT64_MAX);
+			vkResetFences(device.getDevice(), 1, &fence.getHandle(currentFrame));            
         }
 	    void Texture::setSize(math::Vector2u size) {
             m_size = size;
@@ -364,7 +368,8 @@ namespace odfaeg {
                 }
             }
         }
-        Texture::Texture(Texture&& other) noexcept : device(other.device), commandPool(other.device), mipShader(other.device), convertShader(other.device) {
+        Texture::Texture(Texture&& other) noexcept : device(other.device), commandPool(other.device),
+         mipShader(other.device), convertShader(other.device), fence(other.device) {
             nbBuffers = other.nbBuffers;
             images = std::move(other.images);
             m_format = other.m_format;
