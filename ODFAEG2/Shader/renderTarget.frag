@@ -46,7 +46,7 @@ layout(location = 5) flat in int currentFrame;
 layout(location = 0) out vec4 outColor;
 void main() {
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[materialID];
-    vec2 uv = fragTexCoord;
+    vec2 uv = vec2(fragTexCoord.x, 1-fragTexCoord.y);
     // --- Diffuse ---
     vec4 diffuse = fragColor;
     /*if (mat.diffuseTextureIndex == 4)
