@@ -92,11 +92,11 @@ namespace odfaeg {
 			layoutBindings[binding].descriptorType = descriptorType;
 			layoutBindings[binding].pImmutableSamplers = nullptr;
 			layoutBindings[binding].stageFlags = stageFlags;
-			if (bindless) {
-				if (binding == layoutBindings.size() - 1) {
+			/*if (bindless) {
+				if (binding == layoutBindings.size() - 1) {*/
 					this->bindlessFlags[binding] = bindlessFlags;
-				}
-			}
+				/*}
+			}*/
 		}	
 		void DescriptorSetLayout::update() {
 			if (descriptorSetLayout != VK_NULL_HANDLE) {

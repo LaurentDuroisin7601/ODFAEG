@@ -39,8 +39,8 @@ namespace odfaeg {
                 converterPool.update();
                 DescriptorSet::allocate(converterPool, converterLayout, GPUContext::instance().getDescriptorSets(convertShader, 2, 1));                 
                 DescriptorSetLayout& mipLayout = GPUContext::instance().getDescriptorSetLayout(mipShader, 2);
-                mipLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
-                mipLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
+                mipLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT, VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT);
+                mipLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT, VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT);
                 mipLayout.update();
                 GPUContext::instance().getComputePipeline(mipShader).createComputePipeline(mipShader, GPUContext::instance().getDescriptorSetLayout(mipShader));
                 DescriptorPool& mipPool = GPUContext::instance().getDescriptorPool(mipShader, 2);

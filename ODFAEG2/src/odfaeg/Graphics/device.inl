@@ -360,7 +360,7 @@ namespace odfaeg {
                 features12.descriptorBindingPartiallyBound = VK_TRUE;
                 features12.runtimeDescriptorArray = VK_TRUE;
                 features12.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
-                features12.shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
+                features12.shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;                
 
 
                 if (features2.features.samplerAnisotropy)
