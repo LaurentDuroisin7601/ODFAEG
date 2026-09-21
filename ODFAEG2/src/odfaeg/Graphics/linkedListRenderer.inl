@@ -308,6 +308,7 @@ namespace odfaeg {
             if (!stop.load()) {                
                 bool useDepthTest = parentRenderer.useDepthTest();
                 bool useStencilTest = parentRenderer.useStencilTest();
+                parentRenderer.getDepthStencilTexture().generateDepthMipmaps(parentRenderer.getCurrentFrame());
                 parentRenderer.setDepthStencil(false, false);
                 parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
                 parentRenderer.applyCullingAndBatching();                
