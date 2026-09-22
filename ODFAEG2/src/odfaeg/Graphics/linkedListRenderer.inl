@@ -70,7 +70,9 @@ namespace odfaeg {
             linkedListCmdPool.createCommandBuffers(false, MAX_FRAMES_IN_FLIGHT);
             quadLinkedListCommandPool.create(queueFamilyIndices.graphicsFamily.value());
             quadLinkedListCommandPool.createCommandBuffers(false, MAX_FRAMES_IN_FLIGHT);
-
+            quadLinkedListPC.resolution = math::Vec2f(size.x(), size.y());
+            viewProjMatPC.screenWidth = size.x();
+            viewProjMatPC.screenHeight = size.y();
             window::Command rendererReadyCmd(core::FastDelegate<bool>(&LinkedListRenderer::isRendererReady, this), core::FastDelegate<void>(&LinkedListRenderer::drawNextFrame, this));
             getEventListener().connect("RendererReady",rendererReadyCmd);
             connectSwapchainResizedCommand<LinkedListRenderer>();
