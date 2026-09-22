@@ -287,7 +287,8 @@ namespace odfaeg {
                     RenderStates states;
                     states.shader = &quadLinkedListShader;
                     states.blendMode = blendMode;
-                    unsigned int currentFrame = parentRenderer.getCurrentFrame();
+                    quadLinkedListPC.currentFrame = parentRenderer.getCurrentFrame();
+                    viewProjMatPC.maxMip = GPUContext::instance().getSharedTextures(16)[parentRenderer.getDepthStencilTexture().getId()].getMipLevels(); 
                     std::vector<VkDescriptorSet> sets;
                     for (unsigned int i = 0; i < GPUContext::instance().getDescriptorSets(quadLinkedListShader).size(); i++) {
                         sets.push_back( GPUContext::instance().getDescriptorSets(quadLinkedListShader)[i][0].getHandle());
