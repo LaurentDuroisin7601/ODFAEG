@@ -54,7 +54,7 @@ struct ModelData {
 };        
 /*Matériaux*/
 struct MaterialData {   
-   uint diffuseTextureIndex;
+    uint diffuseTextureIndex;
     uint specularTextureIndex;
     uint normalTextureIndex;
     uint metalnessTextureIndex;
@@ -207,7 +207,7 @@ void main() {
                 SubMesh subMesh = inputSubmeshesBuffer.subMeshes[object.subMeshesOffset+s];
                 MaterialData material = inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId];
                 //debugPrintfEXT("opaque mask : %i %i", rasterPipeline, material.pipelineType);
-                if (((pc.opaqueMask & material.opaque) != 0)
+                if ((pc.opaqueMask & material.opaque) != 0
                     && ((rasterPipeline & material.pipelineType) != 0) && subMesh.materialId == materialId && subMesh.primitiveType == primitiveType 
                     && intersects(subMesh.globalBounds, ubo[pc.currentFrame].frustrum)) {
                     //debugPrintfEXT("submesh in frustrum %i", s);
