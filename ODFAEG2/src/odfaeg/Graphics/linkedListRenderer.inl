@@ -313,7 +313,7 @@ namespace odfaeg {
                 parentRenderer.getDepthStencilTexture().generateDepthMipmaps(parentRenderer.getCurrentFrame());
                 parentRenderer.setDepthStencil(false, false);
                 parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
-                parentRenderer.applyCullingAndBatching();                
+                parentRenderer.applyCullingAndBatching(Material::transparentMask);                
                 parentRenderer.applyComputeGraphicsBarrier();
                 if (needToUpdateDescriptorSets) {
                     //std::cout<<"update ds"<<std::endl;
