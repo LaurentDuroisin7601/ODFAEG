@@ -242,6 +242,7 @@ int main() {
 	window.addGameObject(&cube3Mesh);
 	window.addGameObject(&cube4Mesh);
 	window.addGameObject(&cube5Mesh);
+	window.addGameObject(&cube6Mesh)
 	RenderTexture sceneColorTexture(ctx.getDevice(), true);
 	sceneColorTexture.create(window.getSize().x(), window.getSize().y());
 	sceneColorTexture.setCamera(camera);
