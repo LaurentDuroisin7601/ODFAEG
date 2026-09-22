@@ -172,7 +172,7 @@ namespace odfaeg {
             DescriptorSet& linkedListQuadSet = GPUContext::instance().getDescriptorSets(quadLinkedListShader, 3, 1)[0];
             linkedListQuadSet.updateImageInfos(0, headPtrsStorageImage, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
             linkedListQuadSet.updateBufferInfos(1, linkedListBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-            linkedListQuadSet.updateImageInfos(2, opaqueSceneColors.getTexture(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            linkedListQuadSet.updateImageInfos(2, opaqueSceneColors.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             linkedListQuadSet.updateDescriptorSet();
         }
         void LinkedListRenderer::clear() {
@@ -191,7 +191,8 @@ namespace odfaeg {
             memoryBarrier0.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
             memoryBarrier0.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
             vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier0, 0, nullptr, 0, nullptr);
-            
+            parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
+            parentRenderer.applyCullingAndBatching(Material::transparentMask); 
             registerFramesJob[parentRenderer.getCurrentFrame()].store(true);
             //std::cout<<"cleared"<<std::endl;
             cv.notify_one();
@@ -211,7 +212,10 @@ namespace odfaeg {
                 semaphoreWaitInfo.pValues = &GPUContext::instance().getSharedSemaphore(0)[0].getValue();
                 //vkWaitSemaphores(GPUContext::instance().getDevice().getDevice(), &semaphoreWaitInfo, UINT64_MAX);
                 //std::cout<<"frame : "<<parentRenderer.getCurrentFrame()<<" ready!"<<std::endl;
-                
+                if (needToUpdateDescriptorSets) {                    
+                    updateDescriptorSets();
+                    needToUpdateDescriptorSets = false;
+                }    
                 jobFence[parentRenderer.getCurrentFrame()].reset(2);
                 threadPool.enqueue([this] {
                     bool useDepthTest = parentRenderer.useDepthTest();
@@ -315,14 +319,11 @@ namespace odfaeg {
                 bool useStencilTest = parentRenderer.useStencilTest();
                 parentRenderer.getDepthStencilTexture().generateDepthMipmaps(parentRenderer.getCurrentFrame());
                 parentRenderer.setDepthStencil(false, false);
-                parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
-                parentRenderer.applyCullingAndBatching(Material::transparentMask);                
+                              
+                
+                parentRenderer.getDepthStencilTexture().generateDepthMipmaps(parentRenderer.getCurrentFrame());
                 parentRenderer.applyComputeGraphicsBarrier();
-                if (needToUpdateDescriptorSets) {
-                    //std::cout<<"update ds"<<std::endl;
-                    updateDescriptorSets();
-                    needToUpdateDescriptorSets = false;
-                }                                
+                                            
                 //std::cout<<"commands : !"<<parentRenderer.getCurrentFrame()<<" registered!"<<std::endl;
                 parentRenderer.beginRendering(true);
                 vkCmdExecuteCommands(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &linkedListCmdPool.getHandle(parentRenderer.getCurrentFrame()));
