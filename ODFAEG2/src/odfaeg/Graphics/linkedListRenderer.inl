@@ -155,6 +155,7 @@ namespace odfaeg {
             //std::cout<<"pipeline descritpors created"<<std::endl;
         }
         void LinkedListRenderer::updateDescriptorSets() {
+            //std::cout<<"update ds"<<std::endl;
             bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
             DescriptorSet& linkedListSet = GPUContext::instance().getDescriptorSets(linkedListShader, (hasDiffuseTexture) ? 8 : 7, 1)[0];
             linkedListSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
