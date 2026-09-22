@@ -53,7 +53,7 @@ layout(location = 4) flat in int primitiveType;
 layout(location = 5) flat in int currentFrame;
 layout(location = 0) out vec4 outColor;
 void main() {
-    //debugPrintfEXT("current frame : %i, primitive type : %i", currentFrame, primitiveType);
+    debugPrintfEXT("current frame : %i, primitive type : %i", currentFrame, primitiveType);
 
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[v_DrawID];
 

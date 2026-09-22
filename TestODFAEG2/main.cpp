@@ -227,7 +227,9 @@ int main() {
 	Material* material = new Material();
 	material->opaque = Material::reflectMask | Material::refractMask;
 	material->setType(SubMesh::GLASS);
-	cube6Mesh.addMaterial(material);
+	for (unsigned int i = 0; i < 6; i++) {	
+		cube6Mesh.addMaterial(material);
+	}
 	
 
 	planeMesh.buildMaterialsFromTextureManager(textureManager);
@@ -242,7 +244,7 @@ int main() {
 	window.addGameObject(&cube3Mesh);
 	window.addGameObject(&cube4Mesh);
 	window.addGameObject(&cube5Mesh);
-	window.addGameObject(&cube6Mesh)
+	window.addGameObject(&cube6Mesh);
 	RenderTexture sceneColorTexture(ctx.getDevice(), true);
 	sceneColorTexture.create(window.getSize().x(), window.getSize().y());
 	sceneColorTexture.setCamera(camera);

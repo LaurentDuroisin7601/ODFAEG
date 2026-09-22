@@ -496,7 +496,7 @@ namespace odfaeg {
 						subMeshData.vertexOffset = currentVertexOffset[primitiveType];
 						subMeshData.indexOffset = currentIndexOffset[primitiveType];
 						for (unsigned int m = 0; m < materials.size(); m++) {
-							//std::cout<<gameObjects[i]->getMaterials()[j]->isReflectable()<<std::endl;
+							//std::cout<<"j"<<" "<<gameObjects[i]->getMaterials().size()<<std::endl;
 							if (*materials[m] == *gameObjects[i]->getMaterials()[j]) {
 								/*if (materials[m]->getTexture(entity::SubMesh::DIFFUSE) != nullptr && materials[m]->getTexture(entity::SubMesh::DIFFUSE)->getId() == 4) {
 									std::cout<<"ids : "<<subMeshData.id<<","<<gameObjects[i]->getMaterials()[j]->getId()<<","<<materialDatas[gameObjects[i]->getMaterials()[j]->getId()].diffuseTextureIndex<<std::endl;

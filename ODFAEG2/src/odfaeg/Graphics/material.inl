@@ -31,7 +31,7 @@ namespace odfaeg {
             instanceGroup = -1;
             layer = 0;
             center = math::Vec3f(0.f, 0.f, 0.f);
-            albedo = entity::Color::White;
+            albedo = entity::Color::White;            
             for (unsigned int i = 0; i < entity::SubMesh::NBTEXTYPES; i++) {
                 setTexture(nullptr, static_cast<entity::SubMesh::TexType>(i));
             }
