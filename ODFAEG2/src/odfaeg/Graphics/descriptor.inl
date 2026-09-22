@@ -81,9 +81,9 @@ namespace odfaeg {
 		}
 		void DescriptorSetLayout::setNbBindings(unsigned int nbBindings, bool bindless) {
 			layoutBindings.resize(nbBindings);
-			if (bindless) {
+			//if (bindless) {
 				bindlessFlags.resize(nbBindings, 0);
-			}
+			//}
 			this->bindless = bindless;
 		}
 		void DescriptorSetLayout::updateLayout(unsigned int binding, VkDescriptorType descriptorType, unsigned int descriptorCount, VkShaderStageFlags stageFlags, VkDescriptorBindingFlags bindlessFlags) {
