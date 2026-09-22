@@ -44,8 +44,7 @@ layout(std430, set = 0, binding = 5) buffer LinkedLists {
 layout(std430, set = 0, binding = 6) buffer CounterSSBO {
   uint count;
 } countData[MAX_FRAMES_IN_FLIGHT];
-layout(set = 0, binding = 7) uniform sampler2D opaqueSceneColors;
-layout(set = 0, binding = 8) uniform sampler2D diffuseTextures[MAX_TEXTURES];
+layout(set = 0, binding = 7) uniform sampler2D diffuseTextures[MAX_TEXTURES];
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in vec3 normal;

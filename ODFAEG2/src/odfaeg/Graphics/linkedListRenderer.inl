@@ -85,16 +85,16 @@ namespace odfaeg {
             rendererReady.store(true);            
         }
         void LinkedListRenderer::createDescriptorsAndPipelines() {
-            DescriptorSetLayout& linkedListLayout = GPUContext::instance().getDescriptorSetLayout(linkedListShader, 9, true);
+            DescriptorSetLayout& linkedListLayout = GPUContext::instance().getDescriptorSetLayout(linkedListShader, 8, true);
             linkedListLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_VERTEX_BIT);
             linkedListLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_VERTEX_BIT);
             linkedListLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_VERTEX_BIT);
             linkedListLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
             linkedListLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_FRAGMENT_BIT);
-            for (unsigned int i = 5; i < 8; i++) {
+            for (unsigned int i = 5; i < 7; i++) {
                 linkedListLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
             }            
-            linkedListLayout.updateLayout(8, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+            linkedListLayout.updateLayout(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
                 VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
             linkedListLayout.update();
             BlendMode blendMode;
@@ -117,9 +117,10 @@ namespace odfaeg {
             for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
                 GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), linkedListShader, blendMode,0).createGraphicPipeline(linkedListShader, static_cast<entity::PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(linkedListShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, GPUContext::instance().getDevice().getMsaaSamples(), VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);
             }
-            DescriptorSetLayout& quadLinkedListLayout = GPUContext::instance().getDescriptorSetLayout(quadLinkedListShader, 2);
+            DescriptorSetLayout& quadLinkedListLayout = GPUContext::instance().getDescriptorSetLayout(quadLinkedListShader, 3);
             quadLinkedListLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
             quadLinkedListLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
+            quadLinkedListLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
             quadLinkedListLayout.update();
             pushConstants.clear();
             VkPushConstantRange quadPushConstant;
@@ -130,44 +131,45 @@ namespace odfaeg {
             for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
                 GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), quadLinkedListShader, blendMode, 0).createGraphicPipeline(quadLinkedListShader, static_cast<entity::PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(quadLinkedListShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, GPUContext::instance().getDevice().getMsaaSamples(), VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);
             }
-            DescriptorPool& linkedListPool = GPUContext::instance().getDescriptorPool(linkedListShader, 7);
+            DescriptorPool& linkedListPool = GPUContext::instance().getDescriptorPool(linkedListShader, 8);
             linkedListPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES);
             linkedListPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES);
             linkedListPool.updatePoolSize(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1);
             linkedListPool.updatePoolSize(3, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT);
             linkedListPool.updatePoolSize(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES);
-            for (unsigned int i = 5; i < 8; i++) {
+            for (unsigned int i = 5; i < 7; i++) {
                 linkedListPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT);
             }
-            linkedListPool.updatePoolSize(8, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
+            linkedListPool.updatePoolSize(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
             linkedListPool.update();
-            DescriptorPool& quadLinkedListPool = GPUContext::instance().getDescriptorPool(quadLinkedListShader, 2);
+            DescriptorPool& quadLinkedListPool = GPUContext::instance().getDescriptorPool(quadLinkedListShader, 3);
             quadLinkedListPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT);
             quadLinkedListPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT);
+            quadLinkedListPool.updatePoolSize(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             quadLinkedListPool.update();
             DescriptorSet::allocate(linkedListPool, linkedListLayout, GPUContext::instance().getDescriptorSets(linkedListShader, 8, 1), MAX_TEXTURES);
-            DescriptorSet::allocate(quadLinkedListPool, quadLinkedListLayout, GPUContext::instance().getDescriptorSets(quadLinkedListShader, 2, 1));
+            DescriptorSet::allocate(quadLinkedListPool, quadLinkedListLayout, GPUContext::instance().getDescriptorSets(quadLinkedListShader, 3, 1));
             //std::cout<<"pipeline descritpors created"<<std::endl;
         }
         void LinkedListRenderer::updateDescriptorSets() {
             bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
-            DescriptorSet& linkedListSet = GPUContext::instance().getDescriptorSets(linkedListShader, (hasDiffuseTexture) ? 7 : 6, 1)[0];
+            DescriptorSet& linkedListSet = GPUContext::instance().getDescriptorSets(linkedListShader, (hasDiffuseTexture) ? 8 : 7, 1)[0];
             linkedListSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             linkedListSet.updateBufferInfos(1, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MESHES+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             linkedListSet.updateImageInfos(2, GPUContext::instance().getSharedTextures(16)[parentRenderer.getDepthStencilTexture().getId()-1], VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             linkedListSet.updateImageInfos(3, headPtrsStorageImage, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);            
             linkedListSet.updateBufferInfos(4, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             linkedListSet.updateBufferInfos(5, linkedListBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-            linkedListSet.updateBufferInfos(6, nodeCounterBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-            linkedListSet.updateImageInfos(7, opaqueSceneColors.getTexture(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            linkedListSet.updateBufferInfos(6, nodeCounterBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);            
             if (hasDiffuseTexture) {
                 //std::cout<<"diffuse texture"<<std::endl;
-                linkedListSet.updateImageInfos(8, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                linkedListSet.updateImageInfos(7, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             }
             linkedListSet.updateDescriptorSet();
-            DescriptorSet& linkedListQuadSet = GPUContext::instance().getDescriptorSets(quadLinkedListShader, 2, 1)[0];
+            DescriptorSet& linkedListQuadSet = GPUContext::instance().getDescriptorSets(quadLinkedListShader, 3, 1)[0];
             linkedListQuadSet.updateImageInfos(0, headPtrsStorageImage, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
             linkedListQuadSet.updateBufferInfos(1, linkedListBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            linkedListQuadSet.updateImageInfos(2, opaqueSceneColors.getTexture(), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             linkedListQuadSet.updateDescriptorSet();
         }
         void LinkedListRenderer::clear() {
