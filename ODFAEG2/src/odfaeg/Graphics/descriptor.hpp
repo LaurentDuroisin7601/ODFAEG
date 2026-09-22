@@ -21,7 +21,7 @@ namespace odfaeg {
 			DescriptorPool& operator=(DescriptorPool&& other) noexcept;
 			void setNbBindings(unsigned int nbBindings, unsigned int maxSets);
 			void updatePoolSize(unsigned int binding, VkDescriptorType descriptorType, unsigned int descriptorCount);
-			void update();
+			void update(VkDescriptorBindingFlags flags = 0);
 			VkDescriptorPool getHandle();
 			Device& getDevice();
 			void cleanup();

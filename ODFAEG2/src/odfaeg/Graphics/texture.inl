@@ -46,7 +46,7 @@ namespace odfaeg {
                 DescriptorPool& mipPool = GPUContext::instance().getDescriptorPool(mipShader, 2);
                 mipPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1);
                 mipPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1);
-                mipPool.update();
+                mipPool.update(VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT);
                 DescriptorSet::allocate(mipPool, mipLayout, GPUContext::instance().getDescriptorSets(mipShader, 2, 1));
                 mipComputeCreated = true;               
             }

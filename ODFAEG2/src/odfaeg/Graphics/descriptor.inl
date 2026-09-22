@@ -28,7 +28,7 @@ namespace odfaeg {
 			poolSizes[binding].type = descriptorType;
 			poolSizes[binding].descriptorCount = descriptorCount;
 		}
-		void DescriptorPool::update() {
+		void DescriptorPool::update(VkDescriptorBindingFlags flags) {
 			if (descriptorPool != VK_NULL_HANDLE) {
 				cleanup();
 			}
@@ -37,6 +37,7 @@ namespace odfaeg {
 			poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 			poolInfo.pPoolSizes = poolSizes.data();
 			poolInfo.maxSets = maxSets;
+			poolInfo.flags = flags;
 
 			if (vkCreateDescriptorPool(device.getDevice(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
 				throw std::runtime_error("echec de la creation de la pool de descripteurs!");
