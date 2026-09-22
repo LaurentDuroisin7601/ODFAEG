@@ -242,12 +242,12 @@ int main() {
 	window.addGameObject(&cube3Mesh);
 	window.addGameObject(&cube4Mesh);
 	window.addGameObject(&cube5Mesh);
-	RenderTexture sceneColorTexture(ctx.getDevice());
+	RenderTexture sceneColorTexture(ctx.getDevice(), true);
 	sceneColorTexture.create(window.getSize().x(), window.getSize().y());
 	sceneColorTexture.setCamera(camera);
 	RenderGraph renderGraph(sceneColorTexture);
 	renderGraph.addOpaquePass(0, 0, "*", window.getId());
-	renderGraph.addOITPass(1, 0, "*", window.getId());
+	//renderGraph.addOITPass(1, 0, "*", window.getId());
 	//renderGraph.addOITPass(0, 0, "*", window.getId());
 	/*ComponentManager componentManager;
 	std::vector<IComponent*> components = renderGraph.getComponents();
@@ -288,11 +288,13 @@ int main() {
 		
 		/*window.setTypesToRender("*", window.getCurrentFrame());	
 		window.drawMesh(Triangles);*/
-		/*window.setCamera(rtRenderTextureCamera);*/
+		window.setCamera(rtRenderTextureCamera);
 		
 		//sceneColorTexture.clear();
-		renderGraph.drawAllPasses();	
+		
 		//sceneColorTexture.submit(true);
+		
+		renderGraph.drawAllPasses();	
 		sceneColorTexture.display();		
 		rect.setTexture(&sceneColorTexture.getTexture());
 		window.draw(rect);	

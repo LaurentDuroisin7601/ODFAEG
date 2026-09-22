@@ -23,9 +23,7 @@ struct MaterialData {
     int instanceGroupId;
     uint vertsInstanceSet;
     uint materialId;
-    uint nbBuffers;
-    int reflectable;
-    int refractable;
+    uint nbBuffers;    
     uint opaque;
     uint pipelineType;          
 };
@@ -47,6 +45,7 @@ layout(location = 4) flat in int primitiveType;
 layout(location = 5) flat in int currentFrame;
 layout(location = 0) out vec4 outColor;
 void main() {
+    //debugPrintfEXT("Ok");
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[materialID];
     vec2 uv = fragTexCoord;
     // --- Diffuse ---

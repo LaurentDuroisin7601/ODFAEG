@@ -52,6 +52,7 @@ namespace odfaeg {
             
            
             BlendMode blendMode;
+            blendMode.updateIds();
             std::vector<VkPushConstantRange> pushConstants;
             VkPushConstantRange vsPushConstant;
             vsPushConstant.offset = 0;
@@ -59,8 +60,9 @@ namespace odfaeg {
             vsPushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
             pushConstants.push_back(vsPushConstant);
             for (unsigned int p = 0; p < NB_PRIMITIVE_TYPES; p++) {
+                //std::cout<<"create pipeline : "<<&GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(p), hzShader, blendMode, RenderTarget::DEPTHNOSTENCIL)<<std::endl;
                 GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(p), hzShader, blendMode, RenderTarget::DEPTHNOSTENCIL).createGraphicPipeline( hzShader, static_cast<entity::PrimitiveType>(p),GPUContext::instance().getDescriptorSetLayout(hzShader), renderingCreateInfo, parentRenderer.getDepthStencilInfos()[RenderTarget::DEPTHNOSTENCIL], blendMode, GPUContext::instance().getDevice().getMsaaSamples(), VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
-                //std::cout<<"pipeline created in render target : "<<GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(p), hzShader, blendMode,i).getHandle()<<std::endl;
+                //std::cout<<"pipeline created in render target : "<<GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(p), hzShader, blendMode,RenderTarget::DEPTHNOSTENCIL).getHandle()<<std::endl;
             }            
             DescriptorPool& defaultRenderingPool = GPUContext::instance().getDescriptorPool(hzShader, 4);
             for (unsigned int i = 0; i < 3; i++) {
@@ -99,9 +101,9 @@ namespace odfaeg {
         void OpaqueRenderer::updateDescriptorSets() {            
             bool hasDiffuseTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
             DescriptorSet& defaultRenderingSet = GPUContext::instance().getDescriptorSets(hzShader, (hasDiffuseTextures) ? 4 : 3, 1)[0];
-            defaultRenderingSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-            defaultRenderingSet.updateBufferInfos(1, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MESHES), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-            defaultRenderingSet.updateBufferInfos(2, GPUContext::instance().getSharedBuffers(RenderTarget::MATERIAL_DATA_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            defaultRenderingSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            defaultRenderingSet.updateBufferInfos(1, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MESHES+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            defaultRenderingSet.updateBufferInfos(2, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             if (hasDiffuseTextures ) {
                 //std::cout<<"textures : "<<Texture::getAllTextures().size()<<std::endl;
                 /*std::cout<<"layout : "<<GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE)[0].getImage(0).getLayout()<<std::endl;
@@ -162,11 +164,11 @@ namespace odfaeg {
             RenderStates states;
             states.shader = &hzShader;   
             hzVertPC.projMatrix = parentRenderer.getCamera().getProjMatrix().getMatrix().transpose();
-            hzVertPC.projMatrix = parentRenderer.getCamera().getViewMatrix().getMatrix().transpose(); 
+            hzVertPC.viewMatrix = parentRenderer.getCamera().getViewMatrix().getMatrix().transpose(); 
             hzVertPC.currentFrame = parentRenderer.getCurrentFrame(); 
             parentRenderer.applyCullingAndBatching();
             if (needToUpdateDescriptorSets) {
-                //std::cout<<"update ds"<<std::endl;
+                //system("PAUSE");
                 updateDescriptorSets();
                 needToUpdateDescriptorSets  = false;
             }

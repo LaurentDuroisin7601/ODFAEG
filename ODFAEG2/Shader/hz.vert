@@ -63,7 +63,7 @@ void main() {
     fragColor = inColor;
     fragTexCoord = inTexCoord;
     normal = mat3(transpose(inverse(modelMatrix))) * normals;
-    materialID = subMesh.materialId/*gl_DrawID*/;
+    materialID = /*subMesh.materialId*/gl_DrawID;
     primitiveType = pc.primitiveType;
     currentFrame = pc.currentFrame;
 }
