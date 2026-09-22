@@ -46,6 +46,7 @@ namespace odfaeg {
             struct QuadLinkedListPC {
                 unsigned int currentFrame;
                 math::Vec2f resolution;
+                int pad;
             };
             LinkedListRenderer(RenderTarget& parentRenderer, RenderTexture& opaqueSceneColors, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
             void createCommandPools();

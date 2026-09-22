@@ -31,8 +31,8 @@ struct MaterialData {
     int refractable;  
 };
 layout (push_constant) uniform PushConstant {
-    layout (offset=136) uint maxNodes;
-    layout (offset=140) int currentImageIndex;
+    layout (offset=148) uint maxNodes;
+    layout (offset=152) int currentImageIndex;
 } pc;
 layout(set = 0, binding = 3, r32ui) uniform coherent uimage2D headPointers[MAX_FRAMES_IN_FLIGHT];
 layout (std430, set = 0, binding = 4) buffer MaterialDataSSBO {

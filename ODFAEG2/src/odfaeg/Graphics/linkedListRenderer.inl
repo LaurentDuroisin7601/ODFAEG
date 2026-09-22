@@ -73,7 +73,8 @@ namespace odfaeg {
             quadLinkedListPC.resolution = math::Vec2f(size.x(), size.y());
             viewProjMatPC.screenWidth = size.x();
             viewProjMatPC.screenHeight = size.y();
-            window::Command rendererReadyCmd(core::FastDelegate<bool>(&LinkedListRenderer::isRendererReady, this), core::FastDelegate<void>(&LinkedListRenderer::drawNextFrame, this));
+            window::Action a(core::FastDelegate<bool>(&LinkedListRenderer::isRendererReady, this));
+            window::Command rendererReadyCmd(a, core::FastDelegate<void>(&LinkedListRenderer::drawNextFrame, this));
             getEventListener().connect("RendererReady",rendererReadyCmd);
             connectSwapchainResizedCommand<LinkedListRenderer>();
             if (useThread) {
@@ -90,7 +91,7 @@ namespace odfaeg {
             DescriptorSetLayout& linkedListLayout = GPUContext::instance().getDescriptorSetLayout(linkedListShader, 8, true);
             linkedListLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_VERTEX_BIT);
             linkedListLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_VERTEX_BIT);
-            linkedListLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_VERTEX_BIT);
+            linkedListLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT);
             linkedListLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_FRAGMENT_BIT);
             linkedListLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_FRAGMENT_BIT);
             for (unsigned int i = 5; i < 7; i++) {
@@ -136,7 +137,7 @@ namespace odfaeg {
             DescriptorPool& linkedListPool = GPUContext::instance().getDescriptorPool(linkedListShader, 8);
             linkedListPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES);
             linkedListPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES);
-            linkedListPool.updatePoolSize(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1);
+            linkedListPool.updatePoolSize(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             linkedListPool.updatePoolSize(3, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT);
             linkedListPool.updatePoolSize(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES);
             for (unsigned int i = 5; i < 7; i++) {

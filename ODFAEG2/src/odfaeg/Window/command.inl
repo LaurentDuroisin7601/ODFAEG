@@ -8,7 +8,7 @@ namespace odfaeg
         void Command::setName(std::string name) {
             this->name = name;
         }       
-        Command::Command(const Command& other) : slot(other.slot), action(action) {           
+        Command::Command(const Command& other) : slot(other.slot), action(other.action) {           
           
         }
         bool Command::isTriggered()

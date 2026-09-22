@@ -3,6 +3,7 @@ namespace odfaeg {
         Action::Action(EVENT_TYPE type) : type(type) {
             leaf = true;
             pressed = false;
+            trigger = nullptr;
             switch (type) {
             case CLOSED:
                 startEvent.type = IEvent::WINDOW_EVENT;
@@ -45,6 +46,7 @@ namespace odfaeg {
         Action::Action(EVENT_TYPE type, window::IKeyboard::Key key) : type(type) {
             leaf = true;
             pressed = false;
+            trigger = nullptr;
             switch (type) {
             case KEY_PRESSED_ONCE:
                 startEvent.type = IEvent::KEYBOARD_EVENT;
@@ -69,6 +71,7 @@ namespace odfaeg {
         Action::Action(EVENT_TYPE type, IMouse::Button button) : type(type) {
             leaf = true;
             pressed = false;
+            trigger = nullptr;
             switch (type) {
             case MOUSE_BUTTON_PRESSED_ONCE:
                 startEvent.type = IEvent::MOUSE_BUTTON_EVENT;
@@ -91,7 +94,9 @@ namespace odfaeg {
             is_not = false;
         }
         Action::Action(core::FastDelegate<bool> trigger) : type(TRIGGER) { 
-            leaf = true;           
+            leaf = true;   
+            pressed = false;
+            is_not = false;        
             this->trigger = std::make_unique<core::FastDelegate<bool>>(trigger);
         }
         Action::Action(EVENT_TYPE type, Action leftChild, Action rightChild) {
@@ -99,6 +104,7 @@ namespace odfaeg {
             this->type = type;
             is_not = false;
             pressed = false;
+            trigger = nullptr;
             if (type == COMBINED_WITH_AND) {
                 comparator = &Action::andComparator;
             }
@@ -114,6 +120,7 @@ namespace odfaeg {
 
         }
         Action::Action(const Action& other) {
+            std::cout<<"leaf : "<<other.leaf<<std::endl;
             leaf = other.leaf;
             pressed = other.pressed;
             startEvent = other.startEvent;
@@ -121,6 +128,7 @@ namespace odfaeg {
             comparator = other.comparator;
             type = other.type;
             name = other.name;
+            trigger = (other.trigger == nullptr) ? nullptr : std::make_unique<core::FastDelegate<bool>>(*other.trigger);
             if (!other.leaf) {
                 leftChild = std::make_unique<Action>(*other.leftChild);
                 rightChild = std::make_unique<Action>(*other.rightChild);
@@ -259,13 +267,16 @@ namespace odfaeg {
             }
         }
         Action& Action::operator=(const Action& other) {
+            
             leaf = other.leaf;
             pressed = other.pressed;
             startEvent = other.startEvent;
             is_not = other.is_not;
             comparator = other.comparator;
             type = other.type;
+            trigger.reset(other.trigger.get());            
             if (!leaf) {
+                
                 leftChild = std::make_unique<Action>(*other.leftChild);
                 rightChild = std::make_unique<Action>(*other.rightChild);
             }
