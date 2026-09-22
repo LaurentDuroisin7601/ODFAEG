@@ -161,7 +161,7 @@ namespace odfaeg {
                  
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 commandPool.beginRecordCommandBuffer(i);  
-                std::cout<<"image : "<<id<<","<<GPUContext::instance().getSharedTextures(16).size()<<std::endl;
+                //std::cout<<"image : "<<id<<","<<GPUContext::instance().getSharedTextures(16).size()<<std::endl;
                 //system("PAUSE");
                 transitionImageLayout(GPUContext::instance().getSharedTextures(15)[id-1].getImage(i), commandPool.getHandle(i), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 0, mipLevels, layerCount);   
                 transitionImageLayout(GPUContext::instance().getSharedTextures(16)[id-1].getImage(i), commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 0, 0, mipLevels, layerCount);              

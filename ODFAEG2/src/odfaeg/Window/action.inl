@@ -120,7 +120,7 @@ namespace odfaeg {
 
         }
         Action::Action(const Action& other) {
-            std::cout<<"leaf : "<<other.leaf<<std::endl;
+            //std::cout<<"leaf : "<<other.leaf<<std::endl;
             leaf = other.leaf;
             pressed = other.pressed;
             startEvent = other.startEvent;
