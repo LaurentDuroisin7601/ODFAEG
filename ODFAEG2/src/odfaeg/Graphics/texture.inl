@@ -150,12 +150,13 @@ namespace odfaeg {
         }
         void Texture::generateDepthMipmaps(unsigned int currentFrame) { 
             createDescriptorAndPipelines();             
-            auto& vec = GPUContext::instance().getSharedTextures(texType+1);            
+            auto& vec = GPUContext::instance().getSharedTextures(16);            
                 //std::cout<<"FBO texture id : "<<id<<std::endl;                
                 //vec.push_back(std::move(*this));
             unsigned int mipLevels = GPUContext::instance().getSharedTextures(15)[id-1].mipLevels;      
             if (vec.empty()) {
                 for (unsigned int i = 0; i < nbBuffers; i++) {
+                    //std::cout<<"create image : "<<m_size<<std::endl;
                     vec.emplace_back(device);
                     vec.back().images[i].create(m_size.x(), m_size.y(), 1, VK_IMAGE_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
                             VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
@@ -171,6 +172,7 @@ namespace odfaeg {
                  
             for (unsigned int i = 0; i < nbBuffers; i++) {
                 commandPool.beginRecordCommandBuffer(i);  
+                //std::cout<<"image : "<<id<<std::endl;
                 transitionImageLayout(GPUContext::instance().getSharedTextures(15)[id-1].getImage(i), commandPool.getHandle(i), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 0, mipLevels, layerCount);   
                 transitionImageLayout(GPUContext::instance().getSharedTextures(16)[id-1].getImage(i), commandPool.getHandle(i), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 0, 0, mipLevels, layerCount);              
                 updateDescriptorSets();
@@ -641,12 +643,14 @@ namespace odfaeg {
             submitInfo.commandBufferCount = commandPool.getHandles().size();
             submitInfo.pCommandBuffers = commandPool.getHandles().data();
             Device::QueueFamilyIndices indices = device.findQueueFamilies(device.getPhysicalDevice(), VK_NULL_HANDLE);
+            auto& vec = GPUContext::instance().getSharedTextures(texType);
+            id = vec.size()+1;
             if (!isDepth) {
                 isDepth = true;
                 texType = 15;
                 mipLevels = std::floor(std::log2(std::max(m_size.x(), m_size.y()))) + 1;
-                auto& vec = GPUContext::instance().getSharedTextures(texType);
-                id = vec.size()+1;
+                
+                
                 /*std::cout<<"depth texture id : "<<id<<std::endl;
                 system("PAUSE");       */                        
                 //vec.push_back(std::move(*this));

@@ -192,7 +192,8 @@ namespace odfaeg {
             memoryBarrier0.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
             vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier0, 0, nullptr, 0, nullptr);
             parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
-            parentRenderer.applyCullingAndBatching(Material::transparentMask); 
+            parentRenderer.applyCullingAndBatching(Material::transparentMask);
+            parentRenderer.getDepthStencilTexture().generateDepthMipmaps(parentRenderer.getCurrentFrame()); 
             registerFramesJob[parentRenderer.getCurrentFrame()].store(true);
             //std::cout<<"cleared"<<std::endl;
             cv.notify_one();
@@ -321,7 +322,7 @@ namespace odfaeg {
                 parentRenderer.setDepthStencil(false, false);
                               
                 
-                parentRenderer.getDepthStencilTexture().generateDepthMipmaps(parentRenderer.getCurrentFrame());
+                
                 parentRenderer.applyComputeGraphicsBarrier();
                                             
                 //std::cout<<"commands : !"<<parentRenderer.getCurrentFrame()<<" registered!"<<std::endl;
