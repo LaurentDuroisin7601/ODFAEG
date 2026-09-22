@@ -99,22 +99,23 @@ namespace odfaeg {
 				/*}
 			}*/
 		}	
-		void DescriptorSetLayout::update() {
+		void DescriptorSetLayout::update(VkDescriptorBindingFlags flags) {
 			if (descriptorSetLayout != VK_NULL_HANDLE) {
 				cleanup();
 			}
 			VkDescriptorSetLayoutCreateInfo layoutInfo{};
 			layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 			VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
-			if (bindless) {				
+			//if (bindless) {				
 				bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
 				bindingFlagsInfo.bindingCount = static_cast<uint32_t>(bindlessFlags.size());
 				//std::cout<<"bindings  flags: size "<<layoutBindings.size()<<std::endl;
-				bindingFlagsInfo.pBindingFlags = bindlessFlags.data();
+				bindingFlagsInfo.pBindingFlags = bindlessFlags.data();				
 				layoutInfo.pNext = &bindingFlagsInfo;
-			}
+			//}
 			layoutInfo.bindingCount = static_cast<uint32_t>(layoutBindings.size());;
 			layoutInfo.pBindings = layoutBindings.data();
+			layoutInfo.flags = flags;
 			//std::cout<<"bindings : "<<layoutBindings.size()<<std::endl;
 
 			if (vkCreateDescriptorSetLayout(device.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
