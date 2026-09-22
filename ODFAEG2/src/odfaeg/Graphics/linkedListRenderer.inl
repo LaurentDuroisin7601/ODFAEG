@@ -125,7 +125,7 @@ namespace odfaeg {
             pushConstants.clear();
             VkPushConstantRange quadPushConstant;
             quadPushConstant.offset = 0;
-            quadPushConstant.size = sizeof(unsigned int);
+            quadPushConstant.size = sizeof(QuadLinkedListPC);
             quadPushConstant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
             pushConstants.push_back(quadPushConstant);
             for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
@@ -289,7 +289,7 @@ namespace odfaeg {
                     vkCmdBindPipeline(quadLinkedListCommandPool.getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS,GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, quadLinkedListShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getHandle());
                     //std::cout<<"pipeline bound"<<std::endl;
                     vkCmdBindDescriptorSets(quadLinkedListCommandPool.getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, quadLinkedListShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
-                    vkCmdPushConstants(quadLinkedListCommandPool.getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, quadLinkedListShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(unsigned int), &currentFrame);
+                    vkCmdPushConstants(quadLinkedListCommandPool.getHandle(parentRenderer.getCurrentFrame()), GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, quadLinkedListShader, blendMode, RenderTarget::NODEPTHNOSTENCIL).getLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(QuadLinkedListPC), &quadLinkedListPC);
                     parentRenderer.draw(quadLinkedListCommandPool, fullScreenQuad, states);
                     quadLinkedListCommandPool.endRecordCommandBuffer(parentRenderer.getCurrentFrame());
                     parentRenderer.setDepthStencil(useDepthTest, useStencilTest);

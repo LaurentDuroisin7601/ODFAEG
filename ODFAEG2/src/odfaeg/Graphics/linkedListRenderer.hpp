@@ -43,6 +43,10 @@ namespace odfaeg {
                 int screenWidth;
                 int screenHeight;
 			};
+            struct QuadLinkedListPC {
+                unsigned int currentFrame;
+                math::Vec2f resolution;
+            };
             LinkedListRenderer(RenderTarget& parentRenderer, RenderTexture& opaqueSceneColors, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
             void createCommandPools();
             void createDescriptorsAndPipelines();
@@ -77,6 +81,7 @@ namespace odfaeg {
             ViewProjMatPC viewProjMatPC;
             bool needToUpdateDescriptorSets;
             CommandPool commandPool;
+            QuadLinkedListPC quadLinkedListPC;
         };
     }
 }
