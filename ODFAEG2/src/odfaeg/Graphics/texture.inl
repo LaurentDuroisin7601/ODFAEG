@@ -24,7 +24,7 @@ namespace odfaeg {
             if (!convertShader.loadFromFile(shaderDir + "/depthToColorFormat.comp")) {
                 throw std::runtime_error("Failed to load convert formats shader");
             }
-            fence.create(2);
+            
         }  
         void Texture::createDescriptorAndPipelines() {
             if (!mipComputeCreated) {
@@ -50,6 +50,7 @@ namespace odfaeg {
                 DescriptorSet::allocate(mipPool, mipLayout, GPUContext::instance().getDescriptorSets(mipShader, 2, 1));
                 mipComputeCreated = true;               
             }
+            fence.create(2);
         }
         void Texture::updateDescriptorSets() {
             DescriptorSet& convertSet = GPUContext::instance().getDescriptorSets(convertShader, 2, 1)[0];

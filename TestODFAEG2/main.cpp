@@ -293,7 +293,7 @@ int main() {
 		//sceneColorTexture.clear();
 		renderGraph.drawAllPasses();	
 		//sceneColorTexture.submit(true);
-		//sceneColorTexture.display();		
+		sceneColorTexture.display();		
 		rect.setTexture(&sceneColorTexture.getTexture());
 		window.draw(rect);	
 		//window.applyCullingAndBatching();
