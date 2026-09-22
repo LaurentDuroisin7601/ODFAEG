@@ -657,6 +657,7 @@ namespace odfaeg {
                     for (unsigned int mip = 0; mip < mipLevels; mip++) {
                         vec2.back().images[i].addMipSubView(VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_ASPECT_COLOR_BIT, mip, 0, 1, layerCount);
                     }
+                    vec2.back().images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
                 }
             } else {
                 auto& vec = GPUContext::instance().getSharedTextures(texType);
