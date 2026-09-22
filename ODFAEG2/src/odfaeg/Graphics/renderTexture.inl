@@ -516,7 +516,7 @@ namespace odfaeg {
             return true;
         }
         Image& RenderTexture::getRenderingImage() {
-            return m_textures[0].getImage(imageIndex);
+            return getTexture().getImage();
         }   
 	}
 }

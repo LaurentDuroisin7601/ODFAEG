@@ -22,5 +22,4 @@ namespace odfaeg {
         };
     }
 }
-#include "opaqueRenderer.inl"
 #endif

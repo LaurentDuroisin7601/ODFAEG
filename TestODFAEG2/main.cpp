@@ -180,7 +180,7 @@ int main() {
 	//bistroExterior->getGameObject()->setRotation(90, Vec3f(0, 1, 0));
 	
 	
-	/*std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
+	std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
 	textureManager.fromFileWithAlias("tilesets/wood.png", WOOD, args);
 	Texture* texWood = textureManager.getResourceByAlias(WOOD);
 	texWood->setSamplerAddressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT);	
@@ -225,8 +225,7 @@ int main() {
 	Mesh cube5Mesh(&cube5);
 	Mesh cube6Mesh(&cube6);
 	Material* material = new Material();
-	material->setReflectable(true);
-	material->setRefractable(true);
+	material->opaque = Material::reflectMask | Material::refractMask;
 	material->setType(SubMesh::GLASS);
 	cube6Mesh.addMaterial(material);
 	
@@ -247,13 +246,15 @@ int main() {
 	sceneColorTexture.create(window.getSize().x(), window.getSize().y());
 	sceneColorTexture.setCamera(camera);
 	RenderGraph renderGraph(sceneColorTexture);
+	renderGraph.addOpaquePass(0, 0, "*", window.getId());
+	renderGraph.addOITPass(1, 0, "*", window.getId());
 	//renderGraph.addOITPass(0, 0, "*", window.getId());
 	/*ComponentManager componentManager;
 	std::vector<IComponent*> components = renderGraph.getComponents();
 	for (unsigned int i = 0; i < components.size(); i++) {
 		componentManager.addComponent(components[i]);
 	}*/
-	window.addGameObject(bistroExterior);	
+	//window.addGameObject(bistroExterior);	
 	
 		//std::cout<<"i : "<<i<<std::endl;*/
 	
@@ -267,9 +268,8 @@ int main() {
 	renderGraph.addDirectionnalLight(dirLight);
 	PointLight pointLight(Vec3f(10, 10, 10));
 	
-	renderGraph.addPonctualLight(pointLight);	
-	RectangleShape rect(GPUContext::instance().getDevice(), Vec3f(800, 600, 0));*/
-	OpaqueRenderer opaqueRenderer(window, 0, "*", window.getId());	
+	renderGraph.addPonctualLight(pointLight);*/	
+	RectangleShape rect(GPUContext::instance().getDevice(), Vec3f(800, 600, 0));		
 	std::string s;	
 	while (window.isOpen()) {
 		odfaeg::window::IEvent event;
@@ -284,18 +284,18 @@ int main() {
 		window.setCamera(camera);
 		window.setDepthStencil(true, false);
 		window.clear();
-		window.draw(Triangles);
+		//window.draw(Triangles);
 		
 		/*window.setTypesToRender("*", window.getCurrentFrame());	
 		window.drawMesh(Triangles);*/
-		/*window.setCamera(rtRenderTextureCamera);
+		/*window.setCamera(rtRenderTextureCamera);*/
 		
 		//sceneColorTexture.clear();
 		renderGraph.drawAllPasses();	
 		//sceneColorTexture.submit(true);
 		//sceneColorTexture.display();		
 		rect.setTexture(&sceneColorTexture.getTexture());
-		window.draw(rect);	*/
+		window.draw(rect);	
 		//window.applyCullingAndBatching();
 		
 		//std::cout<<"draw"<<std::endl;
@@ -311,7 +311,7 @@ int main() {
 		
 		
 	 	window.submit();
-		window.getDepthStencilTexture().generateDepthMipmaps();
+		
 		//std::cout<<"submited"<<std::endl;
 		window.beginRecordCommandBuffer();
 		window.setCamera(imGUICamera);
