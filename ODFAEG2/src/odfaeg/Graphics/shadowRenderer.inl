@@ -170,7 +170,7 @@ namespace odfaeg {
             pointLights.push_back(pl);
             Camera pointLightCamera;
             pointLightCamera.setPerspective(90, (float) SHADOW_MAP_SIZE / (float) SHADOW_MAP_SIZE, 1, 25);            
-            shadowPassPLVertPC.lightProjMatrix = pointLightCamera.getProjMatrix().getMatrix();
+            shadowPassPLVertPC.lightProjMatrix = pointLightCamera.getProjMatrix().getMatrix().transpose();
             //glm::mat4 projPLMatrix = glm::perspectiveRH_ZO(glm::radians(90.0f), (float) SHADOW_MAP_SIZE / (float) SHADOW_MAP_SIZE, 1.0f, 25.0f); 
             ViewPLMatrix viewPLMatrices;
             math::Vec3f lightPos = pointLight.getPosition(); 
@@ -179,22 +179,22 @@ namespace odfaeg {
             pointLightCamera.setCenter(lightPos); 
             math::Vec3f target = lightPos + math::Vec3f(-1, 0, 0);
             pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, -1, 0));          
-            viewPLMatrices.viewsPLMatrices[0] = pointLightCamera.getViewMatrix().getMatrix();
+            viewPLMatrices.viewsPLMatrices[0] = pointLightCamera.getViewMatrix().getMatrix().transpose();
             target = lightPos + math::Vec3f(1, 0, 0);           
             pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, -1, 0)); 
-            viewPLMatrices.viewsPLMatrices[1] = pointLightCamera.getViewMatrix().getMatrix();   
+            viewPLMatrices.viewsPLMatrices[1] = pointLightCamera.getViewMatrix().getMatrix().transpose();   
             target = lightPos + math::Vec3f(0, -1, 0);      
             pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, 0, -1)); 
-            viewPLMatrices.viewsPLMatrices[2] = pointLightCamera.getViewMatrix().getMatrix();   
+            viewPLMatrices.viewsPLMatrices[2] = pointLightCamera.getViewMatrix().getMatrix().transpose();   
             target = lightPos + math::Vec3f(0, 1, 0);         
             pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, 0, 1)); 
-            viewPLMatrices.viewsPLMatrices[3] = pointLightCamera.getViewMatrix().getMatrix();
+            viewPLMatrices.viewsPLMatrices[3] = pointLightCamera.getViewMatrix().getMatrix().transpose();
             target = lightPos + math::Vec3f(0, 0, -1);
             pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, -1, 0)); 
-            viewPLMatrices.viewsPLMatrices[4] = pointLightCamera.getViewMatrix().getMatrix();
+            viewPLMatrices.viewsPLMatrices[4] = pointLightCamera.getViewMatrix().getMatrix().transpose();
             target = lightPos + math::Vec3f(0, 0, 1);
             pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, -1, 0)); 
-            viewPLMatrices.viewsPLMatrices[5] = pointLightCamera.getViewMatrix().getMatrix();
+            viewPLMatrices.viewsPLMatrices[5] = pointLightCamera.getViewMatrix().getMatrix().transpose();
             
             /*glm::vec3 target = lightPos + glm::vec3(-1, 0, 0); 
             viewPLMatrices.viewsPLMatrices[0] = glm::lookAt(lightPos, target, glm::vec3(0, -1, 0));
