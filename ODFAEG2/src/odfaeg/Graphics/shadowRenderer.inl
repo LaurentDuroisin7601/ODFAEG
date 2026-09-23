@@ -178,10 +178,10 @@ namespace odfaeg {
          
             pointLightCamera.setCenter(lightPos); 
             math::Vec3f target = lightPos + math::Vec3f(-1, 0, 0);
-            pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, -1, 0));          
+            pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, 1, 0));          
             viewPLMatrices.viewsPLMatrices[0] = pointLightCamera.getViewMatrix().getMatrix().transpose();
             target = lightPos + math::Vec3f(1, 0, 0);           
-            pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, -1, 0)); 
+            pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, 1, 0)); 
             viewPLMatrices.viewsPLMatrices[1] = pointLightCamera.getViewMatrix().getMatrix().transpose();   
             target = lightPos + math::Vec3f(0, -1, 0);      
             pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, 0, -1)); 
@@ -190,10 +190,10 @@ namespace odfaeg {
             pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, 0, 1)); 
             viewPLMatrices.viewsPLMatrices[3] = pointLightCamera.getViewMatrix().getMatrix().transpose();
             target = lightPos + math::Vec3f(0, 0, -1);
-            pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, -1, 0)); 
+            pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, 1, 0)); 
             viewPLMatrices.viewsPLMatrices[4] = pointLightCamera.getViewMatrix().getMatrix().transpose();
             target = lightPos + math::Vec3f(0, 0, 1);
-            pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, -1, 0)); 
+            pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, 1, 0)); 
             viewPLMatrices.viewsPLMatrices[5] = pointLightCamera.getViewMatrix().getMatrix().transpose();
             
             /*glm::vec3 target = lightPos + glm::vec3(-1, 0, 0); 
