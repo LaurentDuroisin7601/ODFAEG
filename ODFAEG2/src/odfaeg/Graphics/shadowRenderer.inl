@@ -77,7 +77,8 @@ namespace odfaeg {
             //shadowMapPL.setCamera(parentRenderer.getCamera());
             
             createCommandPools();
-            unsigned int maxNodesDir = 20 * SHADOW_MAP_WIDTH * SHADOW_MAP_HEIGHT;
+            math::Vec2f scale = math::Vec2f(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT) / PPLL_RESOLUTION;
+            unsigned int maxNodesDir = 20 * SHADOW_MAP_WIDTH * scale.x() * SHADOW_MAP_HEIGHT * scale.y();
             shadowPassCSMFragPC.maxNodes = maxNodesDir;
             unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int) * 2;
             commandPool.beginRecordCommandBuffer(0);
@@ -93,8 +94,8 @@ namespace odfaeg {
                 nodeCounterDirBuffer.back().create(sizeof(std::uint32_t), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
                 linkedListDirBuffer.back().create(maxNodesDir * nodeSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);                
             }   
-           
-            unsigned int maxNodesPoint = 20 * SHADOW_MAP_SIZE * SHADOW_MAP_SIZE;
+            float scalePL = SHADOW_MAP_SIZE / PPLL_RESOLUTION;
+            unsigned int maxNodesPoint = 20 * SHADOW_MAP_SIZE * SHADOW_MAP_SIZE * scalePL;
             shadowPassPLFragPC.maxNodes = maxNodesPoint;    
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT*6; i++) {
                 headPtrsPointStorageImage.emplace_back(GPUContext::instance().getDevice());

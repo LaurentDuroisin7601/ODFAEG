@@ -141,7 +141,7 @@ namespace odfaeg {
             std::vector<DirLight> dirLights;
             std::vector<PointLight> pointLights; 
             std::vector<float> shadowCascadeLevels;
-            inline static const unsigned int SHADOW_MAP_SIZE = 1024;             
+            inline static const unsigned int SHADOW_MAP_SIZE = 2048;             
             inline static const unsigned int SHADOW_MAP_WIDTH = 1024;
             inline static const unsigned int SHADOW_MAP_HEIGHT = 1024;   
             inline static const unsigned int PPLL_RESOLUTION = 512;                                             
