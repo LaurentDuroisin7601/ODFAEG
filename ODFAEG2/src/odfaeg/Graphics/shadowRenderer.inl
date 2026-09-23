@@ -502,7 +502,7 @@ namespace odfaeg {
             glm::mat4 proj = glm::perspectiveRH_ZO(glm::radians(80.f), (float) SHADOW_MAP_WIDTH / (float) SHADOW_MAP_HEIGHT, nearPlane, farPlane);
             //camera.setUp(math::Vec3f(0, -1, 0));          
            // math::Matrix4f projView = camera.getProjMatrix().getMatrix() * camera.getViewMatrix().getMatrix();
-            glm::mat4 projView = proj * entity::AssimpHelpers::convertODFAEGToGLMMatrix(parentRenderer.getCamera().getViewMatrix().getMatrix());
+            glm::mat4 projView = proj * entity::AssimpHelpers::convertODFAEGToGLMMatrix(parentRenderer.getCamera().getViewMatrix().getMatrix().transpose());
             //std::cout<<"porj view : "<<projView<<std::endl;
             auto corners = getFrustrumCornersWordlSpace(projView);
             //math::Vec3f center(0.f, 0.f, 0.f);
