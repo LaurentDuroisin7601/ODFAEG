@@ -170,7 +170,7 @@ namespace odfaeg {
             /*Camera pointLightCamera;
             pointLightCamera.setPerspective(90, (float) SHADOW_MAP_SIZE / (float) SHADOW_MAP_SIZE, 1, 25);            
             shadowPassPLVertPC.lightProjMatrix = pointLightCamera.getProjMatrix().getMatrix();*/
-            glm::mat4 projPLMatrix = glm::perspective(glm::radians(90.0f), (float) SHADOW_MAP_SIZE / (float) SHADOW_MAP_SIZE, 1.0f, 25.0f); 
+            glm::mat4 projPLMatrix = glm::perspectiveRH_ZO(glm::radians(90.0f), (float) SHADOW_MAP_SIZE / (float) SHADOW_MAP_SIZE, 1.0f, 25.0f); 
             ViewPLMatrix viewPLMatrices;
             //math::Vec3f lightPos = pointLight.getPosition(); 
             glm::vec3 lightPos = glm::vec3(pointLight.getPosition().x(), pointLight.getPosition().y(), pointLight.getPosition().z());
@@ -499,7 +499,7 @@ namespace odfaeg {
             /*std::cout<<"near/far : "<<nearPlane<<","<<farPlane<<std::endl;
             system("PAUSE");*/
             //camera.setPerspective(80, shadowMap.getSize().x() / shadowMap.getSize().y(), nearPlane, farPlane);  
-            glm::mat4 proj = glm::perspective(glm::radians(80.f), (float) SHADOW_MAP_WIDTH / (float) SHADOW_MAP_HEIGHT, nearPlane, farPlane);
+            glm::mat4 proj = glm::perspectiveRH_ZO(glm::radians(80.f), (float) SHADOW_MAP_WIDTH / (float) SHADOW_MAP_HEIGHT, nearPlane, farPlane);
             //camera.setUp(math::Vec3f(0, -1, 0));          
            // math::Matrix4f projView = camera.getProjMatrix().getMatrix() * camera.getViewMatrix().getMatrix();
             glm::mat4 projView = proj * entity::AssimpHelpers::convertODFAEGToGLMMatrix(parentRenderer.getCamera().getViewMatrix().getMatrix());
@@ -565,7 +565,7 @@ namespace odfaeg {
             }
             
             //lightSpace.setPerspective(minX, maxX, minY, maxY, minZ, maxZ);
-            glm::mat4 lightProj = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
+            glm::mat4 lightProj = glm::orthoRH_ZO(minX, maxX, minY, maxY, minZ, maxZ);
             //math::Matrix4f lightProjView = lightSpace.getProjMatrix().getMatrix() * lightSpace.getViewMatrix().getMatrix();
             glm::mat4 lightProjView = lightProj * lightView;
             return  lightProjView;

@@ -267,7 +267,7 @@ int main() {
 	unsigned int fps = 0;
 	/*renderGraph.addOITPass(0, 0, "*", window.getId());
 	renderGraph.addShadowPass(1, 0, "*", window.getId());*/
-	DirectionnalLight dirLight(Vec3f(50, 50, 50));
+	DirectionnalLight dirLight(Vec3f(50, 50, -50));
 
 	renderGraph.addDirectionnalLight(dirLight);
 	PointLight pointLight(Vec3f(10, 10, 10));	
