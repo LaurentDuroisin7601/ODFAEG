@@ -73,7 +73,7 @@ float shadowCalculationDir(vec3 fragPosWorldSpace)
     float shadow = 0.0;  
     for(int l = 0; l < pc.nbDirLights; l++) {
         vec4 fragPosViewSpace = pc.view * vec4(fragPosWorldSpace, 1.0);  
-        debugPrintfEXT("frag pos view space : %v4f", fragPosViewSpace);  
+        //debugPrintfEXT("frag pos view space : %v4f", fragPosViewSpace);  
         float depthValue = abs(fragPosViewSpace.z);
         int layer = -1; 
         for (int i = 0; i < NB_CASCADES; ++i)
@@ -210,5 +210,5 @@ void main()
 
     /*if (sceneColor.r != 0 || sceneColor.g != 0 || sceneColor.b != 0 || sceneColor.a != 0)
         debugPrintfEXT("scene color %v4f", sceneColor); */  
-    frag_color = vec4(vec3(sceneColor) * (1 - shadow), sceneColor.a);
+    frag_color = fragColor * (1 - shadow);
 }

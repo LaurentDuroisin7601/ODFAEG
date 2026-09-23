@@ -115,7 +115,7 @@ namespace odfaeg {
 			rasterizer.rasterizerDiscardEnable = VK_FALSE;
 			rasterizer.polygonMode = polygonMode;
 			rasterizer.lineWidth = 1.0f;
-			rasterizer.cullMode = cullMode;
+			rasterizer.cullMode = VK_CULL_MODE_NONE/*cullMode*/;
 			rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
 
 			VkPipelineMultisampleStateCreateInfo multisampling{};

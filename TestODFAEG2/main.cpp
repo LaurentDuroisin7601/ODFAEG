@@ -251,7 +251,7 @@ int main() {
 	RenderGraph renderGraph(sceneColorTexture);
 	renderGraph.addOpaquePass(0, 0, "*", window.getId());
 	renderGraph.addOITPass(1, 0, "*", window.getId());
-	renderGraph.addShadowPass(2, 0, "*", window.getId());
+	/*renderGraph.addShadowPass(2, 0, "*", window.getId());*/
 	//renderGraph.addOITPass(0, 0, "*", window.getId());
 	/*ComponentManager componentManager;
 	std::vector<IComponent*> components = renderGraph.getComponents();
