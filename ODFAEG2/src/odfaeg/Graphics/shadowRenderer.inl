@@ -170,17 +170,23 @@ namespace odfaeg {
             ViewPLMatrix viewPLMatrices;
             math::Vec3f lightPos = pointLight.getPosition();              
             pointLightCamera.setCenter(lightPos); 
-            pointLightCamera.lookAt(-1, 0, 0, math::Vec3f(0, -1, 0));          
-            viewPLMatrices.viewsPLMatrices[0] = pointLightCamera.getViewMatrix().getMatrix();           
-            pointLightCamera.lookAt(1, 0, 0, math::Vec3f(0, -1, 0)); 
-            viewPLMatrices.viewsPLMatrices[1] = pointLightCamera.getViewMatrix().getMatrix();         
-            pointLightCamera.lookAt(0, -1, 0, math::Vec3f(0, 0, -1)); 
-            viewPLMatrices.viewsPLMatrices[2] = pointLightCamera.getViewMatrix().getMatrix();            
-            pointLightCamera.lookAt(0, 1, 0, math::Vec3f(0, 0, 1)); 
+            math::Vec3f target = lightPos + math::Vec3f(-1, 0, 0);
+            pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, -1, 0));          
+            viewPLMatrices.viewsPLMatrices[0] = pointLightCamera.getViewMatrix().getMatrix();
+            target = lightPos + math::Vec3f(1, 0, 0);           
+            pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, -1, 0)); 
+            viewPLMatrices.viewsPLMatrices[1] = pointLightCamera.getViewMatrix().getMatrix();   
+            target = lightPos + math::Vec3f(0, -1, 0);      
+            pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, 0, -1)); 
+            viewPLMatrices.viewsPLMatrices[2] = pointLightCamera.getViewMatrix().getMatrix();   
+            target = lightPos + math::Vec3f(0, 1, 0);         
+            pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, 0, 1)); 
             viewPLMatrices.viewsPLMatrices[3] = pointLightCamera.getViewMatrix().getMatrix();
-            pointLightCamera.lookAt(0, 0, -1, math::Vec3f(0, -1, 0)); 
+            target = lightPos + math::Vec3f(0, 0, -1);
+            pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, -1, 0)); 
             viewPLMatrices.viewsPLMatrices[4] = pointLightCamera.getViewMatrix().getMatrix();
-            pointLightCamera.lookAt(0, 0, 1, math::Vec3f(0, -1, 0)); 
+            target = lightPos + math::Vec3f(0, 0, 1);
+            pointLightCamera.lookAt(target.x(), target.y(), target.z(), math::Vec3f(0, -1, 0)); 
             viewPLMatrices.viewsPLMatrices[5] = pointLightCamera.getViewMatrix().getMatrix();
             lightViewsPLMatrices.push_back(viewPLMatrices);   
             pointLights.back().far_plane = 25; 
@@ -310,7 +316,7 @@ namespace odfaeg {
                 }
                 shadowPassCSMPipeline[i][RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id]->createGraphicPipeline(shadowPassCSMShader, static_cast<PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(shadowPassCSMShader), renderingCreateInfo, shadowMap.getDepthStencilInfos()[RenderTarget::DEPTHNOSTENCIL], blendMode, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);*/
                 //std::cout<<"pipeline : "<<GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle()<<std::endl;
-                GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).createGraphicPipeline(shadowPassCSMShader, static_cast<entity::PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(shadowPassCSMShader), renderingCreateInfo, shadowMap.getDepthStencilInfos()[RenderTarget::DEPTHNOSTENCIL], blendMode, VK_SAMPLE_COUNT_1_BIT, VK_CULL_MODE_FRONT_BIT, VK_POLYGON_MODE_FILL, pushConstants);
+                GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), shadowPassCSMShader, blendMode, RenderTarget::DEPTHNOSTENCIL).createGraphicPipeline(shadowPassCSMShader, static_cast<entity::PrimitiveType>(i), GPUContext::instance().getDescriptorSetLayout(shadowPassCSMShader), renderingCreateInfo, shadowMap.getDepthStencilInfos()[RenderTarget::DEPTHNOSTENCIL], blendMode, VK_SAMPLE_COUNT_1_BIT, VK_CULL_MODE_NONE, VK_POLYGON_MODE_FILL, pushConstants);
                 //std::cout<<"pipeline : "<<i<<std::endl;
                 /*std::cout<<"ids : "<<i<<","<<shadowPassCSMShader.getId()<<","<<RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id<<std::endl;
                 std::cout<<"pipeline at creation : "<<shadowPassCSMPipeline[i][RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id]->getHandle()<<std::endl;
@@ -480,7 +486,7 @@ namespace odfaeg {
             Camera lightSpace;
             math::Vec3f target(center + lightDir);
             lightSpace.setCenter(center);
-            camera.lookAt(target.x(), target.y(), target.z(),math::Vec3f(0.f, 1.f, 0.f));
+            camera.lookAt(target.x(), target.y(), target.z(),math::Vec3f(0.f, -1.f, 0.f));
 
             float minX = std::numeric_limits<float>::max();
             float maxX = std::numeric_limits<float>::lowest();
@@ -916,8 +922,8 @@ namespace odfaeg {
                 VkMemoryBarrier memoryBarrier{};
                 memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                 memoryBarrier.pNext = VK_NULL_HANDLE;
-                memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;  
+                memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;  
                 vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 
                 Texture::transitionImageLayout(shadowMap.getDepthStencilTexture().getImage(0), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 0, 1, (NB_CASCADES+1));      

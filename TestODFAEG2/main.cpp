@@ -251,7 +251,7 @@ int main() {
 	RenderGraph renderGraph(sceneColorTexture);
 	renderGraph.addOpaquePass(0, 0, "*", window.getId());
 	renderGraph.addOITPass(1, 0, "*", window.getId());
-	/*renderGraph.addShadowPass(2, 0, "*", window.getId());*/
+	renderGraph.addShadowPass(2, 0, "*", window.getId());
 	//renderGraph.addOITPass(0, 0, "*", window.getId());
 	/*ComponentManager componentManager;
 	std::vector<IComponent*> components = renderGraph.getComponents();
@@ -270,8 +270,8 @@ int main() {
 	DirectionnalLight dirLight(Vec3f(50, 50, -50));
 
 	renderGraph.addDirectionnalLight(dirLight);
-	PointLight pointLight(Vec3f(10, 10, 10));	
-	renderGraph.addPonctualLight(pointLight);	
+	/*PointLight pointLight(Vec3f(10, 10, 10));	
+	renderGraph.addPonctualLight(pointLight);	*/
 	RectangleShape rect(GPUContext::instance().getDevice(), Vec3f(800, 600, 0));		
 	std::string s;	
 	while (window.isOpen()) {

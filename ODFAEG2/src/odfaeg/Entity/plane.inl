@@ -3,10 +3,10 @@ namespace odfaeg {
         Plane::Plane(math::Vec3f position, math::Vec3f size) : GameObject(position, size, size*0.5f, "E_PLANE") {
             VertexArray va(Triangles);
             va.resize(4, 0);
-            va[0] = Vertex(math::Vec3f(0, 0, size.z()));
-            va[1] = Vertex(math::Vec3f(0, 0, 0));
-            va[2] = Vertex(math::Vec3f(size.x(), 0, 0));
-            va[3] = Vertex(math::Vec3f(size.x(), 0, size.z()));
+            va[0] = Vertex(math::Vec3f(0, 0, 0));
+            va[1] = Vertex(math::Vec3f(0, 0, size.z()));
+            va[2] = Vertex(math::Vec3f(size.x(), 0, size.z()));
+            va[3] = Vertex(math::Vec3f(size.x(), 0, 0));
             va[0].normal = math::Vec3f(0, 1, 0);
             va[1].normal = math::Vec3f(0, 1, 0);
             va[2].normal = math::Vec3f(0, 1, 0);

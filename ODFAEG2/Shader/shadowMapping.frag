@@ -93,7 +93,7 @@ float shadowCalculationDir(vec3 fragPosWorldSpace)
         vec4 fragPosLightSpace = lightSpaceMatricesData[currentFrame].lightSpaceMatrices[l].lightSpaceMatrices[layer] * vec4(fragPosWorldSpace, 1.0);
         vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
         projCoords = projCoords * 0.5 + 0.5;
-        //debugPrintfEXT("Proj coords : %v3f", projCoords);
+        //debugPrintfEXT("Proj coords : %v3f, layer : %i", projCoords, layer);
         // get depth of current fragment from light's perspective
         float currentDepth = projCoords.z;
         // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
@@ -124,8 +124,8 @@ float shadowCalculationDir(vec3 fragPosWorldSpace)
             {                
                 float pcfDepth = texture(shadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;  
                          
-                if (pcfDepth < 1)
-                    debugPrintfEXT("pcf def : %f", pcfDepth);
+                if (pcfDepth < 1.f)
+                    debugPrintfEXT("pcf def : %f %f",(currentDepth - bias), pcfDepth);
                 currentLightShadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
             }
         }
@@ -205,10 +205,10 @@ void main()
     /*if (shadowPoint > 0)
         debugPrintfEXT("Shadow point : %f", shadowPoint);*/
     float shadow = max(shadowDir, shadowPoint);
-    /*if (shadow > 0 && shadow < 1)
-        debugPrintfEXT("Shadow : %f", shadow);*/
+    if (shadowDir > 0 && shadowDir < 1)
+        debugPrintfEXT("Shadow : %f", shadow);
 
     /*if (sceneColor.r != 0 || sceneColor.g != 0 || sceneColor.b != 0 || sceneColor.a != 0)
         debugPrintfEXT("scene color %v4f", sceneColor); */  
-    frag_color = fragColor * (1 - shadow);
+    frag_color = vec4(vec3(sceneColor) * (1 - shadow), sceneColor.a);
 }
