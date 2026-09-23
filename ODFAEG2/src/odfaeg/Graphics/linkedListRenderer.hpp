@@ -57,7 +57,9 @@ namespace odfaeg {
             void draw();
             unsigned int getLayer();
             bool isRendererReady();  
-            void onSwapchainResized(math::Vector2i newSize);          
+            void onSwapchainResized(math::Vector2i newSize);
+            void stopThread();
+            virtual ~LinkedListRenderer();          
         private :
             VertexBuffer fullScreenQuad;
             std::string typesToRenderExpression;

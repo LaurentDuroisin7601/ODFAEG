@@ -206,7 +206,7 @@ namespace odfaeg {
                 return registerFramesJob[parentRenderer.getCurrentFrame()].load() || stop.load();
             });
             registerFramesJob[parentRenderer.getCurrentFrame()].store(false);
-            if (!stop.load()) {
+            //if (!stop.load()) {
                 VkSemaphoreWaitInfo semaphoreWaitInfo = {};
                 semaphoreWaitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
                 semaphoreWaitInfo.semaphoreCount = 1;
@@ -306,7 +306,7 @@ namespace odfaeg {
                     jobFence[parentRenderer.getCurrentFrame()].jobDone();
                 });
                 jobFence[parentRenderer.getCurrentFrame()].wait();
-            }
+            //}
             commandBuffersReady[parentRenderer.getCurrentFrame()].store(true);
             cv.notify_all();
         }
@@ -317,7 +317,7 @@ namespace odfaeg {
                 return commandBuffersReady[parentRenderer.getCurrentFrame()].load() || stop.load();
             });
             commandBuffersReady[parentRenderer.getCurrentFrame()].store(false);
-            if (!stop.load()) {                
+            //if (!stop.load()) {                
                 bool useDepthTest = parentRenderer.useDepthTest();
                 bool useStencilTest = parentRenderer.useStencilTest();
                 parentRenderer.getDepthStencilTexture().generateDepthMipmaps(parentRenderer.getCurrentFrame());
@@ -341,7 +341,7 @@ namespace odfaeg {
                 vkCmdExecuteCommands(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), 1, &quadLinkedListCommandPool.getHandle(parentRenderer.getCurrentFrame()));
                 parentRenderer.endRendering();
                 parentRenderer.setDepthStencil(useDepthTest, useStencilTest);
-            }
+            //}
         }
         bool LinkedListRenderer::isRendererReady() {
             return rendererReady.load();
@@ -351,6 +351,13 @@ namespace odfaeg {
         }    
         void LinkedListRenderer::onSwapchainResized(math::Vector2i newSize) {
 
-        }    
+        } 
+        void LinkedListRenderer::stopThread() {
+            stop.store(true);
+            getEventListener().stop();
+        }
+        LinkedListRenderer::~LinkedListRenderer() {
+            getEventListener().stop();
+        }   
     }
 }

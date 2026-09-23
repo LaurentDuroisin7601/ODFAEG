@@ -39,6 +39,7 @@ namespace odfaeg {
             static unsigned int getNbComponents() {
                 return nbComponents;
             }
+            virtual void stopThread() {}
             virtual void draw() = 0;
             virtual void update(int windowId, window::IEvent event) = 0;                        
         private :

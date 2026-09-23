@@ -39,6 +39,7 @@ namespace odfaeg {
             void launch() {
                 //std::cout<<"load!"<<std::endl;
                 if (!running.load()) {
+                    running.store(true);
                     useThread.store(true);
                     m_thread = std::thread(&Listener::tProcessEvents, this);
                 }
@@ -159,6 +160,7 @@ namespace odfaeg {
             }
             void stop() {
                 if (useThread.load()) {
+                    //std::cout<<"stop"<<std::endl;
                     running.store(false);
                     if (m_thread.joinable())
                         m_thread.join();
@@ -169,7 +171,7 @@ namespace odfaeg {
             *   the current thread is blocked until this method is finished.
             */
             void tProcessEvents() {
-                running.store(true);
+                
                 while (running.load()) {
                     //std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
                     //std::cout<<"running!"<<std::endl;

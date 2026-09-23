@@ -5,6 +5,7 @@
 #include "buffer.hpp"
 #include "camera.hpp"
 #include "commandPool.hpp"
+#include "componentManager.hpp"
 #include "debug.hpp"
 #include "descriptor.hpp"
 #include "device.hpp"

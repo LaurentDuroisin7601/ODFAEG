@@ -31,7 +31,7 @@ namespace odfaeg {
                     if (windowId == getWindowId()) {
                         getEventListener().pushEvent(event);
                     }
-                }
+                }                
                 virtual ~IRenderer() {}  
         };
     }

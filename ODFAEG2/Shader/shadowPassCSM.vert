@@ -38,7 +38,7 @@ void main() {
     gl_PointSize = 2.0f;
     mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[gl_InstanceIndex].modelMatrix;
     gl_Position = lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex] * modelMatrix * vec4(inPosition, 1);
-    /*if (gl_ViewIndex == 1) {
+    /*if (gl_ViewIndex == 0) {
         debugPrintfEXT("light space matrix : %v4f\n%v4f\n%v4f\n%v4f\nposition : %v4f", lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex][0],lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex][1],lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex][2],lightMatsData[pc.currentFrame].lightSpaceMat.lightSpaceMatrices[gl_ViewIndex][3], gl_Position);
     }*/
     v_DrawID = gl_DrawID;

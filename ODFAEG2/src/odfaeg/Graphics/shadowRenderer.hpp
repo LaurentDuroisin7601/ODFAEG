@@ -57,7 +57,7 @@ namespace odfaeg {
                 math::Vector2i resolution;
             };  
             struct ShadowPassPLVertPC {
-                glm::mat4 lightProjMatrix;
+                math::Matrix4f lightProjMatrix;
                 int primitiveType;
                 int currentFrame;
                 int _pad[2];
@@ -77,10 +77,10 @@ namespace odfaeg {
                 float far_plane;
             };
             struct LightSpaceMatrix {
-                glm::mat4 lightSpaceMatrices[NB_CASCADES+1];
+                math::Matrix4f lightSpaceMatrices[NB_CASCADES+1];
             };
             struct ViewPLMatrix {
-                glm::mat4 viewsPLMatrices[6];
+                math::Matrix4f viewsPLMatrices[6];
             };
             ShadowRenderer(RenderTarget& parentRenderer, RenderTexture& sceneColorTexture, RenderTexture& cmsShadowMap, RenderTexture& pointShadowMap, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
             void createCommandPools();
@@ -93,13 +93,14 @@ namespace odfaeg {
             bool isRendererReady();
             void addDirectionnalLight(entity::DirectionnalLight& dirLight) override;
             void addPonctualLight(entity::PointLight& pointLight) override;
-            virtual ~ShadowRenderer() {}
-        private :                    
+            void stopThread();
+            virtual ~ShadowRenderer();
+            private :                               
             void computeDirLightMatrices();
             void computePointLightMatrices();
             std::vector<float> computeSplits(int cascadeCount, float nearPlane, float farPlane, float lambda);
-            glm::mat4 getLightSpaceMatrix(math::Vec3f lightDir, const float nearPlane, const float farPlane);
-            std::array<glm::vec3, 8> getFrustrumCornersWordlSpace(glm::mat4 projView);
+            math::Matrix4f getLightSpaceMatrix(math::Vec3f lightDir, const float nearPlane, const float farPlane);
+            std::array<math::Vec3f, 8> getFrustrumCornersWordlSpace(math::Matrix4f projView);
             std::vector<LightSpaceMatrix>  fLightSpaceMatrices;
             RenderTarget& parentRenderer;
             RenderTexture& sceneColorTexture;

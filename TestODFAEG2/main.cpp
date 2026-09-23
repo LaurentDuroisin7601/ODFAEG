@@ -277,7 +277,12 @@ int main() {
 	while (window.isOpen()) {
 		odfaeg::window::IEvent event;
 		while (window.pollEvent(event)) {
-			if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED) {
+			if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED) {				
+				std::vector<IComponent*> components = renderGraph.getComponents();
+				for (unsigned int i = 0; i < components.size(); i++) {
+					components[i]->stopThread();
+				}
+				std::cout<<"thread stopped"<<std::endl;
 				window.close();
 			}
 			//componentManager.update(window.getId(), event);
