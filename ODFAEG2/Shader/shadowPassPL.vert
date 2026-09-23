@@ -19,7 +19,7 @@ layout(location = 4) in uint drawableDataId;
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec2 fragTexCoord;
 layout(location = 2) out vec3 normal;
-layout(location = 3) out vec4 fragPos;
+layout(location = 3) out vec3 fragPos;
 layout(location = 4) out flat int v_DrawID;
 layout(location = 5) out flat int primitiveType;
 layout(location = 6) out flat int currentFrame;
@@ -41,7 +41,7 @@ void main() {
       
     //debugPrintfEXT("viewPLMatrix : %v4f", lightViewMatricesData[pc.currentFrame].viewPLMatrix.viewPLMatrices[gl_ViewIndex][0]); 
     gl_Position = pc.lightProjMatrix * lightViewMatricesData[pc.currentFrame].viewPLMatrix.viewPLMatrices[gl_ViewIndex] * modelMatrix * vec4(inPosition, 1);  
-    fragPos = modelMatrix * vec4(inPosition, 1);
+    fragPos = vec3(modelMatrix * vec4(inPosition, 1));
     fragColor = inColor;
     fragTexCoord = inTexCoord;
     normal = transpose(inverse(mat3(modelMatrix))) * normals;

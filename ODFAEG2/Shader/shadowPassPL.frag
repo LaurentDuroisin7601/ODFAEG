@@ -8,7 +8,7 @@
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in vec3 normal;
-layout(location = 3) in vec4 fragPos;
+layout(location = 3) in vec3 fragPos;
 layout (location = 4) in flat int v_DrawID;
 layout (location = 5) in flat int primitiveType;
 layout (location = 6) in flat int currentFrame;
