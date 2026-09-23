@@ -19,11 +19,11 @@ namespace odfaeg {
             va1[2] = v3;
             va1[3] = v4;
             va1.addIndex(0);
+            va1.addIndex(2);
             va1.addIndex(1);
-            va1.addIndex(2);
             va1.addIndex(0);
-            va1.addIndex(2);
             va1.addIndex(3);
+            va1.addIndex(2);
             SubMesh face1;
             face1.setVertexArray(va1);
             //Droite.
@@ -42,11 +42,11 @@ namespace odfaeg {
             va2[2] = v7;
             va2[3] = v8;
             va2.addIndex(0);
+            va2.addIndex(2);
             va2.addIndex(1);
-            va2.addIndex(2);
             va2.addIndex(0);
-            va2.addIndex(2);
             va2.addIndex(3);
+            va2.addIndex(2);
             SubMesh face2;
             face2.setVertexArray(va2);
             //Dessus
@@ -65,11 +65,11 @@ namespace odfaeg {
             va3[2] = v11;
             va3[3] = v12;
             va3.addIndex(0);
+            va3.addIndex(2);
             va3.addIndex(1);
-            va3.addIndex(2);
             va3.addIndex(0);
-            va3.addIndex(2);
             va3.addIndex(3);
+            va3.addIndex(2);
             SubMesh face3;
             face3.setVertexArray(va3);
             //Dessous.
@@ -88,11 +88,11 @@ namespace odfaeg {
             va4[2] = v15;
             va4[3] = v16;
             va4.addIndex(0);
+            va4.addIndex(2);
             va4.addIndex(1);
-            va4.addIndex(2);
             va4.addIndex(0);
-            va4.addIndex(2);
             va4.addIndex(3);
+            va4.addIndex(2);
             SubMesh face4;
             face4.setVertexArray(va4);
             //Derrière
@@ -111,11 +111,11 @@ namespace odfaeg {
             va5[2] = v19;
             va5[3] = v20;
             va5.addIndex(0);
+            va5.addIndex(2);
             va5.addIndex(1);
-            va5.addIndex(2);
             va5.addIndex(0);
-            va5.addIndex(2);
             va5.addIndex(3);
+            va5.addIndex(2);
             SubMesh face5;
             face5.setVertexArray(va5);
             //Devant.
@@ -134,11 +134,11 @@ namespace odfaeg {
             va6[2] = v23;
             va6[3] = v24;
             va6.addIndex(0);
+            va6.addIndex(2);
             va6.addIndex(1);
-            va6.addIndex(2);
             va6.addIndex(0);
-            va6.addIndex(2);
             va6.addIndex(3);
+            va6.addIndex(2);
             SubMesh face6;
             face6.setVertexArray(va6);
             addSubMesh(face1);
