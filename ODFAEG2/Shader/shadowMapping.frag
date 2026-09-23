@@ -73,7 +73,7 @@ float shadowCalculationDir(vec3 fragPosWorldSpace)
     float shadow = 0.0;  
     for(int l = 0; l < pc.nbDirLights; l++) {
         vec4 fragPosViewSpace = pc.view * vec4(fragPosWorldSpace, 1.0);  
-        //debugPrintfEXT("frag pos view space : %v4f", pc.view[0]);  
+        debugPrintfEXT("frag pos view space : %v4f", fragPosViewSpace);  
         float depthValue = abs(fragPosViewSpace.z);
         int layer = -1; 
         for (int i = 0; i < NB_CASCADES; ++i)
@@ -90,10 +90,10 @@ float shadowCalculationDir(vec3 fragPosWorldSpace)
         {
             layer = l*(NB_CASCADES+1) + NB_CASCADES;
         } 
-        vec4 fragPosLightSpace =  lightSpaceMatricesData[currentFrame].lightSpaceMatrices[l].lightSpaceMatrices[layer] * vec4(fragPosWorldSpace, 1.0);
+        vec4 fragPosLightSpace = lightSpaceMatricesData[currentFrame].lightSpaceMatrices[l].lightSpaceMatrices[layer] * vec4(fragPosWorldSpace, 1.0);
         vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
         projCoords = projCoords * 0.5 + 0.5;
-        //debugPrintfEXT("Proj coords : %v4f", projCoords);
+        //debugPrintfEXT("Proj coords : %v3f", projCoords);
         // get depth of current fragment from light's perspective
         float currentDepth = projCoords.z;
         // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
@@ -122,9 +122,10 @@ float shadowCalculationDir(vec3 fragPosWorldSpace)
         {
             for(int y = -1; y <= 1; ++y)
             {                
-                float pcfDepth = texture(shadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;               
-                /*if (pcfDepth < 1)
-                    debugPrintfEXT("pcf def : %f", pcfDepth);*/
+                float pcfDepth = texture(shadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;  
+                         
+                if (pcfDepth < 1)
+                    debugPrintfEXT("pcf def : %f", pcfDepth);
                 currentLightShadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
             }
         }
