@@ -78,7 +78,7 @@ float shadowCalculationDir(vec3 fragPosWorldSpace)
         int layer = -1; 
         for (int i = 0; i < NB_CASCADES; ++i)
         { 
-            //debugPrintfEXT("depthValue : %f, distance : %f", depthValue, cascadePlaneDistanceData[currentFrame].cascadePlaneDistances[i]);      
+            debugPrintfEXT("depthValue : %f, distance : %f", depthValue, cascadePlaneDistanceData[currentFrame].cascadePlaneDistances[i]);      
             if (depthValue < cascadePlaneDistanceData[currentFrame].cascadePlaneDistances[i])
             {
                 
@@ -122,10 +122,10 @@ float shadowCalculationDir(vec3 fragPosWorldSpace)
         {
             for(int y = -1; y <= 1; ++y)
             {                
-                float pcfDepth = texture(shadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;  
-                         
-                if (pcfDepth < 1.f)
-                    debugPrintfEXT("pcf def : %f %f",(currentDepth - bias), pcfDepth);
+                float pcfDepth = texture(shadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, 0)).r;  
+                /*if (pcfDepth < 1.f)
+                    debugPrintfEXT("pcf def : %f %f",(currentDepth - bias), pcfDepth);*/
+                    
                 currentLightShadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
             }
         }

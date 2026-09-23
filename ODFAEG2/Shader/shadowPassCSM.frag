@@ -56,6 +56,8 @@ void main()
 {  
     //
     //debugPrintfEXT("z : %f", gl_FragCoord.z); 
+    if (gl_ViewIndex > 0)
+        debugPrintfEXT("z : %f", gl_FragCoord.z); 
     ivec2 hrLrScale = ivec2(pc.resolution.xy) / PPLL_RESOLUTION;
     ivec2 lrFragCoord = ivec2(gl_FragCoord.xy) / hrLrScale; 
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[v_DrawID];

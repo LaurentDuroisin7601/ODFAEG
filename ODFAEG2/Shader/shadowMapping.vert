@@ -38,6 +38,7 @@ layout (std430, set = 0, binding = 0) buffer ModelDataSSBO {
 } modelDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
 void main() {
     //debugPrintfEXT("currentFrame : %i, primitive type : %i, instance id : %i", pc.currentFrame, pc.primitiveType, gl_InstanceIndex);
+    
     gl_PointSize = 2.0f;
     mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[gl_InstanceIndex].modelMatrix;
     gl_Position =  pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(inPosition, 1); 

@@ -148,7 +148,10 @@ namespace odfaeg {
             {
 
                 lightSpaceMatrices.lightSpaceMatrices[i-1] = getLightSpaceMatrix(dirLight.getDir(), shadowCascadeLevels[i-1], shadowCascadeLevels[i]);
+                
                 //std::cout<<lightSpaceMatrices.lightSpaceMatrices[i-1]<<std::endl;
+                //std::cout<<shadowCascadeLevels[i]<<std::endl;
+                //system("PAUSE");
             } 
             lightSpaceMatrices.lightSpaceMatrices[NB_CASCADES] = lightSpaceMatrices.lightSpaceMatrices[NB_CASCADES-1];
             fLightSpaceMatrices.push_back(lightSpaceMatrices);
@@ -449,6 +452,16 @@ namespace odfaeg {
             DescriptorSet::allocate(shadowMappingPool, shadowMappingLayout, GPUContext::instance().getDescriptorSets(shadowMappingShader, 14, 1));
         }
         std::array<math::Vec3f, 8> ShadowRenderer::getFrustrumCornersWordlSpace(math::Matrix4f projView) {
+            /*std::array<glm::vec3, 8> frustrumCorners = {
+                glm::vec3(-1.f, -1.f, 0.f),
+                glm::vec3(1.f, -1.f, 0.f),
+                glm::vec3(1.f,  1.f, 0.f),
+                glm::vec3(-1.f,  1.f, 0.f),
+                glm::vec3(-1.f, -1.f, 1.f),
+                glm::vec3(1.f, -1.f, 1.f),
+                glm::vec3(1.f,  1.f, 1.f),
+                glm::vec3(-1.f,  1.f, 1.f)
+            };*/
             std::array<math::Vec3f, 8> frustrumCorners = {
                 math::Vec3f(-1.f, -1.f, 0.f),
                 math::Vec3f(1.f, -1.f, 0.f),
@@ -471,11 +484,14 @@ namespace odfaeg {
             /*std::cout<<"near/far : "<<nearPlane<<","<<farPlane<<std::endl;
             system("PAUSE");*/
             camera.setPerspective(80, shadowMap.getSize().x() / shadowMap.getSize().y(), nearPlane, farPlane);  
+            //glm::mat4 proj = glm::perspective(glm::radians(80.f), (float) SHADOW_MAP_WIDTH / (float) SHADOW_MAP_HEIGHT, nearPlane, farPlane);
             //camera.setUp(math::Vec3f(0, -1, 0));          
             math::Matrix4f projView = camera.getProjMatrix().getMatrix() * camera.getViewMatrix().getMatrix();
+            //glm::mat4 projView = proj * entity::assimp_helper::convertODFAEGToGMLMatrix(parentRenderer.getCamera().getViewMatrix().getMatrix());
             //std::cout<<"porj view : "<<projView<<std::endl;
             auto corners = getFrustrumCornersWordlSpace(projView);
             math::Vec3f center(0.f, 0.f, 0.f);
+            //glm::vec3 center(0.f, 0.f, 0.f);
             for (const auto& v : corners) {
                 
                 center += v;
@@ -487,8 +503,9 @@ namespace odfaeg {
             Camera lightSpace;
             math::Vec3f target(center + lightDir);
             lightSpace.setCenter(center);
-            camera.lookAt(target.x(), target.y(), target.z(),math::Vec3f(0.f, -1.f, 0.f));
-
+            //glm::vec3 target = glm::vec3(center.x() + lightDir.x(), center.y() + lightDir.y(), center.z() + lightDir.z());
+            lightSpace.lookAt(target.x(), target.y(), target.z(),math::Vec3f(0.f, -1.f, 0.f));
+            //glm::mat4 lightView = glm::lookAt(center, target, glm::vec3(0, -1, 0));
             float minX = std::numeric_limits<float>::max();
             float maxX = std::numeric_limits<float>::lowest();
             float minY = std::numeric_limits<float>::max();
@@ -497,6 +514,7 @@ namespace odfaeg {
             float maxZ = std::numeric_limits<float>::lowest();
             for (const auto& v : corners)
             {
+                //const auto trf = lightSpace.getViewMatrix().getMatrix() * v;
                 const auto trf = lightSpace.getViewMatrix().getMatrix() * v;
                 /*std::cout<<"v : "<<v<<std::endl;
                 std::cout<<"matrix : "<<lightSpace.getViewMatrix().getMatrix()<<std::endl;*/
@@ -525,9 +543,9 @@ namespace odfaeg {
                 maxZ *= zMult;
             }
             
-            camera.setPerspective(minX, maxX, minY, maxY, minZ, maxZ);
+            lightSpace.setPerspective(minX, maxX, minY, maxY, minZ, maxZ);
            
-            math::Matrix4f lightProjView = camera.getProjMatrix().getMatrix() * camera.getViewMatrix().getMatrix();
+            math::Matrix4f lightProjView = lightSpace.getProjMatrix().getMatrix() * lightSpace.getViewMatrix().getMatrix();
             return  lightProjView;
         }
         std::vector<float> ShadowRenderer::computeSplits(int cascadeCount, float nearPlane, float farPlane, float lambda)
@@ -588,9 +606,9 @@ namespace odfaeg {
             }
             shadowPassDescriptorSet.updateDescriptorSet();   
             DescriptorSet& shadowPassPLDescriptorSet = GPUContext::instance().getDescriptorSets(shadowPassPLShader, (hasDiffuseTexture) ? 7 : 6, 1)[0];
-            shadowPassPLDescriptorSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            shadowPassPLDescriptorSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+shadowMapPL.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowPassPLDescriptorSet.updateBufferInfos(1, lightViewsPLMatricesBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC);
-            shadowPassPLDescriptorSet.updateBufferInfos(2, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            shadowPassPLDescriptorSet.updateBufferInfos(2, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS+shadowMapPL.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowPassPLDescriptorSet.updateImageInfos(3, headPtrsPointStorageImage, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
             shadowPassPLDescriptorSet.updateBufferInfos(4, nodeCounterPointBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowPassPLDescriptorSet.updateBufferInfos(5, linkedListPointBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -656,7 +674,8 @@ namespace odfaeg {
             shadowMap.applyCullingAndBatching();            
             shadowMapPL.setTypesToRender(typesToRenderExpression, shadowMapPL.getCurrentFrame());
             shadowMapPL.applyCullingAndBatching();
-            
+            parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
+            parentRenderer.applyCullingAndBatching();
             //std::cout<<"cleared  :"<<parentRenderer.getCurrentFrame()<<std::endl;
             registerFramesJob[parentRenderer.getCurrentFrame()].store(true);
             cv.notify_one();
@@ -920,15 +939,33 @@ namespace odfaeg {
                 //std::cout<<"shadow map drawn"<<std::endl;
                                           
                 parentRenderer.applyComputeGraphicsBarrier();
-                VkMemoryBarrier memoryBarrier{};
-                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                memoryBarrier.pNext = VK_NULL_HANDLE;
-                memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;  
-                vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+               
                 
-                Texture::transitionImageLayout(shadowMap.getDepthStencilTexture().getImage(0), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 0, 1, (NB_CASCADES+1));      
-                Texture::transitionImageLayout(shadowMapPL.getDepthStencilTexture().getImage(0), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 0, 1, 6);
+                //Texture::transitionImageLayout(shadowMap.getDepthStencilTexture().getImage(0), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 0, 1, (NB_CASCADES+1));      
+                //Texture::transitionImageLayout(shadowMapPL.getDepthStencilTexture().getImage(0), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 0, 1, 6);
+                VkImageMemoryBarrier barrier{};
+                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                barrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+                barrier.image = shadowMap.getDepthStencilTexture().getImage().getHandle();
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+                barrier.subresourceRange.baseMipLevel = 0;
+                barrier.subresourceRange.levelCount = 1;
+                barrier.subresourceRange.baseArrayLayer = 0;
+                barrier.subresourceRange.layerCount = shadowMap.getDepthStencilTexture().getLayerCount();
+
+                vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()),
+                     VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                     VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                     0, 0, nullptr, 0, nullptr, 1, &barrier);
+                barrier.image = shadowMapPL.getDepthStencilTexture().getImage().getHandle();
+                barrier.subresourceRange.layerCount = shadowMapPL.getDepthStencilTexture().getLayerCount();
+                vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()),
+                     VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                     VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                     0, 0, nullptr, 0, nullptr, 1, &barrier);
                 /*for (unsigned int i = 0; i < RenderTexture::NB_SWAPCHAIN_IMAGES; i++) {
                     Texture::transitionImageLayout(sceneColorTexture.getTexture().getImage(i), parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
                 }*/
