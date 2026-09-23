@@ -546,7 +546,7 @@ namespace odfaeg {
             VkImageType imageType;
             VkImageViewType viewType;
             layerCount = (layered) ? texDepth : 1;            
-            
+        
             if (texHeight > 1) {
                 if (!layered) {
                     if (texDepth > 1) {
@@ -576,7 +576,7 @@ namespace odfaeg {
                         viewType = VK_IMAGE_VIEW_TYPE_2D;
                     }
                 } else {
-                    if (texDepth > 1) {
+                    if (texDepth > 1) {                        
                         viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
                     }
                     else {
@@ -652,10 +652,10 @@ namespace odfaeg {
                     //std::cout<<"create image : "<<m_size<<std::endl;
                     
                     vec2.back().images[i].create(m_size.x(), m_size.y(), 1, VK_IMAGE_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
-                            VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
-                    vec2.back().images[i].createImageView(VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, mipLevels, 1);
+                            VMA_MEMORY_USAGE_GPU_ONLY, mipLevels, layerCount, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL);
+                    vec2.back().images[i].createImageView(viewType, VK_FORMAT_R32_UINT, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, mipLevels, layerCount);
                     for (unsigned int mip = 0; mip < mipLevels; mip++) {
-                        vec2.back().images[i].addMipSubView(VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32_UINT, VK_IMAGE_ASPECT_COLOR_BIT, mip, 0, 1, layerCount);
+                        vec2.back().images[i].addMipSubView(viewType, VK_FORMAT_R32_UINT, VK_IMAGE_ASPECT_COLOR_BIT, mip, 0, 1, layerCount);
                     }
                     vec2.back().images[i].createSampler(wrapU, wrapV, mipLevels, m_Smooth, unormalized);
                 }
