@@ -57,7 +57,7 @@ namespace odfaeg {
                 math::Vector2i resolution;
             };  
             struct ShadowPassPLVertPC {
-                math::Matrix4f lightProjMatrix;
+                glm::mat4 lightProjMatrix;
                 int primitiveType;
                 int currentFrame;
                 int _pad[2];
@@ -80,7 +80,7 @@ namespace odfaeg {
                 glm::mat4 lightSpaceMatrices[NB_CASCADES+1];
             };
             struct ViewPLMatrix {
-                math::Matrix4f viewsPLMatrices[6];
+                glm::mat4 viewsPLMatrices[6];
             };
             ShadowRenderer(RenderTarget& parentRenderer, RenderTexture& sceneColorTexture, RenderTexture& cmsShadowMap, RenderTexture& pointShadowMap, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
             void createCommandPools();

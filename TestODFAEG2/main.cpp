@@ -270,8 +270,8 @@ int main() {
 	DirectionnalLight dirLight(Vec3f(50, 50, 50));
 
 	renderGraph.addDirectionnalLight(dirLight);
-	/*PointLight pointLight(Vec3f(10, 10, 10));	
-	renderGraph.addPonctualLight(pointLight);	*/
+	PointLight pointLight(Vec3f(10, 10, 10));	
+	renderGraph.addPonctualLight(pointLight);	
 	RectangleShape rect(GPUContext::instance().getDevice(), Vec3f(800, 600, 0));		
 	std::string s;	
 	while (window.isOpen()) {
