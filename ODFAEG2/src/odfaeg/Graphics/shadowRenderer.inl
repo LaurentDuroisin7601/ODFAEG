@@ -451,8 +451,8 @@ namespace odfaeg {
             shadowMappingCSMSets[0].emplace_back(std::make_unique<DescriptorSet>(GPUContext::instance().getDevice()));*/            
             DescriptorSet::allocate(shadowMappingPool, shadowMappingLayout, GPUContext::instance().getDescriptorSets(shadowMappingShader, 14, 1));
         }
-        std::array<math::Vec3f, 8> ShadowRenderer::getFrustrumCornersWordlSpace(math::Matrix4f projView) {
-            /*std::array<glm::vec3, 8> frustrumCorners = {
+        std::array<glm::vec3, 8> ShadowRenderer::getFrustrumCornersWordlSpace(glm::mat4 projView) {
+            std::array<glm::vec3, 8> frustrumCorners = {
                 glm::vec3(-1.f, -1.f, 0.f),
                 glm::vec3(1.f, -1.f, 0.f),
                 glm::vec3(1.f,  1.f, 0.f),
@@ -461,8 +461,8 @@ namespace odfaeg {
                 glm::vec3(1.f, -1.f, 1.f),
                 glm::vec3(1.f,  1.f, 1.f),
                 glm::vec3(-1.f,  1.f, 1.f)
-            };*/
-            std::array<math::Vec3f, 8> frustrumCorners = {
+            };
+            /*std::array<math::Vec3f, 8> frustrumCorners = {
                 math::Vec3f(-1.f, -1.f, 0.f),
                 math::Vec3f(1.f, -1.f, 0.f),
                 math::Vec3f(1.f,  1.f, 0.f),
@@ -471,27 +471,28 @@ namespace odfaeg {
                 math::Vec3f(1.f, -1.f, 1.f),
                 math::Vec3f(1.f,  1.f, 1.f),
                 math::Vec3f(-1.f,  1.f, 1.f)
-            };
+            };*/
             //std::cout<<"inverse : "<<projView.inverse()<<std::endl;
             for (unsigned int i = 0; i < frustrumCorners.size(); i++) {
-                frustrumCorners[i] = projView.inverse() * frustrumCorners[i];
+                frustrumCorners[i] = glm::inverse(projView) * glm::vec4(frustrumCorners[i].x, frustrumCorners[i].y,frustrumCorners[i].z, 1);
+                //frustrumCorners[i] = projView.inverse() * frustrumCorners[i];
                 //std::cout<<"corner : "<<frustrumCorners[i]<<std::endl;
             }
             return frustrumCorners;
         }
-        math::Matrix4f ShadowRenderer::getLightSpaceMatrix(math::Vec3f lightDir, const float nearPlane, const float farPlane) {
-            Camera camera = parentRenderer.getCamera();
+        glm::mat4 ShadowRenderer::getLightSpaceMatrix(math::Vec3f lightDir, const float nearPlane, const float farPlane) {
+            //Camera camera = parentRenderer.getCamera();
             /*std::cout<<"near/far : "<<nearPlane<<","<<farPlane<<std::endl;
             system("PAUSE");*/
-            camera.setPerspective(80, shadowMap.getSize().x() / shadowMap.getSize().y(), nearPlane, farPlane);  
-            //glm::mat4 proj = glm::perspective(glm::radians(80.f), (float) SHADOW_MAP_WIDTH / (float) SHADOW_MAP_HEIGHT, nearPlane, farPlane);
+            //camera.setPerspective(80, shadowMap.getSize().x() / shadowMap.getSize().y(), nearPlane, farPlane);  
+            glm::mat4 proj = glm::perspective(glm::radians(80.f), (float) SHADOW_MAP_WIDTH / (float) SHADOW_MAP_HEIGHT, nearPlane, farPlane);
             //camera.setUp(math::Vec3f(0, -1, 0));          
-            math::Matrix4f projView = camera.getProjMatrix().getMatrix() * camera.getViewMatrix().getMatrix();
-            //glm::mat4 projView = proj * entity::assimp_helper::convertODFAEGToGMLMatrix(parentRenderer.getCamera().getViewMatrix().getMatrix());
+           // math::Matrix4f projView = camera.getProjMatrix().getMatrix() * camera.getViewMatrix().getMatrix();
+            glm::mat4 projView = proj * entity::AssimpHelpers::convertODFAEGToGLMMatrix(parentRenderer.getCamera().getViewMatrix().getMatrix());
             //std::cout<<"porj view : "<<projView<<std::endl;
             auto corners = getFrustrumCornersWordlSpace(projView);
-            math::Vec3f center(0.f, 0.f, 0.f);
-            //glm::vec3 center(0.f, 0.f, 0.f);
+            //math::Vec3f center(0.f, 0.f, 0.f);
+            glm::vec3 center(0.f, 0.f, 0.f);
             for (const auto& v : corners) {
                 
                 center += v;
@@ -500,12 +501,12 @@ namespace odfaeg {
             //std::cout<<"center : "<<center<<std::endl;
             center /= corners.size();
             //std::cout<<"center / 8 : "<<center<<std::endl;            
-            Camera lightSpace;
+            /*Camera lightSpace;
             math::Vec3f target(center + lightDir);
-            lightSpace.setCenter(center);
-            //glm::vec3 target = glm::vec3(center.x() + lightDir.x(), center.y() + lightDir.y(), center.z() + lightDir.z());
-            lightSpace.lookAt(target.x(), target.y(), target.z(),math::Vec3f(0.f, -1.f, 0.f));
-            //glm::mat4 lightView = glm::lookAt(center, target, glm::vec3(0, -1, 0));
+            lightSpace.setCenter(center);*/
+            glm::vec3 target = glm::vec3(center.x + lightDir.x(), center.y + lightDir.y(), center.z + lightDir.z());
+            //lightSpace.lookAt(target.x(), target.y(), target.z(),math::Vec3f(0.f, -1.f, 0.f));
+            glm::mat4 lightView = glm::lookAt(center, target, glm::vec3(0, -1, 0));
             float minX = std::numeric_limits<float>::max();
             float maxX = std::numeric_limits<float>::lowest();
             float minY = std::numeric_limits<float>::max();
@@ -515,15 +516,21 @@ namespace odfaeg {
             for (const auto& v : corners)
             {
                 //const auto trf = lightSpace.getViewMatrix().getMatrix() * v;
-                const auto trf = lightSpace.getViewMatrix().getMatrix() * v;
+                const auto trf = lightView * glm::vec4(v.x, v.y, v.z, 1);
                 /*std::cout<<"v : "<<v<<std::endl;
                 std::cout<<"matrix : "<<lightSpace.getViewMatrix().getMatrix()<<std::endl;*/
-                minX = std::min(minX, trf.x());
+                /*minX = std::min(minX, trf.x());
                 maxX = std::max(maxX, trf.x());
                 minY = std::min(minY, trf.y());
                 maxY = std::max(maxY, trf.y());
                 minZ = std::min(minZ, trf.z());
-                maxZ = std::max(maxZ, trf.z());
+                maxZ = std::max(maxZ, trf.z());*/
+                minX = std::min(minX, trf.x);
+                maxX = std::max(maxX, trf.x);
+                minY = std::min(minY, trf.y);
+                maxY = std::max(maxY, trf.y);
+                minZ = std::min(minZ, trf.z);
+                maxZ = std::max(maxZ, trf.z);
             }
             constexpr float zMult = 10.0f;
             if (minZ < 0)
@@ -543,9 +550,10 @@ namespace odfaeg {
                 maxZ *= zMult;
             }
             
-            lightSpace.setPerspective(minX, maxX, minY, maxY, minZ, maxZ);
-           
-            math::Matrix4f lightProjView = lightSpace.getProjMatrix().getMatrix() * lightSpace.getViewMatrix().getMatrix();
+            //lightSpace.setPerspective(minX, maxX, minY, maxY, minZ, maxZ);
+            glm::mat4 lightProj = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
+            //math::Matrix4f lightProjView = lightSpace.getProjMatrix().getMatrix() * lightSpace.getViewMatrix().getMatrix();
+            glm::mat4 lightProjView = lightProj * lightView;
             return  lightProjView;
         }
         std::vector<float> ShadowRenderer::computeSplits(int cascadeCount, float nearPlane, float farPlane, float lambda)

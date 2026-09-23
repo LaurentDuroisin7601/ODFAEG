@@ -77,7 +77,7 @@ namespace odfaeg {
                 float far_plane;
             };
             struct LightSpaceMatrix {
-                math::Matrix4f lightSpaceMatrices[NB_CASCADES+1];
+                glm::mat4 lightSpaceMatrices[NB_CASCADES+1];
             };
             struct ViewPLMatrix {
                 math::Matrix4f viewsPLMatrices[6];
@@ -98,8 +98,8 @@ namespace odfaeg {
             void computeDirLightMatrices();
             void computePointLightMatrices();
             std::vector<float> computeSplits(int cascadeCount, float nearPlane, float farPlane, float lambda);
-            math::Matrix4f getLightSpaceMatrix(math::Vec3f lightDir, const float nearPlane, const float farPlane);
-            std::array<math::Vec3f, 8> getFrustrumCornersWordlSpace(math::Matrix4f projView);
+            glm::mat4 getLightSpaceMatrix(math::Vec3f lightDir, const float nearPlane, const float farPlane);
+            std::array<glm::vec3, 8> getFrustrumCornersWordlSpace(glm::mat4 projView);
             std::vector<LightSpaceMatrix>  fLightSpaceMatrices;
             RenderTarget& parentRenderer;
             RenderTexture& sceneColorTexture;
