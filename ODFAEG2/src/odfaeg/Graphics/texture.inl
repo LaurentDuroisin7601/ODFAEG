@@ -17,8 +17,7 @@ namespace odfaeg {
             msaaSamples = VK_SAMPLE_COUNT_1_BIT;
             m_format = VK_FORMAT_R8G8B8A8_SRGB;
             isDepth = false;
-            
-            
+            mipComputeCreated = false;            
         }  
         void Texture::createDescriptorAndPipelines() {
             if (!mipComputeCreated) {

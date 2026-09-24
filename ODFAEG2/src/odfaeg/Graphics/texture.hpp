@@ -99,7 +99,7 @@ namespace odfaeg {
             void updateDescriptorSets();
             void updateDescriptorSets(uint32_t currentMip);
             void createDescriptorAndPipelines();
-            static inline bool mipComputeCreated = false; 
+            bool mipComputeCreated; 
             bool layered;
             VkSampleCountFlagBits msaaSamples;                     
             unsigned int texType, mipLevels;
