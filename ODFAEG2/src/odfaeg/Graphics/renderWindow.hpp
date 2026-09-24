@@ -99,7 +99,8 @@ namespace odfaeg {
             Device& device;
             Swapchain swapchain;            
             std::deque<Semaphore> imageAvailableSemaphores;
-            std::deque<Semaphore> renderFinishedSemaphores;
+            std::deque<Semaphore> renderFinishedSemaphores; 
+            std::deque<Semaphore> submitFinishedSemaphore;           
             std::deque<Fence> inFlightFences;
 			std::vector<VkFence> imagesInFlight;
             std::vector<RenderPass> renderPasses;

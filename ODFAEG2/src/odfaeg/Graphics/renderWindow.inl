@@ -1,7 +1,13 @@
 namespace odfaeg {
 	namespace graphic {
         ////////////////////////////////////////////////////////////
-        RenderWindow::RenderWindow(window::VideoMode mode, const core::String& title, Device& device, std::uint32_t style, bool useDepth, bool useStencil) : useDepth(useDepth), useStencil(useStencil), RenderTarget(device, useDepth, useStencil), device(device), swapchain(device), colorImage(device)
+        RenderWindow::RenderWindow(window::VideoMode mode, const core::String& title, Device& device, std::uint32_t style, bool useDepth, bool useStencil) : 
+        useDepth(useDepth),
+        useStencil(useStencil),
+        RenderTarget(device, useDepth, useStencil), 
+        device(device), 
+        swapchain(device), 
+        colorImage(device)
         {
             //std::cout<<"instance in render window : "<<this->device.getInstance().getInstance()<<std::endl;
             //this->device.getInstance().setInstance(VK_NULL_HANDLE);
@@ -82,6 +88,8 @@ namespace odfaeg {
                 renderFinishedSemaphores.emplace_back(device);
                 renderFinishedSemaphores.back().create();
             }
+            submitFinishedSemaphore.emplace_back(device);
+            submitFinishedSemaphore.back().create(true);
             //imagesInFlight.resize(swapchain.getSwapchainImages().size(), VK_NULL_HANDLE);
         }
         uint32_t RenderWindow::getCurrentFrame() {
@@ -304,6 +312,12 @@ namespace odfaeg {
                 //std::cout<<"end record command buffer : "<<currentFrame<<std::endl;
                 VkSubmitInfo submitInfo{};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+                waitSemaphores.push_back(submitFinishedSemaphore.back().getHandle());
+                waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                waitValues.push_back(submitFinishedSemaphore.back().getValue());
+                submitFinishedSemaphore.back().incrementValue();
+                signalSemaphores.push_back(submitFinishedSemaphore.back().getHandle());
+                signalValues.push_back(submitFinishedSemaphore.back().getValue());
                 if (firstSubmit) {
 
                     waitSemaphores.push_back(imageAvailableSemaphores[currentFrame].getHandle());

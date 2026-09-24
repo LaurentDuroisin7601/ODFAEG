@@ -2,11 +2,12 @@ namespace odfaeg {
 	namespace graphic {	
 		Semaphore::Semaphore(Device& device)  : device(device) {
 			semaphore = VK_NULL_HANDLE;
+			value = 0;
 		}
 		void Semaphore::create(bool timeline, std::uint64_t value) {
 			if (semaphore != VK_NULL_HANDLE) {
 				cleanup();
-			}
+			}		
 			VkSemaphoreCreateInfo semaphoreInfo{};
 			semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 			VkSemaphoreTypeCreateInfo timelineCreateInfo{};

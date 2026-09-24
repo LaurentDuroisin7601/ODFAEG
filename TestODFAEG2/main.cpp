@@ -56,6 +56,7 @@ import odfaeg.graphic.renderTexture;*/
 #include "odfaeg/Entity/directionnalLight.hpp"
 #include "odfaeg/Window/win.hpp"
 #include "odfaeg/Graphics/graphics.hpp"
+#include "odfaeg/Window/windowHandle.hpp"
 
 using namespace odfaeg::core;
 using namespace odfaeg::entity;
@@ -107,7 +108,9 @@ int main() {
 	//String string("Test my game");	
 	RenderWindow window(VideoMode(800, 600), "Test my game", ctx.getDevice(), odfaeg::window::Style::Default, true);
 	IMGUI_CHECKVERSION();
+	
     ImGui::CreateContext();
+	
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -156,8 +159,8 @@ int main() {
     init_info.MinImageCount = window.getSwapchainMinImagesCount();
 	init_info.MSAASamples = ctx.getDevice().getMsaaSamples();
     init_info.ImageCount = window.getSwapchainImagesCount();
-    init_info.RenderPass = window.getRenderPass(0).getHandle();
-    ImGui_ImplVulkan_Init(&init_info);
+    init_info.RenderPass = window.getRenderPass(0).getHandle();	
+    ImGui_ImplVulkan_Init(&init_info);	
 	//window.createDescriptorAndPipelines();
 	Camera camera(800, 600, 80, 1, 1000);
 	//camera.setUp(Vec3f(0.f, -1.f, 0.f));
@@ -283,7 +286,7 @@ int main() {
 				for (unsigned int i = 0; i < components.size(); i++) {
 					components[i]->stopThread();
 				}*/
-				std::cout<<"thread stopped"<<std::endl;
+				//std::cout<<"thread stopped"<<std::endl;
 				window.close();
 			}
 			//componentManager.update(window.getId(), event);
@@ -345,6 +348,7 @@ int main() {
 		if (clock.getElapsedTime() >= seconds(1.f)) {
 			//std::cout<<"FPS : "<<fps<<std::endl;
 			s = "FPS : " + std::to_string(fps);
+			std::cout<<"FPS : "<<fps<<std::endl;
 			fps = 0;
 			clock.restart();
 		}     
