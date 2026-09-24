@@ -159,7 +159,18 @@ int main() {
     init_info.MinImageCount = window.getSwapchainMinImagesCount();
 	init_info.MSAASamples = ctx.getDevice().getMsaaSamples();
     init_info.ImageCount = window.getSwapchainImagesCount();
-    init_info.RenderPass = window.getRenderPass(0).getHandle();	
+    init_info.RenderPass = nullptr;
+	init_info.Subpass = 0;
+	init_info.UseDynamicRendering = true;
+	init_info.PipelineRenderingCreateInfo = {
+		.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR,
+		.pNext = nullptr,
+		.viewMask = 0,
+		.colorAttachmentCount = 1,
+		.pColorAttachmentFormats = &window.getImageFormat(),
+		.depthAttachmentFormat = VK_FORMAT_UNDEFINED,
+		.stencilAttachmentFormat = VK_FORMAT_UNDEFINED
+	};	
     ImGui_ImplVulkan_Init(&init_info);	
 	//window.createDescriptorAndPipelines();
 	Camera camera(800, 600, 80, 1, 1000);
@@ -336,10 +347,10 @@ int main() {
 		ImGui::TextUnformatted(s.c_str());
         ImGui::End();
 		ImGui::Render();
-        window.beginRenderPass();
+        window.beginRendering();
         ImDrawData* draw_data = ImGui::GetDrawData();
         ImGui_ImplVulkan_RenderDrawData(draw_data, window.getCommandPool().getHandle(window.getCurrentFrame()));
-        window.endRenderPass();
+        window.endRendering();
 		ImGui::UpdatePlatformWindows();
         ImGui::RenderPlatformWindowsDefault();
 		window.submit(true);	
