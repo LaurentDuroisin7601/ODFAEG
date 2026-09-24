@@ -619,18 +619,15 @@ namespace odfaeg {
 								p3 = vertices[primitiveType][g2].position;
 								unsigned int newMin = std::min(g0, std::min(g1, g2));
     							unsigned int newMax = std::max(g0, std::max(g1, g2));
-								newMin = std::min(m.minVertex, newMin);
-								newMax = std::max(m.maxVertex, newMax);
+								m.minVertex = std::min(m.minVertex, newMin);
+								m.maxVertex = std::max(m.maxVertex, newMax);
 								unsigned int newVertexCount = (newMax - newMin) + 1;
 								
 								math::Vec3f mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
 								math::Vec3f maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));
-								mins = math::Vec3f(std::min(m.mins.x(), mins.x()), std::min(m.mins.y(), mins.y()), std::min(m.mins.z(), mins.z()));
-								maxs = math::Vec3f(std::max(m.maxs.x(), maxs.x()), std::max(m.maxs.y(), maxs.y()), std::max(m.maxs.z(), maxs.z()));
-								m.minVertex = newMin;
-								m.maxVertex = newMax;
-								m.mins = mins;
-								m.maxs = maxs;						
+								m.mins = math::Vec3f(std::min(m.mins.x(), mins.x()), std::min(m.mins.y(), mins.y()), std::min(m.mins.z(), mins.z()));
+								m.maxs = math::Vec3f(std::max(m.maxs.x(), maxs.x()), std::max(m.maxs.y(), maxs.y()), std::max(m.maxs.z(), maxs.z()));
+												
 								
 								// Si ce triangle dépasse les limites → nouveau meshlet
 								if (m.nbIndexes/3 >= MAX_PRIMS || newVertexCount > MAX_VERTS)
@@ -658,19 +655,15 @@ namespace odfaeg {
 									m.maxs = math::Vec3f(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
 									
 									// Recalculer pour ce triangle
-									newMin = std::min(g0, std::min(g1, g2));
+									/*newMin = std::min(g0, std::min(g1, g2));
 									newMax = std::max(g0, std::max(g1, g2));
 									mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
-								    maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));
-									newMin = std::min(m.minVertex, newMin);
-									newMax = std::max(m.maxVertex, newMax);
+								    maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));*/
+									m.minVertex = std::min(m.minVertex, newMin);
+									m.maxVertex = std::max(m.maxVertex, newMax);
 									newVertexCount = (newMax - newMin) + 1;
-									mins = math::Vec3f(std::min(m.mins.x(), mins.x()), std::min(m.mins.y(), mins.y()), std::min(m.mins.z(), mins.z()));
-									maxs = math::Vec3f(std::max(m.maxs.x(), maxs.x()), std::max(m.maxs.y(), maxs.y()), std::max(m.maxs.z(), maxs.z()));
-									m.minVertex = newMin;
-									m.maxVertex = newMax;
-									m.mins = mins;
-									m.maxs = maxs;
+									m.mins = math::Vec3f(std::min(m.mins.x(), mins.x()), std::min(m.mins.y(), mins.y()), std::min(m.mins.z(), mins.z()));
+									m.maxs = math::Vec3f(std::max(m.maxs.x(), maxs.x()), std::max(m.maxs.y(), maxs.y()), std::max(m.maxs.z(), maxs.z()));									
 									currentMeshletsOffset++;	
 									meshletCount++;							
 								}
@@ -789,11 +782,11 @@ namespace odfaeg {
 									//std::cout<<"volume : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
 									oneAdded = true;
 									//std::cout<<"add meshlet : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
-									meshletsGrid.addEntity(meshletDatas[m], volume);
+									bool added = meshletsGrid.addEntity(meshletDatas[m], volume);
 									
 									if (!meshletsGrid.containsEntity(meshletDatas[m])) {
-										std::cout<<"meshlet not added : "<<meshletDatas[m].id<<","<<meshletDatas[m].submeshId<<","<<subMeshData.id<<","<<l<<std::endl;
-										system("PAUSE");
+										std::cout<<"meshlet not added : "<<meshletDatas[m].mins<<","<<meshletDatas[m].maxs<<std::endl;
+										//system("PAUSE");
 									}
 								}
 									//std::cout<<"added!"<<std::endl;
@@ -991,7 +984,7 @@ namespace odfaeg {
 						
 					} else {
 						std::cout<<"meshlet : "<<meshletDatas[m].clusterId<<","<<meshletDatas[m].submeshId<<","<<meshletDatas[m].lod<<std::endl;
-						system("PAUSE");
+						//system("PAUSE");
 					}
 				}
 				//system("PAUSE");
