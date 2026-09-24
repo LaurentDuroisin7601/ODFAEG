@@ -151,7 +151,7 @@ namespace odfaeg {
                     currentSize.z() = va.getBounds().getSize().z();
             }
             model->setSize(currentSize);
-            //std::cout<<"scene loading time : "<<clk2.getElapsedTime().asMilliseconds()<<"ms"<<std::endl;
+            std::cout<<"scene loading time : "<<clk2.getElapsedTime().asMilliseconds()<<"ms"<<std::endl;
             return mesh;
         }
         void ModelLoader::processNode(math::Matrix4f parentTransform, aiNode *node, const aiScene *scene, Mesh* mnode, entity::Model* model, bool loadTextures)
@@ -402,11 +402,11 @@ namespace odfaeg {
                 }
                 //baseIndex += face.mNumIndices;
             }
-            if (isLeftHanded) {
+            /*if (isLeftHanded) {
                 for (unsigned int tri = 0; tri < indexes.size() / 3; tri++) {
                     std::swap(indexes[tri*3], indexes[tri*3+1]);
                 }
-            }            
+            }*/            
             /*math::Vec3f center = vb.getBounds().getCenter();
             math::Vec3f worldPos = finalTransform * center;
 

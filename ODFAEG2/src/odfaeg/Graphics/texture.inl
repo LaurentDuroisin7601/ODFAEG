@@ -17,17 +17,18 @@ namespace odfaeg {
             msaaSamples = VK_SAMPLE_COUNT_1_BIT;
             m_format = VK_FORMAT_R8G8B8A8_SRGB;
             isDepth = false;
-            std::string shaderDir = std::string(ODFAEG_INSTALL_DIR) + "/Shader";
-            if (!mipShader.loadFromFile(shaderDir + "/generateHIZ.comp")) {
-                throw std::runtime_error("Failed to load hz mip genertion shader");
-            }
-            if (!convertShader.loadFromFile(shaderDir + "/depthToColorFormat.comp")) {
-                throw std::runtime_error("Failed to load convert formats shader");
-            }
+            
             
         }  
         void Texture::createDescriptorAndPipelines() {
             if (!mipComputeCreated) {
+                std::string shaderDir = std::string(ODFAEG_INSTALL_DIR) + "/Shader";
+                if (!mipShader.loadFromFile(shaderDir + "/generateHIZ.comp")) {
+                    throw std::runtime_error("Failed to load hz mip genertion shader");
+                }
+                if (!convertShader.loadFromFile(shaderDir + "/depthToColorFormat.comp")) {
+                    throw std::runtime_error("Failed to load convert formats shader");
+                }
                 DescriptorSetLayout& converterLayout = GPUContext::instance().getDescriptorSetLayout(convertShader, 2);
                 converterLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_COMPUTE_BIT);
                 converterLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);

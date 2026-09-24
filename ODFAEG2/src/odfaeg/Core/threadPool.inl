@@ -18,7 +18,7 @@ namespace odfaeg {
                         }
                         task();
                     }
-                    });
+                });
             }
         }
         void ThreadPool::enqueue(std::function<void()> f) {

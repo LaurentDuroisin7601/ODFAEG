@@ -169,18 +169,18 @@ int main() {
 	ResourceManager<Texture, TextureNames> textureManager;
 	ResourceManager<Texture, std::string> modelTextureManager;
 	ModelLoader modelLoader(GPUContext::instance().getDevice(), modelTextureManager);
-	//Mesh* bistroExterior = modelLoader.loadModel("Bistro_v5_2/BistroExterior.fbx");
+	Mesh* bistroExterior = modelLoader.loadModel("Bistro_v5_2/BistroExterior.fbx");
 	//Mesh* bistroInterior = modelLoader.loadModel("Bistro_v5_2/BistroInterior.fbx");
 	//bistroExterior->getGameObject()->setScale(Vec3f(1, 1, -1));
 	//std::cout<<"test"<<std::endl;
-	//Mesh* bistroExterior = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
+	//Mesh* car = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
 	//bistroExterior->getGameObject()->setScale(Vec3f(1, 1, -1));
 	//std::cout<<"test"<<std::endl;
-	//GameObject* bistroExterior = modelLoader.loadModel(/*"CubeTest/cube_test.glb"*//**/"carGLTF/scene.gltf"/*"Bistro_v5_2/BistroExterior.fbx"*/);
+	//GameObject* car = modelLoader.loadModel(/*"CubeTest/cube_test.glb"*//**/"carGLTF/scene.gltf"/*"Bistro_v5_2/BistroExterior.fbx"*/);
 	//bistroExterior->getGameObject()->setRotation(90, Vec3f(0, 1, 0));
 	
 	
-	std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
+	/*std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
 	textureManager.fromFileWithAlias("tilesets/wood.png", WOOD, args);
 	Texture* texWood = textureManager.getResourceByAlias(WOOD);
 	texWood->setSamplerAddressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT);	
@@ -252,13 +252,14 @@ int main() {
 	renderGraph.addOpaquePass(0, 0, "*", window.getId());
 	renderGraph.addOITPass(1, 0, "*", window.getId());
 	renderGraph.addShadowPass(2, 0, "*", window.getId());
-	//renderGraph.addOITPass(0, 0, "*", window.getId());
+	//renderGraph.addOITPass(0, 0, "*", window.getId());*/
 	/*ComponentManager componentManager;
 	std::vector<IComponent*> components = renderGraph.getComponents();
 	for (unsigned int i = 0; i < components.size(); i++) {
 		componentManager.addComponent(components[i]);
 	}*/
-	//window.addGameObject(bistroExterior);	
+	//window.addGameObject(car);
+	window.addGameObject(bistroExterior);	
 	
 		//std::cout<<"i : "<<i<<std::endl;*/
 	
@@ -266,22 +267,22 @@ int main() {
 	Clock clock;
 	unsigned int fps = 0;
 	/*renderGraph.addOITPass(0, 0, "*", window.getId());
-	renderGraph.addShadowPass(1, 0, "*", window.getId());*/
+	renderGraph.addShadowPass(1, 0, "*", window.getId());
 	DirectionnalLight dirLight(Vec3f(50, 50, -50));
 
 	renderGraph.addDirectionnalLight(dirLight);
 	PointLight pointLight(Vec3f(10, 10, 10));	
 	renderGraph.addPonctualLight(pointLight);	
-	RectangleShape rect(GPUContext::instance().getDevice(), Vec3f(800, 600, 0));		
+	RectangleShape rect(GPUContext::instance().getDevice(), Vec3f(800, 600, 0));**/		
 	std::string s;	
 	while (window.isOpen()) {
 		odfaeg::window::IEvent event;
 		while (window.pollEvent(event)) {
 			if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED) {				
-				std::vector<IComponent*> components = renderGraph.getComponents();
+				/*std::vector<IComponent*> components = renderGraph.getComponents();
 				for (unsigned int i = 0; i < components.size(); i++) {
 					components[i]->stopThread();
-				}
+				}*/
 				std::cout<<"thread stopped"<<std::endl;
 				window.close();
 			}
@@ -292,11 +293,11 @@ int main() {
 		window.setCamera(camera);
 		window.setDepthStencil(true, false);
 		window.clear();
-		//window.draw(Triangles);
+		window.draw(Triangles);
 		
 		/*window.setTypesToRender("*", window.getCurrentFrame());	
 		window.drawMesh(Triangles);*/
-		window.setCamera(rtRenderTextureCamera);
+		/*window.setCamera(rtRenderTextureCamera);
 		
 		//sceneColorTexture.clear();
 		
@@ -305,7 +306,7 @@ int main() {
 		renderGraph.drawAllPasses();	
 		sceneColorTexture.display();		
 		rect.setTexture(&sceneColorTexture.getTexture());
-		window.draw(rect);	
+		window.draw(rect);	*/
 		//window.applyCullingAndBatching();
 		
 		//std::cout<<"draw"<<std::endl;
