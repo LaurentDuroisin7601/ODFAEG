@@ -555,10 +555,11 @@ namespace odfaeg {
 						subMeshData.meshletOffset =  meshletDatas.size();
 						std::array<entity::VertexArray::LODLevel, 5> lods = subMesh.getVertexArray().getLODs();
 						unsigned int currentSubmeshMeshletOffset = meshletDatas.size();						
-						for (unsigned int l = 0; l < lods.size(); l++) {
+						for (unsigned int l = 0; l < lods.size() && lods[l].indexCount > 0; l++) {
 							LODLevelData lodLevelData{};
 							lodLevelData.index_offset = lods[l].indexOffset;
 							lodLevelData.index_count = lods[l].indexCount;
+							
 							//std::cout<<"first index lod : "<<l<<","<<subMeshData.indexOffset+lods[l].indexOffset<<","<<lods[l].indexCount<<std::endl;					
 							unsigned int currentLodMeshletOffset = meshletDatas.size() - currentSubmeshMeshletOffset;
 							//std::cout<<"currentSubmeshMeshletOffset : "<<currentSubmeshMeshletOffset<<" "<<currentLodMeshletOffset<<","<<meshletDatas.size()<<std::endl;
