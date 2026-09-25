@@ -73,32 +73,32 @@ namespace odfaeg {
             struct get <I, T, false> {
                 using type = typename remove_Nth<I, T>::type;
             };
-            template <template<class...> class Pred, class T, bool B, std::size_t NB, class Seq>
+            template <template<class...> class Pred, class T, bool B, std::size_t NB, class Seq, typename... Args>
             struct append_if {};
 
-            template <template<class...> class Pred, class T, std::size_t NB, std::size_t IH, std::size_t... IT>
-            struct append_if<Pred, T, true, NB, std::index_sequence<IH, IT...>> {
-                using f = typename append_if<Pred, typename get<IH - NB, T, Pred<std::tuple_element_t<IH - NB, T>>::value>::type, Pred<std::tuple_element_t<IH - NB, T>>::value, NB, std::index_sequence<IT...>>::f;
+            template <template<class...> class Pred, class T, std::size_t NB, std::size_t IH, std::size_t... IT, typename... Args>
+            struct append_if<Pred, T, true, NB, std::index_sequence<IH, IT...>, Args...> {
+                using f = typename append_if<Pred, typename get<IH - NB, T, Pred<std::tuple_element_t<IH - NB, T>, Args...>::value>::type, Pred<std::tuple_element_t<IH - NB, T>, Args...>::value, NB, std::index_sequence<IT...>, Args...>::f;
             };
-            template <template<class...> class Pred, class T, std::size_t NB, std::size_t IH, std::size_t... IT>
-            struct append_if<Pred, T, false, NB, std::index_sequence<IH, IT...>> {
-                using f = typename append_if<Pred, typename get<IH - NB, T, Pred<std::tuple_element_t<IH - NB, T>>::value>::type, Pred<std::tuple_element_t<IH - NB, T>>::value, NB + 1, std::index_sequence<IT...>>::f;
+            template <template<class...> class Pred, class T, std::size_t NB, std::size_t IH, std::size_t... IT, typename... Args>
+            struct append_if<Pred, T, false, NB, std::index_sequence<IH, IT...>, Args...> {
+                using f = typename append_if<Pred, typename get<IH - NB, T, Pred<std::tuple_element_t<IH - NB, T>, Args...>::value>::type, Pred<std::tuple_element_t<IH - NB, T>, Args...>::value, NB + 1, std::index_sequence<IT...>, Args...>::f;
             };
-            template <template<class...> class Pred, class T, std::size_t NB, std::size_t IH>
-            struct append_if<Pred, T, true, NB, std::index_sequence<IH>> {
-                using f = typename get<IH - NB, T, Pred<std::tuple_element_t<IH - NB, T>>::value>::type;
+            template <template<class...> class Pred, class T, std::size_t NB, std::size_t IH, typename... Args>
+            struct append_if<Pred, T, true, NB, std::index_sequence<IH>, Args...> {
+                using f = typename get<IH - NB, T, Pred<std::tuple_element_t<IH - NB, T>, Args...>::value>::type;
             };
-            template <template<class...> class Pred, class T, std::size_t NB, std::size_t IH>
-            struct append_if<Pred, T, false, NB, std::index_sequence<IH>> {
-                using f = typename get<IH - NB, T, Pred<std::tuple_element_t<IH - NB, T>>::value>::type;
+            template <template<class...> class Pred, class T, std::size_t NB, std::size_t IH, typename... Args>
+            struct append_if<Pred, T, false, NB, std::index_sequence<IH>, Args...> {
+                using f = typename get<IH - NB, T, Pred<std::tuple_element_t<IH - NB, T>, Args...>::value>::type;
             };
-
-            template<template <class...> class Pred, typename T>
+            
+            template<template <class...> class Pred, typename T, typename... PArgs>
             struct copy_if {
-                using f = typename append_if<Pred, T, Pred<std::tuple_element_t<0, T>>::value, 0, std::make_index_sequence<std::tuple_size<T>::value>>::f;
+                using f = typename append_if<Pred, T, Pred<std::tuple_element_t<0, T>, PArgs...>::value, 0, std::make_index_sequence<std::tuple_size<T>::value>, PArgs...>::f;
             };
-            template<template <class...> class Pred>
-            struct copy_if <Pred, std::tuple<>> {
+            template<template <class...> class Pred, typename... PArgs>
+            struct copy_if <Pred, std::tuple<>, PArgs...> {
                 using f = std::tuple<>;
             };
 
@@ -190,7 +190,8 @@ namespace odfaeg {
             template <class T, template<class...> class R, std::size_t... Ints>
             struct lift <T, R, std::index_sequence<Ints...>> {
                 using f = R<std::tuple_element_t<Ints, T>...>;
-            };            
+            };    
+                   
         }
         namespace detail
         {
@@ -491,6 +492,52 @@ namespace odfaeg {
         protected:
             ~dispatchable()
             {
+            }
+        };
+        // Test "appartient à une famille" : dérivation
+        template<class T, class Family>
+        struct is_family : std::is_base_of<Family, std::remove_reference_t<T>> {};
+
+        // Filtrage runtime : on garde les éléments de Tuple qui sont de la famille Family
+        template<class Family, class Tuple, std::size_t... I>
+        auto filter_runtime_impl(Tuple& t, std::index_sequence<I...>) {
+            return std::tuple_cat(
+                [&]() {
+                    using E = std::tuple_element_t<I, Tuple>;
+                    if constexpr (is_family<E, Family>::value) {
+                        return std::tuple<E>(std::get<I>(t));
+                    } else {
+                        return std::tuple<>();
+                    }
+                }()...
+            );
+        }
+
+        template<class Family, class Tuple>
+        auto filter_runtime(Tuple& t) {
+            return filter_runtime_impl<Family>(
+                t,
+                std::make_index_sequence<std::tuple_size_v<Tuple>>{}
+            );
+        }
+
+        // Multi-dispatch
+        template<class Fun, class... Families>
+        struct dispatchable_multi {
+            template<class... Args>
+            void apply(Args&&... args) {                                
+                auto t = std::forward_as_tuple(std::forward<Args>(args)...);
+                auto combined = std::tuple_cat(filter_one<Families>(t)...);                           
+                if constexpr (std::tuple_size_v<decltype(combined)> != std::tuple_size_v<decltype(t)>) {
+                    return;
+                }  
+                std::apply(static_cast<Fun&>(*this), combined);
+            }
+
+        private:
+            template<class Family, class Tuple>
+            static auto filter_one(Tuple& t) {
+                return filter_runtime<Family>(t);                 
             }
         };
 	}

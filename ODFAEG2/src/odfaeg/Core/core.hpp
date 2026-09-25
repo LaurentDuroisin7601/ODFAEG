@@ -7,7 +7,7 @@
 #include "delegate.hpp"
 #include "factory.hpp"
 #include "inputStream.hpp"
-#include "meta.hpp"
+#include "metaprog.hpp"
 #include "resourceCache.hpp"
 #include "resourceManager.hpp"
 #include "runtime_compiler.hpp"

@@ -91,7 +91,45 @@ class BoundingCircle : public BoundingArea {
 	private:
 		int d = 7;
 };
+struct chat;
+struct chien;
+struct epee;
+struct arc;
+struct laser;
+struct balle;
+struct animal 
+      {};
+struct arme 
+      {};
+struct projectile 
+      {};
+struct chat  : animal {};
+struct chien : animal {};
+
+struct epee  : arme {};
+struct arc   : arme {};
+
+struct laser : projectile {};
+struct balle : projectile {};
+
+
+
+struct interaction : dispatchable_multi<interaction, animal, arme, projectile>
+{
+    void operator()(const chat&, const epee&, const laser&) const { std::cout<<"chat avec épée lazer."<<std::endl; }
+    void operator()(const chien&, const arc&, const balle&) const { std::cout<<"chien avec arc et balles."<<std::endl;}
+    // etc.
+};
 int main() {
+	interaction inter;
+	chat c;
+    epee e;
+	laser l; 
+    animal& an = c;
+    arme& ar = e; 
+	projectile& p = l;
+	inter.apply(c, e, l);
+	system("PAUSE");
 	/*EXPORT_CLASS_GUID(BABC, BoundingArea, BoundingCircle, ITextArchive)
 	EXPORT_CLASS_GUID(BABC, BoundingArea, BoundingCircle, OTextArchive)		
 	std::ostringstream oss;	
