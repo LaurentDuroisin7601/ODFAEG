@@ -87,6 +87,7 @@ namespace odfaeg {
             createShaderBindingTable();
             
             needToUpdateBLAS = needToUpdateTLAS = needToUpdateDescriptorSets = true; 
+            rayGenPC.pipelineMask = Material::rtPipeline;
             /*updateBLAS();
             updateTLAS();*/
         } 
@@ -419,7 +420,7 @@ namespace odfaeg {
                     VkAccelerationStructureInstanceKHR instance{};
                     instance.transform = transformMatrix;
                     instance.instanceCustomIndex = instanceID;
-                    instance.mask = 0xFF;
+                    instance.mask = gameObjects[i]->getMaterials()[j]->pipelineType;
                     instance.instanceShaderBindingTableRecordOffset = 0;
                     instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
                     instance.accelerationStructureReference = bottomLevelASBuffers[instanceID].getDeviceAddress();

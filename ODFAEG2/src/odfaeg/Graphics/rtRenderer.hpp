@@ -41,6 +41,7 @@ namespace odfaeg {
                     unsigned int pointLightCount;
                     unsigned int dirLightCount;
                     unsigned int hasGeometry;
+                    unsigned int pipelineMask;
                 };
                 struct GeometryOffset {
                     uint32_t vertexOffset;
@@ -71,7 +72,7 @@ namespace odfaeg {
                 struct UBOData {
                     math::Matrix4f viewInverse;
                     math::Matrix4f projInverse;
-                };
+                };                
                 RTRenderer(RenderTarget& parentRenderer, Texture& environmentMap, RenderTexture& frameBuffer,
                     RenderTexture& cmsShadowMaps, RenderTexture& plShadowMaps, unsigned int layer, std::string typesToRenderExpression, int windowId=-1, bool usethread = false);
                 void clear();

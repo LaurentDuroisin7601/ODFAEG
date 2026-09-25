@@ -39,6 +39,7 @@ layout (push_constant) uniform PushConstant {
     uint directionnalLightCount;
     uint pointLightCount;
     uint hasGeometry;
+    uint pipelineMask;
 } pc;
 struct Material {   
     /*vec2 uvScale;
@@ -107,7 +108,7 @@ void main() {
         vec4 color = texture(rasterImage, vec2(gl_LaunchIDEXT.xy / gl_LaunchSizeEXT.xy));
         imageStore(image[pc.currentFrame], ivec2(gl_LaunchIDEXT.xy), color);
     } else {
-        traceRayEXT(globalAS, gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, origin.xyz, tmin, direction.xyz, tmax, 0);   
+        traceRayEXT(globalAS, gl_RayFlagsOpaqueEXT, pc.pipelineMask, 0, 0, 0, origin.xyz, tmin, direction.xyz, tmax, 0);   
         uint i = 0;    
         while (i < MAX_BOUNCES && !transport.lastBounce) {
             //Objet translucide touché.
