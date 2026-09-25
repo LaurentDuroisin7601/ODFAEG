@@ -116,9 +116,9 @@ export namespace odfaeg {
             struct unique_impl<Acc, std::tuple<T, Rest...>> {
                 using type = std::conditional_t <
                     contains<T, Acc>::value,
-                    // déjà présent : on ne l'ajoute pas
+                    // dï¿½jï¿½ prï¿½sent : on ne l'ajoute pas
                     typename unique_impl<Acc, std::tuple<Rest...>>::type,
-                    // pas présent : on l'ajoute à Acc
+                    // pas prï¿½sent : on l'ajoute ï¿½ Acc
                     typename unique_impl<
                     decltype(std::tuple_cat(Acc{}, std::tuple<T>{})),
                     std::tuple<Rest...>
@@ -132,7 +132,7 @@ export namespace odfaeg {
                 using f = typename unique_impl<std::tuple<>, Tuple>::type;
             };
 
-            // Spécialisation vide (optionnelle, mais cohérente avec ton code)
+            // Spï¿½cialisation vide (optionnelle, mais cohï¿½rente avec ton code)
             template <>
             struct unique<std::tuple<>> {
                 using f = std::tuple<>;
@@ -264,7 +264,7 @@ export namespace odfaeg {
             static constexpr m_size_type value = m_helper::value;
             typedef typename m_helper::type type;
         };
-        //Utilitaire pour ajouter un type à la fin d'un tuple
+        //Utilitaire pour ajouter un type ï¿½ la fin d'un tuple
         template<class, class>
         struct cat_type;
 
@@ -287,11 +287,11 @@ export namespace odfaeg {
 
 
         //Classe de base des visiteurs
-        //La visite se fait sur le type acceptable qui contient l'information sur le type réel
+        //La visite se fait sur le type acceptable qui contient l'information sur le type rï¿½el
         template<class, class...>
         struct visitor;
 
-        //Récursion
+        //Rï¿½cursion
         template<class Abstract, class Concrete, class... Concrete_Tail>
         struct visitor<Abstract, Concrete, Concrete_Tail...>
             : visitor<Abstract, Concrete_Tail...>
@@ -300,7 +300,7 @@ export namespace odfaeg {
             virtual void visit(acceptable<Abstract, Concrete>&) const = 0;
         };
 
-        //Condition d'arrêt
+        //Condition d'arrï¿½t
         template<class Abstract, class Concrete>
         struct visitor<Abstract, Concrete>
         {
@@ -317,7 +317,7 @@ export namespace odfaeg {
         };
 
 
-        //Utilitaire pour récupérer le type accepté par la hiérarchie depuis le visiteur
+        //Utilitaire pour rï¿½cupï¿½rer le type acceptï¿½ par la hiï¿½rarchie depuis le visiteur
         template<class, class>
         struct accept_type;
 
@@ -331,7 +331,7 @@ export namespace odfaeg {
         };
 
 
-        //Utilitaire pour récupérer les types concrets de la hiérarchie depuis le visiteur
+        //Utilitaire pour rï¿½cupï¿½rer les types concrets de la hiï¿½rarchie depuis le visiteur
         template<class>
         struct concrete_type;
 
@@ -342,7 +342,7 @@ export namespace odfaeg {
         };
 
 
-        //Classe de base qui ajoute accept à la classe de base de la hiérarchie
+        //Classe de base qui ajoute accept ï¿½ la classe de base de la hiï¿½rarchie
         template<class Abstract, class... Concrete>
         struct accept_visitor
         {
@@ -363,7 +363,7 @@ export namespace odfaeg {
 
         //Classe dispatcher : c'est un visiteur et un foncteur
 
-        //Condition d'arrêt sur les types de la hiérarchie
+        //Condition d'arrï¿½t sur les types de la hiï¿½rarchie
         template<
             class To_Visit, class, bool,
             class Visitor, class,
@@ -381,7 +381,7 @@ export namespace odfaeg {
             Fun fun;
         };
 
-        //Récursion sur les types de la hiérarchie
+        //Rï¿½cursion sur les types de la hiï¿½rarchie
         template<
             class To_Visit, class Visited,
             class Visitor, class T, class... Concrete,
@@ -408,7 +408,7 @@ export namespace odfaeg {
         public:
             using base::base;
 
-            //Déclenche la visite sur le bon paramètre
+            //Dï¿½clenche la visite sur le bon paramï¿½tre
             void operator()() const
             {
                 std::get
@@ -422,7 +422,7 @@ export namespace odfaeg {
             {
                 using new_visited = typename cat_type<Visited, T>::type;
 
-                //Récursion sur les arguments d'appel
+                //Rï¿½cursion sur les arguments d'appel
                 dispatcher<
                     To_Visit, new_visited,
                     std::tuple_size<To_Visit>::value == std::tuple_size<new_visited>::value,
@@ -432,7 +432,7 @@ export namespace odfaeg {
             }
         };
 
-        //Condition d'arrêt sur les paramètre d'appel
+        //Condition d'arrï¿½t sur les paramï¿½tre d'appel
         template<
             class To_Visit, class... Visited,
             class Visitor, class Concrete,
@@ -449,7 +449,7 @@ export namespace odfaeg {
             {
             }
 
-            //Déclenche l'appel avec les bon types
+            //Dï¿½clenche l'appel avec les bon types
             void operator()()
             {
                 apply(std::make_index_sequence<sizeof...(Visited)>());
@@ -467,7 +467,7 @@ export namespace odfaeg {
         };
 
 
-        //Classe de base pour les foncteurs à dispatcher
+        //Classe de base pour les foncteurs ï¿½ dispatcher
         template<class Fun, class Abstract>
         struct dispatchable
         {
@@ -494,5 +494,33 @@ export namespace odfaeg {
             {
             }
         };
+        template<class T, class Abstract>
+        struct is_family : std::is_base_of<Abstract, T> {};
+        template<class Fun, class... Families>
+        struct dispatchable_multi {
+            template<class... Arg>
+            void apply(Arg&&... arg) {
+                auto t = std::forward_as_tuple(std::forward<Arg>(arg)...);
+
+                // Pour chaque famille
+                (apply_family<Fun, Families>(t, static_cast<Fun&>(*this)), ...);
+            }
+        };
+        template<class Fun, class Family, class Tuple>
+        void apply_family(Tuple& t, Fun& fun) {
+            using visitor = typename Family::visitor_type;
+            using concrete = typename concrete_type<visitor>::type;
+
+            using filtered = typename copy_if<
+                Tuple,
+                is_family<std::tuple_element_t<I, Tuple>, Family>::value
+            >::type;
+
+            dispatcher<
+                filtered, std::tuple<>, false,
+                visitor, concrete,
+                Fun
+            >(filtered, fun)();
+        }
 	}
 }
