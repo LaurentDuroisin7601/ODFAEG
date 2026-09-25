@@ -1,6 +1,7 @@
 namespace odfaeg {
     namespace graphic {
         LightningRenderer::LightningRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId, bool useThread) :
+        IRenderer(windowId),
         parentRenderer(parentRenderer),
         pbrShader(GPUContext::instance().getDevice()),
         irradianceShader(GPUContext::instance().getDevice()),
@@ -95,10 +96,10 @@ namespace odfaeg {
             createCommandPools();
             needToUpdateTextures = true;            
             window::Command rendererReadyCmd(core::FastDelegate<bool>(&LightningRenderer::isRendererReady, this), core::FastDelegate<void>(&LightningRenderer::drawNextFrame, this));
-            listener.connect("RendererReady",rendererReadyCmd); 
+            getEventListener().connect("RendererReady",rendererReadyCmd); 
             if (useThread) {
                 //std::cout<<"lanch"<<std::endl;
-                listener.launch();
+                getEventListener().launch();
             }  
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 lightsBuffer.emplace_back(GPUContext::instance().getDevice());

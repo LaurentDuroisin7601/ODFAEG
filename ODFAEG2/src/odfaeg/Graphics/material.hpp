@@ -65,7 +65,8 @@ namespace odfaeg {
             inline static const unsigned int rtPipeline = 2 << 1;
             inline static const unsigned int rasterPipeline = 3 << 1;
             inline static const unsigned int reflectMask = 4 << 1;
-            inline static const unsigned int refractMask = 5 << 1; 		
+            inline static const unsigned int refractMask = 5 << 1; 
+            inline static const unsigned int selectedMask = 6 << 1; 		
             Material();
             unsigned int getId();
             static unsigned int getNbMaterials();

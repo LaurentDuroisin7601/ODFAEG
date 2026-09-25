@@ -28,9 +28,10 @@
 #include "../Window/listener.hpp"
 #include "../Entity/cube.hpp"
 #include "renderStates.hpp"
+#include "iRenderer.hpp"
 namespace odfaeg {
     namespace graphic {
-       class LightningRenderer {
+       class LightningRenderer : public IRenderer {
            public :
                struct PbrVertPC{
                    math::Matrix4f projMatrix;
@@ -82,8 +83,7 @@ namespace odfaeg {
                VertexBuffer ndcCubeVB;
                VertexBuffer fullScreenQuad;
                PbrVertPC pbrVertPC;
-               std::vector<Light> lights;
-               window::Listener listener;
+               std::vector<Light> lights;               
        }; 
     }
 }

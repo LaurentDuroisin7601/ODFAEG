@@ -10,6 +10,7 @@
 #include "opaqueRenderer.hpp"
 #include "shadowRenderer.hpp"
 #include "linkedListRenderer.hpp"
+#include "lightningRenderer.hpp"
 #include "rtRenderer.hpp"
 #include "widget.hpp"
 #include "../math/vec.hpp"
@@ -20,19 +21,20 @@ namespace odfaeg {
     namespace graphic {
         class RenderGraph {
             public :                     
-            RenderGraph(RenderTexture& output);
-            void addOpaquePass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId);        
-            void addOITPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId=-1);
-            void addShadowPass(unsigned int order,  unsigned int layer, std::string typesToRender, unsigned int windowId=-1);
-            void addLightningPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId=-1);
-            void addRTPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId=-1);
+            RenderGraph(RenderTexture& output, unsigned int layer);
+            void addOpaquePass(unsigned int order, std::string typesToRender, unsigned int windowId);        
+            void addOITPass(unsigned int order, std::string typesToRender, unsigned int windowId=-1);
+            void addShadowPass(unsigned int order, std::string typesToRender, unsigned int windowId=-1);
+            void addLightningPass(unsigned int order, std::string typesToRender, unsigned int windowId=-1);
+            void addRTPass(unsigned int order, std::string typesToRender, unsigned int windowId=-1);
             
             void addDirectionnalLight(entity::DirectionnalLight& dirLight);
             void addPonctualLight(entity::PointLight& pointLight);
                 
             void drawAllPasses();
             std::vector<IComponent*> getComponents();            
-            private :            
+            private : 
+            unsigned int layer;           
             std::map<unsigned int, IRenderer*> renderers;
             std::map<unsigned int, IRenderer*> rayRenderers; 
             std::map<unsigned int, Widget*> widgets;

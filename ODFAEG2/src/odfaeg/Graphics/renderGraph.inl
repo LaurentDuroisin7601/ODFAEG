@@ -1,24 +1,28 @@
 namespace odfaeg {
     namespace graphic {
-        RenderGraph::RenderGraph(RenderTexture& output) : output(output),
+        RenderGraph::RenderGraph(RenderTexture& output, unsigned int layer) : layer(layer), output(output),
         csmShadowMap(GPUContext::instance().getDevice(), true), pointShadowMap(GPUContext::instance().getDevice(), true),
         environmentMap(GPUContext::instance().getDevice()) {
             
         }
-        void RenderGraph::addOpaquePass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId) {
+        void RenderGraph::addOpaquePass(unsigned int order, std::string typesToRender, unsigned int windowId) {
             OpaqueRenderer* opaqueRenderer = new OpaqueRenderer(output, layer, typesToRender, windowId);
             renderers.insert(std::make_pair(order, opaqueRenderer));
         }
-        void RenderGraph::addOITPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId) {
+        void RenderGraph::addOITPass(unsigned int order, std::string typesToRender, unsigned int windowId) {
             LinkedListRenderer* llr = new LinkedListRenderer(output, output, layer, typesToRender, windowId);
             renderers.insert(std::make_pair(order, llr));            
         }
-        void RenderGraph::addShadowPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId) {
+        void RenderGraph::addShadowPass(unsigned int order, std::string typesToRender, unsigned int windowId) {
             
             ShadowRenderer* sr = new ShadowRenderer(output, output, csmShadowMap, pointShadowMap, layer, typesToRender, windowId);
             renderers.insert(std::make_pair(order, sr));
         }
-        void RenderGraph::addRTPass(unsigned int order, unsigned int layer, std::string typesToRender, unsigned int windowId) {
+        void RenderGraph::addLightningPass(unsigned int order, std::string typesToRender, unsigned int windowId) {
+             LightningRenderer* lightningRenderer = new LightningRenderer(output, layer, typesToRender, windowId);
+             renderers.insert(std::make_pair(order, lightningRenderer));
+        }
+        void RenderGraph::addRTPass(unsigned int order, std::string typesToRender, unsigned int windowId) {
              RTRenderer* rtRenderer = new RTRenderer(output, environmentMap, output, csmShadowMap, pointShadowMap, layer, typesToRender, windowId);
              renderers.insert(std::make_pair(order, rtRenderer));           
         }
