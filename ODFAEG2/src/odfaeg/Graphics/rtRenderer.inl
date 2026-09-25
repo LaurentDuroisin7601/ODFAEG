@@ -413,8 +413,10 @@ namespace odfaeg {
             std::vector<Mesh*> gameObjects = RenderTarget::getGameObjects(); 
             std::vector<Mesh*> nonOpaqueObjects; 
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
-                for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {                    
-                    nonOpaqueObjects.push_back(gameObjects[i]);
+                for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
+                    if ((gameObjects[i]->getMaterials()[j]->opaque & Material::transparentMask) != 0) {                  
+                        nonOpaqueObjects.push_back(gameObjects[i]);
+                    }
                     unsigned int instanceID = gameObjects[i]->getGameObject()->getSubMeshes()[j].instanceId;
                     VkTransformMatrixKHR transformMatrix = toVulkanMatrix(gameObjects[i]->getGameObject()->getTransform().getMatrix());
                     VkAccelerationStructureInstanceKHR instance{};
@@ -505,20 +507,21 @@ namespace odfaeg {
                     1,
                     &accelerationBuildGeometryInfo,
                     accelerationBuildStructureRangeInfos.data());
-            entity::GridMap<Mesh*> grid(100, 100, 100);
+            entity::GridMap<Mesh*> grid(50, 50, 50);
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
+                
                 grid.addEntity(gameObjects[i], gameObjects[i]->getGameObject()->getGlobalBounds());
             }              
             std::vector<Mesh*> localGameObjects;
             std::vector<std::pair<unsigned int, unsigned int>> localTlasInfos;            
             for (unsigned int i = 0; i < nonOpaqueObjects.size(); i++) {
                 physic::BoundingBox nonOpaqueZoneInfluence = nonOpaqueObjects[i]->getGameObject()->getGlobalBounds();
-                nonOpaqueZoneInfluence.scale(math::Vec3f(200, 200, 200));
+                nonOpaqueZoneInfluence.scale(math::Vec3f(2, 2, 2));
                 unsigned int offset = localGameObjects.size();
-                std::vector<Mesh*> octreeGameObject = grid.getEntitiesInBox(nonOpaqueZoneInfluence);
+                std::vector<Mesh*> bspTreeGameObject = grid.getEntitiesInBox(nonOpaqueZoneInfluence);
                 
-                localTlasInfos.push_back(std::make_pair(offset, octreeGameObject.size()));
-                localGameObjects.insert(localGameObjects.end(), octreeGameObject.begin(), octreeGameObject.end());
+                localTlasInfos.push_back(std::make_pair(offset, bspTreeGameObject.size()));
+                localGameObjects.insert(localGameObjects.end(), bspTreeGameObject.begin(), bspTreeGameObject.end());
             }
             unsigned int currentInstancesOffset = 0; 
             instances.clear();
