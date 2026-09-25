@@ -7,7 +7,61 @@ namespace odfaeg {
             static GPUContext ctx;
             return ctx;
         }
-        Pipeline& GPUContext::getComputePipeline(Shader& shader) {
+		unsigned int GPUContext::generateGraphicsPipeline(entity::PrimitiveType primType, Shader& shader, BlendMode blendMode) {
+			unsigned int id = graphicsPipeline[shader.getId()][primType].size();
+			blendMode.updateIds();
+			for (unsigned int i = 0; i < blendMode.nbBlendModes; i++) {
+				graphicsPipeline[shader.getId()][primType].emplace_back(device);
+			}
+			return id;
+		}
+		unsigned int GPUContext::generateComputePipeline() {
+			unsigned int id = computePipelines.size();
+			computePipelines.emplace_back(device);
+			return id;
+		}
+		unsigned int GPUContext::generateRTPipeline() {
+			unsigned int id = rtPipelines.size();
+			rtPipelines.emplace_back(device);
+			return id;
+		}
+		unsigned int GPUContext::generateDescriptorPool(Shader& shader) {
+			unsigned int id = descriptorPools.size();
+			descriptorPools[shader.getId()].emplace_back(device);
+			return id;
+		}
+		unsigned int GPUContext::generateDescriptorSetLayout(Shader& shader) {
+			unsigned int id = descriptorSetLayouts.size();
+			descriptorSetLayouts[shader.getId()].emplace_back(device);
+			return id;
+		}
+		unsigned int GPUContext::generateDescriptorSet(Shader& shader, unsigned int setBinding, unsigned int maxSets) {
+			unsigned int id = descriptorSets[shader.getId()][setBinding].size();
+			for (unsigned int i = 0; i < maxSets; i++) {
+				descriptorSets[shader.getId()][setBinding].emplace_back(device);
+			}
+			return id;
+		}
+		Pipeline& GPUContext::getGraphicsPipelineFromId(entity::PrimitiveType primType, Shader& shader, BlendMode blendMode, unsigned int id) {
+			blendMode.updateIds();
+			return graphicsPipeline[shader.getId()][primType][id*blendMode.nbBlendModes+blendMode.id];
+		}
+		Pipeline& GPUContext::getComputePipelineFromId(unsigned int id) {
+			return computePipelines[id];
+		}
+		Pipeline& GPUContext::getRTPipelineFromId(unsigned int id) {
+			return rtPipelines[id];
+		}
+		DescriptorPool& GPUContext::getDescriptorPoolFromId(Shader& shader, unsigned int id) {
+			return descriptorPools[shader.getId()][id];
+		}
+		DescriptorSetLayout& GPUContext::getDescriptorSetLayoutFromId(Shader& shader, unsigned int id) {
+			return descriptorSetLayouts[shader.getId()][id];
+		}
+		DescriptorSet& GPUContext::getDescriptorSetById(Shader& shader, unsigned int setBinding, unsigned int maxSets, unsigned int currentFrame, unsigned int id) {
+			return descriptorSets[shader.getId()][setBinding][id*maxSets+currentFrame];
+		}
+		Pipeline& GPUContext::getComputePipeline(Shader& shader) {
 			if (computePipelines.size() <= shader.getId()) {
 				for (unsigned int i = computePipelines.size(); i < shader.getId() + 1; i++) {
 					computePipelines.emplace_back(device);
@@ -85,7 +139,7 @@ namespace odfaeg {
 			descriptorSetLayouts[shader.getId()][setBinding].setNbBindings(nbShaderBindings, bindless);
 			return descriptorSetLayouts[shader.getId()][setBinding];
 		}
-		std::deque<DescriptorSet>& GPUContext::getDescriptorSets(Shader& shader, unsigned int nbShaderBindings, unsigned int nbDescriptorSetsPerFrame, unsigned int setBinding) {
+		std::deque<DescriptorSet>& GPUContext::getDescriptorSets(Shader& shader, unsigned int nbShaderBindings, unsigned int maxSets, unsigned int setBinding) {
 			//std::cout<<"size 1 : "<<descriptorSets.size()<<" "<<shader.getId()<<std::endl;
 			if (descriptorSets.size() <= shader.getId()) {
 				descriptorSets.resize(shader.getId() + 1);
@@ -94,8 +148,8 @@ namespace odfaeg {
 				descriptorSets[shader.getId()].resize(setBinding + 1);
 			}				
 			for (unsigned int j = 0; j < setBinding + 1; j++) {
-				if (descriptorSets[shader.getId()][j].size() < nbDescriptorSetsPerFrame) {
-					for (unsigned int k = descriptorSets[shader.getId()][j].size(); k < nbDescriptorSetsPerFrame; k++) {
+				if (descriptorSets[shader.getId()][j].size() < maxSets) {
+					for (unsigned int k = descriptorSets[shader.getId()][j].size(); k < maxSets; k++) {
 						descriptorSets[shader.getId()][j].emplace_back(device);
 					}
 				}

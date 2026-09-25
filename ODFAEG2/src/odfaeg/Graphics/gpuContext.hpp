@@ -20,16 +20,29 @@
 namespace odfaeg {
     namespace graphic {
         class GPUContext {        
-        public :
+        public :          
             static GPUContext& instance();
             std::deque<std::deque<Pipeline>>& getGraphicsPipeline(Shader& shader);
             Pipeline& getGraphicsPipeline(entity::PrimitiveType primType, Shader& shader, BlendMode blendMode, unsigned int depthStencilInfoId);
             Pipeline& getComputePipeline(Shader& shader);
             Pipeline& getRTPipeline(Shader& shader);
+            unsigned int generateGraphicsPipeline(entity::PrimitiveType primType, Shader& shader, BlendMode blendMode);
+            unsigned int generateComputePipeline();
+            unsigned int generateRTPipeline();
+            unsigned int generateDescriptorPool(Shader& shader);
+            unsigned int generateDescriptorSetLayout(Shader& shader);
+            unsigned int generateDescriptorSet(Shader& shader, unsigned int setBinding, unsigned int maxSets);
+            Pipeline& getGraphicsPipelineFromId(entity::PrimitiveType primType, Shader& shader, BlendMode blendMode, unsigned int depthStencilInfoId);
+            Pipeline& getComputePipelineFromId(unsigned int id);
+            Pipeline& getRTPipelineFromId(unsigned int id);
+            DescriptorPool& getDescriptorPoolFromId(Shader& shader, unsigned int id);
+            DescriptorSetLayout& getDescriptorSetLayoutFromId(Shader& shader, unsigned int id);
+            DescriptorSet& getDescriptorSetById(Shader& shader, unsigned int setBinding, unsigned int maxSets, unsigned int currentFrame, unsigned int id);
+           
             DescriptorPool& getDescriptorPool(Shader& shader, unsigned int nbShaderBindings, unsigned int setBinding=0);
             DescriptorSetLayout& getDescriptorSetLayout(Shader& shader, unsigned int nbShaderBindings, bool bindless=false, unsigned int setBinding=0);
             std::deque<DescriptorSetLayout>& getDescriptorSetLayout(Shader& shader);
-            std::deque<DescriptorSet>& getDescriptorSets(Shader& shader, unsigned int nbShaderBindings, unsigned int nbDescriptorSetsPerFrame, unsigned int setBinding=0);
+            std::deque<DescriptorSet>& getDescriptorSets(Shader& shader, unsigned int nbShaderBindings, unsigned int maxSets, unsigned int setBinding=0);
             std::deque<std::deque<DescriptorSet>>& getDescriptorSets(Shader& shader);
             std::deque<Buffer>& getSharedBuffers(unsigned int bufferID);
             std::deque<Texture>& getSharedTextures(unsigned int textureID);
