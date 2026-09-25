@@ -8,7 +8,13 @@ namespace odfaeg {
             return ctx;
         }
 		unsigned int GPUContext::generateGraphicsPipeline(entity::PrimitiveType primType, Shader& shader, BlendMode blendMode) {
-			unsigned int id = graphicsPipeline[shader.getId()][primType].size();
+			if (graphicsPipeline.size() <=  shader.getId()) {
+				graphicsPipeline.resize(shader.getId() + 1);
+			}
+			if(graphicsPipeline[shader.getId()].size() <= primType) {
+				graphicsPipeline[shader.getId()].resize(primType + 1);
+			}
+			unsigned int id = graphicsPipeline[shader.getId()][primType].size();			
 			blendMode.updateIds();
 			for (unsigned int i = 0; i < blendMode.nbBlendModes; i++) {
 				graphicsPipeline[shader.getId()][primType].emplace_back(device);
@@ -26,16 +32,28 @@ namespace odfaeg {
 			return id;
 		}
 		unsigned int GPUContext::generateDescriptorPool(Shader& shader) {
-			unsigned int id = descriptorPools.size();
+			if (descriptorPools.size() <= shader.getId()) {
+				descriptorPools.resize(shader.getId() + 1);
+			}
+			unsigned int id = descriptorPools[shader.getId()].size();
 			descriptorPools[shader.getId()].emplace_back(device);
 			return id;
 		}
 		unsigned int GPUContext::generateDescriptorSetLayout(Shader& shader) {
-			unsigned int id = descriptorSetLayouts.size();
+			if (descriptorSetLayouts.size() <= shader.getId()) {
+				descriptorSetLayouts.resize(shader.getId() + 1);
+			}
+			unsigned int id = descriptorSetLayouts[shader.getId()].size();
 			descriptorSetLayouts[shader.getId()].emplace_back(device);
 			return id;
 		}
 		unsigned int GPUContext::generateDescriptorSet(Shader& shader, unsigned int setBinding, unsigned int maxSets) {
+			if (descriptorSets.size() <= shader.getId()) {
+				descriptorSets.resize(shader.getId() + 1);
+			}			
+			if (descriptorSets[shader.getId()].size() <= setBinding) {
+				descriptorSets[shader.getId()].resize(setBinding + 1);
+			}
 			unsigned int id = descriptorSets[shader.getId()][setBinding].size();
 			for (unsigned int i = 0; i < maxSets; i++) {
 				descriptorSets[shader.getId()][setBinding].emplace_back(device);
