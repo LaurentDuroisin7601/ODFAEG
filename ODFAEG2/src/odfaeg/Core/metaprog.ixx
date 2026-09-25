@@ -512,8 +512,7 @@ export namespace odfaeg {
             using concrete = typename concrete_type<visitor>::type;
 
             using filtered = typename copy_if<
-                Tuple,
-                is_family<std::tuple_element_t<I, Tuple>, Family>::value
+                is_family<std::tuple_element_t<I, Tuple>, Family>, Tuple>::value
             >::type;
 
             dispatcher<
