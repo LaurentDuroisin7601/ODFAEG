@@ -835,6 +835,7 @@ namespace odfaeg {
             if (face == 0) {
                 //std::cout<<"size : "<<imageLoader.getSize().x()<<std::endl;
                 createCubeMap(imageLoader.getSize().x());
+                mipLevels = std::floor(std::log2(std::max(imageLoader.getSize().x(), imageLoader.getSize().y()))) + 1;
                 //std::cout<<"cm created"<<std::endl;
             }
             
