@@ -564,6 +564,22 @@ namespace odfaeg {
                 return filter_runtime<Family>(t);                 
             }
         };
+        template <typename... Ts>
+        struct ConcreteTypes {
+            std::tuple<Ts...> visits;
+
+            template <typename... Args>
+            void concreteTypes(Args&&... args) {
+                visits = std::make_tuple(std::forward<Args>(args)...);
+            }
+
+            template <typename Behaviour>
+            void apply(Behaviour& b) {
+                std::apply([&](auto&... elems) {
+                    b.apply(elems...);
+                }, visits);
+            }
+        };
 	}
 }
 #endif

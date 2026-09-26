@@ -91,22 +91,7 @@ class BoundingCircle : public BoundingArea {
 	private:
 		int d = 7;
 };
-template <typename... Ts>
-struct ConcreteTypes {
-    std::tuple<Ts...> visits;
 
-    template <typename... Args>
-    void concreteTypes(Args&&... args) {
-        visits = std::make_tuple(std::forward<Args>(args)...);
-    }
-
-    template <typename Behaviour>
-    void apply(Behaviour& b) {
-        std::apply([&](auto&... elems) {
-            b.apply(elems...);
-        }, visits);
-    }
-};
 struct gameObject 
 	{};
 
@@ -429,7 +414,7 @@ int main() {
 		if (clock.getElapsedTime() >= seconds(1.f)) {
 			//std::cout<<"FPS : "<<fps<<std::endl;
 			s = "FPS : " + std::to_string(fps);
-			std::cout<<"FPS : "<<fps<<std::endl;
+			//std::cout<<"FPS : "<<fps<<std::endl;
 			fps = 0;
 			clock.restart();
 		}     
