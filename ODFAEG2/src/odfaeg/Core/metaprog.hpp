@@ -2,6 +2,7 @@
 #define ODFAEG_METAPROG_HPP
 #include <type_traits>
 #include <tuple>
+#include "compiletime_counter.hpp"
 namespace odfaeg {
 	namespace core {
             namespace meta {
@@ -493,11 +494,34 @@ namespace odfaeg {
             ~dispatchable()
             {
             }
-        };
+        }; 
+        template <typename U, typename... T>
+        class OVariant {
+            public :            
+            OVariant(U value) {                         
+               if constexpr (I != -1)
+                   std::get<I>(holder) = value; 
+            }            
+            U get() {
+                return std::get<U>(holder);
+            }   
+            private :
+            template<std::size_t... I>
+            static constexpr unsigned int construct(std::index_sequence<I...>) {
+                if constexpr (compteur.next() > std::tuple_size_v<decltype(holder)>)
+                    return -1;
+                if constexpr ((std::is_same_v<std::tuple_element_t<I, decltype(holder)>, U>, ...)) {                    
+                    return compteur.next() - 1;
+                }
+                compteur.next();
+            }    
+            static constexpr unsigned int I = construct(std::make_index_sequence<std::tuple_size_v<std::tuple<T...>>>());      
+            static constexpr Compteur compteur = Compteur();                        
+            std::tuple<T...> holder;  
+        };       
         // Test "appartient à une famille" : dérivation
         template<class T, class Family>
         struct is_family : std::is_base_of<Family, std::remove_reference_t<T>> {};
-
         // Filtrage runtime : on garde les éléments de Tuple qui sont de la famille Family
         template<class Family, class Tuple, std::size_t... I>
         auto filter_runtime_impl(Tuple& t, std::index_sequence<I...>) {

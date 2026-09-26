@@ -91,26 +91,47 @@ class BoundingCircle : public BoundingArea {
 	private:
 		int d = 7;
 };
-struct chat;
-struct chien;
-struct epee;
-struct arc;
-struct laser;
-struct balle;
-struct animal 
-      {};
-struct arme 
-      {};
-struct projectile 
-      {};
-struct chat  : animal {};
-struct chien : animal {};
+template <typename... Ts>
+struct ConcreteTypes {
+    std::tuple<Ts...> visits;
 
-struct epee  : arme {};
-struct arc   : arme {};
+    template <typename... Args>
+    void concreteTypes(Args&&... args) {
+        visits = std::make_tuple(std::forward<Args>(args)...);
+    }
 
-struct laser : projectile {};
-struct balle : projectile {};
+    template <typename Behaviour>
+    void apply(Behaviour& b) {
+        std::apply([&](auto&... elems) {
+            b.apply(elems...);
+        }, visits);
+    }
+};
+struct gameObject 
+	{};
+
+struct animal : gameObject
+    {};
+struct arme : gameObject
+    {};
+struct projectile : gameObject
+    {};
+
+	  
+struct chat  : animal {
+};
+struct chien : animal {
+};
+
+struct epee  : arme {
+};
+struct arc   : arme {
+};
+
+struct laser : projectile {
+};
+struct balle : projectile {
+};
 
 
 
@@ -120,15 +141,26 @@ struct interaction : dispatchable_multi<interaction, animal, arme, projectile>
     void operator()(const chien&, const arc&, const balle&) const { std::cout<<"chien avec arc et balles."<<std::endl;}
     // etc.
 };
+struct test {
+	void f() {
+
+	}
+};
 int main() {
 	interaction inter;
 	chat c;
     epee e;
-	laser l; 
-    animal& an = c;
-    arme& ar = e; 
-	projectile& p = l;
-	inter.apply(c, e, l);
+	laser l; 	
+	ConcreteTypes<chat, epee, laser> concretes;
+	concretes.concreteTypes(c, e, l);
+	//concretes.apply(inter);  // appelle inter.apply(chat&, epee&, laser&)
+	FastDelegate<void> callback([&](){
+		concretes.apply(inter);
+	});
+	callback();
+	//concretes.apply(inter);
+	//inter.apply(c, e, l);
+	
 	system("PAUSE");
 	/*EXPORT_CLASS_GUID(BABC, BoundingArea, BoundingCircle, ITextArchive)
 	EXPORT_CLASS_GUID(BABC, BoundingArea, BoundingCircle, OTextArchive)		
