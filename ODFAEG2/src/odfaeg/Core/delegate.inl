@@ -129,7 +129,11 @@ namespace odfaeg {
         
         template<class T, class LateParamsT, class... Args>
         IVariant<T, LateParamsT, true, Args...>::IVariant(const CVariant<T, Args...>& var) : var(var) {}
-        
+        template<class T, class LateParamsT, class... Args>
+        IVariant<T, LateParamsT, true, Args...>& IVariant<T, LateParamsT, true, Args...>::operator=(CVariant<T, Args...>& var) {
+            this->var = var;
+            return *this;
+        }
         template<class T, class LateParamsT, class... Args>
         std::unique_ptr<IRefVal<T, LateParamsT, true>> IVariant<T, LateParamsT, true, Args...>::clone() {
             return std::unique_ptr<IRefVal<T, LateParamsT, true>>(
@@ -147,7 +151,11 @@ namespace odfaeg {
         
         template<class T, class LateParamsT, class... Args>
         IVariant<T, LateParamsT, false, Args...>::IVariant(const CVariant<T, Args...>&& var) : var(std::move(var)) {}
-        
+        template<class T, class LateParamsT, class... Args>
+        IVariant<T, LateParamsT, false, Args...>&& IVariant<T, LateParamsT, false, Args...>::operator=(CVariant<T, Args...>&& var) {
+            this->var = std::move(var);
+            return std::move(*this);
+        }
         
         template<class T, class LateParamsT, class... Args>
         std::unique_ptr<IRefVal<T, LateParamsT, false>> IVariant<T, LateParamsT, false, Args...>::transfert() {
@@ -340,7 +348,14 @@ namespace odfaeg {
         {
             param = std::make_tuple(std::forward<ArgU>(arg)...);
             tmpParam = std::make_tuple(std::forward<ArgU>(arg)...);
-        }   
+        }
+        template<class R, class... ArgT>
+        template<size_t I, class P>
+        void FastDelegateImpl<R, ArgT...>::setParam(P&& parameter)
+        {
+            std::get<I>(param) = std::forward<P>(parameter);
+            std::get<I>(tmpParam) = std::forward<P>(parameter);
+        }      
         template<class R, class... ArgT>   
         template <std::size_t I>
         void FastDelegateImpl<R, ArgT...>::bindParams(void* params) requires IsLastRecursion<I, ArgT...> {
@@ -412,7 +427,7 @@ namespace odfaeg {
         {
             if (delegate)
                 return  (*delegate)();              
-        }
+        }        
         template<class R>
         template<class... Arg>
         void FastDelegate<R>::setParams(Arg... arg)
@@ -422,7 +437,18 @@ namespace odfaeg {
             if (dynamic_cast<DynamicType>(delegate.get()))
                 dynamic_cast<DynamicType>(delegate.get())->setParams(std::forward<Arg>(arg)...);
             else
-                throw std::runtime_error(std::string("Invalid cast : types + ") + typeid(DynamicType).name() + " et " + typied(*delegate.get()) + " are nor polymorphic!");
-        }        
+                throw std::runtime_error(std::string("Invalid cast : types + ") + typeid(DynamicType).name() + " et " + typeid(*delegate.get()).name() + " are nor polymorphic!");
+        }   
+        template<class R>
+        template<size_t I, class P, class... Arg>
+        void FastDelegate<R>::setParam(P param)
+        {
+            using DynamicType =
+                FastDelegateImpl<R, std::remove_cv_t<Arg>...>*;
+            if (dynamic_cast<DynamicType>(delegate.get()))
+                dynamic_cast<DynamicType>(delegate.get())->template setParam<I>(std::forward<P>(param));
+            else
+                throw std::runtime_error(std::string("Invalid cast : types + ") + typeid(DynamicType).name() + " et " + typeid(*delegate.get()).name() + " are nor polymorphic!");
+        }          
     }
 }

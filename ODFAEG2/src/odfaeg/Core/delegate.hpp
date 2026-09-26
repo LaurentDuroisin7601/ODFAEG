@@ -189,6 +189,7 @@ namespace odfaeg {
             std::unique_ptr<IRefVal<T, LateParamsT, true>> clone();
             T& bind(void* params);
             T& get();
+            IVariant& operator=(CVariant<T, Args...>& v);
             private :
             CVariant<T, Args...> var;
         };
@@ -197,6 +198,7 @@ namespace odfaeg {
             public :
             IVariant(const CVariant<T, Args...>&& var);            
             std::unique_ptr<IRefVal<T, LateParamsT, false>> transfert();
+            IVariant&& operator=(CVariant<T, Args...>&& v);
             T&& bind(void* params);
             T&& get();
             private :
@@ -561,6 +563,9 @@ namespace odfaeg {
             template<class... ArgU>
             void setParams(ArgU&&... arg);
 
+            template<size_t I, class P>
+            void setParam(P&& param);
+
         private:
             template <std::size_t I=0>
             void bindParams(void* params) requires IsLastRecursion<I, ArgT...>;
@@ -621,6 +626,8 @@ namespace odfaeg {
             
             template<class... Arg>
             void setParams(Arg... arg);
+            template<size_t I, class P, class... Arg>
+            void setParam(P param);
         private:
             std::unique_ptr<Delegate<R>> delegate; /**> holds the pointer to the generic delegate.*/
         };        

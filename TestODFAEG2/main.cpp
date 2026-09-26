@@ -146,12 +146,14 @@ int main() {
 	//concretes.apply(inter);
 	//inter.apply(c, e, l);
 	chien ch;
+	chien ch2;
 	test t;
 	CVariant<chien, chat, chien> cv(ch);
+	CVariant<chien, chat, chien> cv2(ch2);
 	FastDelegate<void> varCallBack(&test::f, t, cv);
 	varCallBack();
-	std::cout<<"type id : "<<typeid(cv.get()).name()<<std::endl;
-	
+	varCallBack.setParam<1, CVariant<chien, chat, chien>, test, CVariant<chien, chat, chien>>(cv2);
+	varCallBack();
 	//system("PAUSE");
 	/*EXPORT_CLASS_GUID(BABC, BoundingArea, BoundingCircle, ITextArchive)
 	EXPORT_CLASS_GUID(BABC, BoundingArea, BoundingCircle, OTextArchive)		
