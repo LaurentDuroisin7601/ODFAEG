@@ -496,9 +496,9 @@ namespace odfaeg {
             }
         }; 
         template <typename U, typename... T>
-        class OVariant {
+        class CVariant {
             public :            
-            OVariant(U value) {                         
+            CVariant(U value) {                         
                if constexpr (I != -1)
                    std::get<I>(holder) = value; 
             }            
@@ -514,10 +514,11 @@ namespace odfaeg {
                     return compteur.next() - 1;
                 }
                 compteur.next();
-            }    
-            static constexpr unsigned int I = construct(std::make_index_sequence<std::tuple_size_v<std::tuple<T...>>>());      
+            }  
             static constexpr Compteur compteur = Compteur();                        
             std::tuple<T...> holder;  
+            public :  
+            static constexpr unsigned int I = construct(std::make_index_sequence<std::tuple_size_v<std::tuple<T...>>>());
         };       
         // Test "appartient à une famille" : dérivation
         template<class T, class Family>

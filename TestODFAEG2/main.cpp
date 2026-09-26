@@ -145,6 +145,9 @@ int main() {
 	callback();
 	//concretes.apply(inter);
 	//inter.apply(c, e, l);
+	chien ch;
+	CVariant<chien, chat, chien> cv(ch);
+	std::cout<<"type id : "<<typeid(cv.get()).name()<<std::endl;
 	
 	system("PAUSE");
 	/*EXPORT_CLASS_GUID(BABC, BoundingArea, BoundingCircle, ITextArchive)

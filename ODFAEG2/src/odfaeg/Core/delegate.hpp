@@ -115,7 +115,7 @@ namespace odfaeg {
             std::unique_ptr<IRefVal<T, LateParamsT, false>> transfer();
         private:            
             T val; /**> T val : keep the value of the wrapper.*/
-        };
+        };        
         /**
         *  \file  fastDelegate.h
         *  \class ph
@@ -179,6 +179,28 @@ namespace odfaeg {
             T&& bind(void* params);
             T&& get();
         };
+        template<class T, class LateParamsT, bool isCopiable, class... Args>
+        struct IVariant {
+        };
+        template<class T, class LateParamsT, class... Args>
+        class IVariant<T, LateParamsT, true, Args...>  : IRefVal<T, LateParamsT, true> {
+            IVariant(CVariant<T, Args...>& var);            
+            std::unique_ptr<IRefVal<T, LateParamsT, true>> clone();
+            T&& bind(void* params);
+            T&& get();
+            private :
+            CVariant<T, Args...> var;
+        };
+        template<class T, class LateParamsT, class... Args>
+        class IVariant<T, LateParamsT, false, Args...> : IRefVal<T, LateParamsT, false> {
+            public :
+            IVariant(CVariant<T, Args...>&& var);            
+            std::unique_ptr<IRefVal<T, LateParamsT, false>> transfert();
+            T&& bind(void* params);
+            T&& get();
+            private :
+            CVariant<T, Args...> var;
+        };
         /**
         *  \file  fastDelegate.h
         *  \class RefVal
@@ -200,7 +222,8 @@ namespace odfaeg {
             RefVal(const std::reference_wrapper<T>& r);
             template<size_t I>
             RefVal(ph<I, T>&&);
-            
+            template <typename... Args>
+            RefVal(const CVariant<T, Args...>& var);
             RefVal(const RefVal& rhs);
             RefVal& operator=(const RefVal& rhs);
             T& bind(void* params);            
@@ -215,6 +238,8 @@ namespace odfaeg {
             RefVal(T&& t);
             template<size_t I>
             RefVal(ph<I, T>&&);
+            template <typename... Args>
+            RefVal(const CVariant<T, Args...>&& var);
             RefVal(RefVal&& rhs);
             RefVal& operator=(RefVal&& rhs);
             T&& bind(void* params);
@@ -299,6 +324,11 @@ namespace odfaeg {
         */
         template<size_t I, class T>
         struct ToStoreImpl<ph<I, T>>
+        {
+            using type = T;
+        };
+        template<class T, class...Args>
+        struct ToStoreImpl<CVariant<T, Args...>>
         {
             using type = T;
         };
