@@ -128,28 +128,30 @@ namespace odfaeg {
         } 
         
         template<class T, class LateParamsT, class... Args>
-        IVariant<T, LateParamsT, true, Args...>::IVariant(CVariant<T, Args...>& var) : var(var) {}
+        IVariant<T, LateParamsT, true, Args...>::IVariant(const CVariant<T, Args...>& var) : var(var) {}
         
         template<class T, class LateParamsT, class... Args>
         std::unique_ptr<IRefVal<T, LateParamsT, true>> IVariant<T, LateParamsT, true, Args...>::clone() {
-            return std::make_unique<IVariant<T, LateParamsT, false, Args...>>(*this);
+            return std::unique_ptr<IRefVal<T, LateParamsT, true>>(
+                new IVariant<T, LateParamsT, true, Args...>(*this)
+            );
         }
         template<class T, class LateParamsT, class... Args>
-        T&& IVariant<T, LateParamsT, true, Args...>::bind(void* params) {
+        T& IVariant<T, LateParamsT, true, Args...>::bind(void* params) {
 
         }
         template<class T, class LateParamsT, class... Args>
-        T&& IVariant<T, LateParamsT, true, Args...>::get() {
+        T& IVariant<T, LateParamsT, true, Args...>::get() {
             return var.get();
         }
         
         template<class T, class LateParamsT, class... Args>
-        IVariant<T, LateParamsT, false, Args...>::IVariant(CVariant<T, Args...>&& var) : var(std::move(var)) {}
+        IVariant<T, LateParamsT, false, Args...>::IVariant(const CVariant<T, Args...>&& var) : var(std::move(var)) {}
         
         
         template<class T, class LateParamsT, class... Args>
         std::unique_ptr<IRefVal<T, LateParamsT, false>> IVariant<T, LateParamsT, false, Args...>::transfert() {
-            return std::make_unique<IVariant<T, LateParamsT, false, Args...>>(std::move(*this));
+            return std::make_unique<IVariant>( new IVariant<T, LateParamsT, false, Args...>(std::move(*this)));
         }
         template<class T, class LateParamsT, class... Args>
         T&& IVariant<T, LateParamsT, false, Args...>::bind(void* params) {
@@ -179,7 +181,7 @@ namespace odfaeg {
         template<class T, class LateParamsT>
         template<typename... Args>
         RefVal<T, LateParamsT, true>::RefVal(const CVariant<T, Args...>& var) //we need to use a different placeholder class here to pass the palceholders's holder type for the static_cast.
-            : rv(std::make_unique<IVariant<T, LateParamsT, true, Args...>>(var))
+            : rv(new IVariant<T, LateParamsT, true, Args...>(var))
         {
         }
         template<class T, class LateParamsT>
@@ -215,7 +217,7 @@ namespace odfaeg {
         template<class T, class LateParamsT>
         template<typename... Args>
         RefVal<T, LateParamsT, false>::RefVal(const CVariant<T, Args...>&& var) //we need to use a different placeholder class here to pass the palceholders's holder type for the static_cast.
-            : rv(std::make_unique<IVariant<T, LateParamsT, true, Args...>>(std::move(var)))
+            : rv(new IVariant<T, LateParamsT, true, Args...>(std::move(var)))
         {
         }
         template<class T, class LateParamsT>

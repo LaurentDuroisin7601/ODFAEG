@@ -502,7 +502,7 @@ namespace odfaeg {
                if constexpr (I != -1)
                    std::get<I>(holder) = value; 
             }            
-            U get() {
+            U& get() {
                 return std::get<U>(holder);
             }   
             private :

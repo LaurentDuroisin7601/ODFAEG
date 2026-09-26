@@ -127,8 +127,8 @@ struct interaction : dispatchable_multi<interaction, animal, arme, projectile>
     // etc.
 };
 struct test {
-	void f() {
-
+	void f(chien c) {
+		std::cout<<"ceci est un chien"<<std::endl;
 	}
 };
 int main() {
@@ -142,14 +142,17 @@ int main() {
 	FastDelegate<void> callback([&](){
 		concretes.apply(inter);
 	});
-	callback();
+	
 	//concretes.apply(inter);
 	//inter.apply(c, e, l);
 	chien ch;
+	test t;
 	CVariant<chien, chat, chien> cv(ch);
+	FastDelegate<void> varCallBack(&test::f, t, cv);
+	varCallBack();
 	std::cout<<"type id : "<<typeid(cv.get()).name()<<std::endl;
 	
-	system("PAUSE");
+	//system("PAUSE");
 	/*EXPORT_CLASS_GUID(BABC, BoundingArea, BoundingCircle, ITextArchive)
 	EXPORT_CLASS_GUID(BABC, BoundingArea, BoundingCircle, OTextArchive)		
 	std::ostringstream oss;	

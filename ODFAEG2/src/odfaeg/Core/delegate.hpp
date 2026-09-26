@@ -180,21 +180,22 @@ namespace odfaeg {
             T&& get();
         };
         template<class T, class LateParamsT, bool isCopiable, class... Args>
-        struct IVariant {
+        struct IVariant : public IRefVal<T, LateParamsT, isCopiable> {
         };
         template<class T, class LateParamsT, class... Args>
-        class IVariant<T, LateParamsT, true, Args...>  : IRefVal<T, LateParamsT, true> {
-            IVariant(CVariant<T, Args...>& var);            
+        class IVariant<T, LateParamsT, true, Args...>  : public IRefVal<T, LateParamsT, true> {
+            public :
+            IVariant(const CVariant<T, Args...>& var);            
             std::unique_ptr<IRefVal<T, LateParamsT, true>> clone();
-            T&& bind(void* params);
-            T&& get();
+            T& bind(void* params);
+            T& get();
             private :
             CVariant<T, Args...> var;
         };
         template<class T, class LateParamsT, class... Args>
-        class IVariant<T, LateParamsT, false, Args...> : IRefVal<T, LateParamsT, false> {
+        class IVariant<T, LateParamsT, false, Args...> : public IRefVal<T, LateParamsT, false> {
             public :
-            IVariant(CVariant<T, Args...>&& var);            
+            IVariant(const CVariant<T, Args...>&& var);            
             std::unique_ptr<IRefVal<T, LateParamsT, false>> transfert();
             T&& bind(void* params);
             T&& get();
@@ -393,9 +394,13 @@ namespace odfaeg {
         template <typename T>
         struct extractTypeFromPh {
             using type = T;
-        };
+        };        
         template <size_t I, typename T>
         struct extractTypeFromPh<ph<I, T>> {
+            using type = T;
+        };
+        template <typename T, typename... Args>
+        struct extractTypeFromPh<CVariant<T, Args...>> {
             using type = T;
         };
         template<class T>
