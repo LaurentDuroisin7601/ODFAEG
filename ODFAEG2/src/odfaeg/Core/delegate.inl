@@ -7,7 +7,7 @@ namespace odfaeg {
         }
         template<class T, typename LateParamsT, bool isCopiable>
         T& Ref<T, LateParamsT, isCopiable>::bind(void* params) {
-            std::cout<<"get : "<<&ref.get()<<std::endl;
+            //std::cout<<"get : "<<&ref.get()<<std::endl;
             return ref.get();
         }
         template<class T, typename LateParamsT, bool isCopiable>

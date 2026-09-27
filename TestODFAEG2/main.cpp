@@ -91,7 +91,9 @@ class BoundingCircle : public BoundingArea {
 	private:
 		int d = 7;
 };
-
+enum ANIMALS {
+	CHIEN, CHAT	
+};
 struct gameObject 
 	{};
 
@@ -129,11 +131,11 @@ struct interaction : dispatchable_multi<interaction, animal, arme, projectile>
 struct test {
 	template <size_t I, typename T>
 	void f(gameObject& g, CVariant<T,chat, chien> v) {
-		if (I == 0) {
-			chat cha = v.template get<chat>();
-			std::cout<<"chien behaviour"<<std::endl;
-		} else if (I == 1) {
+		if (I == CHIEN) {
 			chien chi = v.template get<chien>();
+			std::cout<<"chien behaviour"<<std::endl;
+		} else if (I == CHAT) {
+			chat cha = v.template get<chat>();
 			std::cout<<"chat behaviour"<<std::endl;
 		} else {
 			std::cout<<"invalide type "<<std::endl;
@@ -152,9 +154,9 @@ int main() {
 	CVariant<chat, chat, chien> cv2(cha);		
 	gameObject& object1 = chi;  
 	gameObject& object2 = cha;
-	FastDelegate<void> varCallBack1(&test::f<0, chien>, t, std::ref(object1), ph<0, CVariant<chien, chat, chien>>());
+	FastDelegate<void> varCallBack1(&test::f<CHIEN, chien>, t, std::ref(object1), ph<0, CVariant<chien, chat, chien>>());
 	varCallBack1.bind(cv1);
-	FastDelegate<void> varCallBack2(&test::f<1, chat>, t, std::ref(object2), ph<0, CVariant<chat, chat, chien>>());
+	FastDelegate<void> varCallBack2(&test::f<CHAT, chat>, t, std::ref(object2), ph<0, CVariant<chat, chat, chien>>());
 	varCallBack2.bind(cv2);
 	std::vector<FastDelegate<void>> behavioursSlots;
 	behavioursSlots.push_back(varCallBack1);
