@@ -494,10 +494,11 @@ namespace odfaeg {
             ~dispatchable()
             {
             }
-        }; 
+        };               
         template <typename U, typename... T>
         class CVariant {
-            public :            
+            public :    
+            CVariant() { }        
             CVariant(U value) {                         
                if constexpr (I != -1)
                    std::get<I>(holder) = value; 

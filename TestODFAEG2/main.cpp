@@ -127,33 +127,41 @@ struct interaction : dispatchable_multi<interaction, animal, arme, projectile>
     // etc.
 };
 struct test {
-	void f(chien c) {
-		std::cout<<"ceci est un chien"<<std::endl;
-	}
+	template <size_t I, typename T>
+	void f(gameObject& g, CVariant<T,chat, chien> v) {
+		if (I == 0) {
+			std::cout<<"chien behaviour"<<std::endl;
+		} else if (I == 1) {
+			std::cout<<"chat behaviour"<<std::endl;
+		} else {
+			std::cout<<"invalide type "<<std::endl;
+		}	
+	}	
 };
 int main() {
-	interaction inter;
-	chat c;
-    epee e;
-	laser l; 	
-	ConcreteTypes<chat, epee, laser> concretes;
-	concretes.concreteTypes(c, e, l);
-	//concretes.apply(inter);  // appelle inter.apply(chat&, epee&, laser&)
-	FastDelegate<void> callback([&](){
-		concretes.apply(inter);
-	});
+	
 	
 	//concretes.apply(inter);
 	//inter.apply(c, e, l);
-	chien ch;
-	chien ch2;
+	chien chi;
+	chat cha;	
 	test t;
-	CVariant<chien, chat, chien> cv(ch);
-	CVariant<chien, chat, chien> cv2(ch2);
-	FastDelegate<void> varCallBack(&test::f, t, cv);
-	varCallBack();
-	varCallBack.setParam<1, CVariant<chien, chat, chien>, test, CVariant<chien, chat, chien>>(cv2);
-	varCallBack();
+	CVariant<chien, chat, chien> cv1;
+	CVariant<chien, chat, chien> cv2;		
+	gameObject& object1 = chi;  
+	gameObject& object2 = cha;
+	FastDelegate<void> varCallBack1(&test::f<0, chien>, t, std::ref(object1), ph<0, CVariant<chien, chat, chien>>());
+	varCallBack1.bind(cv1);
+	FastDelegate<void> varCallBack2(&test::f<1, chat>, t, std::ref(object2), ph<0, CVariant<chat, chat, chien>>());
+	varCallBack2.bind(cv2);
+	std::vector<FastDelegate<void>> behavioursSlots;
+	behavioursSlots.push_back(varCallBack1);
+	behavioursSlots.push_back(varCallBack2);
+	for (unsigned int i = 0; i < behavioursSlots.size(); i++) {
+		behavioursSlots[i]();
+	}
+	/*varCallBack.setParam<1, CVariant<chien, chat, chien>, test, CVariant<chien, chat, chien>>(cv2);
+	varCallBack();*/
 	//system("PAUSE");
 	/*EXPORT_CLASS_GUID(BABC, BoundingArea, BoundingCircle, ITextArchive)
 	EXPORT_CLASS_GUID(BABC, BoundingArea, BoundingCircle, OTextArchive)		
