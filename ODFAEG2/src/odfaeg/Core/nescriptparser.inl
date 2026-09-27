@@ -1,6 +1,6 @@
 namespace odfaeg {
     namespace core {        
-        void Pasrer::parseFile() { 
+        void Parser::parseFile(std::string fileName) { 
             ASTNode root;
             root.blocStart = 0;
             root.blocEnd = content.size();
@@ -42,7 +42,7 @@ namespace odfaeg {
                     if(currentPos > node.children[i].blocStart) {
                         parseInstructions(0, node.children[i]);
                         //On saute les instructions déjà parsées.
-                        currentPos = node.children.blocEnd;
+                        currentPos = node.children[i].blocEnd;
                     }
                 }
             }
