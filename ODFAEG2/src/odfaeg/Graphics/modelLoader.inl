@@ -363,6 +363,38 @@ namespace odfaeg {
                 std::lock_guard<std::recursive_mutex>(getGlobalMutex());
                 extractBoneWeightForVertices(vertices, mesh, scene, model);
             }
+            std::vector<math::Vec3f> tangents, bitangents;               
+            if (isLeftHanded) {
+                tangents.resize(vertices.size());
+                bitangents.resize(vertices.size());
+                
+                for (unsigned int v = 0; v < vertices.size() / 3; v++) {
+                    math::Vec3f p0 = vertices[v*3+0].position;
+                    math::Vec3f p1 = vertices[v*3+1].position;
+                    math::Vec3f p2 = vertices[v*3+2].position;
+
+                    math::Vec2f uv0 = vertices[v*3+0].texCoords;
+                    math::Vec2f uv1 = vertices[v*3+1].texCoords;
+                    math::Vec2f uv2 = vertices[v*3+2].texCoords;
+
+                    math::Vec3f e1 = p1 - p0;
+                    math::Vec3f e2 = p2 - p0;
+
+                    float du1 = uv1.x() - uv0.x();
+                    float dv1 = uv1.y() - uv0.y();
+                    float du2 = uv2.x() - uv0.x();
+                    float dv2 = uv2.y() - uv0.y();
+
+                    float r = 1.0f / (du1 * dv2 - du2 * dv1);
+
+                    tangents[v*3+0] = math::Vec3f(e1 * dv2 - e2 * dv1) * r;
+                    bitangents[v*3+0] = math::Vec3f (e2 * du1 - e1 * du2) * r;
+                    tangents[v*3+1] = tangents[v*3+0];
+                    bitangents[v*3+1] = bitangents[v*3+0];
+                    tangents[v*3+2] = tangents[v*3+0];
+                    bitangents[v*3+2] = bitangents[v*3+0];
+                }
+            }
             /*VertexBuffer vb(device, Triangles);
             for (unsigned int i = 0; i < vertices.size(); i++) {
                 //std::cout<<"add vertex"<<std::endl;
@@ -404,7 +436,20 @@ namespace odfaeg {
             }
             if (isLeftHanded) {
                 for (unsigned int tri = 0; tri < indexes.size() / 3; tri++) {
-                    std::swap(indexes[tri*3], indexes[tri*3+1]);
+                    tangents[tri*3+0] += tangents[tri*3+0];
+                    tangents[tri*3+1] += tangents[tri*3+1];
+                    tangents[tri*3+2] += tangents[tri*3+1];
+
+                    bitangents[tri*3+0] += bitangents[tri*3+0];
+                    bitangents[tri*3+1] += bitangents[tri*3+1];
+                    bitangents[tri*3+2] += bitangents[tri*3+2];
+                    std::swap(indexes[tri*3+1], indexes[tri*3+2]);                   
+                }
+                for (unsigned int i = 0; i < vertices.size(); i++) {
+                    tangents[i].normalize();
+                    bitangents[i].normalize();
+                    tangents[i] = -tangents[i];
+                    bitangents[i] = -bitangents[i];
                 }
             }            
             /*math::Vec3f center = vb.getBounds().getCenter();
@@ -475,7 +520,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < vertices.size(); i++) {  
                     va[i] = vertices[i];
                 }
-                for (unsigned int i = 0; i < indexes.size(); i++) {
+                for (unsigned int i = 0; i < indexes.size(); i++) {                    
                     va.setIndex(i, indexes[i]);
                 }
                 
