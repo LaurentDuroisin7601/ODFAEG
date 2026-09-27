@@ -402,11 +402,11 @@ namespace odfaeg {
                 }
                 //baseIndex += face.mNumIndices;
             }
-            /*if (isLeftHanded) {
+            if (isLeftHanded) {
                 for (unsigned int tri = 0; tri < indexes.size() / 3; tri++) {
                     std::swap(indexes[tri*3], indexes[tri*3+1]);
                 }
-            }*/            
+            }            
             /*math::Vec3f center = vb.getBounds().getCenter();
             math::Vec3f worldPos = finalTransform * center;
 
@@ -506,9 +506,9 @@ namespace odfaeg {
                         pos = math::Vec4f(va[i].normal.x(), va[i].normal.y(), va[i].normal.z(), 1);
                         tpos = finalTransform * pos;
                         va[i].normal = math::Vec3f(tpos.x(), tpos.y(), tpos.z());
-                        if (isLeftHanded) {
+                        /*if (isLeftHanded) {
                             va[i].normal = -va[i].normal;
-                        }
+                        }*/
                         //std::cout<<"vertex position : "<<va[i].position<<std::endl;
                     }
                 }

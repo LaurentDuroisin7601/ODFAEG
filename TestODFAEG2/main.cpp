@@ -250,7 +250,7 @@ int main() {
 	//window.createDescriptorAndPipelines();
 	Camera camera(800, 600, 80, 1, 1000);
 	//camera.setUp(Vec3f(0.f, -1.f, 0.f));
-	camera.move(0.f, 0.f, 5.f);
+	camera.move(0.f, 0.f, -10.f);
 	Camera imGUICamera = window.getCamera();
 	Camera rtRenderTextureCamera = window.getCamera();
 	rtRenderTextureCamera.move(400, 300, 0);
