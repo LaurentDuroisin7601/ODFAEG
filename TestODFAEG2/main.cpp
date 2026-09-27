@@ -130,8 +130,10 @@ struct test {
 	template <size_t I, typename T>
 	void f(gameObject& g, CVariant<T,chat, chien> v) {
 		if (I == 0) {
+			chat cha = v.template get<chat>();
 			std::cout<<"chien behaviour"<<std::endl;
 		} else if (I == 1) {
+			chien chi = v.template get<chien>();
 			std::cout<<"chat behaviour"<<std::endl;
 		} else {
 			std::cout<<"invalide type "<<std::endl;
@@ -146,8 +148,8 @@ int main() {
 	chien chi;
 	chat cha;	
 	test t;
-	CVariant<chien, chat, chien> cv1;
-	CVariant<chien, chat, chien> cv2;		
+	CVariant<chien, chat, chien> cv1(chi);
+	CVariant<chat, chat, chien> cv2(cha);		
 	gameObject& object1 = chi;  
 	gameObject& object2 = cha;
 	FastDelegate<void> varCallBack1(&test::f<0, chien>, t, std::ref(object1), ph<0, CVariant<chien, chat, chien>>());

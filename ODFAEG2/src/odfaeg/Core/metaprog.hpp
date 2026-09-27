@@ -494,33 +494,25 @@ namespace odfaeg {
             ~dispatchable()
             {
             }
-        };               
+        }; 
+              
         template <typename U, typename... T>
         class CVariant {
             public :    
             CVariant() { }        
-            CVariant(U value) {                         
-               if constexpr (I != -1)
-                   std::get<I>(holder) = value; 
+            CVariant(U value) {
+                std::get<U>(holder) = value; 
             }            
             U& get() {
                 return std::get<U>(holder);
             }   
-            private :
-            template<std::size_t... I>
-            static constexpr unsigned int construct(std::index_sequence<I...>) {
-                if constexpr (compteur.next() > std::tuple_size_v<decltype(holder)>)
-                    return -1;
-                if constexpr ((std::is_same_v<std::tuple_element_t<I, decltype(holder)>, U>, ...)) {                    
-                    return compteur.next() - 1;
-                }
-                compteur.next();
-            }  
-            static constexpr Compteur compteur = Compteur();                        
-            std::tuple<T...> holder;  
-            public :  
-            static constexpr unsigned int I = construct(std::make_index_sequence<std::tuple_size_v<std::tuple<T...>>>());
-        };       
+            template <typename V>
+            V& get() {
+                return std::get<V>(holder);
+            }
+            private :                                    
+            std::tuple<T...> holder;
+        };
         // Test "appartient à une famille" : dérivation
         template<class T, class Family>
         struct is_family : std::is_base_of<Family, std::remove_reference_t<T>> {};
