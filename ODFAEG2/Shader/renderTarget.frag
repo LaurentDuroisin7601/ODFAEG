@@ -43,6 +43,9 @@ layout(location = 2) in vec3 normal;
 layout(location = 3) flat in int materialID;
 layout(location = 4) flat in int primitiveType;
 layout(location = 5) flat in int currentFrame;
+layout(location = 6) in vec3 vTangent;
+layout(location = 7) in vec2 vBitangent;
+layout(location = 8) in vec3 vNormal;
 layout(location = 0) out vec4 outColor;
 void main() {
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[materialID];
@@ -55,11 +58,24 @@ void main() {
         diffuse *= texture(diffuseTextures[mat.diffuseTextureIndex-1], uv);
     }
     // --- Normal map ---
-    vec3 N = normalize(normal);
+    vec3 Nt = normalize(normal);
     if (mat.normalTextureIndex > 0 && mat.normalTextureIndex < MAX_TEXTURES) {
         vec3 nmap = texture(normalTextures[mat.normalTextureIndex-1], uv).xyz * 2.0 - 1.0;
-        N = normalize(nmap);
+        Nt = normalize(nmap);
+    }    
+    vec3 Nw;
+    if (vTangent.x == 0 && vTangent.y == 0 && vTangent.z == 0) {
+        Nw = Nt;
+    } else {
+        
+        vec3 T = normalize(vTangent);
+        vec3 N = normalize(vNormal);
+        //debugPrintfEXT("t %v3f  b %v3f n %v3f", T, N);
+        T = normalize(T - N * dot(T, N)); // Gram-Schmidt
+        vec3 B = cross(N, T);
+        vec3 Nw = normalize(T * Nt.x + B * Nt.y + N * Nt.z);
     }
+    
     // --- Specular ---
     float specularStrength = 1.0;
     if (mat.specularTextureIndex > 0 && mat.specularTextureIndex < MAX_TEXTURES) {
@@ -80,11 +96,11 @@ void main() {
     }
 	// --- Éclairage simple ---
     vec3 L = normalize(vec3(0.5, 1.0, 0.3));
-    float diff = max(dot(-N, L), 0.0);
+    float diff = max(dot(Nw, L), 0.0);
     // Specular simple
     vec3 V = normalize(vec3(0,0,1));
     vec3 H = normalize(L + V);
-    float spec = pow(max(dot(N, H), 0.0), 32.0) * specularStrength;
+    float spec = pow(max(dot(Nw, H), 0.0), 32.0) * specularStrength;
     //debugPrintfEXT("texture index : %i, normal : %v3f, fragTexCoord %v2f, color : %v4f, fragColor : %v4f", mat.diffuseTextureIndex, normal, fragTexCoord, diffuse * diff * ao + spec + emissive, fragColor);
     //debugPrintfEXT("normal : %v3f", N);
     outColor = diffuse * diff * ao + spec + emissive;

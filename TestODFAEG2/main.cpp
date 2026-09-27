@@ -243,8 +243,7 @@ int main() {
 		.viewMask = 0,
 		.colorAttachmentCount = 1,
 		.pColorAttachmentFormats = &window.getImageFormat(),
-		.depthAttachmentFormat = VK_FORMAT_UNDEFINED,
-		.stencilAttachmentFormat = VK_FORMAT_UNDEFINED
+		.depthAttachmentFormat = window.getDepthStencilTexture().getFormat()		
 	};	
     ImGui_ImplVulkan_Init(&init_info);	
 	//window.createDescriptorAndPipelines();

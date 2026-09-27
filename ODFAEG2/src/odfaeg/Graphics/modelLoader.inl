@@ -434,6 +434,7 @@ namespace odfaeg {
                 }
                 //baseIndex += face.mNumIndices;
             }
+            
             if (isLeftHanded) {
                 for (unsigned int tri = 0; tri < indexes.size() / 3; tri++) {
                     tangents[tri*3+0] += tangents[tri*3+0];
@@ -445,11 +446,17 @@ namespace odfaeg {
                     bitangents[tri*3+2] += bitangents[tri*3+2];
                     std::swap(indexes[tri*3+1], indexes[tri*3+2]);                   
                 }
+                std::vector<math::Vec3f> normals;
+                normals.resize(vertices.size());
                 for (unsigned int i = 0; i < vertices.size(); i++) {
                     tangents[i].normalize();
                     bitangents[i].normalize();
                     tangents[i] = -tangents[i];
                     bitangents[i] = -bitangents[i];
+                    normals[i] = tangents[i].cross(bitangents[i]);
+                    vertices[i].T = tangents[i];
+                    vertices[i].B = bitangents[i];
+                    vertices[i].N = normals[i];
                 }
             }            
             /*math::Vec3f center = vb.getBounds().getCenter();

@@ -349,7 +349,7 @@ namespace odfaeg {
                         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                         .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
                         .dstAccessMask = 0,
-                        .oldLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+                        .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
                         .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -492,9 +492,9 @@ namespace odfaeg {
             //std::cout<<"create dp cmds"<<std::endl;
 
             //std::cout<<"create render pass!"<<std::endl;
-            createRenderPass();
+            //createRenderPass();
             //std::cout<<"create frame buffers!"<<std::endl;
-            createFrameBuffers();
+            //createFrameBuffers();
             createSyncObjects();
             //std::cout<<"initialize rt"<<std::endl;
             RenderTarget::initialize();

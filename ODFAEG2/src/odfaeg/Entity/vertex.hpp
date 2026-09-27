@@ -113,11 +113,16 @@ namespace odfaeg {
             Color color; ///< Color of the vertex
             math::Vec2f texCoords; ///< Coordinates of the texture's pixel to map to the vertex
             alignas(16) math::Vec3f normal;
+            alignas(16) math::Vec3f T; 
+            alignas(16) math::Vec3f B;
+            alignas(16) math::Vec3f N;
+            unsigned int drawableDataId; 
             //bone indexes which will influence this vertex
             int m_BoneIDs[MAX_BONES_INFLUENCE];
             //weights from each bone
             float m_Weights[MAX_BONES_INFLUENCE];
-            unsigned int drawableDataId;            
+            
+                      
         };
     }
 }

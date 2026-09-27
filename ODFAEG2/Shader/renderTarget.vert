@@ -30,7 +30,11 @@ layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec4 inColor;
 layout(location = 2) in vec2 inTexCoord;
 layout(location = 3) in vec3 normals;
-layout(location = 4) in uint drawableDataId;
+layout(location = 4) in vec3 inTangent;
+layout(location = 5) in vec3 inBitangent;
+layout(location = 6) in vec3 inNormal;
+layout(location = 7) in uint drawableDataId;
+
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec2 fragTexCoord;
@@ -38,6 +42,9 @@ layout(location = 2) out vec3 normal;
 layout(location = 3) flat out int materialID;
 layout(location = 4) flat out int primitiveType;
 layout(location = 5) flat out int currentFrame;
+layout(location = 6) out vec3 vTangent;
+layout(location = 7) out vec3 vBitangent;
+layout(location = 8) out vec3 vNormal;
 layout (push_constant) uniform PushConstant {
     mat4 projMatrix;
     mat4 viewMatrix;
@@ -66,4 +73,7 @@ void main() {
     materialID = /*subMesh.materialId*/gl_DrawID;
     primitiveType = pc.primitiveType;
     currentFrame = pc.currentFrame;
+    vTangent = inTangent;
+    vBitangent = inBitangent;
+    vNormal = inNormal;
 }
