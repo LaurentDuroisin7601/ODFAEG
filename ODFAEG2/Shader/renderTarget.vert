@@ -76,4 +76,5 @@ void main() {
     vTangent = inTangent;
     vBitangent = inBitangent;
     vNormal = inNormal;
+    //debugPrintfEXT("tangent : %v3f, bitangeant : %v3f, normal : %v3f", vTangent, vBitangent, vNormal);
 }

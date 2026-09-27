@@ -70,10 +70,12 @@ void main() {
         
         vec3 T = normalize(vTangent);
         vec3 N = normalize(vNormal);
-        //debugPrintfEXT("t %v3f  b %v3f n %v3f", T, N);
+        
         T = normalize(T - N * dot(T, N)); // Gram-Schmidt
         vec3 B = cross(N, T);
-        vec3 Nw = normalize(T * Nt.x + B * Nt.y + N * Nt.z);
+        Nt.y = 1-Nt.y;  //Unity to vulkan correction.     
+        Nw = normalize(T * Nt.x + B * Nt.y + N * Nt.z);
+        //debugPrintfEXT("t %v3f  n %v3f nw %v3f", T, N, Nw);
     }
     
     // --- Specular ---

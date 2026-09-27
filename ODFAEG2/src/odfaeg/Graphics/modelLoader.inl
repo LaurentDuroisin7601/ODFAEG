@@ -381,9 +381,9 @@ namespace odfaeg {
                     math::Vec3f e2 = p2 - p0;
 
                     float du1 = uv1.x() - uv0.x();
-                    float dv1 = uv1.y() - uv0.y();
+                    float dv1 = (1 - uv1.y()) - (1 - uv0.y());
                     float du2 = uv2.x() - uv0.x();
-                    float dv2 = uv2.y() - uv0.y();
+                    float dv2 = (1 - uv2.y()) - (1 - uv0.y());
 
                     float r = 1.0f / (du1 * dv2 - du2 * dv1);
 
@@ -449,8 +449,8 @@ namespace odfaeg {
                 std::vector<math::Vec3f> normals;
                 normals.resize(vertices.size());
                 for (unsigned int i = 0; i < vertices.size(); i++) {
-                    tangents[i].normalize();
-                    bitangents[i].normalize();
+                    tangents[i] = tangents[i].normalize();
+                    bitangents[i] = bitangents[i].normalize();
                     tangents[i] = -tangents[i];
                     bitangents[i] = -bitangents[i];
                     normals[i] = tangents[i].cross(bitangents[i]);
