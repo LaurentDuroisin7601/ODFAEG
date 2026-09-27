@@ -42,7 +42,7 @@ namespace odfaeg {
                     if(currentPos > node.children[i].blocStart) {
                         parseInstructions(0, node.children[i]);
                         //On saute les instructions déjà parsées.
-                        currentPos = node.children[i].blocEnd;
+                        currentPos = node.children[i].blocEnd - node.blocStart;
                     }
                 }
             }
