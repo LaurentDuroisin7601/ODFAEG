@@ -65,7 +65,7 @@ struct Offset {
 };      
 /*Matériaux*/
 struct MaterialData {   
-    uint diffuseTextureIndex;
+   uint diffuseTextureIndex;
     uint specularTextureIndex;
     uint normalTextureIndex;
     uint metalnessTextureIndex;
@@ -79,11 +79,9 @@ struct MaterialData {
     int instanceGroupId;
     uint vertsInstanceSet;
     uint materialId;
-    uint nbBuffers;
-    int reflectable;
-    int refractable; 
+    uint nbBuffers;     
     uint opaque;
-    uint pipelineType; 
+    uint pipelineType;  
 };
 struct MeshDrawCommand {
     uint groupXCount;
@@ -103,11 +101,14 @@ struct Vertex {
     uint color; ///< Color of the vertex
     vec2 texCoords; ///< Coordinates of the texture's pixel to map to the vertex
     vec3 normal;
+    vec3 T;
+    vec3 B;
+    vec3 N;
+    int submeshId;
     //bone indexes which will influence this vertex
     int m_BoneIDs[MAX_BONES_INFLUENCE];
     //weights from each bone
-    float m_Weights[MAX_BONES_INFLUENCE];
-    int submeshId;
+    float m_Weights[MAX_BONES_INFLUENCE];    
 };
 struct GridCell {
     AABB volume;
@@ -431,14 +432,12 @@ void main() {
                 //debugPrintfEXT("SubmeshOffset %i", object.nbSubMeshes);                   
                 SubMesh subMesh = inputSubmeshesBuffer.subMeshes[object.subMeshesOffset+s]; 
                 MaterialData material = inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId];
-                if (((pc.opaqueMask & material.opaque) != 0)
+                if (/*((pc.opaqueMask & material.opaque) != 0)
                     && ((rasterPipeline & material.pipelineType) != 0) 
-                    && subMesh.materialId == materialId 
-                    && inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].reflectable != 1
-                    && inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].refractable != 1
+                    && */subMesh.materialId == materialId
                     && subMesh.primitiveType == primitiveType 
                     && intersects(subMesh.globalBounds, ubo[pc.currentFrame].frustrum)) {
-                    //debugPrintfEXT("submesh in frustrum %i", s);
+                    //debugPrintfEXT("submesh in frustrum %i", object.renderingType);
                     float dist = distance(ubo[pc.currentFrame].frustrum.center, subMesh.globalBounds.center);
                     float lodStep = 20.0;
                     int lod = clamp(int(dist / lodStep), 0, 4);

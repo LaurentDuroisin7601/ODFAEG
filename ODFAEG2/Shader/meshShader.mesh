@@ -84,11 +84,15 @@ struct Vertex {
     uint color; ///< Color of the vertex
     vec2 texCoords; ///< Coordinates of the texture's pixel to map to the vertex
     vec3 normal;
+    vec3 T;
+    vec3 B;
+    vec3 N;
+    int submeshId;
     //bone indexes which will influence this vertex
     int m_BoneIDs[MAX_BONES_INFLUENCE];
     //weights from each bone
     float m_Weights[MAX_BONES_INFLUENCE];
-    int submeshId;
+   
 };
 struct ModelData {
     mat4 modelMatrix;
@@ -157,8 +161,8 @@ void main() {
     if (pc.currentFrame >= MAX_FRAMES_IN_FLIGHT || pc.primitiveType > 3) {
         debugPrintfEXT("Current frame : %i %i", pc.currentFrame, pc.primitiveType);
     }
-    if (taskData.vertexCount != 0)
-        debugPrintfEXT("Error : %i", taskData.vertexCount);
+    /*if (taskData.vertexCount == 0)
+        debugPrintfEXT("Error : %i", taskData.vertexCount);*/
     //Modèles 3D.
     if (taskData.vertexCount == 0) {  
         Cluster cluster = clusterDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[taskData.clusterOffset+gl_WorkGroupID.y];         

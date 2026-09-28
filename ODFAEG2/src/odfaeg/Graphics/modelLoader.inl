@@ -26,17 +26,17 @@ namespace odfaeg {
                 importFlags |= aiProcess_ValidateDataStructure
                     | aiProcess_FindInvalidData;
             //if ( !parameters.get< bool >( cuT( "no_optimisations" ) ) )
-                importFlags |= aiProcess_JoinIdenticalVertices
+                /*importFlags |= aiProcess_JoinIdenticalVertices
                     | aiProcess_OptimizeMeshes
                     | aiProcess_OptimizeGraph
                     | aiProcess_ImproveCacheLocality
-                    | aiProcess_RemoveRedundantMaterials;
+                    | aiProcess_RemoveRedundantMaterials;*/
             //if ( parameters.get< c3d::String >( cuT( "normals" ) ) == cuT( "smooth" ) )
                 importFlags |= aiProcess_GenSmoothNormals;
             //if ( parameters.get< bool >( cuT( "tangent_space" ) ) )
                 importFlags |= aiProcess_CalcTangentSpace;
             //std::cout<<"path : "<<path<<std::endl;
-            const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate /*| aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace*/);
+            const aiScene *scene = importer.ReadFile(path, importFlags);
 
             //std::cout<<"imported"<<std::endl;
             if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)

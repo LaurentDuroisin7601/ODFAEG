@@ -80,9 +80,7 @@ struct IndirectElementsDrawCommand {
     uint instance_base;
 };
 /*objets en entrée.*/
-layout(push_constant) uniform PushConstant {
-    /*mat4 viewMatrix;
-    mat4 projMatrix;*/
+layout(push_constant) uniform PushConstant {   
     uint currentFrame;
     uint opaqueMask;
 } pc;
