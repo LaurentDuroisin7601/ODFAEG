@@ -200,7 +200,7 @@ void main() {
 	for (uint t = 0; t < ubo[pc.currentFrame].nbObjectTypes; t++) {
 	    //debugPrintfEXT("type : %i,%i", t, object.type );
 		if (object.type == objectTypes[pc.currentFrame].types[t] && intersects(object.globalBounds, ubo[pc.currentFrame].frustrum)) {
-		    //debugPrintfEXT("Object in frustrum");
+		    //debugPrintfEXT("Object in frustrum : %v3f %v3f", ubo[pc.currentFrame].frustrum.center, ubo[pc.currentFrame].frustrum.size);
             //debugPrintfEXT("nb sub meshes : %i", object.nbSubMeshes);			
             //Regroupement des données par matériaux et par type de primitive. (Batching)
             for (uint s = 0; s < object.nbSubMeshes; s++) {
@@ -284,9 +284,9 @@ void main() {
                         //debugPrintfEXT("material datas %v2f", material.uvScale);
                         //debugPrintfEXT("Output Model Matrix : %i\n%v4f\n%v4f\n%v4f\n%v4f",objectDataOffset,outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[0], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[1], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[2], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[3]);
                     } 
-                } else {
+                } /*else {
                     debugPrintfEXT("doesn't intersects");
-                }              
+                } */             
             }
 		}
 	}

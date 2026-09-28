@@ -2098,7 +2098,8 @@ namespace odfaeg {
 					commandPool.getHandle(getCurrentFrame()),
 					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
 					VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT |
-					VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+					VK_PIPELINE_STAGE_VERTEX_INPUT_BIT |
+					VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 					0,
 					1, &mem,
 					0, nullptr,
@@ -2283,49 +2284,56 @@ namespace odfaeg {
 		void RenderTarget::draw(entity::PrimitiveType primitiveType, RenderStates states) {
 			if (needToUpdateCullBatchIndCmds) {
 				applyCullingAndBatching();
-				VkBufferMemoryBarrier barrier{};
-				barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-				barrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-				barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.buffer = vertices[primitiveType].getVertexBuffer(0).getHandle();
-				barrier.offset = 0;
-				barrier.size = VK_WHOLE_SIZE;
-				vkCmdPipelineBarrier(
-					commandPool.getHandle(getCurrentFrame()),
-					VK_PIPELINE_STAGE_TRANSFER_BIT,            // la copie doit être finie
-					VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,        // avant que le shader lise
-					0,
-					0, nullptr,
-					1, &barrier,
-					0, nullptr
-				);
-				barrier.buffer = vertices[primitiveType].getVertexBuffer(0).getHandle();
-				barrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-				vkCmdPipelineBarrier(
-					commandPool.getHandle(getCurrentFrame()),
-					VK_PIPELINE_STAGE_TRANSFER_BIT,            // la copie doit être finie
-					VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,        // avant que le shader lise
-					0,
-					0, nullptr,
-					1, &barrier,
-					0, nullptr
-				);
-				barrier.buffer = vertices[primitiveType].getIndexBuffer(0).getHandle();
-				barrier.dstAccessMask = VK_ACCESS_INDEX_READ_BIT;
-				vkCmdPipelineBarrier(
-					commandPool.getHandle(getCurrentFrame()),
-					VK_PIPELINE_STAGE_TRANSFER_BIT,            // la copie doit être finie
-					VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,        // avant que le shader lise
-					0,
-					0, nullptr,
-					1, &barrier,
-					0, nullptr
-				);
+				
 				//std::cout<<"draw"<<std::endl;
 				needToUpdateCullBatchIndCmds = false;
 			}
+			VkBufferMemoryBarrier barrier{};
+			barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.buffer = vertices[primitiveType].getVertexBuffer(0).getHandle();
+			barrier.offset = 0;
+			barrier.size = VK_WHOLE_SIZE;
+			vkCmdPipelineBarrier(
+				commandPool.getHandle(getCurrentFrame()),
+				VK_PIPELINE_STAGE_TRANSFER_BIT,            // la copie doit être finie
+				VK_PIPELINE_STAGE_VERTEX_INPUT_BIT
+				| VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
+				| VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,        // avant que le shader lise
+				0,
+				0, nullptr,
+				1, &barrier,
+				0, nullptr
+			);
+			barrier.buffer = vertices[primitiveType].getVertexBuffer(0).getHandle();
+			barrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+			vkCmdPipelineBarrier(
+				commandPool.getHandle(getCurrentFrame()),
+				VK_PIPELINE_STAGE_TRANSFER_BIT,            // la copie doit être finie
+				VK_PIPELINE_STAGE_VERTEX_INPUT_BIT
+				| VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
+				| VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,        // avant que le shader lise
+				0,
+				0, nullptr,
+				1, &barrier,
+				0, nullptr
+			);
+			barrier.buffer = vertices[primitiveType].getIndexBuffer(0).getHandle();
+			barrier.dstAccessMask = VK_ACCESS_INDEX_READ_BIT;
+			vkCmdPipelineBarrier(
+				commandPool.getHandle(getCurrentFrame()),
+				VK_PIPELINE_STAGE_TRANSFER_BIT,            // la copie doit être finie
+				VK_PIPELINE_STAGE_VERTEX_INPUT_BIT
+				| VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
+				| VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,        // avant que le shader lise
+				0,
+				0, nullptr,
+				1, &barrier,
+				0, nullptr
+			);
 			Shader* shader = (states.shader == nullptr) ? &defaultRenderingShader : states.shader;
 			viewProjInfos.primitiveType = primitiveType;
 			

@@ -312,7 +312,7 @@ namespace odfaeg {
             // 1. Correction UP (Z-up → Y-up)
             if (sceneUpAxis == Axis::Z) {
                 //std::cout<<"up axis rotation"<<std::endl;
-                zUpyUp.setRotation(math::Vec3f(1.f,0.f,0.f), -90.f);
+                zUpyUp.setRotation(math::Vec3f(1.f,0.f,0.f), 90.f);
             }
             // 2. Correction FRONT (Y-forward → -Z-forward)
             if (sceneFrontAxis == Axis::Y) {
@@ -444,7 +444,9 @@ namespace odfaeg {
                     bitangents[tri*3+0] += bitangents[tri*3+0];
                     bitangents[tri*3+1] += bitangents[tri*3+1];
                     bitangents[tri*3+2] += bitangents[tri*3+2];
-                    //std::swap(indexes[tri*3+0], indexes[tri*3+1]);                   
+                    /*std::swap(indexes[tri*3+0], indexes[tri*3+1]); 
+                    std::swap(indexes[tri*3+1], indexes[tri*3+2]);   
+                    std::swap(indexes[tri*3+0], indexes[tri*3+2]);*/               
                 }
                 std::vector<math::Vec3f> normals;
                 normals.resize(vertices.size());
@@ -537,9 +539,10 @@ namespace odfaeg {
                     //std::cout<<"scale correction."<<std::endl;
                     scaleCorrection.setScale(math::Vec3f(0.01f, 0.01f, 0.01f));
                 }
-                math::Matrix4f finalCorrection = scaleCorrection.getMatrix() *
+                math::Matrix4f finalCorrection = 
+                                                handednessCorrection.getMatrix() *
                                                 axisCorrection.getMatrix() *
-                                                handednessCorrection.getMatrix();
+                                                scaleCorrection.getMatrix();
                 /*std::cout<<"scale correction : "<<scaleCorrection.getMatrix()<<std::endl;
                 std::cout<<"axis correction : "<<axisCorrection.getMatrix()<<std::endl;
                 std::cout<<"handness correction : "<<handednessCorrection.getMatrix()<<std::endl;*/

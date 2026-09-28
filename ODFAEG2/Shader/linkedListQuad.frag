@@ -40,7 +40,7 @@ void main() {
       }
       frags[j] = insert;
   }
-  vec4 color = vec4(0, 0, 0, 0);
+  vec4 color = texture(opaqueSceneColors, gl_FragCoord.xy);
   for( int i = 0; i < count; i++)
   {
     //debugPrintfEXT("color");
