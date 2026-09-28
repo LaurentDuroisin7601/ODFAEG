@@ -258,7 +258,7 @@ int main() {
 	ResourceManager<Texture, std::string> modelTextureManager;
 	ModelLoader modelLoader(GPUContext::instance().getDevice(), modelTextureManager);
 	Mesh* bistroExterior = modelLoader.loadModel("Bistro_v5_2/BistroExterior.fbx");
-	//Mesh* bistroInterior = modelLoader.loadModel("Bistro_v5_2/BistroInterior.fbx");
+	Mesh* bistroInterior = modelLoader.loadModel("Bistro_v5_2/BistroInterior.fbx");
 	//bistroExterior->getGameObject()->setScale(Vec3f(1, 1, -1));
 	//std::cout<<"test"<<std::endl;
 	//Mesh* car = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
@@ -348,6 +348,7 @@ int main() {
 	}*/
 	//window.addGameObject(car);
 	window.addGameObject(bistroExterior);	
+	window.addGameObject(bistroInterior);
 	
 		//std::cout<<"i : "<<i<<std::endl;*/
 	
