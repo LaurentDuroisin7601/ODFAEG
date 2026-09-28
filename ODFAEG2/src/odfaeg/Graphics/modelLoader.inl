@@ -18,7 +18,7 @@ namespace odfaeg {
             Mesh* mesh = new Mesh(model);
             Assimp::Importer importer;
             //std::cout<<"import"<<std::endl;
-            /*uint32_t importFlags{ aiProcess_Triangulate
+            uint32_t importFlags{ aiProcess_Triangulate
             | aiProcess_FixInfacingNormals
             | aiProcess_LimitBoneWeights
             | aiProcess_FindDegenerates };
@@ -34,7 +34,7 @@ namespace odfaeg {
             //if ( parameters.get< c3d::String >( cuT( "normals" ) ) == cuT( "smooth" ) )
                 importFlags |= aiProcess_GenSmoothNormals;
             //if ( parameters.get< bool >( cuT( "tangent_space" ) ) )
-                importFlags |= aiProcess_CalcTangentSpace;*/
+                importFlags |= aiProcess_CalcTangentSpace;
             //std::cout<<"path : "<<path<<std::endl;
             const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate /*| aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace*/);
 
