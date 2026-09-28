@@ -178,9 +178,9 @@ void main() {
             //debugPrintfEXT("Rendered");           
             return;
         }
-        if (cluster.submeshId != subMesh.id || cluster.submeshId != meshlet.submeshId || meshlet.submeshId != subMesh.id) {
-            debugPrintfEXT("error submesh %i %i %i lod : %i %i %i\n", cluster.submeshId, meshlet.submeshId, subMesh.id, cluster.lodLevel, subMesh.lodLevel, meshlet.lod);
-        }
+        /*if (cluster.submeshId != subMesh.id || cluster.submeshId != meshlet.submeshId || meshlet.submeshId != subMesh.id) {
+            debugPrintfEXT("error submesh %i %i %i lod : %i %i %i\n", cluster.submeshId, meshlet.submeshId, subMesh.id, cluster.lodLevel, subMesh.lodOffset, meshlet.lod);
+        }*/
         
         //debugPrintfEXT("mesh shader"); 
         //Instance id = taskId (base instance) + workGroupId.x (instance id).

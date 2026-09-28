@@ -336,7 +336,7 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                        
                         for (uint m = 0; m < n.meshletCount; m++) {
                             if (inputMeshlet.meshlets[n.meshletOffset+m].submeshId != sm.id) {
-                                debugPrintfEXT("Error");
+                                debugPrintfEXT("Error %i, %i", sm.id, inputMeshlet.meshlets[n.meshletOffset+m].submeshId);
                             }
                             inputMeshlet.meshlets[n.meshletOffset+m].rendered = 0;
                         }
