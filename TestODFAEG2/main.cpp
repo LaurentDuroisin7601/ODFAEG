@@ -249,7 +249,7 @@ int main() {
 	//window.createDescriptorAndPipelines();
 	Camera camera(800, 600, 80, 1, 1000);
 	//camera.setUp(Vec3f(0.f, -1.f, 0.f));
-	camera.move(0.f, 5.f, -10.f);
+	camera.move(0.f, 0.f, 5.f);
 	Camera imGUICamera = window.getCamera();
 	Camera rtRenderTextureCamera = window.getCamera();
 	rtRenderTextureCamera.move(400, 300, 0);
@@ -257,11 +257,11 @@ int main() {
 	ResourceManager<Texture, TextureNames> textureManager;
 	ResourceManager<Texture, std::string> modelTextureManager;
 	ModelLoader modelLoader(GPUContext::instance().getDevice(), modelTextureManager);
-	Mesh* bistroExterior = modelLoader.loadModel("Bistro_v5_2/BistroExterior.fbx");
-	Mesh* bistroInterior = modelLoader.loadModel("Bistro_v5_2/BistroInterior.fbx");
+	/*Mesh* bistroExterior = modelLoader.loadModel("Bistro_v5_2/BistroExterior.fbx");
+	Mesh* bistroInterior = modelLoader.loadModel("Bistro_v5_2/BistroInterior.fbx");*/
 	//bistroExterior->getGameObject()->setScale(Vec3f(1, 1, -1));
 	//std::cout<<"test"<<std::endl;
-	//Mesh* car = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
+	Mesh* car = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
 	//bistroExterior->getGameObject()->setScale(Vec3f(1, 1, -1));
 	//std::cout<<"test"<<std::endl;
 	//GameObject* car = modelLoader.loadModel(/*"CubeTest/cube_test.glb"*//**/"carGLTF/scene.gltf"/*"Bistro_v5_2/BistroExterior.fbx"*/);
@@ -346,9 +346,9 @@ int main() {
 	for (unsigned int i = 0; i < components.size(); i++) {
 		componentManager.addComponent(components[i]);
 	}*/
-	//window.addGameObject(car);
-	window.addGameObject(bistroExterior);	
-	window.addGameObject(bistroInterior);
+	window.addGameObject(car);
+	/*window.addGameObject(bistroExterior);	
+	window.addGameObject(bistroInterior);*/
 	
 		//std::cout<<"i : "<<i<<std::endl;*/
 	
