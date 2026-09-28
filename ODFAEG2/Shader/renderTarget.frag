@@ -68,10 +68,10 @@ void main() {
         Nw = Nt;
     } else {
         
-        vec3 T = normalize(vTangent);
-        vec3 N = normalize(vNormal);
+        vec3 T = vTangent;
+        vec3 N = vNormal;
         
-        T = normalize(T - N * dot(T, N)); // Gram-Schmidt
+        //T = normalize(T - N * dot(T, N)); // Gram-Schmidt
         vec3 B = cross(N, T);
         Nt.y = 1-Nt.y;  //Unity to vulkan correction.     
         Nw = normalize(T * Nt.x + B * Nt.y + N * Nt.z);

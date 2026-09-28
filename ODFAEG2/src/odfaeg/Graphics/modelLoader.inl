@@ -444,7 +444,7 @@ namespace odfaeg {
                     bitangents[tri*3+0] += bitangents[tri*3+0];
                     bitangents[tri*3+1] += bitangents[tri*3+1];
                     bitangents[tri*3+2] += bitangents[tri*3+2];
-                    std::swap(indexes[tri*3+1], indexes[tri*3+2]);                   
+                    //std::swap(indexes[tri*3+0], indexes[tri*3+1]);                   
                 }
                 std::vector<math::Vec3f> normals;
                 normals.resize(vertices.size());
