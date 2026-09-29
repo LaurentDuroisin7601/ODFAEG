@@ -2283,7 +2283,7 @@ namespace odfaeg {
 			VkMemoryBarrier mem{};
 			mem.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
 			mem.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-			mem.dstAccessMask = VK_ACCESS_SHADER_READ_BIT |  VK_ACCESS_SHADER_WRITE_BIT;
+			mem.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 			/*Device::QueueFamilyIndices indexes = device.findQueueFamilies(device.getPhysicalDevice());// vertex buffer
 			mem.srcQueueFamilyIndex = indexes.computeFamily.value();
 			mem.dstQueueFamilyIndex = indexes.graphicsFamily.value();*/

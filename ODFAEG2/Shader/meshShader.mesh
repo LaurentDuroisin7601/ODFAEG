@@ -171,7 +171,9 @@ uint findLocalIndex(uint globalIndex, uint vertexCount) {
     return 0; // ne devrait jamais arriver
 }
 void main() {      
-    
+    groupMemoryBarrier();
+    memoryBarrierBuffer();
+    barrier();
     TaskData taskData = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId];
     if (pc.currentFrame >= MAX_FRAMES_IN_FLIGHT || pc.primitiveType > 3) {
         debugPrintfEXT("Current frame : %i %i", pc.currentFrame, pc.primitiveType);

@@ -421,7 +421,9 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
 }
 void main() {
     //debugPrintfEXT("nb object types : %i, %i, %i",gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
-    memoryBarrier();
+    /*groupMemoryBarrier();
+    memoryBarrierBuffer();
+    barrier();*/
     //SubMesh subMesh = inputSubmeshesBuffer.subMeshes[gl_GlobalInvocationID.x];
     Object object = inputObjectBuffer.objects[gl_GlobalInvocationID.x];
 	uint materialId = gl_GlobalInvocationID.y;
@@ -489,7 +491,7 @@ void main() {
                             setVisibleMeshletsFromBox(ubo[pc.currentFrame].frustrum, lod, object, subMesh, s, materialId);*/
                         //Matériel non instanciable.                                               
                         } else {                                               
-                            while (offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetTaskData != outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount);
+                            //while (offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetTaskData != outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount);
                             //debugPrintfEXT("task offsets : %i, %i", offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetTaskData, outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount);             
                             uint offsetTaskData = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
                             uint meshletOffset = atomicAdd(offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset, 1);                           
