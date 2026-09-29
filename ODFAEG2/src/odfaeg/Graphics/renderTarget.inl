@@ -611,7 +611,7 @@ namespace odfaeg {
     							unsigned int newMax = std::max(g0, std::max(g1, g2));
 								m.minVertex = std::min(m.minVertex, newMin);
 								m.maxVertex = std::max(m.maxVertex, newMax);
-								unsigned int newVertexCount = (newMax - newMin) + 1;
+								unsigned int newVertexCount = (m.maxVertex - m.minVertex) + 1;
 								
 								math::Vec3f mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
 								math::Vec3f maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));
@@ -649,7 +649,7 @@ namespace odfaeg {
 									newMax = std::max(g0, std::max(g1, g2));*/
 									m.minVertex = std::min(m.minVertex, newMin);
 									m.maxVertex = std::max(m.maxVertex, newMax);
-									newVertexCount = (newMax - newMin) + 1;
+									//newVertexCount = (newMax - newMin) + 1;
 									
 									/*mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
 									maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));*/
