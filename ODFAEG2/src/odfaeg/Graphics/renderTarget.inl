@@ -614,13 +614,16 @@ namespace odfaeg {
     							unsigned int newMax = std::max(g0, std::max(g1, g2));
 								m.minVertex = std::min(m.minVertex, newMin);
 								m.maxVertex = std::max(m.maxVertex, newMax);
-								unsigned int newVertexCount = (m.maxVertex - m.minVertex) + 1;
+								newMin = m.minVertex;
+								newMax = m.maxVertex;
+								unsigned int newVertexCount = (newMax - newMin) + 1;
 								
 								math::Vec3f mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
 								math::Vec3f maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));
 								m.mins = math::Vec3f(std::min(m.mins.x(), mins.x()), std::min(m.mins.y(), mins.y()), std::min(m.mins.z(), mins.z()));
 								m.maxs = math::Vec3f(std::max(m.maxs.x(), maxs.x()), std::max(m.maxs.y(), maxs.y()), std::max(m.maxs.z(), maxs.z()));
-												
+								mins = m.mins;
+								maxs = m.maxs;		
 								
 								// Si ce triangle dépasse les limites → nouveau meshlet
 								if (m.nbIndexes/3 >= MAX_PRIMS || newVertexCount > MAX_VERTS)
@@ -648,14 +651,14 @@ namespace odfaeg {
 									m.maxs = math::Vec3f(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
 									
 									// Recalculer pour ce triangle
-									/*newMin = std::min(g0, std::min(g1, g2));
-									newMax = std::max(g0, std::max(g1, g2));*/
+									newMin = std::min(g0, std::min(g1, g2));
+									newMax = std::max(g0, std::max(g1, g2));
 									m.minVertex = std::min(m.minVertex, newMin);
 									m.maxVertex = std::max(m.maxVertex, newMax);
-									//newVertexCount = (newMax - newMin) + 1;
+									newVertexCount = (newMax - newMin) + 1;
 									
-									/*mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
-									maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));*/
+									mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
+									maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));
 																	
 									m.mins = math::Vec3f(std::min(m.mins.x(), mins.x()), std::min(m.mins.y(), mins.y()), std::min(m.mins.z(), mins.z()));
 									m.maxs = math::Vec3f(std::max(m.maxs.x(), maxs.x()), std::max(m.maxs.y(), maxs.y()), std::max(m.maxs.z(), maxs.z()));									
@@ -674,7 +677,7 @@ namespace odfaeg {
 							m.vertexOffset = m.minVertex;							
 							m.nbVertices   = (m.maxVertex - m.minVertex) + 1;							
 							meshletDatas.push_back(m);
-							//currentMeshletsOffset++;
+							currentMeshletsOffset++;
 							
 							//std::cout<<x<<" ,"<<y<<" ,"<<z<<" ,"<<w<<" , "<<h<<" ,"<<d<<std::endl;						
 							
