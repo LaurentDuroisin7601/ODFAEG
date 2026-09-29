@@ -128,7 +128,7 @@ layout (std430, set = 0, binding = 2) buffer ModelDataSSBO {
     ModelData modelData[];
 } modelDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
 layout (std430, set = 0, binding = 3) buffer VisibleMeshletSSBO {
-    MeshLet meshlet[];
+    uint meshlet[];
 } visibleMeshletDatas[MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES];
 layout (std430, set = 0, binding = 4) buffer vertexBufferSSBO {
     Vertex vertices[];
@@ -180,7 +180,7 @@ void main() {
         debugPrintfEXT("Error : %i", taskData.vertexCount);*/
     //Modèles 3D.
     if (taskData.vertexCount == 0) {  
-        MeshLet meshlet = visibleMeshletDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlet[taskData.meshletOffset+gl_WorkGroupID.y];
+        MeshLet meshlet = meshletDatas.meshlet[visibleMeshletDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlet[taskData.meshletOffset+gl_WorkGroupID.y]];
         //Cluster cluster = clusterDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[taskData.clusterOffset+gl_WorkGroupID.y];         
         //if (cluster.meshletCount > 8) {
             //debugPrintfEXT("meshlet count : %i %i", cluster.submeshId, cluster.meshletOffset);

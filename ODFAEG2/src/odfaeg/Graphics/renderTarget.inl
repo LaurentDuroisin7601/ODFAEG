@@ -226,7 +226,7 @@ namespace odfaeg {
 				}
 				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 					outputMeshlets.emplace_back(device);
-					outputMeshlets.back().create(sizeof(Meshlet), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+					outputMeshlets.back().create(sizeof(unsigned int), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 				}
 				for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT * NB_PRIMITIVE_TYPES; i++) {
 					outputObjectDatas.emplace_back(device);
@@ -1179,7 +1179,7 @@ namespace odfaeg {
 						//std::cout<<"output model data : "<<outputModelDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 						outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(MaterialData) * currentSubmeshesOffset * Material::getAllMaterials().size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 						outputMeshes[j * NB_PRIMITIVE_TYPES + k].create(sizeof(entity::SubMesh) * currentSubmeshesOffset * Material::getAllMaterials().size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-						outputMeshlets[j * NB_PRIMITIVE_TYPES + k].create(sizeof(Meshlet) * currentMeshletsOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);						
+						outputMeshlets[j * NB_PRIMITIVE_TYPES + k].create(sizeof(unsigned int) * currentMeshletsOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);						
 						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 					}
@@ -2122,14 +2122,14 @@ namespace odfaeg {
 				barrier.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
 				barrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
 				barrier.dstStageMask = VK_PIPELINE_STAGE_2_TASK_SHADER_BIT_EXT | VK_PIPELINE_STAGE_2_MESH_SHADER_BIT_EXT;
-				barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT;
+				barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
 
 				VkDependencyInfo depInfo{};
 				depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
 				depInfo.memoryBarrierCount = 1;
 				depInfo.pMemoryBarriers = &barrier;
 
-				vkCmdPipelineBarrier2(commandPool.getHandle(getCurrentFrame()), &depInfo);
+				//vkCmdPipelineBarrier2(commandPool.getHandle(getCurrentFrame()), &depInfo);
 			} else {				
 				VkMemoryBarrier mem{};
 				mem.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
@@ -2260,7 +2260,7 @@ namespace odfaeg {
 			depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
 			depInfo.memoryBarrierCount = 1;
 			depInfo.pMemoryBarriers = &barrier;
-			std::vector<VkImageMemoryBarrier2> imgs{};
+			/*std::vector<VkImageMemoryBarrier2> imgs{};
 			for (unsigned int i = 0; i < GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size(); i++) {
 			
 				VkImageMemoryBarrier2 img{};
@@ -2281,17 +2281,15 @@ namespace odfaeg {
 				imgs.push_back(img);
 			}
 			depInfo.imageMemoryBarrierCount = imgs.size();
-			depInfo.pImageMemoryBarriers    = imgs.data();
+			depInfo.pImageMemoryBarriers    = imgs.data();*/
 			
 
-			vkCmdPipelineBarrier2(commandPool.getHandle(getCurrentFrame()), &depInfo);*/
+			//vkCmdPipelineBarrier2(commandPool.getHandle(getCurrentFrame()), &depInfo);
 			VkMemoryBarrier mem{};
 			mem.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
 			mem.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
 			mem.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-			/*Device::QueueFamilyIndices indexes = device.findQueueFamilies(device.getPhysicalDevice());// vertex buffer
-			mem.srcQueueFamilyIndex = indexes.computeFamily.value();
-			mem.dstQueueFamilyIndex = indexes.graphicsFamily.value();*/
+			
 			vkCmdPipelineBarrier(
 				commandPool.getHandle(getCurrentFrame()),
 				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
