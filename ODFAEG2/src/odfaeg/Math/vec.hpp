@@ -247,6 +247,7 @@ namespace odfaeg {
         using Vector4i = VecN<int, 4>;
         using Vector4u = VecN<unsigned int, 4>;
         using Vector3i = VecN<int, 3>;
+        using Vector3u = VecN<unsigned int, 3>;
         template <typename T, unsigned int N>
         std::ostream& operator<< (std::ostream& out, const VecN<T, N>& vec);
     }

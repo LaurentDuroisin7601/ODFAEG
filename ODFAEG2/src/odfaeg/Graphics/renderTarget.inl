@@ -580,48 +580,7 @@ namespace odfaeg {
 							float w = subMeshGlobalBounds.getSize().x();
 							float h = subMeshGlobalBounds.getSize().y();
 							float d = subMeshGlobalBounds.getSize().z();							
-							//std::cout<<x<<" ,"<<y<<" ,"<<z<<" ,"<<w<<" , "<<h<<" ,"<<d<<std::endl;						
-							
-							//std::cout<<"cluster count : "<<clusterCount<<std::endl;
-							/*std::cout<<"min max : "<<currentClustersOffset<<","<<clusterCount<<std::endl;
-							system("PAUSE");*/
-							
-							
-								
-							/*std::vector<entity::Vertex> verts;														
-							verts.reserve(subMesh.getVertexArray().getVertexCount());
-
-							for (uint32_t v = 0; v < subMesh.getVertexArray().getVertexCount(); v++)
-							{
-								verts.push_back(subMesh.getVertexArray()[v]);
-							}		
-							std::vector<uint32_t> indexes;
-							indexes.reserve(lods[l].indexCount);
-							for (uint32_t v = 0; v < lods[l].indexCount; v++)
-							{
-								uint32_t gi = subMesh.getVertexArray().getIndex(lods[l].indexOffset + v);
-								indexes.push_back(gi);
-							}		
-							size_t maxMeshlets = meshopt_buildMeshletsBound(
-								indexes.size(),
-								MAX_VERTS,   // ex: 64
-								MAX_PRIMS   // ex: 96
-							);	
-							std::vector<meshopt_Meshlet> meshlets(maxMeshlets);
-							std::vector<unsigned int> meshletVertices(maxMeshlets * MAX_VERTS);
-							std::vector<unsigned char> meshletTriangles(maxMeshlets * MAX_PRIMS * 3);
-							size_t meshlet_count = meshopt_buildMeshlets(
-								meshlets.data(),
-								meshletVertices.data(),
-								meshletTriangles.data(),
-								indexes.data(), indexes.size(),
-								reinterpret_cast<const float*>(verts.data()),verts.size(),
-								sizeof(entity::Vertex),
-								MAX_VERTS,
-								MAX_PRIMS,
-								1
-							);*/
-							Meshlet m;	
+							/*Meshlet m;	
 							m.id = meshletDatas.size();
 							m.submeshId = subMeshData.id;						
 							m.minVertex = std::numeric_limits<unsigned int>::max();
@@ -711,22 +670,82 @@ namespace odfaeg {
 							m.id = meshletDatas.size();							
 							m.vertexOffset = m.minVertex;							
 							m.nbVertices   = (m.maxVertex - m.minVertex) + 1;							
-							meshletDatas.push_back(m);
-							/*for (unsigned int i = 0; i < meshlet_count; i++) {
+							meshletDatas.push_back(m);*/
+							//std::cout<<x<<" ,"<<y<<" ,"<<z<<" ,"<<w<<" , "<<h<<" ,"<<d<<std::endl;						
+							
+							//std::cout<<"cluster count : "<<clusterCount<<std::endl;
+							/*std::cout<<"min max : "<<currentClustersOffset<<","<<clusterCount<<std::endl;
+							system("PAUSE");*/
+							
+							
+								
+							std::vector<entity::Vertex> verts;														
+							verts.reserve(subMesh.getVertexArray().getVertexCount());
+
+							for (uint32_t v = 0; v < subMesh.getVertexArray().getVertexCount(); v++)
+							{
+								verts.push_back(subMesh.getVertexArray()[v]);
+							}		
+							std::vector<uint32_t> indexes;
+							indexes.reserve(lods[l].indexCount);
+							for (uint32_t v = 0; v < lods[l].indexCount; v++)
+							{
+								uint32_t gi = subMesh.getVertexArray().getIndex(lods[l].indexOffset + v);
+								indexes.push_back(gi);
+							}		
+							size_t maxMeshlets = meshopt_buildMeshletsBound(
+								indexes.size(),
+								MAX_VERTS,   // ex: 64
+								MAX_PRIMS   // ex: 96
+							);	
+							std::vector<meshopt_Meshlet> meshlets(maxMeshlets);
+							std::vector<unsigned int> meshletVertices(maxMeshlets * MAX_VERTS);
+							std::vector<unsigned char> meshletTriangles(maxMeshlets * MAX_PRIMS * 3);
+							size_t meshlet_count = meshopt_buildMeshlets(
+								meshlets.data(),
+								meshletVertices.data(),
+								meshletTriangles.data(),
+								indexes.data(), indexes.size(),
+								reinterpret_cast<const float*>(verts.data()),verts.size(),
+								sizeof(entity::Vertex),
+								MAX_VERTS,
+								MAX_PRIMS,
+								1
+							);
+							
+							unsigned int meshletCount = 0;
+							
+							for (unsigned int i = 0; i < meshlet_count; i++) {								
 								const meshopt_Meshlet& meshlet = meshlets[i];
+								std::vector<uint32_t> localVertexIndices(meshlet.vertex_count);
+								for (uint32_t v = 0; v < meshlet.vertex_count; ++v) {
+									localVertexIndices[v] = meshletVertices[v]; // index global
+								}
+								std::cout<<"local vertices ok"<<std::endl;
+								std::vector<math::Vector3u> localTriangles(meshlet.triangle_count);
+								for (uint32_t t = 0; t < meshlet.triangle_count; ++t) {
+									uint32_t g0 = meshletTriangles[t * 3 + 0];
+									uint32_t g1 = meshletTriangles[t * 3 + 1];
+									uint32_t g2 = meshletTriangles[t * 3 + 2];
+
+									localTriangles[t] = math::Vector3u(g0, g1, g2); // indices locaux [0..vertex_count-1]
+								}								
 								Meshlet m;	
 								m.id = meshletDatas.size();
 								m.submeshId = subMeshData.id;
 								m.lod = l;	
 								m.voxel = 0;
 								m.rendered = 0;
-								m.clusterId = -1;
-								m.vertexOffset = meshlet.vertex_offset;
-								//std::cout<<"vertex offset : "<<m.vertexOffset<<std::endl;
-								m.indexOffset = meshlet.triangle_offset;
+								m.clusterId = -1;								
+								//std::cout<<"vertex offset : "<<m.vertexOffset<<std::endl;								
 								//std::cout<<"index offset : "<<m.indexOffset<<std::endl;
-								m.nbIndexes = meshlet.triangle_count * 3;
+								m.nbIndexes = meshlet.triangle_count*3;
 								m.nbVertices = meshlet.vertex_count;
+								for (unsigned int v = 0; v < localVertexIndices.size(); v++)
+									m.localVertices[v] = localVertexIndices[v];
+								for (unsigned int t = 0; t < localTriangles.size(); t++) {
+									m.localTriangles[t] = localTriangles[t];
+								}
 								meshopt_Bounds bounds = meshopt_computeMeshletBounds(
 									&meshletVertices[meshlet.vertex_offset],
 									&meshletTriangles[meshlet.triangle_offset],
@@ -742,7 +761,7 @@ namespace odfaeg {
 								currentMeshletsOffset++;
 								meshletCount++;
 									
-							}*/
+							}
 							
 							//Récupérer les cellules de la grille de clusters.
 							//std::cout<<"min : "<<m.minVertex<<std::endl;
@@ -753,7 +772,7 @@ namespace odfaeg {
 							//std::cout<<"lod meshlet count : "<<(meshletDatas.size() - currentLodMeshletOffset - currentSubmeshMeshletOffset)<<std::endl;
 							lodLevelData.meshletOffset = currentLodMeshletOffset;
 							lodLevelData.meshletCount = meshletDatas.size() - currentLodMeshletOffset - currentSubmeshMeshletOffset;
-							//std::cout<<"meshlet count : "<<	meshletDatas.size()<<","<<currentLodMeshletOffset<<std::endl;																		
+							std::cout<<"meshlet count : "<<currentSubmeshMeshletOffset<<","<<currentLodMeshletOffset<<","<<lodLevelData.meshletCount<<std::endl;																		
 							lodLevelDatas.push_back(lodLevelData);
 							/*for (unsigned int m = currentSubmeshMeshletOffset+lodLevelData.meshletOffset; m < currentSubmeshMeshletOffset+lodLevelData.meshletOffset + lodLevelData.meshletCount; m++) {
 								Meshlet meshlet = meshletDatas[m];

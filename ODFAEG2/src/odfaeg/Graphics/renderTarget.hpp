@@ -115,6 +115,8 @@ namespace odfaeg {
 				int clusterCount;
 				//int pad;
 			};
+			inline static const unsigned int MAX_VERTS = 256u;
+			inline static const unsigned int MAX_PRIMS = 256u;
 			struct /*alignas(16)*/ Meshlet {
 				unsigned int id;
 				unsigned int vertexOffset;
@@ -130,6 +132,8 @@ namespace odfaeg {
 				int submeshId;
 				alignas(16) math::Vec3f mins;
 				alignas(16) math::Vec3f maxs;
+				std::array<unsigned int, MAX_VERTS> localVertices;
+				alignas(16) std::array<math::Vector3u, MAX_PRIMS> localTriangles;
 				bool operator==(const Meshlet& other) const {
 					return id == other.id 
 					&& mins.x() == other.mins.x()
@@ -350,8 +354,7 @@ namespace odfaeg {
 			std::deque<Buffer>& outputMeshes;			
 			std::array<std::vector<VertexBufferData>, MAX_FRAMES_IN_FLIGHT> cpuVertexBufferDatas;
 			VertexBufferPC vertexBufferPc;			
-			inline static const unsigned int MAX_VERTS = 256u;
-			inline static const unsigned int MAX_PRIMS = 256u;
+			
 			unsigned int totalMeshlets = 0;
 			unsigned int totalClusters = 0;
 			unsigned int totalSubMeshes = 0;
