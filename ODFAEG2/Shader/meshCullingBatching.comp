@@ -421,9 +421,9 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
 }
 void main() {
     //debugPrintfEXT("nb object types : %i, %i, %i",gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
-    /*groupMemoryBarrier();
+    groupMemoryBarrier();
     memoryBarrierBuffer();
-    barrier();*/
+    barrier();
     //SubMesh subMesh = inputSubmeshesBuffer.subMeshes[gl_GlobalInvocationID.x];
     Object object = inputObjectBuffer.objects[gl_GlobalInvocationID.x];
 	uint materialId = gl_GlobalInvocationID.y;
