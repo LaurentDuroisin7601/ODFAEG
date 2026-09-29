@@ -721,7 +721,7 @@ namespace odfaeg {
 								for (uint32_t v = 0; v < meshlet.vertex_count; ++v) {
 									localVertexIndices[v] = meshletVertices[v]; // index global
 								}
-								std::cout<<"local vertices ok"<<std::endl;
+								//std::cout<<"local vertices ok"<<std::endl;
 								std::vector<math::Vector3u> localTriangles(meshlet.triangle_count);
 								for (uint32_t t = 0; t < meshlet.triangle_count; ++t) {
 									uint32_t g0 = meshletTriangles[t * 3 + 0];
