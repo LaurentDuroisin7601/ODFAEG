@@ -96,7 +96,7 @@ struct TaskData {
     uint vertexCount;
     uint primitiveCount;
     uint vertexOffset; 
-    uint meshletOffset;    
+    uint meshletCount;    
 };
 struct Vertex {
     vec3 position; ///< 3D position of the vertex
@@ -336,7 +336,7 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                     
                         //uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;                                
                         
-                        atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset, n.meshletCount);
+                        
                         //uint currentGroupYOffset = taskData.meshDrawCommand.groupYCount;
                         for (uint m = 0; m < n.meshletCount; m++) {
                             groupMemoryBarrier();
@@ -347,9 +347,9 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                                 debugPrintfEXT("Error %i, %i", sm.id, inputMeshlet.meshlets[n.meshletOffset+m].submeshId);
                             }*/
                             inputMeshlet.meshlets[n.meshletOffset+m].rendered = 0;
-                            
-                            outputMeshlets[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlets[taskData.meshletOffset + taskData.meshDrawCommand.groupYCount] = inputMeshlet.meshlets[n.meshletOffset+m].id;   
-                            taskData.meshDrawCommand.groupYCount++;
+                            uint meshletOffset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset, 1);
+                            outputMeshlets[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlets[meshletOffset] = inputMeshlet.meshlets[n.meshletOffset+m].id;   
+                            taskData.meshletCount++;
                             
                         }
                         
@@ -497,14 +497,9 @@ void main() {
                         //Matériel non instanciable.                                               
                         } else {  
                                                                          
-                            //while (offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetTaskData != outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount);
-                            //debugPrintfEXT("task offsets : %i, %i", offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetTaskData, outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount);             
+                               
                             uint offsetTaskData = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
-                            uint meshletOffset = atomicAdd(offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset, 1);                           
-                            
-                            
-                            
-                            
+                                                       
                             uint instanceId = atomicAdd(offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.instanceOffset, 1);
                             //uint offsetInOutputMeshData = atomicAdd(offsetsData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.submeshOffset, 1);
                             //debugPrintfEXT("task count %i", offsetTaskData);
@@ -513,13 +508,13 @@ void main() {
                             //debugPrintfEXT("index offset : %i", subMesh.indexOffset);
                             MeshDrawCommand meshDrawCommand;                        
                             meshDrawCommand.groupXCount = 1;
-                            meshDrawCommand.groupYCount = 0;
+                            meshDrawCommand.groupYCount = 1;
                             meshDrawCommand.groupZCount = 1;
                             TaskData taskData;
                             taskData.baseInstance = instanceId;
                             taskData.vertexCount = 0;                            
                             taskData.meshDrawCommand = meshDrawCommand; 
-                            taskData.meshletOffset = meshletOffset; 
+                            taskData.meshletCount = 0; 
                                                      
                             //debugPrintfEXT("lod infos : %i, %i",subMesh.lodLevel[lod].index_offset,subMesh.lodLevel[lod].index_count);
                             //debugPrintfEXT("instance base %i", instanceBase); 
@@ -546,8 +541,7 @@ void main() {
                             //debugPrintfEXT("Output Model Matrix : %i\n%v4f\n%v4f\n%v4f\n%v4f",objectDataOffset,outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[0], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[1], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[2], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[3]);
                             
                             setVisibleMeshletsFromBox(ubo[pc.currentFrame].frustrum, lod, object, subMesh, s, taskData);  
-                            atomicAdd(offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset, taskData.meshDrawCommand.groupYCount);
-                            offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetTaskData = outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount;
+                      
                             outputTaskData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[offsetTaskData] = taskData;
                             
 
