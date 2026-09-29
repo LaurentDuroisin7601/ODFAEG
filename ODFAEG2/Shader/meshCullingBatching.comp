@@ -337,6 +337,7 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                         //uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;                                
                         
                         atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset, n.meshletCount);
+                        //uint currentGroupYOffset = taskData.meshDrawCommand.groupYCount;
                         for (uint m = 0; m < n.meshletCount; m++) {
                             groupMemoryBarrier();
                             memoryBarrierBuffer();
@@ -351,6 +352,8 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                             taskData.meshDrawCommand.groupYCount++;
                             
                         }
+                        
+                       
                         //Heightmap.                            
                     } /*else if (object.renderingType == 1) {
                         uint count = offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetVertex - offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetVertex;
