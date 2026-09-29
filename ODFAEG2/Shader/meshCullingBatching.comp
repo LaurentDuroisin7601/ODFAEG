@@ -336,20 +336,20 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                     
                         //uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;                                
                         
-                       
+                        atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset, n.meshletCount);
                         for (uint m = 0; m < n.meshletCount; m++) {
                             groupMemoryBarrier();
                             memoryBarrierBuffer();
                             barrier();
-                            atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset, 1);
+                            
                            /* if (inputMeshlet.meshlets[n.meshletOffset+m].submeshId != sm.id) {
                                 debugPrintfEXT("Error %i, %i", sm.id, inputMeshlet.meshlets[n.meshletOffset+m].submeshId);
                             }*/
                             inputMeshlet.meshlets[n.meshletOffset+m].rendered = 0;
                             
                             outputMeshlets[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlets[taskData.meshletOffset + taskData.meshDrawCommand.groupYCount] = inputMeshlet.meshlets[n.meshletOffset+m].id;   
-                            
                             taskData.meshDrawCommand.groupYCount++;
+                            
                         }
                         //Heightmap.                            
                     } /*else if (object.renderingType == 1) {
