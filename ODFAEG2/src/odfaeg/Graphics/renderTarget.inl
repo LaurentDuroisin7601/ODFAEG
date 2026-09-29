@@ -674,7 +674,7 @@ namespace odfaeg {
 							m.vertexOffset = m.minVertex;							
 							m.nbVertices   = (m.maxVertex - m.minVertex) + 1;							
 							meshletDatas.push_back(m);
-							currentMeshletsOffset++;
+							//currentMeshletsOffset++;
 							
 							//std::cout<<x<<" ,"<<y<<" ,"<<z<<" ,"<<w<<" , "<<h<<" ,"<<d<<std::endl;						
 							
