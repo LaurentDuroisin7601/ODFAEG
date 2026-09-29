@@ -118,22 +118,30 @@ namespace odfaeg {
 			inline static const unsigned int MAX_VERTS = 256u;
 			inline static const unsigned int MAX_PRIMS = 256u;
 			struct /*alignas(16)*/ Meshlet {
-				unsigned int id;
-				unsigned int vertexOffset;
-				unsigned int indexOffset;
-				unsigned int nbVertices;
-				unsigned int nbIndexes;
-				unsigned int minVertex;
-				unsigned int maxVertex;				
-				int clusterId;	
-				unsigned int lod;	
-				int voxel;
-				int rendered;
-				int submeshId;
-				alignas(16) math::Vec3f mins;
+				uint32_t id;
+				uint32_t vertexOffset;
+				uint32_t indexOffset;
+				uint32_t nbVertices;
+				uint32_t nbIndexes;
+				uint32_t minVertex;
+				uint32_t maxVertex;
+				int32_t  clusterId;
+				uint32_t lod;
+				int32_t  voxel;
+				int32_t  rendered;
+				int32_t  submeshId;
+
+				// vec3 = 16 bytes en std430
+				alignas(16) math::Vec3f mins; // x,y,z,pad
 				alignas(16) math::Vec3f maxs;
-				std::array<unsigned int, MAX_VERTS> localVertices;
-				std::array<math::Vector3u, MAX_PRIMS> localTriangles;
+
+				// local vertices
+				/*uint32_t localVertices[MAX_VERTS];
+
+				// local triangles (uvec3 = 16 bytes)
+				alignas(16) math::Vector3u localTriangles[MAX_PRIMS]; // x,y,z,pad
+
+				uint32_t pad[3];*/
 				bool operator==(const Meshlet& other) const {
 					return id == other.id 
 					&& mins.x() == other.mins.x()

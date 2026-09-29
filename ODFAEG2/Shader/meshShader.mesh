@@ -78,8 +78,8 @@ struct MeshLet {
     int submeshId;
     vec3 mins;
     vec3 maxs;
-    uint localVertices[256];
-    uvec3 localTriangles[256];
+    /*uint localVertices[256];
+    uvec3 localTriangles[256];*/
 };
 struct SubMesh {
 	AABB globalBounds;
@@ -161,9 +161,13 @@ vec4 unpackColor(uint c)
 shared uint globalIndices[256];
 uint findLocalIndex(uint globalIndex, uint vertexCount) {
     for (uint i = 0; i < vertexCount; i++) {
-        if (globalIndices[i] == globalIndex)
+        if (globalIndices[i] == globalIndex) {
+            if (globalIndex > 0)
+            //debugPrintfEXT("found %i", globalIndices[i]);
             return i;
+        }
     }
+    //debugPrintfEXT("Erreur %i ", globalIndex);
     return 0; // ne devrait jamais arriver
 }
 void main() {      
@@ -224,13 +228,14 @@ void main() {
             SetMeshOutputsEXT(vertexCount, primitiveCount);
             for (uint i = 0; i < vertexCount; i++) {
                 
-                uint globalIndex = meshlet.localVertices[i];
-                uint v = subMesh.vertexOffset + globalIndex;                
-                globalIndices[i] = globalIndex;
-                barrier();
+                //uint globalIndex = meshlet.localVertices[i];
+                //debugPrintfEXT("global index : %i", globalIndex);
+                uint v = subMesh.vertexOffset + meshlet.vertexOffset + i;                
+                /*globalIndices[i] = globalIndex;
+                barrier();*/
                 vec4 color = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
-                if (color.r < 0.9 || color.g < 0.9 || color.b < 0.9)
-                    debugPrintfEXT("error : %v4f", color);
+                /*if (color.r < 0.9 || color.g < 0.9 || color.b < 0.9)
+                    debugPrintfEXT("error : %v4f", color);*/
             
                 gl_MeshVerticesEXT[i].gl_Position = pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(vertexData[pc.primitiveType].vertices[v].position, 1.0);
                 //debugPrintfEXT("vertex position %v3f : ",gl_MeshVerticesEXT[i].gl_Position);
@@ -249,20 +254,26 @@ void main() {
                      
             for (uint tri = 0; tri < primitiveCount; tri++) {
                 //debugPrintfEXT("gen tri : %i", tri);
-                uint g0 = meshlet.localTriangles[tri].x;
+                /*uint g0 = meshlet.localTriangles[tri].x;
                 uint g1 = meshlet.localTriangles[tri].y;
                 uint g2 = meshlet.localTriangles[tri].z;
                 // Trouver les indices locaux
                 uint i0 = findLocalIndex(g0, vertexCount);
                 uint i1 = findLocalIndex(g1, vertexCount);
-                uint i2 = findLocalIndex(g2, vertexCount);
+                uint i2 = findLocalIndex(g2, vertexCount);*/
+                uint g0 = indexData[pc.primitiveType].indexes[firstIndex+tri*3+0];
+                uint g1 = indexData[pc.primitiveType].indexes[firstIndex+tri*3+1];
+                uint g2 = indexData[pc.primitiveType].indexes[firstIndex+tri*3+2];
+                uint i0 = g0 - meshlet.vertexOffset;
+                uint i1 = g1 - meshlet.vertexOffset;
+                uint i2 = g2 - meshlet.vertexOffset;
                 //debugPrintfEXT("indexes : %i %i %i",g0, g1, g2);
                 //debugPrintfEXT("indexes : %i, %i, %i", i0, i1, i2);  
-                //if (i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount) {
+                if (i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount) {
                     
-                    //debugPrintfEXT("erreur : %i %i %i %i,%i, %i, %i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, meshlet.nbVertices, firstIndex, meshlet.vertexOffset); 
+                    debugPrintfEXT("erreur : %i %i %i, %i,%i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, vertexCount); 
                     //continue;
-                //}
+                }
                 gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
             }            
         } else {

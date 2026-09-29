@@ -580,7 +580,7 @@ namespace odfaeg {
 							float w = subMeshGlobalBounds.getSize().x();
 							float h = subMeshGlobalBounds.getSize().y();
 							float d = subMeshGlobalBounds.getSize().z();							
-							/*Meshlet m;	
+							Meshlet m;	
 							m.id = meshletDatas.size();
 							m.submeshId = subMeshData.id;						
 							m.minVertex = std::numeric_limits<unsigned int>::max();
@@ -645,14 +645,14 @@ namespace odfaeg {
 									m.maxs = math::Vec3f(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
 									
 									// Recalculer pour ce triangle
-									newMin = std::min(g0, std::min(g1, g2));
-									newMax = std::max(g0, std::max(g1, g2));
+									/*newMin = std::min(g0, std::min(g1, g2));
+									newMax = std::max(g0, std::max(g1, g2));*/
 									m.minVertex = std::min(m.minVertex, newMin);
 									m.maxVertex = std::max(m.maxVertex, newMax);
 									newVertexCount = (newMax - newMin) + 1;
 									
-									mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
-									maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));
+									/*mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
+									maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));*/
 																	
 									m.mins = math::Vec3f(std::min(m.mins.x(), mins.x()), std::min(m.mins.y(), mins.y()), std::min(m.mins.z(), mins.z()));
 									m.maxs = math::Vec3f(std::max(m.maxs.x(), maxs.x()), std::max(m.maxs.y(), maxs.y()), std::max(m.maxs.z(), maxs.z()));									
@@ -670,12 +670,14 @@ namespace odfaeg {
 							m.id = meshletDatas.size();							
 							m.vertexOffset = m.minVertex;							
 							m.nbVertices   = (m.maxVertex - m.minVertex) + 1;							
-							meshletDatas.push_back(m);*/
+							meshletDatas.push_back(m);
+							currentMeshletsOffset++;	
+							meshletCount++;	
 							//std::cout<<x<<" ,"<<y<<" ,"<<z<<" ,"<<w<<" , "<<h<<" ,"<<d<<std::endl;						
 							
 							//std::cout<<"cluster count : "<<clusterCount<<std::endl;
 							/*std::cout<<"min max : "<<currentClustersOffset<<","<<clusterCount<<std::endl;
-							system("PAUSE");*/
+							system("PAUSE");
 							
 							
 								
@@ -736,13 +738,19 @@ namespace odfaeg {
 								m.lod = l;	
 								m.voxel = 0;
 								m.rendered = 0;
-								m.clusterId = -1;	
+								m.clusterId = -1;
+								m.minVertex = 0;
+								m.maxVertex = 0;	
 								m.indexOffset = 0;
-								m.vertexOffset = 0;							
+								m.vertexOffset = 0;						
 								//std::cout<<"vertex offset : "<<m.vertexOffset<<std::endl;								
 								//std::cout<<"index offset : "<<m.indexOffset<<std::endl;
 								m.nbIndexes = meshlet.triangle_count*3;
 								m.nbVertices = meshlet.vertex_count;
+								if (meshlet.vertex_count == 0) {
+									std::cout<<"nb vertices : "<<m.nbVertices<<std::endl;
+									system("PAUSE");
+								}
 								for (unsigned int v = 0; v < localVertexIndices.size(); v++)
 									m.localVertices[v] = localVertexIndices[v];
 								for (unsigned int t = 0; t < localTriangles.size(); t++) {
@@ -763,7 +771,7 @@ namespace odfaeg {
 								currentMeshletsOffset++;
 								meshletCount++;
 									
-							}
+							}*/
 							
 							//Récupérer les cellules de la grille de clusters.
 							//std::cout<<"min : "<<m.minVertex<<std::endl;
@@ -1165,7 +1173,7 @@ namespace odfaeg {
 						outputModelDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(ModelData) * currentSubmeshesOffset * Material::getAllMaterials().size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 						//std::cout<<"output model data : "<<outputModelDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 						outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(MaterialData) * currentSubmeshesOffset * Material::getAllMaterials().size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-						outputMeshes[j * NB_PRIMITIVE_TYPES + k].create(sizeof(entity::SubMesh) * currentSubmeshesOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+						outputMeshes[j * NB_PRIMITIVE_TYPES + k].create(sizeof(entity::SubMesh) * currentSubmeshesOffset * Material::getAllMaterials().size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 						outputMeshlets[j * NB_PRIMITIVE_TYPES + k].create(sizeof(Meshlet) * currentMeshletsOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);						
 						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
