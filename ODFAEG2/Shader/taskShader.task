@@ -56,7 +56,9 @@ layout(std430, set = 0, binding = 1) buffer TaskCountSSBO {
     uint taskCount;
 } TaskCounts[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 void main() {
-    
+    groupMemoryBarrier();
+    memoryBarrierBuffer();
+    barrier();
     uint id = gl_WorkGroupID.x;
     //debugPrintfEXT("Primitive type : %i", pc.primitiveType);
     //debugPrintfEXT("Task id : %i, nb tasks %i", id, TaskCounts[pc.primitiveType * MAX_FRAMES_IN_FLIGHT + pc.currentFrame].taskCount);       
