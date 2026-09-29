@@ -243,8 +243,8 @@ void main() {
             for (uint tri = 0; tri < primitiveCount; tri++) {
                 //debugPrintfEXT("gen tri : %i", tri);
                 uint g0 = meshlet.localTriangles[tri].x;
-                uint g1 = meshlet.localTriangles[tri*3+1].y;
-                uint g2 = meshlet.localTriangles[tri*3+2].z;
+                uint g1 = meshlet.localTriangles[tri].y;
+                uint g2 = meshlet.localTriangles[tri].z;
                
                 //debugPrintfEXT("indexes : %i %i %i",g0, g1, g2);
                 //debugPrintfEXT("indexes : %i, %i, %i", i0, i1, i2);  
