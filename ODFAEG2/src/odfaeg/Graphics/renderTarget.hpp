@@ -117,7 +117,7 @@ namespace odfaeg {
 			};
 			inline static const unsigned int MAX_VERTS = 256u;
 			inline static const unsigned int MAX_PRIMS = 256u;
-			struct /*alignas(16)*/ Meshlet {
+			struct alignas(16) Meshlet {
 				uint32_t id;
 				uint32_t vertexOffset;
 				uint32_t indexOffset;
@@ -132,8 +132,8 @@ namespace odfaeg {
 				int32_t  submeshId;
 
 				// vec3 = 16 bytes en std430
-				alignas(16) math::Vec3f mins; // x,y,z,pad
-				alignas(16) math::Vec3f maxs;
+				math::Vec4f mins; // x,y,z,pad
+				math::Vec4f maxs;
 
 				/*// local vertices
 				uint32_t localVertices[MAX_VERTS];
