@@ -159,7 +159,7 @@ namespace odfaeg {
             //std::cout<<"process node"<<std::endl;
             // process all the node's meshes (if any)
             math::Matrix4f nodeLocal = entity::AssimpHelpers::convertAssimpToODFAEGMatrix(node->mTransformation);
-            math::Matrix4f world = parentTransform * nodeLocal;
+            math::Matrix4f world = parentTransform * nodeLocal/*.transpose()*/;
         
             /*std::cout<<"parent : "<<parentTransform<<std::endl;
             //std::cout<<"transposed parent : "<<parentTransform.transpose()<<std::endl;
@@ -547,7 +547,7 @@ namespace odfaeg {
                 std::cout<<"axis correction : "<<axisCorrection.getMatrix()<<std::endl;
                 std::cout<<"handness correction : "<<handednessCorrection.getMatrix()<<std::endl;*/
                 
-                math::Matrix4f finalTransform = finalCorrection * world;
+                math::Matrix4f finalTransform = finalCorrection.transpose() * world;
                 //std::cout<<"mesh world : "<<world<<std::endl;
                 /*std::cout<<"final transform : "<<finalTransform<<std::endl;*/
                 

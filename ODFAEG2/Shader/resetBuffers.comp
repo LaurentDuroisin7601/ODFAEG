@@ -23,15 +23,15 @@ struct MaterialData {
     uint aoTextureIndex;
     uint emissiveTextureIndex;
     uint materialType;
-    uint materialSet;   
+    uint materialSet;
     uint nbVertices;
     uint nbIndexes;
     int instanceGroupId;
     uint vertsInstanceSet;
     uint materialId;
-    uint nbBuffers;  
-    int reflectable;
-    int refractable;    
+    uint nbBuffers;       
+    uint opaque;  
+    uint pipelineType;   
 };
 /*position dans le buffer de matrices de sortie pour les instance*/
 layout (std430, set = 0, binding = 0) buffer offsetInOutputModelDataSSBO {

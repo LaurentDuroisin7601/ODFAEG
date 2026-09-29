@@ -33,7 +33,7 @@ struct TaskData {
     uint vertexCount;
     uint primitiveCount;
     uint vertexOffset; 
-    uint clusterOffset;     
+    uint meshletOffset;     
 };
 struct AABB {
 	vec3 center;
@@ -124,9 +124,9 @@ layout(std430, set = 0, binding = 1) buffer TaskCountSSBO {
 layout (std430, set = 0, binding = 2) buffer ModelDataSSBO {
     ModelData modelData[];
 } modelDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 3) buffer ClustersSSBO {
-    Cluster clusters[];
-} clusterDatas[MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES];
+layout (std430, set = 0, binding = 3) buffer VisibleMeshletSSBO {
+    MeshLet meshlet[];
+} visibleMeshletDatas[MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES];
 layout (std430, set = 0, binding = 4) buffer vertexBufferSSBO {
     Vertex vertices[];
 } vertexData[NB_PRIMITIVE_TYPES];
@@ -165,15 +165,19 @@ void main() {
         debugPrintfEXT("Error : %i", taskData.vertexCount);*/
     //Modèles 3D.
     if (taskData.vertexCount == 0) {  
-        Cluster cluster = clusterDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[taskData.clusterOffset+gl_WorkGroupID.y];         
-        SubMesh subMesh = SubMeshDatas.subMeshData[cluster.submeshId];
+        MeshLet meshlet = visibleMeshletDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlet[taskData.meshletOffset+gl_WorkGroupID.y];
+        //Cluster cluster = clusterDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[taskData.clusterOffset+gl_WorkGroupID.y];         
+        //if (cluster.meshletCount > 8) {
+            //debugPrintfEXT("meshlet count : %i %i", cluster.submeshId, cluster.meshletOffset);
+        //}
+        SubMesh subMesh = SubMeshDatas.subMeshData[meshlet.submeshId];
         
         //debugPrintfEXT("Submesh material : %i, %i", subMesh.id, subMesh.materialId);
       
-        if (gl_WorkGroupID.z >= cluster.meshletCount) {
+        /*if (gl_WorkGroupID.z >= cluster.meshletCount) {
             return;
-        }
-        MeshLet meshlet = meshletDatas.meshlet[cluster.meshletOffset+gl_WorkGroupID.z];
+        }*/
+        
         if (meshlet.rendered == 1) { 
             //debugPrintfEXT("Rendered");           
             return;
@@ -194,9 +198,9 @@ void main() {
         //Avoid to render it twice if the meshlet is between two clusters. (Deduplication)
         
         //debugPrintfEXT("mesh shader"); 
-        meshletDatas.meshlet[cluster.meshletOffset+gl_WorkGroupID.z].rendered = 1;
+        meshletDatas.meshlet[taskData.meshletOffset+gl_WorkGroupID.y].rendered = 1;
         
-        uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+cluster.lodLevel].index_offset + meshlet.indexOffset;
+        uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+meshlet.lod].index_offset + meshlet.indexOffset;
         //debugPrintfEXT("First index : %i,", firstIndex);
         //3 = Triangles.
         uint maxVerts = 256u;

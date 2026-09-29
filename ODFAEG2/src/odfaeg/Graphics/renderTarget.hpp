@@ -333,7 +333,7 @@ namespace odfaeg {
 			std::deque<Buffer> inputMeshlets;
 			std::deque<Buffer> inputCellDatas;
 			std::deque<Buffer> inputClusters;
-			std::deque<Buffer> outputClusters;
+			std::deque<Buffer> outputMeshlets;
 			std::deque<Buffer> offsetInOutputModelData;
 			std::deque<Buffer> offsetInOutputObjectData;
 			std::deque<Buffer> offsetInOutputMaterialData;

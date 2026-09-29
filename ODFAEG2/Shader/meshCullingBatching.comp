@@ -58,7 +58,7 @@ struct Offset {
     uint previousOffsetVertex;
     uint offsetVertex;    
     uint instanceOffset;
-    uint clusterOffset;
+    uint meshletOffset;
     uint submeshOffset;
     uint offsetTaskData;
     uint previousOffsetTaskData;
@@ -94,7 +94,7 @@ struct TaskData {
     uint vertexCount;
     uint primitiveCount;
     uint vertexOffset; 
-    uint clusterOffset;    
+    uint meshletOffset;    
 };
 struct Vertex {
     vec3 position; ///< 3D position of the vertex
@@ -178,9 +178,9 @@ layout (std430, set = 0, binding = 8) buffer inputMaterialDataSSBO {
 	MaterialData materialData[];
 } inputMaterialData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 //Clusters visibles.
-layout (std430, set = 0, binding = 9) buffer outputClusterSSBO {
-	Cluster clusters[];
-} outputClusters[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+layout (std430, set = 0, binding = 9) buffer outputMeshletSSBO {
+	MeshLet meshlets[];
+} outputMeshlets[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 /*matrices des objets visibles pour les instances en sortie.*/
 layout (std430, set = 0, binding = 10) buffer outputModelDataSSBO {
 	ModelData modelData[];
@@ -329,16 +329,19 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                         //debugPrintfEXT("cluster offset : %i %i", clusterOffset, sm.id);
                         
                         
-                        outputClusters[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[taskData.clusterOffset+taskData.meshDrawCommand.groupYCount] = n;   
-                        atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);
+                    
                         //uint taskDataOffset = inputMaterialData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].taskOffset;                                
-                        taskData.meshDrawCommand.groupYCount++;
+                        
                        
                         for (uint m = 0; m < n.meshletCount; m++) {
+                            
                             if (inputMeshlet.meshlets[n.meshletOffset+m].submeshId != sm.id) {
                                 debugPrintfEXT("Error %i, %i", sm.id, inputMeshlet.meshlets[n.meshletOffset+m].submeshId);
                             }
                             inputMeshlet.meshlets[n.meshletOffset+m].rendered = 0;
+                            outputMeshlets[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlets[taskData.meshletOffset+taskData.meshDrawCommand.groupYCount] = inputMeshlet.meshlets[n.meshletOffset+m];   
+                            atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset, 1);
+                            taskData.meshDrawCommand.groupYCount++;
                         }
                         //Heightmap.                            
                     } /*else if (object.renderingType == 1) {
@@ -484,7 +487,7 @@ void main() {
                             //while (offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetTaskData != outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount);
                             //debugPrintfEXT("task offsets : %i, %i", offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetTaskData, outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount);             
                             uint offsetTaskData = atomicAdd(outputTaskCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskCount, 1);
-                            uint clusterOffset = atomicAdd(offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.clusterOffset, 1);                           
+                            uint meshletOffset = atomicAdd(offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset, 1);                           
                             
                             
                             
@@ -498,12 +501,12 @@ void main() {
                             MeshDrawCommand meshDrawCommand;                        
                             meshDrawCommand.groupXCount = 1;
                             meshDrawCommand.groupYCount = 0;
-                            meshDrawCommand.groupZCount = 8;
+                            meshDrawCommand.groupZCount = 1;
                             TaskData taskData;
                             taskData.baseInstance = instanceId;
                             taskData.vertexCount = 0;                            
                             taskData.meshDrawCommand = meshDrawCommand; 
-                            taskData.clusterOffset = clusterOffset; 
+                            taskData.meshletOffset = meshletOffset; 
                                                      
                             //debugPrintfEXT("lod infos : %i, %i",subMesh.lodLevel[lod].index_offset,subMesh.lodLevel[lod].index_count);
                             //debugPrintfEXT("instance base %i", instanceBase); 

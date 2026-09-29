@@ -46,6 +46,7 @@ layout(location = 5) flat in int currentFrame;
 layout(location = 6) in vec3 vTangent;
 layout(location = 7) in vec2 vBitangent;
 layout(location = 8) in vec3 vNormal;
+layout(location = 9) flat in int meshId;
 layout(location = 0) out vec4 outColor;
 void main() {
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[materialID];
@@ -105,7 +106,13 @@ void main() {
     float spec = pow(max(dot(Nw, H), 0.0), 32.0) * specularStrength;
     //debugPrintfEXT("texture index : %i, normal : %v3f, fragTexCoord %v2f, color : %v4f, fragColor : %v4f", mat.diffuseTextureIndex, normal, fragTexCoord, diffuse * diff * ao + spec + emissive, fragColor);
     //debugPrintfEXT("normal : %v3f", N);
-    outColor = diffuse /** diff * ao + spec + emissive*/;
+    vec4 color = vec4(
+        float(meshId & 0xFF) / 255.0,
+        float((meshId >> 8) & 0xFF) / 255.0,
+        float((meshId >> 16) & 0xFF) / 255.0,
+        1.0
+    );
+    outColor = diffuse/* * diff * ao + spec + emissive*/;
    /* if (outColor.a == 0)
         debugPrintfEXT("out color : %v4f", outColor);*/
 };

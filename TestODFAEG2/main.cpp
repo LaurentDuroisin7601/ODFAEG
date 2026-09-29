@@ -258,6 +258,7 @@ int main() {
 	ResourceManager<Texture, std::string> modelTextureManager;
 	ModelLoader modelLoader(GPUContext::instance().getDevice(), modelTextureManager);
 	//Mesh* bistroExterior = modelLoader.loadModel("Bistro_v5_2/BistroExterior.fbx");
+	//bistroExterior->getGameObject()->setRotation(180, Vec3f(0, 0, 1));
 	/*Mesh* bistroInterior = modelLoader.loadModel("Bistro_v5_2/BistroInterior.fbx");*/
 	//bistroExterior->getGameObject()->setScale(Vec3f(1, 1, -1));
 	//std::cout<<"test"<<std::endl;
@@ -383,7 +384,7 @@ int main() {
 		window.setCamera(camera);
 		window.setDepthStencil(true, false);
 		window.clear();
-		window.draw(Triangles);
+		window.drawMesh(Triangles);
 		
 		/*window.setTypesToRender("*", window.getCurrentFrame());	
 		window.drawMesh(Triangles);*/
