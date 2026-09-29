@@ -171,9 +171,7 @@ uint findLocalIndex(uint globalIndex, uint vertexCount) {
     return 0; // ne devrait jamais arriver
 }
 void main() {      
-    groupMemoryBarrier();
-    memoryBarrierBuffer();
-    barrier();
+    
     TaskData taskData = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId];
     if (pc.currentFrame >= MAX_FRAMES_IN_FLIGHT || pc.primitiveType > 3) {
         debugPrintfEXT("Current frame : %i %i", pc.currentFrame, pc.primitiveType);
@@ -233,8 +231,12 @@ void main() {
                 //uint globalIndex = meshlet.localVertices[i];
                 //debugPrintfEXT("global index : %i", globalIndex);
                 uint v = subMesh.vertexOffset + meshlet.vertexOffset + i;                
-                /*globalIndices[i] = globalIndex;
-                barrier();*/
+                //uint v = subMesh.vertexOffset + global+Index;
+                //globalIndices[i] = globalIndex;
+                groupMemoryBarrier();
+                memoryBarrierBuffer();
+                barrier();
+                
                 vec4 color = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
                 /*if (color.r < 0.9 || color.g < 0.9 || color.b < 0.9)
                     debugPrintfEXT("error : %v4f", color);*/

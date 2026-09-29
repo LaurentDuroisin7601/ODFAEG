@@ -593,10 +593,10 @@ namespace odfaeg {
 							m.voxel = 0;
 							m.rendered = 0;
 							m.clusterId = -1;
-							unsigned int meshletCount = 1;
+							unsigned int meshletCount = 0;
 							
-							/*currentMeshletsOffset++;	
-							meshletCount++;*/													
+							currentMeshletsOffset++;	
+							meshletCount++;													
 							for (unsigned int tri = 0; tri < lods[l].indexCount / 3; tri++) {
 								int g0 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[l].indexOffset+tri*3+0);								
 								int g1 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[l].indexOffset+tri*3+1);
@@ -629,7 +629,7 @@ namespace odfaeg {
 								if (m.nbIndexes/3 >= MAX_PRIMS || newVertexCount > MAX_VERTS)
     							{									
 									m.vertexOffset = m.minVertex;
-									m.nbVertices   = (m.maxVertex - m.minVertex) + 1;
+									m.nbVertices   = (newMax - newMin) + 1;
 									
 									
 									meshletDatas.push_back(m);
@@ -677,17 +677,16 @@ namespace odfaeg {
 							m.vertexOffset = m.minVertex;							
 							m.nbVertices   = (m.maxVertex - m.minVertex) + 1;							
 							meshletDatas.push_back(m);
-							currentMeshletsOffset++;
+							
 							
 							//std::cout<<x<<" ,"<<y<<" ,"<<z<<" ,"<<w<<" , "<<h<<" ,"<<d<<std::endl;						
 							
 							//std::cout<<"cluster count : "<<clusterCount<<std::endl;
-							/*std::cout<<"min max : "<<currentClustersOffset<<","<<clusterCount<<std::endl;
-							system("PAUSE");
+							
 							
 							
 								
-							std::vector<entity::Vertex> verts;														
+							/*std::vector<entity::Vertex> verts;														
 							verts.reserve(subMesh.getVertexArray().getVertexCount());
 
 							for (uint32_t v = 0; v < subMesh.getVertexArray().getVertexCount(); v++)
@@ -747,8 +746,8 @@ namespace odfaeg {
 								m.clusterId = -1;
 								m.minVertex = 0;
 								m.maxVertex = 0;	
-								m.indexOffset = 0;
-								m.vertexOffset = 0;						
+								m.indexOffset = meshlet.triangle_offset;
+								m.vertexOffset = meshlet.vertex_count;						
 								//std::cout<<"vertex offset : "<<m.vertexOffset<<std::endl;								
 								//std::cout<<"index offset : "<<m.indexOffset<<std::endl;
 								m.nbIndexes = meshlet.triangle_count*3;

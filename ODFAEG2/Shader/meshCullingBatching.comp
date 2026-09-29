@@ -67,7 +67,7 @@ struct Offset {
 };      
 /*Matériaux*/
 struct MaterialData {   
-   uint diffuseTextureIndex;
+    uint diffuseTextureIndex;
     uint specularTextureIndex;
     uint normalTextureIndex;
     uint metalnessTextureIndex;

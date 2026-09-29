@@ -135,13 +135,13 @@ namespace odfaeg {
 				alignas(16) math::Vec3f mins; // x,y,z,pad
 				alignas(16) math::Vec3f maxs;
 
-				// local vertices
-				/*uint32_t localVertices[MAX_VERTS];
+				/*// local vertices
+				uint32_t localVertices[MAX_VERTS];
 
 				// local triangles (uvec3 = 16 bytes)
-				alignas(16) math::Vector3u localTriangles[MAX_PRIMS]; // x,y,z,pad
+				math::Vector4u localTriangles[MAX_PRIMS]; // x,y,z,pad
 
-				uint32_t pad[3];*/
+				//uint32_t pad[3];*/
 				bool operator==(const Meshlet& other) const {
 					return id == other.id 
 					&& mins.x() == other.mins.x()
