@@ -736,7 +736,9 @@ namespace odfaeg {
 								m.lod = l;	
 								m.voxel = 0;
 								m.rendered = 0;
-								m.clusterId = -1;								
+								m.clusterId = -1;	
+								m.indexOffset = 0;
+								m.vertexOffset = 0;							
 								//std::cout<<"vertex offset : "<<m.vertexOffset<<std::endl;								
 								//std::cout<<"index offset : "<<m.indexOffset<<std::endl;
 								m.nbIndexes = meshlet.triangle_count*3;
@@ -772,7 +774,7 @@ namespace odfaeg {
 							//std::cout<<"lod meshlet count : "<<(meshletDatas.size() - currentLodMeshletOffset - currentSubmeshMeshletOffset)<<std::endl;
 							lodLevelData.meshletOffset = currentLodMeshletOffset;
 							lodLevelData.meshletCount = meshletDatas.size() - currentLodMeshletOffset - currentSubmeshMeshletOffset;
-							std::cout<<"meshlet count : "<<currentSubmeshMeshletOffset<<","<<currentLodMeshletOffset<<","<<lodLevelData.meshletCount<<std::endl;																		
+							//std::cout<<"meshlet count : "<<currentSubmeshMeshletOffset<<","<<currentLodMeshletOffset<<","<<lodLevelData.meshletCount<<std::endl;																		
 							lodLevelDatas.push_back(lodLevelData);
 							/*for (unsigned int m = currentSubmeshMeshletOffset+lodLevelData.meshletOffset; m < currentSubmeshMeshletOffset+lodLevelData.meshletOffset + lodLevelData.meshletCount; m++) {
 								Meshlet meshlet = meshletDatas[m];

@@ -133,7 +133,7 @@ namespace odfaeg {
 				alignas(16) math::Vec3f mins;
 				alignas(16) math::Vec3f maxs;
 				std::array<unsigned int, MAX_VERTS> localVertices;
-				alignas(16) std::array<math::Vector3u, MAX_PRIMS> localTriangles;
+				std::array<math::Vector3u, MAX_PRIMS> localTriangles;
 				bool operator==(const Meshlet& other) const {
 					return id == other.id 
 					&& mins.x() == other.mins.x()
