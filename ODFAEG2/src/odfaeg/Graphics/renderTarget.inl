@@ -593,7 +593,10 @@ namespace odfaeg {
 							m.voxel = 0;
 							m.rendered = 0;
 							m.clusterId = -1;
-							unsigned int meshletCount = 0;													
+							unsigned int meshletCount = 1;
+							
+							/*currentMeshletsOffset++;	
+							meshletCount++;*/													
 							for (unsigned int tri = 0; tri < lods[l].indexCount / 3; tri++) {
 								int g0 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[l].indexOffset+tri*3+0);								
 								int g1 = vertices[primitiveType].getIndex(subMeshData.indexOffset + lods[l].indexOffset+tri*3+1);
@@ -671,8 +674,8 @@ namespace odfaeg {
 							m.vertexOffset = m.minVertex;							
 							m.nbVertices   = (m.maxVertex - m.minVertex) + 1;							
 							meshletDatas.push_back(m);
-							currentMeshletsOffset++;	
-							meshletCount++;	
+							currentMeshletsOffset++;
+							
 							//std::cout<<x<<" ,"<<y<<" ,"<<z<<" ,"<<w<<" , "<<h<<" ,"<<d<<std::endl;						
 							
 							//std::cout<<"cluster count : "<<clusterCount<<std::endl;
