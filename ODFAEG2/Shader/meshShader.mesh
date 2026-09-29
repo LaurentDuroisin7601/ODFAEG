@@ -158,7 +158,14 @@ vec4 unpackColor(uint c)
 
     return vec4(r, g, b, a);
 }
-shared uint remapTable[256];
+shared uint globalIndices[256];
+uint findLocalIndex(uint globalIndex, uint vertexCount) {
+    for (uint i = 0; i < vertexCount; i++) {
+        if (globalIndices[i] == globalIndex)
+            return i;
+    }
+    return 0; // ne devrait jamais arriver
+}
 void main() {      
     
     TaskData taskData = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId];
@@ -219,7 +226,7 @@ void main() {
                 
                 uint globalIndex = meshlet.localVertices[i];
                 uint v = subMesh.vertexOffset + globalIndex;                
-                remapTable[globalIndex] = i;
+                globalIndices[i] = globalIndex;
                 barrier();
                 vec4 color = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
                 if (color.r < 0.9 || color.g < 0.9 || color.b < 0.9)
@@ -245,7 +252,10 @@ void main() {
                 uint g0 = meshlet.localTriangles[tri].x;
                 uint g1 = meshlet.localTriangles[tri].y;
                 uint g2 = meshlet.localTriangles[tri].z;
-               
+                // Trouver les indices locaux
+                uint i0 = findLocalIndex(g0, vertexCount);
+                uint i1 = findLocalIndex(g1, vertexCount);
+                uint i2 = findLocalIndex(g2, vertexCount);
                 //debugPrintfEXT("indexes : %i %i %i",g0, g1, g2);
                 //debugPrintfEXT("indexes : %i, %i, %i", i0, i1, i2);  
                 //if (i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount) {
@@ -253,7 +263,7 @@ void main() {
                     //debugPrintfEXT("erreur : %i %i %i %i,%i, %i, %i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, meshlet.nbVertices, firstIndex, meshlet.vertexOffset); 
                     //continue;
                 //}
-                gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(remapTable[g0], remapTable[g1], remapTable[g2]);            
+                gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
             }            
         } else {
             SetMeshOutputsEXT(0, 0);
