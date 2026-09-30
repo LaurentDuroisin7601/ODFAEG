@@ -65,7 +65,7 @@ namespace odfaeg {
 				alignas(16) math::Vec3f center; //float _pad0; // vec3 + padding
 				alignas(16) math::Vec3f size;   //float _pad1; // vec3 + padding
 			};
-			struct Object {
+			struct alignas(16) Object {
 				AABB globalBounds;
 				int id;
 				int type;
@@ -81,7 +81,7 @@ namespace odfaeg {
 				int meshletOffset;
 				int meshletCount;
 			};
-			struct /*alignas(16)*/ SubMeshData {
+			struct alignas(16) SubMeshData {
 				AABB globalBounds;
 				int vertexOffset;
 				int indexOffset;

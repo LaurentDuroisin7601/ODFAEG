@@ -329,24 +329,13 @@ namespace odfaeg {
             return true;
         }
         template <typename T, unsigned int R, unsigned int C>
-        std::array<float, 16> Mat<T, R, C>::toGlMatrix() {
-            std::array<float, 16> matrix;
-            matrix[0] = data[0][0];
-            matrix[1] = data[0][1];
-            matrix[2] = data[0][2];
-            matrix[3] = data[0][3];
-            matrix[4] = data[1][0];
-            matrix[5] = data[1][1];
-            matrix[6] = data[1][2];
-            matrix[7] = data[1][3];
-            matrix[8] = data[2][0];
-            matrix[9] = data[2][1];
-            matrix[10] = data[2][2];
-            matrix[11] = data[2][3];
-            matrix[12] = data[3][0];
-            matrix[13] = data[3][1];
-            matrix[14] = data[3][2];
-            matrix[15] = data[3][3];
+        T* Mat<T, R, C>::toVkMatrix() {
+            T* matrix = new T[R*C];
+            for (unsigned int i = 0; i < R; i++) {
+                for (unsigned int j = 0; j < C; j++) {    
+                   matrix[i*R+C] = data[i][j];                   
+                }
+            }
             return matrix;
         }
         template <typename T, unsigned int R, unsigned int C>

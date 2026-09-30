@@ -156,10 +156,11 @@ namespace odfaeg {
             std::array<T, C>& operator[] (unsigned int i);
             std::array<T, C>& operator[] (unsigned int i) const;
             bool operator==(const Mat<T, R, C>& other) const;
-            std::array<float, 16> toGlMatrix();
+            T* toVkMatrix();
             Mat<T, R, C> transpose();
             template <typename Archive>
             void serialize(Archive& ar);
+
         };
         template <typename T, unsigned int R, unsigned int C>
         std::ostream& operator<< (std::ostream& out, const Mat<T, R, C>& mat);

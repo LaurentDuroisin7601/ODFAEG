@@ -161,15 +161,15 @@ vec4 unpackColor(uint c)
 uint globalIndices[256];
 uint findLocalIndex(uint globalIndex, uint vertexCount) {
     for (uint i = 0; i < vertexCount; i++) {
+        
         if (globalIndices[i] == globalIndex) {
-            /*if (globalIndices[i] == 1037)
-                debugPrintfEXT("i = %i", i);*/
+            debugPrintfEXT("i = %i %i", i, globalIndices[i]);
             return i;
         }
     }
     /*if (globalIndex
      == 1037)*/
-        debugPrintfEXT("Erreur %i ", globalIndex);
+        //debugPrintfEXT("Erreur %i ", globalIndex);
     return 0; // ne devrait jamais arriver
 }
 void main() {      
@@ -222,8 +222,8 @@ void main() {
         //3 = Triangles.
         uint maxVerts = 256u;
         uint maxPrims = 256u;
-        uint vertexCount   = min(meshlet.nbVertices, maxVerts);
-        uint primitiveCount = min(meshlet.nbIndexes / 3u, maxPrims);
+        uint vertexCount   = meshlet.nbVertices;
+        uint primitiveCount = meshlet.nbIndexes / 3u;
         /*if (primitiveCount > maxPrims)*/
             //debugPrintfEXT("vertex count : %i, primitive count : %i", vertexCount, primitiveCount);
         if (pc.primitiveType == 3) {

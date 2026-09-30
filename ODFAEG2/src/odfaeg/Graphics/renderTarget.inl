@@ -717,7 +717,7 @@ namespace odfaeg {
 								sizeof(entity::Vertex),
 								MAX_VERTS,
 								MAX_PRIMS,
-								1
+								0
 							);
 							
 							
