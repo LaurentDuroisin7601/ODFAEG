@@ -156,7 +156,7 @@ namespace odfaeg {
             std::array<T, C>& operator[] (unsigned int i);
             std::array<T, C>& operator[] (unsigned int i) const;
             bool operator==(const Mat<T, R, C>& other) const;
-            T* toVkMatrix();
+            void toVkMatrix(T*);
             Mat<T, R, C> transpose();
             template <typename Archive>
             void serialize(Archive& ar);

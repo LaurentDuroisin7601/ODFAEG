@@ -535,12 +535,10 @@ namespace odfaeg {
             }
         }
         template<typename T, unsigned int N>
-        T* VecN<T, N>::toVkVec() {
-            T* vec = new T[N];
+        void VecN<T, N>::toVkVec(T* vec) {            
             for (unsigned int i = 0; i < N; i++) {
                 vec[i] = data[i];
-            }
-            return vec;
+            }            
         }
         //virtual ~Vec4() {}
         /** \fn std::ostream& operator<< (std::ostream &out, const Vec4 &vec3)

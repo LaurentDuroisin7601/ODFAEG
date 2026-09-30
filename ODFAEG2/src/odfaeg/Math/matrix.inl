@@ -329,14 +329,13 @@ namespace odfaeg {
             return true;
         }
         template <typename T, unsigned int R, unsigned int C>
-        T* Mat<T, R, C>::toVkMatrix() {
-            T* matrix = new T[R*C];
+        void Mat<T, R, C>::toVkMatrix(T* matrix) {
+            
             for (unsigned int i = 0; i < R; i++) {
                 for (unsigned int j = 0; j < C; j++) {    
-                   matrix[i*R+C] = data[i][j];                   
+                   matrix[i*C+j] = data[i][j];                   
                 }
-            }
-            return matrix;
+            }            
         }
         template <typename T, unsigned int R, unsigned int C>
         Mat<T, R, C> Mat<T, R, C>::transpose() {

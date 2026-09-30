@@ -227,7 +227,7 @@ namespace odfaeg {
             VecN<T, N> mix(VecN<T, N>& other, float a);
             template <typename Archive>
             void serialize(Archive& ar);
-            T* toVkVec();
+            void toVkVec(T*);
             //virtual ~Vec4() {}
             /** \fn std::ostream& operator<< (std::ostream &out, const Vec4 &vec3)
             *   \brief set the vector coordinates to an output stream.
