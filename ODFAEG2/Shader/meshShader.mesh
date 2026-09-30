@@ -78,8 +78,8 @@ struct MeshLet {
     int submeshId;
     vec3 mins;
     vec3 maxs;
-    /*uint localVertices[256];
-    uvec3 localTriangles[256];*/
+    uint vertices[256];
+    uvec3 triangles[256];
 };
 struct SubMesh {
 	AABB globalBounds;
@@ -158,7 +158,7 @@ vec4 unpackColor(uint c)
 
     return vec4(r, g, b, a);
 }
-shared uint globalIndices[256];
+uint globalIndices[256];
 uint findLocalIndex(uint globalIndex, uint vertexCount) {
     for (uint i = 0; i < vertexCount; i++) {
         if (globalIndices[i] == globalIndex) {
@@ -167,7 +167,7 @@ uint findLocalIndex(uint globalIndex, uint vertexCount) {
             return i;
         }
     }
-    //debugPrintfEXT("Erreur %i ", globalIndex);
+    debugPrintfEXT("Erreur %i ", globalIndex);
     return 0; // ne devrait jamais arriver
 }
 void main() {      
@@ -192,9 +192,7 @@ void main() {
         /*if (gl_WorkGroupID.z >= cluster.meshletCount) {
             return;
         }*/
-        groupMemoryBarrier();
-        memoryBarrierBuffer();
-        barrier();
+        
         if (meshlet.rendered == 1) { 
             //debugPrintfEXT("Rendered");           
             return;
@@ -230,12 +228,14 @@ void main() {
             SetMeshOutputsEXT(vertexCount, primitiveCount);
             for (uint i = 0; i < vertexCount; i++) {
                 
-                //uint globalIndex = meshlet.localVertices[i];
-                //debugPrintfEXT("global index : %i", globalIndex);
-                uint v = subMesh.vertexOffset + meshlet.vertexOffset + i;                
-                //uint v = subMesh.vertexOffset + global+Index;
-                //globalIndices[i] = globalIndex;
-               
+                uint globalIndex = meshlet.vertices[i];
+                //debugPrintfEXT("global index : %i %i", i, globalIndex+1);
+                //uint v = subMesh.vertexOffset + meshlet.vertexOffset + i;                
+                uint v = subMesh.vertexOffset + globalIndex;
+                globalIndices[i] = globalIndex;
+                groupMemoryBarrier();
+                memoryBarrierBuffer();
+                barrier();
                 
                 vec4 color = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
                 /*if (color.r < 0.9 || color.g < 0.9 || color.b < 0.9)
@@ -255,29 +255,31 @@ void main() {
                 //debugPrintfEXT("materialId %i", subMesh.materialId);
                 //debugPrintfEXT("position : %i",  i);
             }  
-                     
+            groupMemoryBarrier();
+            memoryBarrierBuffer();
+            barrier();         
             for (uint tri = 0; tri < primitiveCount; tri++) {
                 //debugPrintfEXT("gen tri : %i", tri);
-                /*uint g0 = meshlet.localTriangles[tri].x;
-                uint g1 = meshlet.localTriangles[tri].y;
-                uint g2 = meshlet.localTriangles[tri].z;
+                uint g0 = meshlet.triangles[tri].x;
+                uint g1 = meshlet.triangles[tri].y;
+                uint g2 = meshlet.triangles[tri].z;
                 // Trouver les indices locaux
                 uint i0 = findLocalIndex(g0, vertexCount);
                 uint i1 = findLocalIndex(g1, vertexCount);
-                uint i2 = findLocalIndex(g2, vertexCount);*/
-                uint g0 = indexData[pc.primitiveType].indexes[firstIndex+tri*3+0];
+                uint i2 = findLocalIndex(g2, vertexCount);
+                /*uint g0 = indexData[pc.primitiveType].indexes[firstIndex+tri*3+0];
                 uint g1 = indexData[pc.primitiveType].indexes[firstIndex+tri*3+1];
                 uint g2 = indexData[pc.primitiveType].indexes[firstIndex+tri*3+2];
                 uint i0 = g0 - meshlet.vertexOffset;
                 uint i1 = g1 - meshlet.vertexOffset;
-                uint i2 = g2 - meshlet.vertexOffset;
-                //debugPrintfEXT("indexes : %i %i %i",g0, g1, g2);
-                //debugPrintfEXT("indexes : %i, %i, %i", i0, i1, i2);  
-                if (i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount) {
+                uint i2 = g2 - meshlet.vertexOffset;*/
+                //debugPrintfEXT("indexes : %i, %i, %i, %i %i %i",g0, g1, g2, i0, i1, i2);
+                //debugPrintfEXT("indexes : %i, %i", vertexCount, primitiveCount);  
+                /*if (i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount) {
                     
                     debugPrintfEXT("erreur : %i %i %i, %i,%i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, vertexCount); 
                     //continue;
-                }
+                }*/
                 gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
             }            
         } else {

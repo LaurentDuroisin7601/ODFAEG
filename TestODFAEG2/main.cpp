@@ -367,7 +367,7 @@ int main() {
 	RectangleShape rect(GPUContext::instance().getDevice(), Vec3f(800, 600, 0));**/		
 	std::string s;	
 	camera.setConstrains(10, 0);
-	float speed = 10.f;
+	float speed = 100.f;
     float sensivity = 2.f;
 	int oldX = 0, oldY = 0;
 	Clock loopClock;
@@ -434,7 +434,7 @@ int main() {
 		window.setCamera(camera);
 		window.setDepthStencil(true, false);
 		window.clear();
-		window.draw(Triangles);
+		window.drawMesh(Triangles);
 		
 		/*window.setTypesToRender("*", window.getCurrentFrame());	
 		window.drawMesh(Triangles);*/

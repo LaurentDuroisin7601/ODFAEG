@@ -143,8 +143,8 @@ struct MeshLet {
     int submeshId;
     vec3 mins;
     vec3 maxs; 
-    /*uint localVertices[MAX_VERTS];
-    uvec3 localTriangles[MAX_PRIMS];*/
+    uint localVertices[MAX_VERTS];
+    uvec3 localTriangles[MAX_PRIMS];
 };
 /*objets en entrée.*/
 layout(push_constant) uniform PushConstant {    
