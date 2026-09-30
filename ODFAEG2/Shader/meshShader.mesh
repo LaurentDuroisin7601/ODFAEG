@@ -192,7 +192,9 @@ void main() {
         /*if (gl_WorkGroupID.z >= cluster.meshletCount) {
             return;
         }*/
-        
+        groupMemoryBarrier();
+        memoryBarrierBuffer();
+        barrier();
         if (meshlet.rendered == 1) { 
             //debugPrintfEXT("Rendered");           
             return;
@@ -233,9 +235,7 @@ void main() {
                 uint v = subMesh.vertexOffset + meshlet.vertexOffset + i;                
                 //uint v = subMesh.vertexOffset + global+Index;
                 //globalIndices[i] = globalIndex;
-                groupMemoryBarrier();
-                memoryBarrierBuffer();
-                barrier();
+               
                 
                 vec4 color = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
                 /*if (color.r < 0.9 || color.g < 0.9 || color.b < 0.9)

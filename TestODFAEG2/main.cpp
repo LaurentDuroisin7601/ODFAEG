@@ -366,6 +366,10 @@ int main() {
 	renderGraph.addPonctualLight(pointLight);	
 	RectangleShape rect(GPUContext::instance().getDevice(), Vec3f(800, 600, 0));**/		
 	std::string s;	
+	camera.setConstrains(10, 0);
+	float speed = 10.f;
+    float sensivity = 2.f;
+	int oldX = 0, oldY = 0;
 	while (window.isOpen()) {
 		odfaeg::window::IEvent event;
 		while (window.pollEvent(event)) {
@@ -376,7 +380,51 @@ int main() {
 				}*/
 				//std::cout<<"thread stopped"<<std::endl;
 				window.close();
+			}		
+			
+			if (event.type == IEvent::MOUSE_MOTION_EVENT && IMouse::isButtonPressed(IMouse::Right)) {
+				//std::cout<<"rotate"<<std::endl;
+
+				int relX = (event.mouseMotion.x - oldX) * sensivity;
+				int relY = (event.mouseMotion.y - oldY) * sensivity;
+				float teta = camera.getTeta() - relY;
+				float phi = camera.getPhi() - relX;
+				camera.rotate(teta, phi);
+				//std::cout<<"rel : "<<relX<<","<<relY<<std::endl;
+				//Rotate the view, (Polar coordinates) but you can also use the lookAt function to look at a point.
+				
+				
+				//view.rotate(teta, phi);				
+				oldX = IMouse::getPosition(window).x();
+				oldY = IMouse::getPosition(window).y();
+				
+			} 
+			if (IKeyboard::isKeyPressed(IKeyboard::Up)) {
+				camera.move(camera.getForward(), -speed * clock.getElapsedTime().asSeconds());
+				
+				/*View view = getRenderWindow().getView();
+				view.move(view.getForward(), -speed * clock.getElapsedTime().asSeconds());
+				float z = heightmap->getHeight(Vec2f(view.getPosition().x, view.getPosition().y));
+				view.setCenter(Vec3f(view.getPosition().x, view.getPosition().y, z+20));
+				getRenderWindow().setView(view);*/
+
 			}
+
+			if (IKeyboard::isKeyPressed(IKeyboard::Down)) {
+				camera.move(camera.getForward(), speed * clock.getElapsedTime().asSeconds());
+				
+			}
+
+			if (IKeyboard::isKeyPressed(IKeyboard::Right)) {
+				camera.move(camera.getLeft(), -speed * clock.getElapsedTime().asSeconds());
+				
+			}
+
+			if (IKeyboard::isKeyPressed(IKeyboard::Left)) {
+				camera.move(camera.getLeft(), speed * clock.getElapsedTime().asSeconds());
+				
+			}
+			
 			//componentManager.update(window.getId(), event);
 		}
 		
@@ -384,7 +432,7 @@ int main() {
 		window.setCamera(camera);
 		window.setDepthStencil(true, false);
 		window.clear();
-		window.drawMesh(Triangles);
+		window.draw(Triangles);
 		
 		/*window.setTypesToRender("*", window.getCurrentFrame());	
 		window.drawMesh(Triangles);*/
