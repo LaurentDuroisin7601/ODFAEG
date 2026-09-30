@@ -162,12 +162,14 @@ uint globalIndices[256];
 uint findLocalIndex(uint globalIndex, uint vertexCount) {
     for (uint i = 0; i < vertexCount; i++) {
         if (globalIndices[i] == globalIndex) {
-            if (globalIndex > 0)
-            //debugPrintfEXT("found %i", globalIndices[i]);
+            /*if (globalIndices[i] == 1037)
+                debugPrintfEXT("i = %i", i);*/
             return i;
         }
     }
-    debugPrintfEXT("Erreur %i ", globalIndex);
+    /*if (globalIndex
+     == 1037)*/
+        debugPrintfEXT("Erreur %i ", globalIndex);
     return 0; // ne devrait jamais arriver
 }
 void main() {      
@@ -229,13 +231,15 @@ void main() {
             for (uint i = 0; i < vertexCount; i++) {
                 
                 uint globalIndex = meshlet.vertices[i];
+                /*if (globalIndex == 1037)
+                    debugPrintfEXT("%i : 1037", i);*/
                 //debugPrintfEXT("global index : %i %i", i, globalIndex+1);
                 //uint v = subMesh.vertexOffset + meshlet.vertexOffset + i;                
                 uint v = subMesh.vertexOffset + globalIndex;
                 globalIndices[i] = globalIndex;
                 groupMemoryBarrier();
                 memoryBarrierBuffer();
-                barrier();
+                barrier();  
                 
                 vec4 color = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
                 /*if (color.r < 0.9 || color.g < 0.9 || color.b < 0.9)
@@ -255,10 +259,9 @@ void main() {
                 //debugPrintfEXT("materialId %i", subMesh.materialId);
                 //debugPrintfEXT("position : %i",  i);
             }  
-            groupMemoryBarrier();
-            memoryBarrierBuffer();
-            barrier();         
+                   
             for (uint tri = 0; tri < primitiveCount; tri++) {
+               
                 //debugPrintfEXT("gen tri : %i", tri);
                 uint g0 = meshlet.triangles[tri].x;
                 uint g1 = meshlet.triangles[tri].y;
@@ -275,11 +278,11 @@ void main() {
                 uint i2 = g2 - meshlet.vertexOffset;*/
                 //debugPrintfEXT("indexes : %i, %i, %i, %i %i %i",g0, g1, g2, i0, i1, i2);
                 //debugPrintfEXT("indexes : %i, %i", vertexCount, primitiveCount);  
-                /*if (i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount) {
+                if (i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount) {
                     
                     debugPrintfEXT("erreur : %i %i %i, %i,%i, %i, %i, %i",g0, g1, g2, i0, i1, i2, meshlet.nbIndexes, vertexCount); 
                     //continue;
-                }*/
+                }
                 gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
             }            
         } else {
