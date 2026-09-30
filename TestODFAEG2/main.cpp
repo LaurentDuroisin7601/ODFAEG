@@ -370,7 +370,9 @@ int main() {
 	float speed = 10.f;
     float sensivity = 2.f;
 	int oldX = 0, oldY = 0;
+	Clock loopClock;
 	while (window.isOpen()) {
+		loopClock.restart();
 		odfaeg::window::IEvent event;
 		while (window.pollEvent(event)) {
 			if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED) {				
@@ -385,8 +387,8 @@ int main() {
 			if (event.type == IEvent::MOUSE_MOTION_EVENT && IMouse::isButtonPressed(IMouse::Right)) {
 				//std::cout<<"rotate"<<std::endl;
 
-				int relX = (event.mouseMotion.x - oldX) * sensivity;
-				int relY = (event.mouseMotion.y - oldY) * sensivity;
+				int relX = (event.mouseMotion.x - oldX) * sensivity * loopClock.getElapsedTime().asSeconds();
+				int relY = (event.mouseMotion.y - oldY) * sensivity * loopClock.getElapsedTime().asSeconds();
 				float teta = camera.getTeta() - relY;
 				float phi = camera.getPhi() - relX;
 				camera.rotate(teta, phi);
@@ -400,7 +402,7 @@ int main() {
 				
 			} 
 			if (IKeyboard::isKeyPressed(IKeyboard::Up)) {
-				camera.move(camera.getForward(), -speed * clock.getElapsedTime().asSeconds());
+				camera.move(camera.getForward(), -speed * loopClock.getElapsedTime().asSeconds());
 				
 				/*View view = getRenderWindow().getView();
 				view.move(view.getForward(), -speed * clock.getElapsedTime().asSeconds());
@@ -411,17 +413,17 @@ int main() {
 			}
 
 			if (IKeyboard::isKeyPressed(IKeyboard::Down)) {
-				camera.move(camera.getForward(), speed * clock.getElapsedTime().asSeconds());
+				camera.move(camera.getForward(), speed * loopClock.getElapsedTime().asSeconds());
 				
 			}
 
 			if (IKeyboard::isKeyPressed(IKeyboard::Right)) {
-				camera.move(camera.getLeft(), -speed * clock.getElapsedTime().asSeconds());
+				camera.move(camera.getLeft(), -speed * loopClock.getElapsedTime().asSeconds());
 				
 			}
 
 			if (IKeyboard::isKeyPressed(IKeyboard::Left)) {
-				camera.move(camera.getLeft(), speed * clock.getElapsedTime().asSeconds());
+				camera.move(camera.getLeft(), speed * loopClock.getElapsedTime().asSeconds());
 				
 			}
 			
