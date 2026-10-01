@@ -46,8 +46,7 @@ struct Cluster {
     int id;
     int lodLevel;
     int leaf;
-    int submeshId;
-    int pad[2];
+    int submeshId;   
 };
 struct Vertex {
     vec3 position; ///< 3D position of the vertex    

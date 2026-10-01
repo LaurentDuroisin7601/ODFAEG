@@ -112,7 +112,7 @@ namespace odfaeg {
             alignas (16) math::Vec3f position; ///< 3D position of the vertex
             Color color; ///< Color of the vertex
             math::Vec2f texCoords; ///< Coordinates of the texture's pixel to map to the vertex
-            math::Vec3f normal;
+            alignas(16) math::Vec3f normal;
             alignas(16) math::Vec3f T; 
             alignas(16) math::Vec3f B;
             alignas(16) math::Vec3f N;
