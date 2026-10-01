@@ -14,13 +14,13 @@
 namespace odfaeg {
     namespace graphic {
         struct VkVertex {
-            alignas(16) float position[3]; ///< 3D position of the vertex
+            float position[4]; ///< 3D position of the vertex
             entity::Color color; ///< Color of the vertex
             float texCoords[2]; ///< Coordinates of the texture's pixel to map to the vertex
-            alignas(16) float normal[3];
-            alignas(16) float T[3]; 
-            alignas(16) float B[3];
-            alignas(16) float N[3];
+            float normal[4];
+            float T[4]; 
+            float B[4];
+            float N[4];
             unsigned int drawableDataId; 
             //bone indexes which will influence this vertex
             int m_BoneIDs[MAX_BONES_INFLUENCE];
