@@ -99,13 +99,13 @@ struct TaskData {
     uint meshletCount;    
 };
 struct Vertex {
-    vec3 position; ///< 3D position of the vertex
+    vec3 position; ///< 3D position of the vertex    
     uint color; ///< Color of the vertex
     vec2 texCoords; ///< Coordinates of the texture's pixel to map to the vertex
-    vec3 normal;
-    vec3 T;
-    vec3 B;
-    vec3 N;
+    vec3 normal; 
+    vec3 T;   
+    vec3 B;   
+    vec3 N;    
     int submeshId;
     //bone indexes which will influence this vertex
     int m_BoneIDs[MAX_BONES_INFLUENCE];
@@ -114,10 +114,10 @@ struct Vertex {
 };
 struct GridCell {
     AABB volume;
-    vec3 coords;
+    vec4 coords;
     int clusterId;
     int clusterOffset;
-    int clusterCount; 
+    int clusterCount;     
 };
 struct Cluster {
     AABB volume;
@@ -126,7 +126,7 @@ struct Cluster {
     int id;
     int lodLevel;
     int leaf;	
-    int submeshId;	
+    int submeshId;
 };
 struct MeshLet {
     uint id;
@@ -141,10 +141,10 @@ struct MeshLet {
     int voxel;
     int rendered;
     int submeshId;
-    vec3 mins;
-    vec3 maxs; 
+    vec4 mins;
+    vec4 maxs; 
     uint localVertices[MAX_VERTS];
-    uvec3 localTriangles[MAX_PRIMS];
+    uvec4 localTriangles[MAX_PRIMS];
 };
 /*objets en entrée.*/
 layout(push_constant) uniform PushConstant {    
