@@ -56,7 +56,10 @@ namespace odfaeg {
             vertex.position.toVkVec(position);            
             core::arrayCopy(position, vkVertex.position, 3);
             vkVertex.color = vertex.color;
-            float normal[3];
+            float texCoords[2];
+            vertex.texCoords.toVkVec(texCoords);
+            core::arrayCopy(texCoords, vkVertex.texCoords, 2);
+            float normal[3];            
             vertex.normal.toVkVec(normal);
             core::arrayCopy(normal, vkVertex.normal, 3);
             float T[3]; 
