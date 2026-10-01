@@ -10,8 +10,8 @@ const uint transparentMask = 1 << 1;
 const uint rtPipeline = 2 << 1;
 const uint rasterPipeline = 3 << 1; 
 struct AABB {
-	vec3 center;
-	vec3 size;
+	vec4 center;
+	vec4 size;
 };
 /*Objets*/
 struct Object {
@@ -21,8 +21,7 @@ struct Object {
 	int subMeshesOffset;
 	int modelDataOffset;		   
 	int nbSubMeshes;
-    int renderingType;
-	//int paddings[2];
+    int renderingType;	
 };
 struct LODLevel {
     uint index_offset;
@@ -144,10 +143,10 @@ layout (std140, set = 0, binding = 15) uniform UniformBufferObject {
 	AABB frustrum;			
 	uint nbObjectTypes;
 	uint gridCellCount[5];    
-    ivec3 gridCellSize[5];
-    ivec3 nbCellsPerRow[5];    
-    ivec3 gridSize[5];   
-    ivec3 gridPos[5];
+    ivec4 gridCellSize[5];
+    ivec4 nbCellsPerRow[5];    
+    ivec4 gridSize[5];   
+    ivec4 gridPos[5];
 } ubo[MAX_FRAMES_IN_FLIGHT];
 layout (std430, set=0, binding = 16) buffer LodLevelBuffer {
     LODLevel lodLevel[];

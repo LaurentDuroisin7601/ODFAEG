@@ -28,7 +28,7 @@ namespace odfaeg {
 
             //unsigned int paddings[3];
         };*/
-        class Vertex {
+        class alignas(16) Vertex {
         public:
 
             ////////////////////////////////////////////////////////////

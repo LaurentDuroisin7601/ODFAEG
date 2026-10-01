@@ -13,13 +13,27 @@
 #include <iostream>
 namespace odfaeg {
     namespace graphic {
-
+        struct VkVertex {
+            alignas(16) float position[3]; ///< 3D position of the vertex
+            entity::Color color; ///< Color of the vertex
+            math::Vec2f texCoords; ///< Coordinates of the texture's pixel to map to the vertex
+            alignas(16) float normal[3];
+            alignas(16) float T[3]; 
+            alignas(16) float B[3];
+            alignas(16) float N[3];
+            unsigned int drawableDataId; 
+            //bone indexes which will influence this vertex
+            int m_BoneIDs[MAX_BONES_INFLUENCE];
+            //weights from each bone
+            float m_Weights[MAX_BONES_INFLUENCE];
+        };
         class  VertexBuffer : public core::NonCopyable {
-        public:
+        public:            
             VertexBuffer(Device& device, unsigned int nbBuffers=1);
             VertexBuffer(Device& device, entity::PrimitiveType primitiveType, unsigned int nbBuffers=1);
             VertexBuffer(VertexBuffer&& other) noexcept;
             VertexBuffer& operator=(VertexBuffer&& other) noexcept;
+            static void toVkVertex(VkVertex& vkVertex, entity::Vertex vertex);
             void createCommandBuffers();
             void copyFrom(VertexBuffer& vertexBuffer);
             void append(const entity::Vertex& vertex);
@@ -110,6 +124,7 @@ namespace odfaeg {
             std::vector<std::uint32_t> getIndexes();
             std::vector<entity::Vertex> getVertices();
         private:
+            
             bool commandBuffersCreated;            
             unsigned int nbBuffers;                     
             std::vector<entity::Vertex> m_vertices;            

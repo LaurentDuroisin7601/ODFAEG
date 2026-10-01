@@ -8,8 +8,8 @@ struct ModelData {
     mat4 borderMatrices;
 };
 struct AABB {
-	vec3 center;
-	vec3 size;
+	vec4 center;
+	vec4 size;
 };
 struct SubMesh {
 	AABB globalBounds;

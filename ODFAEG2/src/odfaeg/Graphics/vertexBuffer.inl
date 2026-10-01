@@ -1,5 +1,5 @@
 namespace odfaeg {
-    namespace graphic {        
+    namespace graphic {               
         VertexBuffer::VertexBuffer(Device& device, unsigned int nbBuffers)  : /*Drawable(), */ device(device), nbBuffers(nbBuffers), m_primitiveType(entity::PrimitiveType::Points),
             needToUpdateVertexBuffer(nbBuffers, true), needToUpdateIndexBuffer(nbBuffers, true),
             maxVerticesSize(nbBuffers, 0), maxIndexSize(nbBuffers, 0),
@@ -21,6 +21,7 @@ namespace odfaeg {
             commandPool.create(queueFamilyIndices.graphicsFamily.value());
             commandPool.createCommandBuffers(true, nbBuffers);*/
         }
+        
         VertexBuffer::VertexBuffer(Device& device, entity::PrimitiveType primitiveType, unsigned int nbBuffers) : device(device), m_primitiveType(primitiveType), nbBuffers(nbBuffers),
             needToUpdateVertexBuffer(nbBuffers, true), needToUpdateIndexBuffer(nbBuffers, true),
             maxVerticesSize(nbBuffers, 0), maxIndexSize(nbBuffers, 0),
@@ -50,6 +51,31 @@ namespace odfaeg {
             m_vertices = other.m_vertices;
             m_primitiveType = other.m_primitiveType;
         }
+        void VertexBuffer::toVkVertex(VkVertex& vkVertex, entity::Vertex vertex) {
+            float position[3];
+            vertex.position.toVkVec(position);            
+            core::arrayCopy(position, vkVertex.position, 3);
+            vkVertex.color = vertex.color;
+            float normal[3];
+            vertex.normal.toVkVec(normal);
+            core::arrayCopy(normal, vkVertex.normal, 3);
+            float T[3]; 
+            vertex.T.toVkVec(T);
+            core::arrayCopy(T, vkVertex.T, 3);
+            float B[3];
+            vertex.B.toVkVec(B);
+            core::arrayCopy(B, vkVertex.B, 3);
+            float N[3];
+            vertex.N.toVkVec(N);
+            core::arrayCopy(N, vkVertex.N, 3);
+            unsigned int drawableDataId = vertex.drawableDataId;            
+            //bone indexes which will influence this vertex
+            int m_BoneIDs[MAX_BONES_INFLUENCE];
+            core::arrayCopy(vertex.m_BoneIDs, vkVertex.m_BoneIDs , MAX_BONES_INFLUENCE);
+            //weights from each bone
+            float m_Weights[MAX_BONES_INFLUENCE];
+            core::arrayCopy(vertex.m_Weights, vkVertex.m_Weights , MAX_BONES_INFLUENCE);
+        } 
         unsigned int VertexBuffer::getNbBuffers() const {
             return nbBuffers;
         }
@@ -215,6 +241,7 @@ namespace odfaeg {
                 needToUpdateIndexBuffer[i] = true;
         }
         void VertexBuffer::append(const entity::Vertex& vertex) {
+           
             m_vertices.push_back(vertex);
             for (unsigned int i = 0; i < nbBuffers; i++)
                 needToUpdateVertexBuffer[i] = true;
@@ -252,8 +279,13 @@ namespace odfaeg {
         void VertexBuffer::update(VkCommandBuffer& commandBuffer, unsigned int currentFrame) {
             //commandPool.beginRecordCommandBuffer(currentFrame);
             //std::cout<<"primitive type : "<<m_primitiveType<<std::endl;
-
-            VkDeviceSize bufferSize = (m_vertices .size() == 0) ? sizeof(entity::Vertex) : sizeof(entity::Vertex) * m_vertices.size();
+            std::vector<VkVertex> vkVertices(m_vertices.size());
+            for (unsigned int i = 0; i < m_vertices.size(); i++) {
+                VkVertex vkVertex;
+                toVkVertex(vkVertex, m_vertices[i]);
+                vkVertices[i] = vkVertex;
+            }
+            VkDeviceSize bufferSize = (vkVertices .size() == 0) ? sizeof(VkVertex) : sizeof(VkVertex) * m_vertices.size();
            
             if (needToUpdateVertexBuffer[currentFrame]) {
                 //std::cout<<"nb vertices: "<<m_vertices.size()<<std::endl;
@@ -287,7 +319,7 @@ namespace odfaeg {
             }
             //std::cout<<"update vertex buffer!"<<std::endl;
             if (m_vertices.size() > 0) {
-                vertexStaggingBuffer[currentFrame].update(m_vertices.data(), (size_t)bufferSize);
+                vertexStaggingBuffer[currentFrame].update(vkVertices.data(), (size_t)bufferSize);
                 Buffer::copyBuffer(vertexStaggingBuffer[currentFrame], vertexBuffer[currentFrame], bufferSize, commandBuffer);
             }
             bufferSize = (indices.size() == 0) ? sizeof(std::uint32_t) : sizeof(std::uint32_t) * indices.size();
