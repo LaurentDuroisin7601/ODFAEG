@@ -34,6 +34,7 @@
 #include "boneAnimUpdater.hpp"
 #include "viewportMatrix.hpp"
 #include "../Entity/grid.hpp"
+#include "../Core/utilities.hpp"
 namespace odfaeg {
 	namespace graphic {		
 		class RenderTarget {
@@ -61,11 +62,11 @@ namespace odfaeg {
 				unsigned int offsetTaskData;
 				unsigned int previousOffsetTaskData;
 			};
-			struct alignas(16) AABB {
-				alignas(16) math::Vec3f center; //float _pad0; // vec3 + padding
-				alignas(16) math::Vec3f size;   //float _pad1; // vec3 + padding
+			struct AABB {
+				float center[4]; //float _pad0; // vec3 + padding
+				float size[4];   //float _pad1; // vec3 + padding
 			};
-			struct alignas(16) Object {
+			struct Object {
 				AABB globalBounds;
 				int id;
 				int type;
@@ -73,7 +74,7 @@ namespace odfaeg {
 				int modelDataOffset;
 				int nbSubMeshes;
 				int renderingType;
-				//int paddings[2];
+				int paddings[2];
 			};
 			struct LODLevelData {
 				int index_offset;
@@ -81,7 +82,7 @@ namespace odfaeg {
 				int meshletOffset;
 				int meshletCount;
 			};
-			struct alignas(16) SubMeshData {
+			struct SubMeshData {
 				AABB globalBounds;
 				int vertexOffset;
 				int indexOffset;
@@ -96,28 +97,27 @@ namespace odfaeg {
 				int meshletOffset;
 				int meshletCount;								
 			};
-			struct alignas(16) Cluster {
+			struct Cluster {
 				AABB volume;
 				int meshletOffset;
 				int meshletCount;
 				int id;
 				int lodLevel;
 				int leaf;
-				int submeshId;				
-				//int children[8];
-				//int pad[2];
+				int submeshId;
+				int pad[2];
 			};
-			struct alignas(16) CellData {
+			struct CellData {
 				AABB volume;
-				alignas(16) math::Vec3f coords;
+				float coords[4];
 				int clusterId;
 				int clusterOffset;
 				int clusterCount;
-				//int pad;
+				int pad;
 			};
 			inline static const unsigned int MAX_VERTS = 256u;
 			inline static const unsigned int MAX_PRIMS = 256u;
-			struct alignas(16) Meshlet {
+			struct Meshlet {
 				uint32_t id;
 				uint32_t vertexOffset;
 				uint32_t indexOffset;
@@ -132,30 +132,30 @@ namespace odfaeg {
 				int32_t  submeshId;
 
 				// vec3 = 16 bytes en std430
-				math::Vec4f mins; // x,y,z,pad
-				math::Vec4f maxs;
+				float mins[4]; // x,y,z,pad
+				float maxs[4];
 
 				// local vertices
 				uint32_t localVertices[MAX_VERTS];
 
 				// local triangles (uvec3 = 16 bytes)
-				math::Vector4u localTriangles[MAX_PRIMS]; // x,y,z,pad
+				uint32_t localTriangles[MAX_PRIMS][4]; // x,y,z,pad
 
 				//int pad[3];
 				bool operator==(const Meshlet& other) const {
 					return id == other.id 
-					&& mins.x() == other.mins.x()
-					&& mins.y() == other.mins.y()
-					&& mins.z() == other.mins.z()
-					&& maxs.x() == other.maxs.x()
-					&& maxs.y() == other.maxs.y()
-					&& maxs.z() == other.maxs.z();
+					&& mins[0] == other.mins[0]
+					&& mins[1] == other.mins[1]
+					&& mins[2] == other.mins[2]
+					&& maxs[0] == other.maxs[0]
+					&& maxs[1] == other.maxs[1]
+					&& maxs[2] == other.maxs[2];
 				}						
 			};			
 			struct ModelData {
-				math::Matrix4f modelMatrix;
-				math::Matrix4f shadowProjMatrix;
-				math::Matrix4f borderMatrices;
+				float modelMatrix[16];
+				float shadowProjMatrix[16];
+				float borderMatrices[16];
 			};
 			struct MaterialData {				
 				unsigned int diffuseTextureIndex;
@@ -196,19 +196,18 @@ namespace odfaeg {
 				unsigned int vertexOffset; 
 				unsigned int clusterOffset;     
 			};
-			struct alignas(16) UBO {
+			struct UBO {
 				AABB frustrum;
 				unsigned int nbEntitiesTypes;
 				unsigned int gridCellCount;   
-				alignas(16) math::Vec4f gridCellSize[5];
-				alignas(16) math::Vec4f nbCellsPerRow[5];    
-				alignas(16) math::Vec4f gridSize[5];   
-				alignas(16) math::Vec4f gridPos[5];
-				//unsigned int pads[2];
+				float gridCellSize[5][4];
+				float nbCellsPerRow[5][4];    
+				float gridSize[5][4];   
+				float gridPos[5][4];				
 			};
 			struct ViewProjMatPC {
-				math::Matrix4f projMatrix;
-				math::Matrix4f viewMatrix;
+				float  projMatrix[16];
+				float  viewMatrix[16];
 				int primitiveType;
 				int currentFrame;				
 			};
@@ -225,11 +224,11 @@ namespace odfaeg {
 				int nbBuffers;
 			};
 			struct VertexBufferPC {
-			    math::Matrix4f projMatrix;
-                math::Matrix4f viewMatrix;
-                math::Matrix4f modelMatrix;                
-                math::Vec2f uvScale;
-                math::Vec2f uvOffset;
+			    float projMatrix[16];
+                float viewMatrix[16];
+                float modelMatrix[16];                
+                float uvScale[2];
+                float uvOffset[2];
 				int textureIndex;
                 int nbBuffers;
 				int currentFrame;

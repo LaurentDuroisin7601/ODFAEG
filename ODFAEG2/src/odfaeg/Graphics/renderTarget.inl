@@ -458,8 +458,11 @@ namespace odfaeg {
 					physic::BoundingBox globalBounds = gameObjects[i]->getGameObject()->getGlobalBounds();
 					gameObjects[i]->getGameObject()->subMeshOffset = currentSubmeshesOffset;
 					AABB aabb;
-					aabb.center = globalBounds.getCenter();
-					aabb.size = globalBounds.getSize();
+					float center[4], size[4];
+					globalBounds.getCenter().toVkVec(center);
+					globalBounds.getSize().toVkVec(size);
+					core::arrayCopy(center, aabb.center, 3);
+					core::arrayCopy(size, aabb.size, 3);
 					object.globalBounds = aabb;
 					object.type = gameObjects[i]->getGameObject()->getTypeInt();
 					object.subMeshesOffset = currentSubmeshesOffset;
@@ -469,10 +472,11 @@ namespace odfaeg {
 					//std::cout<<"nb submeshes : "<<object.nbSubMeshes<<std::endl;
 					objectDatas.push_back(object);
 					ModelData modelData;
-					modelData.modelMatrix = gameObjects[i]->getGameObject()->getTransform().getMatrix().transpose();
+					float modelMatrix[16];
+					gameObjects[i]->getGameObject()->getTransform().getMatrix().transpose().toVkMatrix(modelMatrix);
+					core::arrayCopy(modelMatrix, modelData.modelMatrix, 16);
 					//std::cout<<"model matrix : "<<gameObjects[i]->getTransform().getMatrix()<<std::endl;
-					modelData.shadowProjMatrix = math::Matrix4f();
-					modelData.borderMatrices = math::Matrix4f();
+					
 					modelDatas.push_back(modelData);
 					currentModelDataOffset++;
 					for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
@@ -487,9 +491,12 @@ namespace odfaeg {
 						}*/
 						AABB subMeshAABB;
 						subMeshData.id = currentSubmeshesOffset;
+						float center[4], size[4];
+						subMeshGlobalBounds.getCenter().toVkVec(center);
+						subMeshGlobalBounds.getSize().toVkVec(size);
+						core::arrayCopy(center, subMeshAABB.center, 3);
+						core::arrayCopy(size, subMeshAABB.size, 3);
 						//std::cout<<"submesh offset : "<<currentSubmeshesOffset<<","<<gameObjects[i]->getSubMeshesCount()<<std::endl;
-						subMeshAABB.center = subMeshGlobalBounds.getCenter();
-						subMeshAABB.size = subMeshGlobalBounds.getSize();
 						subMeshData.globalBounds = subMeshAABB;
 						unsigned int primitiveType = subMesh.getVertexArray().getPrimitiveType();
 						subMeshData.primitiveType = primitiveType;
@@ -776,7 +783,9 @@ namespace odfaeg {
 								for (unsigned int v = 0; v < localVertexIndices.size(); v++)
 									ms.localVertices[v] = localVertexIndices[v];
 								for (unsigned int t = 0; t < localTriangles.size(); t++) {
-									ms.localTriangles[t] = localTriangles[t];
+									unsigned int tri[4];
+									localTriangles[t].toVkVec(tri);
+									core::arrayCopy(tri, ms.localTriangles[t], 3);
 								}
 								meshopt_Bounds bounds = meshopt_computeMeshletBounds(
 									&meshletVertices[meshlet.vertex_offset],
@@ -786,8 +795,12 @@ namespace odfaeg {
 									verts.size(),
 									sizeof(entity::Vertex)
 								);	
-								ms.mins = math::Vec3f(bounds.center[0] - bounds.radius, bounds.center[1] - bounds.radius, bounds.center[2] - bounds.radius);
-								ms.maxs = math::Vec3f(bounds.center[0] + bounds.radius, bounds.center[1] + bounds.radius, bounds.center[2] + bounds.radius);						
+								ms.mins[0] = bounds.center[0] - bounds.radius;
+								ms.mins[1] = bounds.center[1] - bounds.radius;
+								ms.mins[2] = bounds.center[2] - bounds.radius;
+								ms.maxs[0] = bounds.center[0] + bounds.radius;
+								ms.maxs[1] = bounds.center[1] + bounds.radius;
+								ms.maxs[2] = bounds.center[2] + bounds.radius;						
 								//std::cout<<"mins : "<<m.mins<<"maxs : "<<m.maxs<<std::endl;
 								meshletDatas.push_back(ms);
 								currentMeshletsOffset++;
@@ -838,12 +851,12 @@ namespace odfaeg {
 									//std::cout<<"meshlet : "<<meshletDatas[m].id<<","<<meshletDatas[m].submeshId<<","<<subMeshData.id<<","<<l<<std::endl;
 									//std::cout<<"meshlet : "<<meshletDatas[m].id<<","<<meshletDatas[m].submeshId<<","<<subMeshData.id<<","<<l<<std::endl;
 									physic::BoundingBox volume(
-										meshletDatas[m].mins.x(), 
-										meshletDatas[m].mins.y(),
-										meshletDatas[m].mins.z(),
-										meshletDatas[m].maxs.x() - meshletDatas[m].mins.x(),
-										meshletDatas[m].maxs.y() - meshletDatas[m].mins.y(),
-										meshletDatas[m].maxs.z() - meshletDatas[m].mins.z());
+										meshletDatas[m].mins[0], 
+										meshletDatas[m].mins[1],
+										meshletDatas[m].mins[2],
+										meshletDatas[m].maxs[0] - meshletDatas[m].mins[0],
+										meshletDatas[m].maxs[1] - meshletDatas[m].mins[1],
+										meshletDatas[m].maxs[2] - meshletDatas[m].mins[2]);
 									//std::cout<<"volume : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
 									oneAdded = true;
 									//std::cout<<"add meshlet : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
@@ -865,10 +878,17 @@ namespace odfaeg {
 							math::Vec3f gridSize = meshletsGrid.getSize();
 							
 							
-							cullingInfo.nbCellsPerRow[l] = 	math::Vec4f(meshletsGrid.getNbCasesPerRow(), meshletsGrid.getNbCasesPerCol(), 0, 0); 
-							cullingInfo.gridCellSize[l] = math::Vec4f(meshletsGrid.getCellWidth(), meshletsGrid.getCellHeight(), meshletsGrid.getCellDepth(), 0);
-							cullingInfo.gridPos[l] = math::Vec4f(gridPos.x(), gridPos.y(), gridPos.z(), 0);
-							cullingInfo.gridSize[l] = math::Vec4f(gridSize.x(), gridSize.y(), gridSize.z(), 0);
+							cullingInfo.nbCellsPerRow[l][0] = meshletsGrid.getNbCasesPerRow();
+							cullingInfo.nbCellsPerRow[l][1] = meshletsGrid.getNbCasesPerCol(); 
+							cullingInfo.gridCellSize[l][0] = meshletsGrid.getCellWidth();
+							cullingInfo.gridCellSize[l][1] = meshletsGrid.getCellHeight();
+							cullingInfo.gridCellSize[l][2] = meshletsGrid.getCellDepth();
+							cullingInfo.gridPos[l][0] = gridPos.x();
+							cullingInfo.gridPos[l][1] = gridPos.y();
+							cullingInfo.gridPos[l][2] = gridPos.z();
+							cullingInfo.gridSize[l][0] = gridSize.x();
+							cullingInfo.gridSize[l][1] = gridSize.y();
+							cullingInfo.gridSize[l][2] = gridSize.z();
 							/*std::cout<<"grid pos, size : "<<gridPos<<","<<gridSize<<std::endl;
 							system("PAUSE");*/
 									
@@ -902,9 +922,13 @@ namespace odfaeg {
 									CellData cellData;							
 									cellData.clusterId = currentClustersOffset;
 									cellData.clusterOffset = currentClustersOffset;
-									cellData.volume.center = gridCell.getCellVolume().getCenter();
-									cellData.volume.size = gridCell.getCellVolume().getSize();
-									cellData.coords = gridCell.getCoords();
+									float center[4], size[4], coords[4];
+									gridCell.getCellVolume().getCenter().toVkVec(center);
+									gridCell.getCellVolume().getCenter().toVkVec(size);
+									core::arrayCopy(center, cellData.volume.center, 3);
+									core::arrayCopy(size, cellData.volume.size, 3);
+									gridCell.getCoords().toVkVec(coords);
+									core::arrayCopy(coords, cellData.coords, 3);
 									
 									while (!stack.empty()) {										
 										size_t id = stack.back();
@@ -964,8 +988,11 @@ namespace odfaeg {
 											
 											Cluster childClusterData;												
 											childClusterData.submeshId = subMeshData.id;
-											childClusterData.volume.center = node.volume.getCenter();
-											childClusterData.volume.size = node.volume.getSize();
+											float center[4], size[4];
+											node.volume.getCenter().toVkVec(center);
+											node.volume.getSize().toVkVec(size);
+											core::arrayCopy(center, childClusterData.volume.center, 3);
+											core::arrayCopy(size, childClusterData.volume.size, 3);
 											//std::cout<<"cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
 											childClusterData.id = clusterDatas.size();
 											childClusterData.lodLevel = l;														

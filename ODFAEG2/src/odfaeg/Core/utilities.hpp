@@ -28,6 +28,12 @@ namespace odfaeg {
         bool is_number(const std::string& s);
         int findString(const std::string& strHaystack, const std::string& strNeedle);
         std::string getCurrentPath();
+        template <typename T>
+        void arrayCopy(T* src, T* dst, unsigned int size) {           
+            for (unsigned int i = 0; i < size; i++) {
+                dst[i] = src[i];
+            }
+        }       
     }
 }
 #endif
