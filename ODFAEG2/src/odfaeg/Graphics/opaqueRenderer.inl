@@ -162,9 +162,13 @@ namespace odfaeg {
             
             BlendMode blendMode;
             RenderStates states;
-            states.shader = &hzShader;   
-            hzVertPC.projMatrix = parentRenderer.getCamera().getProjMatrix().getMatrix().transpose();
-            hzVertPC.viewMatrix = parentRenderer.getCamera().getViewMatrix().getMatrix().transpose(); 
+            states.shader = &hzShader; 
+            float projMatrix[16], viewMatrix[16];
+            parentRenderer.getCamera().getProjMatrix().getMatrix().transpose().toVkMatrix(projMatrix);
+            parentRenderer.getCamera().getViewMatrix().getMatrix().transpose().toVkMatrix(viewMatrix);
+            core::arrayCopy(projMatrix, hzVertPC.projMatrix, 16);
+            core::arrayCopy(viewMatrix, hzVertPC.viewMatrix, 16); 
+             
             hzVertPC.currentFrame = parentRenderer.getCurrentFrame(); 
             parentRenderer.applyCullingAndBatching();
             if (needToUpdateDescriptorSets) {
@@ -179,9 +183,7 @@ namespace odfaeg {
                 //std::cout<<"set : "<<linkedListSets[i][0].getHandle()<<std::endl;
                 sets.push_back(GPUContext::instance().getDescriptorSets(hzShader)[i][0].getHandle());
             } 
-            hzVertPC.projMatrix = parentRenderer.getCamera().getProjMatrix().getMatrix().transpose();
-            hzVertPC.viewMatrix = parentRenderer.getCamera().getViewMatrix().getMatrix().transpose();  
-            hzVertPC.currentFrame = parentRenderer.getCurrentFrame();
+            
             for(unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
                 hzVertPC.primitiveType = i;
                 vkCmdBindDescriptorSets(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<entity::PrimitiveType>(i), hzShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getLayout(), 0, sets.size(), sets.data(), 0, nullptr);
