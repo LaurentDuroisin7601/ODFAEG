@@ -2034,15 +2034,19 @@ namespace odfaeg {
 			vertexBufferData.uvOffset = math::Vec2f(0.f, 0.f);
 			vertexBufferData.nbBuffers = (states.texture != nullptr) ? states.texture->getNbBuffers() : 0;
 			vertexBufferData.drawableId = cpuVertexBufferDatas.size();*/
-			vertexBufferPc.projMatrix = m_camera.getProjMatrix().getMatrix().transpose();
+			float projMatrix[16], viewMatrix[16], modelMatrix[16];
+			m_camera.getProjMatrix().getMatrix().transpose().toVkMatrix(projMatrix);
+			m_camera.getViewMatrix().getMatrix().transpose().toVkMatrix(viewMatrix);
+			states.transform.getMatrix().transpose().toVkMatrix(modelMatrix);
+			core::arrayCopy(projMatrix, vertexBufferPc.projMatrix, 16);
+			core::arrayCopy(viewMatrix, vertexBufferPc.viewMatrix, 16);
+			core::arrayCopy(modelMatrix, vertexBufferPc.modelMatrix, 16);
 			/*std::cout<<"proj mat : "<<vertexBufferPc.projMatrix<<std::endl;
-            system("PAUSE");*/         
-			vertexBufferPc.viewMatrix = m_camera.getViewMatrix().getMatrix().transpose();
-			vertexBufferPc.modelMatrix = states.transform.getMatrix().transpose();
+            system("PAUSE");*/
 			
 			vertexBufferPc.textureIndex = (states.texture == nullptr) ? 0 : states.texture->getId();
-			vertexBufferPc.uvScale = (states.texture != nullptr) ? math::Vec2f(1.f / states.texture->getSize().x(), 1.f / states.texture->getSize().y()) : math::Vec2f(0.f, 0.f);
-			vertexBufferPc.uvOffset = math::Vec2f(0.f, 0.f);
+			/*vertexBufferPc.uvScale = (states.texture != nullptr) ? math::Vec2f(1.f / states.texture->getSize().x(), 1.f / states.texture->getSize().y()) : math::Vec2f(0.f, 0.f);
+			vertexBufferPc.uvOffset = math::Vec2f(0.f, 0.f);*/
 			vertexBufferPc.nbBuffers = (states.texture != nullptr) ? states.texture->getNbBuffers() : 0;
 			vertexBufferPc.currentFrame = getCurrentFrame();
 			vertexBufferPc.currentImageIndex = getImageIndex();
@@ -2571,13 +2575,18 @@ namespace odfaeg {
 			vkCmdDrawIndexedIndirectCount(commandPool.getHandle(getCurrentFrame()), outputElementsDrawIndirectCommand[primitiveType*MAX_FRAMES_IN_FLIGHT+getCurrentFrame()].getHandle(), 0, drawCount[primitiveType*MAX_FRAMES_IN_FLIGHT+getCurrentFrame()].getHandle(), 0, MAX_DRAW_INDIRECT_COMMANDS, sizeof(DrawElementsIndirectCommand));
 		}
 		void RenderTarget::setCamera(Camera camera)
-		{				
-			cullingInfo.frustrum.center = camera.getViewVolume().getCenter();
-			cullingInfo.frustrum.size = camera.getViewVolume().getSize();
+		{	
+			float center[4], size[4];
+		    camera.getViewVolume().getCenter().toVkVec(center);
+			camera.getViewVolume().getSize().toVkVec(size);
+			core::arrayCopy(center, cullingInfo.frustrum.center, 3);
+			core::arrayCopy(size, cullingInfo.frustrum.size, 3);			
 			cullingInfo.nbEntitiesTypes = entity::Entity::getNbEntitiesTypes();
-			
-			viewProjInfos.projMatrix = camera.getProjMatrix().getMatrix().transpose();
-			viewProjInfos.viewMatrix = camera.getViewMatrix().getMatrix().transpose();
+			float projMatrix[16], viewMatrix[16];
+			camera.getProjMatrix().getMatrix().transpose().toVkMatrix(projMatrix);
+			camera.getViewMatrix().getMatrix().transpose().toVkMatrix(viewMatrix);
+			core::arrayCopy(projMatrix, viewProjInfos.projMatrix, 16);
+			core::arrayCopy(viewMatrix, viewProjInfos.viewMatrix, 16);			
 			/*cullingBatchingPc.projMatrix = viewProjInfos.projMatrix;
 			cullingBatchingPc.viewMatrix = viewProjInfos.viewMatrix;*/
 			//std::cout<<"view matrix"<<viewProjInfos.viewMatrix<<std::endl<<"projMatrix : "<<viewProjInfos.projMatrix<<std::endl;
