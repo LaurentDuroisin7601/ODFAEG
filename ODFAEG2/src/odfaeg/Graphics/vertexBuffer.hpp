@@ -69,7 +69,7 @@ namespace odfaeg {
                 VkVertexInputBindingDescription bindingDescription{};
                 bindingDescription.binding = 0;
                 //std::cout<<"stride : "<<sizeof(entity::Vertex)<<std::endl;
-                bindingDescription.stride = sizeof(entity::Vertex);
+                bindingDescription.stride = sizeof(VkVertex);
                 bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
                 return bindingDescription;
             }
