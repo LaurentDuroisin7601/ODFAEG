@@ -467,8 +467,8 @@ namespace odfaeg {
 					object.type = gameObjects[i]->getGameObject()->getTypeInt();
 					object.subMeshesOffset = currentSubmeshesOffset;
 					object.modelDataOffset = currentModelDataOffset;
-					unsigned int nbSubMeshesToDisplay = (50 <  gameObjects[i]->getGameObject()->getSubMeshesCount()) ? 50 : gameObjects[i]->getGameObject()->getSubMeshesCount();
-					object.nbSubMeshes = /*nbSubMeshesToDisplay */gameObjects[i]->getGameObject()->getSubMeshesCount();
+					unsigned int nbSubMeshesToDisplay = /*(10 <  gameObjects[i]->getGameObject()->getSubMeshesCount()) ? 10 :*/ gameObjects[i]->getGameObject()->getSubMeshesCount();
+					object.nbSubMeshes = nbSubMeshesToDisplay /*gameObjects[i]->getGameObject()->getSubMeshesCount()*/;
 					object.renderingType = gameObjects[i]->getGameObject()->renderingType;
 					//std::cout<<"nb submeshes : "<<object.nbSubMeshes<<std::endl;
 					objectDatas.push_back(object);
@@ -481,7 +481,7 @@ namespace odfaeg {
 					modelDatas.push_back(modelData);
 					currentModelDataOffset++;
 					
-					for (unsigned int j = 0; j < /*nbSubMeshesToDisplay */gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
+					for (unsigned int j = 0; j < nbSubMeshesToDisplay /*gameObjects[i]->getGameObject()->getSubMeshesCount()*/; j++) {
 						//std::cout<<"add subMesh : "<<j<<std::endl;
 						entity::SubMesh& subMesh = gameObjects[i]->getGameObject()->getSubMeshes()[j];						
 						gameObjects[i]->getGameObject()->getSubMeshes()[j].vertexOffset = currentVertexOffset[subMesh.getVertexArray().getPrimitiveType()];
@@ -580,7 +580,7 @@ namespace odfaeg {
 						subMeshData.meshletOffset =  meshletDatas.size();
 						std::array<entity::VertexArray::LODLevel, 5> lods = subMesh.getVertexArray().getLODs();
 						unsigned int currentSubmeshMeshletOffset = meshletDatas.size();						
-						for (unsigned int l = 0; l < lods.size() && lods[l].indexCount > 0; l++) {
+						for (unsigned int l = 0; l < lods.size(); l++) {
 							LODLevelData lodLevelData{};
 							lodLevelData.index_offset = lods[l].indexOffset;
 							lodLevelData.index_count = lods[l].indexCount;
