@@ -201,10 +201,10 @@ namespace odfaeg {
 				AABB frustrum;
 				unsigned int nbEntitiesTypes;
 				unsigned int gridCellCount;   
-				float gridCellSize[5][4];
-				float nbCellsPerRow[5][4];    
-				float gridSize[5][4];   
-				float gridPos[5][4];
+				unsigned int gridCellSize[5][4];
+				unsigned int nbCellsPerRow[5][4];    
+				unsigned int gridSize[5][4];   
+				unsigned int gridPos[5][4];
 				int pad[2];				
 			};
 			struct ViewProjMatPC {

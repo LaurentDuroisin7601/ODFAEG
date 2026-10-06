@@ -143,7 +143,7 @@ layout (std430, set = 0, binding = 14) buffer outputInstanceBaseSSBO {
 layout (std140, set = 0, binding = 15) uniform UniformBufferObject {
 	AABB frustrum;			
 	uint nbObjectTypes;
-	uint gridCellCount[5];    
+	uint gridCellCount;    
     ivec4 gridCellSize[5];
     ivec4 nbCellsPerRow[5];    
     ivec4 gridSize[5];   
