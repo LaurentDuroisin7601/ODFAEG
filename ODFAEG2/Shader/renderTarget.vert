@@ -23,7 +23,7 @@ struct SubMesh {
 	int id;
     int lodLevel;
     int objectId;
-    int mesheltOffset;
+    int meshletOffset;
     int meshletCount;
 };
 layout(location = 0) in vec3 inPosition;
@@ -59,6 +59,7 @@ layout (std430, set = 0, binding = 1) buffer SubMeshDataSSBO {
     SubMesh subMesh[];
 } subMeshData[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
 void main() {
+    memoryBarrierBuffer();
     //debugPrintfEXT("primitive type : %i, current frame : %i", pc.primitiveType, pc.currentFrame);
     gl_PointSize = 2.0f;
     SubMesh subMesh = subMeshData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMesh[gl_DrawID];
@@ -77,6 +78,8 @@ void main() {
     //debugPrintfEXT("View matrix : 0:%v4f\n1:%v4f\n2:%v4f\n3:%v4f",pc.viewMatrix[0], pc.viewMatrix[1], pc.viewMatrix[2], pc.viewMatrix[3]);
     //debugPrintfEXT("Model matrix : 0:%v4f\n1:%v4f\n2:%v4f\n3:%v4f",modelMatrix[0], modelMatrix[1], modelMatrix[2], modelMatrix[3]);
     //debugPrintfEXT("in position %v3f, out position %v4f", inPosition, gl_Position);
+    if (inColor.r != 1 || inColor.g != 1 || inColor.b != 1 || inColor.a != 1)
+        debugPrintfEXT("Error : %v4f", inColor.r, inColor.g, inColor.b, inColor.a);
     fragColor = inColor;
     fragTexCoord = inTexCoord;
     normal = mat3(transpose(inverse(modelMatrix))) * normals;

@@ -479,7 +479,8 @@ namespace odfaeg {
 					
 					modelDatas.push_back(modelData);
 					currentModelDataOffset++;
-					for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
+					unsigned int nbSubMeshesToDisplay = (50 <  gameObjects[i]->getGameObject()->getSubMeshesCount()) ? 50 : gameObjects[i]->getGameObject()->getSubMeshesCount();
+					for (unsigned int j = 0; j <  nbSubMeshesToDisplay/*gameObjects[i]->getGameObject()->getSubMeshesCount()*/; j++) {
 						//std::cout<<"add subMesh : "<<j<<std::endl;
 						entity::SubMesh& subMesh = gameObjects[i]->getGameObject()->getSubMeshes()[j];						
 						gameObjects[i]->getGameObject()->getSubMeshes()[j].vertexOffset = currentVertexOffset[subMesh.getVertexArray().getPrimitiveType()];
@@ -499,9 +500,11 @@ namespace odfaeg {
 						//std::cout<<"submesh offset : "<<currentSubmeshesOffset<<","<<gameObjects[i]->getSubMeshesCount()<<std::endl;
 						subMeshData.globalBounds = subMeshAABB;
 						unsigned int primitiveType = subMesh.getVertexArray().getPrimitiveType();
+						std::cout<<"pimitive type : "<<subMeshData.primitiveType<<std::endl;
 						subMeshData.primitiveType = primitiveType;
 						subMeshData.vertexOffset = currentVertexOffset[primitiveType];
 						subMeshData.indexOffset = currentIndexOffset[primitiveType];
+						
 						for (unsigned int m = 0; m < materials.size(); m++) {
 							//std::cout<<"j"<<" "<<gameObjects[i]->getMaterials().size()<<std::endl;
 							if (*materials[m] == *gameObjects[i]->getMaterials()[j]) {
@@ -521,7 +524,8 @@ namespace odfaeg {
 						}						
 						subMeshData.nbVertices = subMesh.getVertexArray().getVertexCount();
 						subMeshData.nbIndexes = subMesh.getVertexArray().getIndexCount();
-						subMeshData.objectId = i;						
+						subMeshData.objectId = i;	
+						std::cout<<"offsets : "<<subMeshData.nbVertices<<","<<subMeshData.nbIndexes<<","<<subMeshData.vertexOffset<<","<<subMeshData.indexOffset<<std::endl;					
 						/*if (subMeshData.id == 1590) {
 							std::cout<<"id : vertex offset : nbVertices : "<<subMeshData.id<<","<<subMeshData.vertexOffset<<","<<subMeshData.nbVertices<<std::endl;
 							system("PAUSE");
@@ -539,6 +543,7 @@ namespace odfaeg {
 						//std::cout<<"vertex offset : "<<currentVertexOffset[primitiveType]<<std::endl;
 						unsigned int baseVertex = currentVertexOffset[primitiveType];
 						//std::cout<<"base vertex : "<<subMeshData.vertexOffset <<"nb vertices : "<<subMeshData.nbVertices<<std::endl;
+						
 						if (gameObjects[i]->getMaterials()[j]->getInstanceGroupId() == -1 || (gameObjects[i]->getMaterials()[j]->getInstanceGroupId() != -1 && !gameObjects[i]->getMaterials()[j]->materialSet)) {
 							gameObjects[i]->getMaterials()[j]->materialSet = true;
 							for (unsigned int v = 0; v < subMesh.getVertexArray().getVertexCount(); v++) {
@@ -1047,8 +1052,9 @@ namespace odfaeg {
 						//std::cout<<"submesh meshlet count : "<<(meshletDatas.size() - currentSubmeshMeshletOffset)<<std::endl;
 						subMeshesDatas.push_back(subMeshData);	
 						currentSubmeshesOffset++;					
-					}									
+					}
 				}
+				system("PAUSE");
 				/*std::cout<<"size : "<<vertices[entity::Triangles].getIndexCount()<<std::endl;
 				system("PAUSE");*/
 				cullingInfo.gridCellCount = cellDatas.size();
@@ -1155,7 +1161,7 @@ namespace odfaeg {
 					for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
 						for (unsigned int k = 0; k < NB_PRIMITIVE_TYPES; k++) {
 							this->materialDatas[k * MAX_FRAMES_IN_FLIGHT + j].create(materialDatas.size() * sizeof(MaterialData), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-							Buffer::copyBuffer(staggingMaterialDatas[i], this->materialDatas[k * MAX_FRAMES_IN_FLIGHT + j], materialDatas.size() * sizeof(MaterialData), computeCommandPool.getHandle(0));
+							Buffer::copyBuffer(staggingMaterialDatas[i], this->materialDatas[k * MAX_FRAMES_IN_FLIGHT + j], materialDatas.size() * sizeof(MaterialData), computeCommandPool.getHandle(getCurrentFrame()));
 						}
 					}
 				}
@@ -2297,39 +2303,7 @@ namespace odfaeg {
 			viewProjInfos.currentFrame = getCurrentFrame();
 			indexesPC.currentImageIndex = getImageIndex();
 			states.blendMode.updateIds();
-			/*VkMemoryBarrier2 barrier{};
-			barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2;
-			barrier.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
-			barrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
-			barrier.dstStageMask = VK_PIPELINE_STAGE_2_TASK_SHADER_BIT_EXT | VK_PIPELINE_STAGE_2_MESH_SHADER_BIT_EXT |
-    		VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
-			barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT |  VK_ACCESS_2_SHADER_WRITE_BIT;
-			VkDependencyInfo depInfo{};
-			depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
-			depInfo.memoryBarrierCount = 1;
-			depInfo.pMemoryBarriers = &barrier;
-			/*std::vector<VkImageMemoryBarrier2> imgs{};
-			for (unsigned int i = 0; i < GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size(); i++) {
 			
-				VkImageMemoryBarrier2 img{};
-				img.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
-				img.srcStageMask  = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
-				img.srcAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
-				img.dstStageMask  =
-					VK_PIPELINE_STAGE_2_TASK_SHADER_BIT_EXT |
-					VK_PIPELINE_STAGE_2_MESH_SHADER_BIT_EXT |
-					VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
-				img.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
-
-				img.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;      // layout utilisé par le compute
-				img.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // layout utilisé par mesh/frag
-				Texture& texture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE)[i];
-				img.image = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE)[i].getImage().getHandle();
-				img.subresourceRange = { texture.getImage().getImageAspectFlags(), 0, texture.getMipLevels(), 0, texture.getLayerCount()};
-				imgs.push_back(img);
-			}
-			depInfo.imageMemoryBarrierCount = imgs.size();
-			depInfo.pImageMemoryBarriers    = imgs.data();*/
 			
 
 			//vkCmdPipelineBarrier2(commandPool.getHandle(getCurrentFrame()), &depInfo);
@@ -2400,20 +2374,7 @@ namespace odfaeg {
 				0, nullptr,
 				1, &barrier,
 				0, nullptr
-			);
-			barrier.buffer = vertices[primitiveType].getVertexBuffer(0).getHandle();
-			barrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-			vkCmdPipelineBarrier(
-				commandPool.getHandle(getCurrentFrame()),
-				VK_PIPELINE_STAGE_TRANSFER_BIT,            // la copie doit être finie
-				VK_PIPELINE_STAGE_VERTEX_INPUT_BIT
-				| VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
-				| VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,        // avant que le shader lise
-				0,
-				0, nullptr,
-				1, &barrier,
-				0, nullptr
-			);
+			);			
 			barrier.buffer = vertices[primitiveType].getIndexBuffer(0).getHandle();
 			barrier.dstAccessMask = VK_ACCESS_INDEX_READ_BIT;
 			vkCmdPipelineBarrier(
@@ -2427,6 +2388,30 @@ namespace odfaeg {
 				1, &barrier,
 				0, nullptr
 			);
+			barrier.buffer = outputElementsDrawIndirectCommand[getCurrentFrame()].getHandle();
+			barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			vkCmdPipelineBarrier(
+				commandPool.getHandle(getCurrentFrame()),
+				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+				VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
+				| VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,        // avant que le shader lise
+				0,
+				0, nullptr,
+				1, &barrier,
+				0, nullptr
+			);
+			barrier.buffer = outputMeshes[getCurrentFrame()].getHandle();
+			vkCmdPipelineBarrier(
+				commandPool.getHandle(getCurrentFrame()),
+				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+				VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
+				| VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,        // avant que le shader lise
+				0,
+				0, nullptr,
+				1, &barrier,
+				0, nullptr
+			);			
 			Shader* shader = (states.shader == nullptr) ? &defaultRenderingShader : states.shader;
 			viewProjInfos.primitiveType = primitiveType;
 			
@@ -2437,19 +2422,31 @@ namespace odfaeg {
 			states.blendMode.updateIds();						
 			VkMemoryBarrier mem{};
 			mem.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-			mem.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+			mem.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 			mem.dstAccessMask =
 				VK_ACCESS_INDIRECT_COMMAND_READ_BIT |   // draw indirect
 				VK_ACCESS_INDEX_READ_BIT |              // index buffer
-				VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+				VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT; 				
 			/*Device::QueueFamilyIndices indexes = device.findQueueFamilies(device.getPhysicalDevice());// vertex buffer
 			mem.srcQueueFamilyIndex = indexes.computeFamily.value();
 			mem.dstQueueFamilyIndex = indexes.graphicsFamily.value();*/
 			vkCmdPipelineBarrier(
 				commandPool.getHandle(getCurrentFrame()),
-				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
 				VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT |
 				VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+				0,
+				1, &mem,
+				0, nullptr,
+				0, nullptr
+			);
+			mem.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+			mem.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			vkCmdPipelineBarrier(
+				commandPool.getHandle(getCurrentFrame()),
+				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+				VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
+				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 				0,
 				1, &mem,
 				0, nullptr,

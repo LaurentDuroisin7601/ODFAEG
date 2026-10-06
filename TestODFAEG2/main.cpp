@@ -147,7 +147,7 @@ int main() {
 	
 	//concretes.apply(inter);
 	//inter.apply(c, e, l);
-	chien chi;
+	/*chien chi;
 	chat cha;	
 	test t;
 	CVariant<chien, chat, chien> cv1(chi);
@@ -163,7 +163,7 @@ int main() {
 	behavioursSlots.push_back(varCallBack2);
 	for (unsigned int i = 0; i < behavioursSlots.size(); i++) {
 		behavioursSlots[i]();
-	}
+	}*/
 	/*varCallBack.setParam<1, CVariant<chien, chat, chien>, test, CVariant<chien, chat, chien>>(cv2);
 	varCallBack();*/
 	//system("PAUSE");

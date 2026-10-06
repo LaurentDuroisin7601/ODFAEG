@@ -18,25 +18,9 @@ namespace odfaeg {
             Mesh* mesh = new Mesh(model);
             Assimp::Importer importer;
             //std::cout<<"import"<<std::endl;
-            uint32_t importFlags{ aiProcess_Triangulate
-            | aiProcess_FixInfacingNormals
-            | aiProcess_LimitBoneWeights
-            | aiProcess_FindDegenerates };
-            //if ( !parameters.get< bool >( cuT( "no_validation" ) ) )
-                importFlags |= aiProcess_ValidateDataStructure
-                    | aiProcess_FindInvalidData;
-            //if ( !parameters.get< bool >( cuT( "no_optimisations" ) ) )
-                /*importFlags |= aiProcess_JoinIdenticalVertices
-                    | aiProcess_OptimizeMeshes
-                    | aiProcess_OptimizeGraph
-                    | aiProcess_ImproveCacheLocality
-                    | aiProcess_RemoveRedundantMaterials;*/
-            //if ( parameters.get< c3d::String >( cuT( "normals" ) ) == cuT( "smooth" ) )
-                importFlags |= aiProcess_GenSmoothNormals;
-            //if ( parameters.get< bool >( cuT( "tangent_space" ) ) )
-                importFlags |= aiProcess_CalcTangentSpace;
+            
             //std::cout<<"path : "<<path<<std::endl;
-            const aiScene *scene = importer.ReadFile(path, importFlags);
+            const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate);
 
             //std::cout<<"imported"<<std::endl;
             if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
@@ -62,6 +46,7 @@ namespace odfaeg {
             transform.identity();
             clk2.restart();
             processNode(transform, scene->mRootNode, scene, mesh, model, loadTextures);
+           
             std::vector<ImageLoader> imageLoaders;
             size_t totalImagesSize = 0;
             std::vector<std::string> aliases;
@@ -159,7 +144,7 @@ namespace odfaeg {
             //std::cout<<"process node"<<std::endl;
             // process all the node's meshes (if any)
             math::Matrix4f nodeLocal = entity::AssimpHelpers::convertAssimpToODFAEGMatrix(node->mTransformation);
-            math::Matrix4f world = parentTransform * nodeLocal/*.transpose()*/;
+            math::Matrix4f world = parentTransform * nodeLocal;
         
             /*std::cout<<"parent : "<<parentTransform<<std::endl;
             //std::cout<<"transposed parent : "<<parentTransform.transpose()<<std::endl;
@@ -174,11 +159,13 @@ namespace odfaeg {
             {
                 aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
                 threadPool.enqueue([this, world, mesh, scene, mnode, model, loadTextures] {
+                    //std::cout<<"world : "<<world<<std::endl;
                     processMesh(world, mesh, scene, mnode, model, loadTextures);
                     jobFence.jobDone();
                 });
             }
             jobFence.wait();
+            
             //std::cout<<"loading meshes time : "<<clk.getElapsedTime().asMilliseconds()<<"ms"<<std::endl;
             // then do the same for each of its children
             for(unsigned int i = 0; i < node->mNumChildren; i++)
@@ -428,6 +415,8 @@ namespace odfaeg {
 
                 for(unsigned int j = 0; j < face.mNumIndices; j++) {
                     indexes.push_back(face.mIndices[j]);
+                    if (face.mIndices[j] >= vertices.size())
+                        system("PAUSE");
                     //std::cout<<"index : "<<face.mIndices[j]<<std::endl;
                     /*va.append(vertices[face.mIndices[j]]);                    
                     va.addIndex(va.getVertexCount()-1);*/
@@ -529,10 +518,11 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < vertices.size(); i++) {  
                     va[i] = vertices[i];
                 }
-                for (unsigned int i = 0; i < indexes.size(); i++) {                    
+                for (unsigned int i = 0; i < indexes.size(); i++) {
+                    //std::cout<<"index : "<<indexes[i]<<std::endl;                    
                     va.setIndex(i, indexes[i]);
                 }
-                
+                //system("PAUSE");
                 physic::BoundingBox bounds = va.getBounds();
                 //std::cout<<"bounds : "<<bounds.getSize()<<std::endl;
                 if (bounds.getSize().x() > 1000 && bounds.getSize().y() > 1000 && bounds.getSize().z() > 1000) {
@@ -547,7 +537,7 @@ namespace odfaeg {
                 std::cout<<"axis correction : "<<axisCorrection.getMatrix()<<std::endl;
                 std::cout<<"handness correction : "<<handednessCorrection.getMatrix()<<std::endl;*/
                 
-                math::Matrix4f finalTransform = finalCorrection.transpose() * world;
+                math::Matrix4f finalTransform = finalCorrection * world;
                 //std::cout<<"mesh world : "<<world<<std::endl;
                 /*std::cout<<"final transform : "<<finalTransform<<std::endl;*/
                 

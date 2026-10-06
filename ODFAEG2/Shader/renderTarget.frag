@@ -49,6 +49,7 @@ layout(location = 8) in vec3 vNormal;
 layout(location = 9) flat in int meshId;
 layout(location = 0) out vec4 outColor;
 void main() {
+    memoryBarrierBuffer();
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[materialID];
     vec2 uv = vec2(fragTexCoord.x, 1-fragTexCoord.y);
     // --- Diffuse ---
@@ -112,7 +113,7 @@ void main() {
         float((meshId >> 16) & 0xFF) / 255.0,
         1.0
     );
-    outColor = diffuse/* * diff * ao + spec + emissive*/;
+    outColor = vec4(1, 1, 1, 1)/*diffuse /** diff * ao + spec + emissive*/;
    /* if (outColor.a == 0)
         debugPrintfEXT("out color : %v4f", outColor);*/
 };

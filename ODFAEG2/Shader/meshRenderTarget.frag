@@ -45,6 +45,8 @@ layout(location = 4) flat in int primitiveType;
 layout(location = 5) flat in int currentFrame;
 layout(location = 0) out vec4 outColor;
 void main() {
+    memoryBarrier();
+    memoryBarrierBuffer();
     float epsilon = 0.0000001;
     
     /*if (materialID < 0 || materialID >= 7 || primitiveType != 3 || currentFrame < 0 || currentFrame >= MAX_FRAMES_IN_FLIGHT
