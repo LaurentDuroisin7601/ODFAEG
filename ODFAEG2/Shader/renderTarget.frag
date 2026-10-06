@@ -113,7 +113,7 @@ void main() {
         float((meshId >> 16) & 0xFF) / 255.0,
         1.0
     );
-    outColor = vec4(1, 1, 1, 1)/*diffuse /** diff * ao + spec + emissive*/;
+    outColor = /*vec4(1, 1, 1, 1)*/diffuse /** diff * ao + spec + emissive*/;
    /* if (outColor.a == 0)
         debugPrintfEXT("out color : %v4f", outColor);*/
 };

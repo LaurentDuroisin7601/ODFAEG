@@ -527,7 +527,11 @@ namespace odfaeg {
 						}						
 						subMeshData.nbVertices = subMesh.getVertexArray().getVertexCount();
 						subMeshData.nbIndexes = subMesh.getVertexArray().getIndexCount();
-						subMeshData.objectId = i;	
+						subMeshData.objectId = i;
+						if (subMesh.getVertexArray().getIndexCount() == 0) {
+							std::cout<<"empty mesh"<<std::endl;
+							system("PAUSE");
+						}	
 						//std::cout<<"offsets : "<<subMeshData.nbVertices<<","<<subMeshData.nbIndexes<<","<<subMeshData.vertexOffset<<","<<subMeshData.indexOffset<<std::endl;					
 						/*if (subMeshData.id == 1590) {
 							std::cout<<"id : vertex offset : nbVertices : "<<subMeshData.id<<","<<subMeshData.vertexOffset<<","<<subMeshData.nbVertices<<std::endl;
@@ -542,7 +546,7 @@ namespace odfaeg {
 						/*std::cout<<"total vertex count : "<<vertices[primitiveType].getVertexCount()<<std::endl;
 						std::cout<<"total index count : "<<vertices[primitiveType].getIndexCount()<<std::endl;*/
 						//std::cout<<"vertx offset, texture id : "<<currentVertexOffset[primitiveType]<<","<<subMeshData.materialId<<std::endl;
-						subMesh.getVertexArray().updateLods();
+						//subMesh.getVertexArray().updateLods();
 						//std::cout<<"vertex offset : "<<currentVertexOffset[primitiveType]<<std::endl;
 						unsigned int baseVertex = currentVertexOffset[primitiveType];
 						//std::cout<<"base vertex : "<<subMeshData.vertexOffset <<"nb vertices : "<<subMeshData.nbVertices<<std::endl;
@@ -768,9 +772,9 @@ namespace odfaeg {
 											findg2 = true;
 										}
 									}	
-									if (!findg0 || !findg1 || !findg2) {
+									/*if (!findg0 || !findg1 || !findg2) {
 										system("PAUSE");
-									}								
+									}*/								
 									localTriangles[t] = math::Vector4u(g0, g1, g2, 0); // indices locaux.
 								}								
 								Meshlet ms;	
@@ -853,6 +857,7 @@ namespace odfaeg {
 								//Reconstruction de l'AABB et ajout dans la grille de meshlets.
 								//std::cout<<"meshlet : "<<meshletDatas[m].id<<","<<meshletDatas[m].submeshId<<","<<subMeshData.id<<","<<l<<std::endl;
 								if ((meshletDatas[m].lod > l && meshletDatas[m].submeshId ==  subMeshData.id) || meshletDatas[m].submeshId > subMeshData.id) {
+									std::cout<<"pause"<<std::endl;
 									system("PAUSE");
 								}
 								if (meshletDatas[m].lod == l && meshletDatas[m].submeshId == subMeshData.id) {
@@ -878,7 +883,7 @@ namespace odfaeg {
 									//std::cout<<"added!"<<std::endl;
 							}
 							if (!oneAdded) {
-								system("PAUSE");
+								//system("PAUSE");
 							}
 							
 							
@@ -965,7 +970,7 @@ namespace odfaeg {
 											//std::cout<<"children : "<<node.children.size()<<std::endl;
 											if (node.objects.size() > 0) {
 												std::cout<<"not leaf"<<std::endl;
-												system("PAUSE");
+												//system("PAUSE");
 											}								
 											
 											/*std::cout<<"not leaf : "<<node.objects.size()<<"c : "<<
@@ -1018,7 +1023,7 @@ namespace odfaeg {
 												//clusterData.children[c] = clusterDatas.size();
 												if (node.objects.size() > 8) {
 													std::cout<<"error : max object exceeds 8 : "<<node.objects.size()<<std::endl;
-													system("PAUSE");
+													//system("PAUSE");
 												}
 												//std::cout<<"id : "<<node.objects.size()<<std::endl;
 												meshletDatas[node.objects[o].id].clusterId = childClusterData.id;												

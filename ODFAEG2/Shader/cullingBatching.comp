@@ -256,13 +256,13 @@ void main() {
                             debugPrintfEXT("lodOffset=%d lod=%d\n", subMesh.lodOffset, lod);*/
                         indirectElementsDrawCommand.index_count = lodLevelData.lodLevel[subMesh.lodOffset+lod].index_count;
                         indirectElementsDrawCommand.first_index = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+lod].index_offset;
-                        /*indirectElementsDrawCommand.index_count = subMesh.nbIndexes;
-                        indirectElementsDrawCommand.first_index = subMesh.indexOffset;*/
+                        indirectElementsDrawCommand.index_count = subMesh.nbIndexes;
+                        indirectElementsDrawCommand.first_index = subMesh.indexOffset;
                         indirectElementsDrawCommand.instance_base = instanceBase;
                         indirectElementsDrawCommand.vertex_base = subMesh.vertexOffset;
                         indirectElementsDrawCommand.instance_count = 1;
-                        debugPrintfEXT("offsets : %i, %i, %i, %i, %i", subMesh.nbIndexes, subMesh.nbVertices, subMesh.vertexOffset, subMesh.indexOffset, subMesh.lodOffset);
-                        debugPrintfEXT("lod infos : %i, %i, %i",lod, lodLevelData.lodLevel[subMesh.lodOffset+lod].index_offset, lodLevelData.lodLevel[subMesh.lodOffset+lod].index_count);
+                        //debugPrintfEXT("offsets : %i, %i, %i, %i, %i", subMesh.nbIndexes, subMesh.nbVertices, subMesh.vertexOffset, subMesh.indexOffset, subMesh.lodOffset);
+                        //debugPrintfEXT("lod infos : %i, %i, %i",lod, lodLevelData.lodLevel[subMesh.lodOffset+lod].index_offset, lodLevelData.lodLevel[subMesh.lodOffset+lod].index_count);
                         //debugPrintfEXT("instance base %i", instanceBase);
 
                         outputIndirectElementsDrawCommands[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].indirectElementsDrawCommands[indirectElementsDrawCommandOffset] = indirectElementsDrawCommand;
