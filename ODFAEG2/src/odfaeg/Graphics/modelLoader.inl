@@ -564,10 +564,11 @@ namespace odfaeg {
                 if (va.getBounds().getSize().z() > currentSize.z())
                     currentSize.z() = va.getBounds().getSize().z();*/
                 //std::cout<<"size : "<<currentSize<<std::endl;                
-                subMesh.setVertexArray(va);
+                subMesh.setVertexArray(va);                
                 std::lock_guard<std::recursive_mutex>(getGlobalMutex());
                 model->addSubMesh(subMesh);
                 mnode->addMaterial(material);
+                //std::cout<<"prim type : "<<mnode->getGameObject()->getSubMeshes().back().getVertexArray().getPrimitiveType()<<std::endl;
             /*} else {
                 const size_t MAX_VERTS = 255;
                 const size_t MAX_PRIMS = 85;

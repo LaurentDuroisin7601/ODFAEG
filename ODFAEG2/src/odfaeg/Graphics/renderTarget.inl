@@ -467,7 +467,8 @@ namespace odfaeg {
 					object.type = gameObjects[i]->getGameObject()->getTypeInt();
 					object.subMeshesOffset = currentSubmeshesOffset;
 					object.modelDataOffset = currentModelDataOffset;
-					object.nbSubMeshes = gameObjects[i]->getGameObject()->getSubMeshesCount();
+					unsigned int nbSubMeshesToDisplay = (50 <  gameObjects[i]->getGameObject()->getSubMeshesCount()) ? 50 : gameObjects[i]->getGameObject()->getSubMeshesCount();
+					object.nbSubMeshes = /*nbSubMeshesToDisplay */gameObjects[i]->getGameObject()->getSubMeshesCount();
 					object.renderingType = gameObjects[i]->getGameObject()->renderingType;
 					//std::cout<<"nb submeshes : "<<object.nbSubMeshes<<std::endl;
 					objectDatas.push_back(object);
@@ -479,8 +480,8 @@ namespace odfaeg {
 					
 					modelDatas.push_back(modelData);
 					currentModelDataOffset++;
-					unsigned int nbSubMeshesToDisplay = (50 <  gameObjects[i]->getGameObject()->getSubMeshesCount()) ? 50 : gameObjects[i]->getGameObject()->getSubMeshesCount();
-					for (unsigned int j = 0; j <  nbSubMeshesToDisplay/*gameObjects[i]->getGameObject()->getSubMeshesCount()*/; j++) {
+					
+					for (unsigned int j = 0; j < /*nbSubMeshesToDisplay */gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
 						//std::cout<<"add subMesh : "<<j<<std::endl;
 						entity::SubMesh& subMesh = gameObjects[i]->getGameObject()->getSubMeshes()[j];						
 						gameObjects[i]->getGameObject()->getSubMeshes()[j].vertexOffset = currentVertexOffset[subMesh.getVertexArray().getPrimitiveType()];
@@ -500,8 +501,10 @@ namespace odfaeg {
 						//std::cout<<"submesh offset : "<<currentSubmeshesOffset<<","<<gameObjects[i]->getSubMeshesCount()<<std::endl;
 						subMeshData.globalBounds = subMeshAABB;
 						unsigned int primitiveType = subMesh.getVertexArray().getPrimitiveType();
-						std::cout<<"pimitive type : "<<subMeshData.primitiveType<<std::endl;
+						
 						subMeshData.primitiveType = primitiveType;
+						//std::cout<<"primitive type : "<<subMeshData.primitiveType<<std::endl;
+						/*system("PAUSE");*/
 						subMeshData.vertexOffset = currentVertexOffset[primitiveType];
 						subMeshData.indexOffset = currentIndexOffset[primitiveType];
 						
@@ -525,7 +528,7 @@ namespace odfaeg {
 						subMeshData.nbVertices = subMesh.getVertexArray().getVertexCount();
 						subMeshData.nbIndexes = subMesh.getVertexArray().getIndexCount();
 						subMeshData.objectId = i;	
-						std::cout<<"offsets : "<<subMeshData.nbVertices<<","<<subMeshData.nbIndexes<<","<<subMeshData.vertexOffset<<","<<subMeshData.indexOffset<<std::endl;					
+						//std::cout<<"offsets : "<<subMeshData.nbVertices<<","<<subMeshData.nbIndexes<<","<<subMeshData.vertexOffset<<","<<subMeshData.indexOffset<<std::endl;					
 						/*if (subMeshData.id == 1590) {
 							std::cout<<"id : vertex offset : nbVertices : "<<subMeshData.id<<","<<subMeshData.vertexOffset<<","<<subMeshData.nbVertices<<std::endl;
 							system("PAUSE");
@@ -1054,7 +1057,7 @@ namespace odfaeg {
 						currentSubmeshesOffset++;					
 					}
 				}
-				system("PAUSE");
+				//system("PAUSE");
 				/*std::cout<<"size : "<<vertices[entity::Triangles].getIndexCount()<<std::endl;
 				system("PAUSE");*/
 				cullingInfo.gridCellCount = cellDatas.size();

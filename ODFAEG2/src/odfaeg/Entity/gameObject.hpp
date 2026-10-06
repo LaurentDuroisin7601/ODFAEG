@@ -18,7 +18,7 @@ namespace odfaeg {
 			};
 		    enum TexType {
 		        DIFFUSE, NORMAL, METALNESS, ROUGHNESS, AO, EMISSIVE, SPECULAR, NBTEXTYPES, UNKNOWN
-		    };   
+		    };            
             VertexArray& getVertexArray();
             void setVertexArray(VertexArray va);
             void setTextureId(TexType type, std::string id, unsigned int texUnit=0);

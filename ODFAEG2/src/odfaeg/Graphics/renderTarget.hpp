@@ -62,7 +62,7 @@ namespace odfaeg {
 				unsigned int offsetTaskData;
 				unsigned int previousOffsetTaskData;
 			};
-			struct alignas(16) AABB {
+			struct AABB {
 				float center[4]; //float _pad0; // vec3 + padding
 				float size[4];   //float _pad1; // vec3 + padding
 			};
@@ -82,7 +82,7 @@ namespace odfaeg {
 				int meshletOffset;
 				int meshletCount;
 			};
-			struct alignas(16) SubMeshData {
+			struct SubMeshData {
 				AABB globalBounds;
 				int vertexOffset;
 				int indexOffset;
@@ -174,14 +174,15 @@ namespace odfaeg {
 				unsigned int materialId;
 				unsigned int nbBuffers;				 
 				unsigned int opaque;
-				unsigned int pipelineType;				
+				unsigned int pipelineType;
 			};	
 			struct DrawElementsIndirectCommand {
 				unsigned int index_count;
 				unsigned int instance_count;
 				unsigned int first_index;       // cf parametre offset de glDrawElements()
 				unsigned int vertex_base;
-				unsigned int instance_base;				
+				unsigned int instance_base;	
+						
 			};
 			struct MeshDrawCommand {
 				unsigned int groupXCount;
@@ -203,7 +204,8 @@ namespace odfaeg {
 				float gridCellSize[5][4];
 				float nbCellsPerRow[5][4];    
 				float gridSize[5][4];   
-				float gridPos[5][4];				
+				float gridPos[5][4];
+				int pad[2];				
 			};
 			struct ViewProjMatPC {
 				float  projMatrix[16];

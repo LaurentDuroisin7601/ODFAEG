@@ -1,5 +1,5 @@
 namespace odfaeg {
-	namespace entity { 
+	namespace entity {         
         std::string SubMesh::getTextureId(TexType texType, unsigned int texUnit) {
             return (texturesIds[texType].size() > 0) ? texturesIds[texType][texUnit] : "";
         }
@@ -218,7 +218,7 @@ namespace odfaeg {
             }
         }
         void GameObject::addSubMesh(SubMesh subMesh) {
-            subMeshes.push_back(std::move(subMesh));
+            subMeshes.push_back(subMesh);
         }
         std::deque<SubMesh>& GameObject::getSubMeshes() {
             return subMeshes;

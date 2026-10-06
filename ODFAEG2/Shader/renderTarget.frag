@@ -25,7 +25,7 @@ struct MaterialData {
     uint materialId;
     uint nbBuffers;       
     uint opaque;  
-    uint pipelineType;     
+    uint pipelineType;        
 };
 layout (std430, set = 0, binding = 2) buffer MaterialDataSSBO {
     MaterialData materialData[];
