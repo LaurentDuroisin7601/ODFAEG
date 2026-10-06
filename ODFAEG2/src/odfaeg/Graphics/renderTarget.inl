@@ -530,7 +530,7 @@ namespace odfaeg {
 						subMeshData.objectId = i;
 						if (subMesh.getVertexArray().getIndexCount() == 0) {
 							std::cout<<"empty mesh"<<std::endl;
-							system("PAUSE");
+							//system("PAUSE");
 						}	
 						//std::cout<<"offsets : "<<subMeshData.nbVertices<<","<<subMeshData.nbIndexes<<","<<subMeshData.vertexOffset<<","<<subMeshData.indexOffset<<std::endl;					
 						/*if (subMeshData.id == 1590) {
@@ -546,7 +546,7 @@ namespace odfaeg {
 						/*std::cout<<"total vertex count : "<<vertices[primitiveType].getVertexCount()<<std::endl;
 						std::cout<<"total index count : "<<vertices[primitiveType].getIndexCount()<<std::endl;*/
 						//std::cout<<"vertx offset, texture id : "<<currentVertexOffset[primitiveType]<<","<<subMeshData.materialId<<std::endl;
-						//subMesh.getVertexArray().updateLods();
+						subMesh.getVertexArray().updateLods();
 						//std::cout<<"vertex offset : "<<currentVertexOffset[primitiveType]<<std::endl;
 						unsigned int baseVertex = currentVertexOffset[primitiveType];
 						//std::cout<<"base vertex : "<<subMeshData.vertexOffset <<"nb vertices : "<<subMeshData.nbVertices<<std::endl;
@@ -858,7 +858,7 @@ namespace odfaeg {
 								//std::cout<<"meshlet : "<<meshletDatas[m].id<<","<<meshletDatas[m].submeshId<<","<<subMeshData.id<<","<<l<<std::endl;
 								if ((meshletDatas[m].lod > l && meshletDatas[m].submeshId ==  subMeshData.id) || meshletDatas[m].submeshId > subMeshData.id) {
 									std::cout<<"pause"<<std::endl;
-									system("PAUSE");
+									//system("PAUSE");
 								}
 								if (meshletDatas[m].lod == l && meshletDatas[m].submeshId == subMeshData.id) {
 									//std::cout<<"meshlet : "<<meshletDatas[m].id<<","<<meshletDatas[m].submeshId<<","<<subMeshData.id<<","<<l<<std::endl;

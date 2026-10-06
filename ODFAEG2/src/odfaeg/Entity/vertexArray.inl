@@ -143,14 +143,14 @@ namespace odfaeg {
             }
         }
         void VertexArray::updateLods() {
-            float ratios[] = {1.0f, 0.5f, 0.25f, 0.12f, 0.06f};
+            float ratios[] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
             std::vector<uint32_t> current = indices; // copie
             indices.clear();
             unsigned int level = 0;
 
             for (float r : ratios)
             {
-                std::vector<unsigned int> lod(current.size());
+                /*std::vector<unsigned int> lod(current.size());
                 size_t count = meshopt_simplify(
                 lod.data(),
                 current.data(),
@@ -160,13 +160,13 @@ namespace odfaeg {
                 sizeof(Vertex),
                 r,
                 1e-2f);
-                lod.resize(count);
+                lod.resize(count);*/
                 LODLevel lodLevel;
                 lodLevel.indexOffset = indices.size();
-                lodLevel.indexCount = lod.size();
+                lodLevel.indexCount = current.size();
                 lods[level] = lodLevel;
-                indices.insert(indices.end(), lod.begin(), lod.end());
-                current = lod;
+                indices.insert(indices.end(), current.begin(), current.end());
+                //current = lod;
                 /*std::cout<<"indices : "<<indices.size()<<std::endl;
                 std::cout<<"level : "<<lods[level].indexOffset<<","<<lods[level].indexCount<<std::endl;*/
                 level++;
