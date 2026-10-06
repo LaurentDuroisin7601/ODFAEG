@@ -143,8 +143,10 @@ namespace odfaeg {
             }
         }
         void VertexArray::updateLods() {
-            float ratios[] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
+            float ratios[] = {1.0f, .5f, 0.25f, 0.12f, 0.06f};
+            size_t target = indices.size();
             std::vector<uint32_t> current = indices; // copie
+            
             indices.clear();
             unsigned int level = 0;
 
@@ -158,7 +160,7 @@ namespace odfaeg {
                 reinterpret_cast<const float*>(m_vertices.data()),
                 m_vertices.size(),
                 sizeof(Vertex),
-                r,
+                target * r,
                 1e-2f);
                 lod.resize(count);*/
                 LODLevel lodLevel;
