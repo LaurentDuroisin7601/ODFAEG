@@ -205,7 +205,7 @@ namespace odfaeg {
 				int nbCellsPerRow[5][4];    
 				int gridSize[5][4];   
 				int gridPos[5][4];
-				int pad[2];				
+				//int pad[2];				
 			};
 			struct ViewProjMatPC {
 				float  projMatrix[16];

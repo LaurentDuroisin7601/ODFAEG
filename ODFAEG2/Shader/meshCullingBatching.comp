@@ -15,8 +15,8 @@ const uint rtPipeline = 2 << 1;
 const uint rasterPipeline = 3 << 1; 
 /*Boîtes englobantes des objets*/
 struct AABB {
-	vec3 center;
-	vec3 size;
+	vec4 center;
+	vec4 size;
 };
 /*Objets*/
 struct Object {
@@ -26,7 +26,8 @@ struct Object {
 	int subMeshesOffset;
 	int modelDataOffset;		   
 	int nbSubMeshes;
-	int renderingType;    
+	int renderingType;   
+    int pad[2]; 
 };
 struct LODLevel {
     int index_offset;
@@ -213,10 +214,10 @@ layout (std140, set = 0, binding = 17) uniform UniformBufferObject {
 	AABB frustrum;			
 	uint nbObjectTypes;
 	uint gridCellCount;   
-    vec4 gridCellSize[5];
-    vec4 nbCellsPerRow[5];    
-    vec4 gridSize[5];   
-    vec4 gridPos[5];
+    ivec4 gridCellSize[5];
+    ivec4 nbCellsPerRow[5];    
+    ivec4 gridSize[5];   
+    ivec4 gridPos[5];
 } ubo[MAX_FRAMES_IN_FLIGHT];
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 bool intersects (AABB first, AABB second) {
