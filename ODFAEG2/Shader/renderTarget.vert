@@ -63,11 +63,11 @@ void main() {
     //debugPrintfEXT("primitive type : %i, current frame : %i", pc.primitiveType, pc.currentFrame);
     gl_PointSize = 2.0f;
     SubMesh subMesh = subMeshData[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].subMesh[gl_DrawID];
-    if (subMesh.id == 2)
+    /*if (subMesh.id == 2)
     debugPrintfEXT("VS: idx=%i, vOff=%i, pos=%f %f %f",
     gl_VertexIndex,
     subMesh.vertexOffset,
-    inPosition.x, inPosition.y, inPosition.z);
+    inPosition.x, inPosition.y, inPosition.z);*/
     
     meshId = subMesh.id;
     mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[gl_InstanceIndex].modelMatrix;

@@ -537,7 +537,7 @@ namespace odfaeg {
                 std::cout<<"axis correction : "<<axisCorrection.getMatrix()<<std::endl;
                 std::cout<<"handness correction : "<<handednessCorrection.getMatrix()<<std::endl;*/
                 
-                math::Matrix4f finalTransform = finalCorrection * world;
+                math::Matrix4f finalTransform = /*finalCorrection **/ world;
                 //std::cout<<"mesh world : "<<world<<std::endl;
                 /*std::cout<<"final transform : "<<finalTransform<<std::endl;*/
                 
