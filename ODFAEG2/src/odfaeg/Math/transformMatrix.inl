@@ -63,7 +63,7 @@ namespace odfaeg {
             return invMat4f * vec4;
         }
         void TransformMatrix::combine(math::Matrix4f other) {
-            update();            
+            update(); 
             matrix4f = matrix4f * other;
             invMat4f = matrix4f.inverse();
             needToUpdate = false;

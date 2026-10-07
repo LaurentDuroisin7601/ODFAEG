@@ -219,13 +219,11 @@ void main() {
         
         uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+meshlet.lod].index_offset + meshlet.indexOffset;
         //debugPrintfEXT("First index : %i,", firstIndex);
-        //3 = Triangles.
-        uint maxVerts = 256u;
-        uint maxPrims = 256u;
+        //3 = Triangles.        
         uint vertexCount   = meshlet.nbVertices;
         uint primitiveCount = meshlet.nbIndexes / 3u;
-        if (primitiveCount > 85)
-            debugPrintfEXT("vertex count : %i, primitive count : %i", vertexCount, primitiveCount);
+        
+            //debugPrintfEXT("vertex count : %i, primitive count : %i", vertexCount, primitiveCount);
         if (pc.primitiveType == 3) {
             SetMeshOutputsEXT(vertexCount, primitiveCount);
             for (uint i = 0; i < vertexCount; i++) {
@@ -285,9 +283,7 @@ void main() {
                 }
                 gl_PrimitiveTriangleIndicesEXT[tri] = uvec3(i0, i1, i2);            
             }            
-        } else {
-            SetMeshOutputsEXT(0, 0);
-        }
+        } 
     //Face de heightmap ou voxel.
     } else {
         //debugPrintfEXT("Height Map");

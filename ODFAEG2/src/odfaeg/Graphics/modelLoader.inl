@@ -306,9 +306,10 @@ namespace odfaeg {
                 //std::cout<<"front axis rotation"<<std::endl;
                 axisCorrection.setRotation(math::Vec3f(0.f,0.f,1.f), 180.f);
             }
-
+            //std::cout<<"ac : "<<axisCorrection.getMatrix()<<std::endl<<zUpyUp.getMatrix()<<std::endl;
+            zUpyUp.update();
             axisCorrection.combine(zUpyUp.getMatrix());
-
+            
             // 3. Correction handedness
             if (isLeftHanded) {
                 //std::cout<<"left handed"<<std::endl;
@@ -536,7 +537,7 @@ namespace odfaeg {
                 /*std::cout<<"scale correction : "<<scaleCorrection.getMatrix()<<std::endl;
                 std::cout<<"axis correction : "<<axisCorrection.getMatrix()<<std::endl;
                 std::cout<<"handness correction : "<<handednessCorrection.getMatrix()<<std::endl;*/
-                
+                //std::cout<<"final correction : "<<axisCorrection.getMatrix()<<std::endl;
                 math::Matrix4f finalTransform = /*finalCorrection **/ world;
                 //std::cout<<"mesh world : "<<world<<std::endl;
                 /*std::cout<<"final transform : "<<finalTransform<<std::endl;*/

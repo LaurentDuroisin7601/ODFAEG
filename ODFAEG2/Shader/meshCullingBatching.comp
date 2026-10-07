@@ -5,10 +5,8 @@
 #define NB_PRIMITIVE_TYPES 6
 #define MAX_FRAMES_IN_FLIGHT 2
 #define MAX_BONES_INFLUENCE 4
-#define MAX_VERTICES 255
-#define MAX_PRIMITIVES 85
-#define MAX_VERTS 256
-#define MAX_PRIMS 256
+#define MAX_VERTICES 256
+#define MAX_PRIMITIVES 256
 const uint opaqueMask = 1 << 0;
 const uint transparentMask = 1 << 1;
 const uint rtPipeline = 2 << 1;
@@ -30,8 +28,8 @@ struct Object {
     int pad[2]; 
 };
 struct LODLevel {
-    int index_offset;
-    int index_count;
+    uint index_offset;
+    uint index_count;
     int meshletOffset;
     int meshletCount;
 };
@@ -144,8 +142,8 @@ struct MeshLet {
     int submeshId;
     vec4 mins;
     vec4 maxs; 
-    uint localVertices[MAX_VERTS];
-    uvec4 localTriangles[MAX_PRIMS];
+    uint localVertices[256];
+    uvec4 localTriangles[256];
 };
 /*objets en entrée.*/
 layout(push_constant) uniform PushConstant {    

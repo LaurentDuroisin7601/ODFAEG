@@ -612,8 +612,12 @@ namespace odfaeg {
 							m.submeshId = subMeshData.id;						
 							m.minVertex = std::numeric_limits<unsigned int>::max();
 							m.maxVertex = 0;
-							m.mins = math::Vec3f(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
-							m.maxs = math::Vec3f(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
+							m.mins[0] = std::numeric_limits<float>::max();
+							m.mins[1] = std::numeric_limits<float>::max();
+							m.mins[2] = std::numeric_limits<float>::max();
+							m.maxs[0] = std::numeric_limits<float>::min();
+							m.maxs[1] = std::numeric_limits<float>::min();
+							m.maxs[2] = std::numeric_limits<float>::min();
 							m.nbIndexes = 0;
 							m.indexOffset = 0;
 							m.lod = l;	
@@ -647,10 +651,14 @@ namespace odfaeg {
 								
 								math::Vec3f mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
 								math::Vec3f maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));
-								m.mins = math::Vec3f(std::min(m.mins.x(), mins.x()), std::min(m.mins.y(), mins.y()), std::min(m.mins.z(), mins.z()));
-								m.maxs = math::Vec3f(std::max(m.maxs.x(), maxs.x()), std::max(m.maxs.y(), maxs.y()), std::max(m.maxs.z(), maxs.z()));
-								mins = m.mins;
-								maxs = m.maxs;		
+								m.mins[0] = std::min(m.mins[0], mins.x());
+								m.mins[1] = std::min(m.mins[1], mins.y());
+								m.mins[2] = std::min(m.mins[2], mins.z());
+								m.maxs[0] = std::max(m.maxs[0], maxs.x());
+								m.maxs[1] = std::max(m.maxs[1], maxs.y());
+								m.maxs[2] = std::max(m.maxs[2], maxs.z());
+								mins = math::Vec3f(m.mins[0], m.mins[1], m.mins[2]);
+								maxs = math::Vec3f(m.maxs[0], m.maxs[1], m.maxs[2]);		
 								
 								// Si ce triangle dépasse les limites → nouveau meshlet
 								if (m.nbIndexes/3 >= MAX_PRIMS || newVertexCount > MAX_VERTS)
@@ -674,8 +682,12 @@ namespace odfaeg {
 																	
 									m.minVertex = std::numeric_limits<unsigned int>::max();
 									m.maxVertex = 0;
-									m.mins = math::Vec3f(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
-									m.maxs = math::Vec3f(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
+									m.mins[0] = std::numeric_limits<float>::max();
+									m.mins[1] = std::numeric_limits<float>::max();
+									m.mins[2] = std::numeric_limits<float>::max();
+									m.maxs[0] = std::numeric_limits<float>::min();
+									m.maxs[1] = std::numeric_limits<float>::min();
+									m.maxs[2] = std::numeric_limits<float>::min();
 									
 									// Recalculer pour ce triangle
 									newMin = std::min(g0, std::min(g1, g2));
@@ -687,8 +699,14 @@ namespace odfaeg {
 									mins = math::Vec3f(std::min(p1.x(), std::min(p2.x(), p3.x())), std::min(p1.y(), std::min(p2.y(), p3.y())), std::min(p1.z(), std::min(p2.z(), p3.z())));
 									maxs = math::Vec3f(std::max(p1.x(), std::max(p2.x(), p3.x())), std::max(p1.y(), std::max(p2.y(), p3.y())), std::max(p1.z(), std::max(p2.z(), p3.z())));
 																	
-									m.mins = math::Vec3f(std::min(m.mins.x(), mins.x()), std::min(m.mins.y(), mins.y()), std::min(m.mins.z(), mins.z()));
-									m.maxs = math::Vec3f(std::max(m.maxs.x(), maxs.x()), std::max(m.maxs.y(), maxs.y()), std::max(m.maxs.z(), maxs.z()));									
+									m.mins[0] = std::min(m.mins[0], mins.x());
+									m.mins[1] = std::min(m.mins[1], mins.y());
+									m.mins[2] = std::min(m.mins[2], mins.z());
+									m.maxs[0] = std::max(m.maxs[0], maxs.x());
+									m.maxs[1] = std::max(m.maxs[1], maxs.y());
+									m.maxs[2] = std::max(m.maxs[2], maxs.z());
+									mins = math::Vec3f(m.mins[0], m.mins[1], m.mins[2]);
+									maxs = math::Vec3f(m.maxs[0], m.maxs[1], m.maxs[2]);
 									currentMeshletsOffset++;	
 									meshletCount++;							
 								}
@@ -744,7 +762,7 @@ namespace odfaeg {
 								sizeof(entity::Vertex),
 								MAX_VERTS,
 								MAX_PRIMS,
-								0
+								1
 							);
 							
 							
@@ -780,9 +798,7 @@ namespace odfaeg {
 											findg2 = true;
 										}
 									}	
-									/*if (!findg0 || !findg1 || !findg2) {
-										system("PAUSE");
-									}*/								
+																
 									localTriangles[t] = math::Vector4u(g0, g1, g2, 0); // indices locaux.
 								}								
 								Meshlet ms;	
@@ -798,10 +814,7 @@ namespace odfaeg {
 								ms.nbVertices = meshlet.vertex_count;
 								//std::cout<<"nb index : "<<ms.nbIndexes<<std::endl;
 								
-								/*if (meshlet.vertex_count == 0) {
-									std::cout<<"nb vertices : "<<m.nbVertices<<std::endl;
-									system("PAUSE");
-								}*/
+								
 								for (unsigned int v = 0; v < localVertexIndices.size(); v++)
 									ms.localVertices[v] = localVertexIndices[v];
 								for (unsigned int t = 0; t < localTriangles.size(); t++) {

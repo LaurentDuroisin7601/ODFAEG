@@ -147,7 +147,7 @@ namespace odfaeg {
             size_t target = indices.size();
             std::vector<uint32_t> current = indices; // copie
             
-            indices.clear();
+            //indices.clear();
             unsigned int level = 0;
 
             for (float r : ratios)
