@@ -28,7 +28,7 @@ namespace odfaeg {
 
             //unsigned int paddings[3];
         };*/
-        class alignas(16) Vertex {
+        class Vertex {
         public:
 
             ////////////////////////////////////////////////////////////
@@ -115,13 +115,12 @@ namespace odfaeg {
             alignas(16) math::Vec3f normal;
             alignas(16) math::Vec3f T; 
             alignas(16) math::Vec3f B;
-            alignas(16) math::Vec3f N;
-            unsigned int drawableDataId; 
+            alignas(16) math::Vec3f N; 
             //bone indexes which will influence this vertex
             int m_BoneIDs[MAX_BONES_INFLUENCE];
             //weights from each bone
             float m_Weights[MAX_BONES_INFLUENCE];
-            
+            unsigned int drawableDataId;
                       
         };
     }

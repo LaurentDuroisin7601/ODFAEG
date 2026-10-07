@@ -215,7 +215,7 @@ layout (std140, set = 0, binding = 17) uniform UniformBufferObject {
     ivec4 gridCellSize[5];
     ivec4 nbCellsPerRow[5];    
     ivec4 gridSize[5];   
-    ivec4 gridPos[5];
+    ivec4 gridPos[5];    
 } ubo[MAX_FRAMES_IN_FLIGHT];
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 bool intersects (AABB first, AABB second) {
@@ -317,10 +317,10 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                 Cluster n = inputClustersBuffer.clusters[inputGridBuffer.grid[i].clusterOffset+j];
                 
                 
-                if (!intersects(frustrum, n.volume)) {
+                /*if (!intersects(frustrum, n.volume)) {
                     debugPrintfEXT("not intersects!");
                     continue;
-                }   
+                }   */
                 //debugPrintfEXT("lod : %i, smid : %i, %i", n.lod, n.submeshId, sm.id);                 
                 if (n.lodLevel == lod && n.submeshId == sm.id) { 
                     //Cluster de modèle 3D visible : On ajoute ce cluster aux clusters visible.
@@ -338,9 +338,9 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                         
                         //uint currentGroupYOffset = taskData.meshDrawCommand.groupYCount;
                         for (uint m = 0; m < n.meshletCount; m++) {
-                            groupMemoryBarrier();
+                            /*groupMemoryBarrier();
                             memoryBarrierBuffer();
-                            barrier();
+                            barrier();*/
                             
                            /* if (inputMeshlet.meshlets[n.meshletOffset+m].submeshId != sm.id) {
                                 debugPrintfEXT("Error %i, %i", sm.id, inputMeshlet.meshlets[n.meshletOffset+m].submeshId);

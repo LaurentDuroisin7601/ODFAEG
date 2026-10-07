@@ -60,8 +60,7 @@ struct Vertex {
     //bone indexes which will influence this vertex
     int m_BoneIDs[MAX_BONES_INFLUENCE];
     //weights from each bone
-    float m_Weights[MAX_BONES_INFLUENCE];
-   
+    float m_Weights[MAX_BONES_INFLUENCE];   
 };
 struct MeshLet {
     uint id;
@@ -234,22 +233,27 @@ void main() {
                 //debugPrintfEXT("global index : %i %i", i, globalIndex+1);
                 //uint v = subMesh.vertexOffset + meshlet.vertexOffset + i;                
                 uint v = subMesh.vertexOffset + globalIndex;
+                /*if (subMesh.id == 0)
+                    debugPrintfEXT("offset %i", globalIndex);*/
                 globalIndices[i] = globalIndex;
                 groupMemoryBarrier();
                 memoryBarrierBuffer();
                 barrier();  
                 
                 vec4 color = unpackColor(vertexData[pc.primitiveType].vertices[v].color);
-                /*if (color.r < 0.9 || color.g < 0.9 || color.b < 0.9)
-                    debugPrintfEXT("error : %v4f", color);*/
+                if (color.r != 1 || color.g != 1 || color.b != 1 || color.a != 1)
+                    debugPrintfEXT("error : %v4f", color);
+
             
-                gl_MeshVerticesEXT[i].gl_Position = pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(vertexData[pc.primitiveType].vertices[v].position, 1.0);
+                gl_MeshVerticesEXT[i].gl_Position = pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(vertexData[pc.primitiveType].vertices[v].position.xyz, 1);
+                /*if (subMesh.id == 0)
+                debugPrintfEXT("position : %v3f", vertexData[pc.primitiveType].vertices[v].position);*/
                 //debugPrintfEXT("vertex position %v3f : ",gl_MeshVerticesEXT[i].gl_Position);
                 fragColor[i] = color;
                 //debugPrintfEXT("color : %v4f", fragColor[i]);
                 fragTexCoord[i] = vertexData[pc.primitiveType].vertices[v].texCoords;
                 //debugPrintfEXT("tex coords : %v2f", fragTexCoord[i]);
-                normal[i] = mat3(transpose(inverse(modelMatrix))) * vertexData[pc.primitiveType].vertices[v].normal;
+                normal[i] = mat3(transpose(inverse(modelMatrix))) * vertexData[pc.primitiveType].vertices[v].normal.xyz;
                 //debugPrintfEXT("normal %v3f", normal[i]);
                 materialID[i] = subMesh.materialId;
                 primitiveType[i] = pc.primitiveType;
@@ -268,6 +272,8 @@ void main() {
                 uint i0 = findLocalIndex(g0, vertexCount);
                 uint i1 = findLocalIndex(g1, vertexCount);
                 uint i2 = findLocalIndex(g2, vertexCount);
+                /*if (subMesh.id == 0)
+                    debugPrintfEXT("offset %i, %i, %i", i0, i1, i2);*/
                 /*uint g0 = indexData[pc.primitiveType].indexes[firstIndex+tri*3+0];
                 uint g1 = indexData[pc.primitiveType].indexes[firstIndex+tri*3+1];
                 uint g2 = indexData[pc.primitiveType].indexes[firstIndex+tri*3+2];
@@ -289,7 +295,7 @@ void main() {
         //debugPrintfEXT("Height Map");
         SetMeshOutputsEXT(taskData.vertexCount, taskData.primitiveCount);
         for (uint i = 0; i < taskData.vertexCount; i++) {        
-            gl_MeshVerticesEXT[i].gl_Position = vec4(outputVertices[pc.currentFrame].vertices[taskData.vertexOffset+i].position, 1);        
+            gl_MeshVerticesEXT[i].gl_Position = vec4(outputVertices[pc.currentFrame].vertices[taskData.vertexOffset+i].position.xyz, 1);        
         }
         for (uint tri = 0; tri < taskData.primitiveCount; tri++) {
             gl_PrimitiveTriangleIndicesEXT[tri*2] = uvec3(tri*4, tri*4+1, tri*4+2);

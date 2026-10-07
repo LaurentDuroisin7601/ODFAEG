@@ -262,15 +262,15 @@ int main() {
 	/*Mesh* bistroInterior = modelLoader.loadModel("Bistro_v5_2/BistroInterior.fbx");*/
 	//bistroExterior->getGameObject()->setScale(Vec3f(1, 1, -1));
 	//std::cout<<"test"<<std::endl;
-	Mesh* car = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
-	/*car->getGameObject()->setRotation(90, Vec3f(0, 1, 0));
+	//Mesh* car = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
+	//car->getGameObject()->setRotation(90, Vec3f(0, 1, 0));
 	//bistroExterior->getGameObject()->setScale(Vec3f(1, 1, -1));
 	//std::cout<<"test"<<std::endl;
 	
 	//bistroExterior->getGameObject()->setRotation(90, Vec3f(0, 1, 0));
 	
 	
-	/*std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
+	std::tuple<std::reference_wrapper<Device>> args = std::make_tuple(std::ref(ctx.getDevice()));
 	textureManager.fromFileWithAlias("tilesets/wood.png", WOOD, args);
 	Texture* texWood = textureManager.getResourceByAlias(WOOD);
 	texWood->setSamplerAddressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT);	
@@ -335,7 +335,7 @@ int main() {
 	window.addGameObject(&cube4Mesh);
 	window.addGameObject(&cube5Mesh);
 	window.addGameObject(&cube6Mesh);
-	RenderTexture sceneColorTexture(ctx.getDevice(), true);
+	/*RenderTexture sceneColorTexture(ctx.getDevice(), true);
 	sceneColorTexture.create(window.getSize().x(), window.getSize().y());
 	sceneColorTexture.setCamera(camera);
 	RenderGraph renderGraph(sceneColorTexture);
@@ -348,7 +348,7 @@ int main() {
 	for (unsigned int i = 0; i < components.size(); i++) {
 		componentManager.addComponent(components[i]);
 	}*/
-	window.addGameObject(car);
+	//window.addGameObject(car);
 	//window.addGameObject(bistroExterior);	
 	//window.addGameObject(bistroInterior);
 	

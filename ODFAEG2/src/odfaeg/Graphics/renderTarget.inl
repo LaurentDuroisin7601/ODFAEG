@@ -786,7 +786,7 @@ namespace odfaeg {
 									uint32_t g0 = localVertexIndices[meshletTriangles[meshlet.triangle_offset + t * 3 + 0]];
 									uint32_t g1 = localVertexIndices[meshletTriangles[meshlet.triangle_offset + t * 3 + 1]];
 									uint32_t g2 = localVertexIndices[meshletTriangles[meshlet.triangle_offset + t * 3 + 2]];
-									bool findg0 = false, findg1  = false, findg2  = false;
+									/*bool findg0 = false, findg1  = false, findg2  = false;
 									for (unsigned int g = 0; g < localVertexIndices.size(); g++) {
 										if (g0 == localVertexIndices[g]) {
 											findg0 = true;
@@ -797,7 +797,7 @@ namespace odfaeg {
 										if (g2 == localVertexIndices[g]) {
 											findg2 = true;
 										}
-									}	
+									}*/	
 																
 									localTriangles[t] = math::Vector4u(g0, g1, g2, 0); // indices locaux.
 								}								
@@ -815,11 +815,16 @@ namespace odfaeg {
 								//std::cout<<"nb index : "<<ms.nbIndexes<<std::endl;
 								
 								
-								for (unsigned int v = 0; v < localVertexIndices.size(); v++)
+								for (unsigned int v = 0; v < localVertexIndices.size(); v++) {
 									ms.localVertices[v] = localVertexIndices[v];
+									/*if (subMeshData.id == 0)
+									std::cout<<"position : "<<verts[ms.localVertices[v]].position<<std::endl;*/
+								}
 								for (unsigned int t = 0; t < localTriangles.size(); t++) {
 									unsigned int tri[4];
 									localTriangles[t].toVkVec(tri);
+									/*if (subMeshData.id == 0)
+									std::cout<<"tri : "<<localTriangles[t]<<std::endl;*/
 									core::arrayCopy(tri, ms.localTriangles[t], 3);
 								}
 								meshopt_Bounds bounds = meshopt_computeMeshletBounds(
@@ -939,7 +944,7 @@ namespace odfaeg {
 								if (gridCell.empty()) {
 									if (gridCell.empty()) {
 										std::cout<<"empty : "<<gridCell.getCellVolume().getPosition()<<","<<gridCell.getCellVolume().getSize()<<std::endl;//std::cout<<"grid cell is null"<<std::endl;
-										system("PAUSE");
+										//system("PAUSE");
 									}
 									//std::cout<<"empty : "<<gridCell<<std::endl;
 									CellData emptyCell;
@@ -1085,8 +1090,7 @@ namespace odfaeg {
 						currentSubmeshesOffset++;					
 					}
 				}
-				//system("PAUSE");
-				//system("PAUSE");
+				//system("PAUSE");				
 				/*std::cout<<"size : "<<vertices[entity::Triangles].getIndexCount()<<std::endl;
 				system("PAUSE");*/
 				cullingInfo.gridCellCount = cellDatas.size();

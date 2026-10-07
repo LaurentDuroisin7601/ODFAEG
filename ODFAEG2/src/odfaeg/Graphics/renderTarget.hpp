@@ -140,8 +140,8 @@ namespace odfaeg {
 
 				// local triangles (uvec3 = 16 bytes)
 				uint32_t localTriangles[MAX_PRIMS][4]; // x,y,z,pad
-
-				//int pad[3];
+				
+				
 				bool operator==(const Meshlet& other) const {
 					return id == other.id 
 					&& mins[0] == other.mins[0]
@@ -205,7 +205,7 @@ namespace odfaeg {
 				int nbCellsPerRow[5][4];    
 				int gridSize[5][4];   
 				int gridPos[5][4];
-				//int pad[2];				
+				int pad[2];				
 			};
 			struct ViewProjMatPC {
 				float  projMatrix[16];
