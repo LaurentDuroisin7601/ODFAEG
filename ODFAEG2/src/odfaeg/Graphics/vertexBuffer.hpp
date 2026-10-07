@@ -69,7 +69,7 @@ namespace odfaeg {
                 VkVertexInputBindingDescription bindingDescription{};
                 bindingDescription.binding = 0;
                 //std::cout<<"stride : "<<sizeof(entity::Vertex)<<std::endl;
-                bindingDescription.stride = sizeof(VkVertex);
+                bindingDescription.stride = sizeof(entity::Vertex);
                 bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
                 return bindingDescription;
             }
@@ -78,17 +78,17 @@ namespace odfaeg {
                 attributeDescriptions[0].binding = 0;
                 attributeDescriptions[0].location = 0;
                 attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-                attributeDescriptions[0].offset = offsetof(VkVertex, position);
+                attributeDescriptions[0].offset = offsetof(entity::Vertex, position);
 
                 attributeDescriptions[1].binding = 0;
                 attributeDescriptions[1].location = 1;
                 attributeDescriptions[1].format = VK_FORMAT_R8G8B8A8_UNORM;
-                attributeDescriptions[1].offset = offsetof(VkVertex, color);
+                attributeDescriptions[1].offset = offsetof(entity::Vertex, color);
 
                 attributeDescriptions[2].binding = 0;
                 attributeDescriptions[2].location = 2;
                 attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-                attributeDescriptions[2].offset = offsetof(VkVertex, texCoords);
+                attributeDescriptions[2].offset = offsetof(entity::Vertex, texCoords);
                 /*std::cout<<"stride : "<<offsetof(Vertex, texCoords)<<std::endl;
                 int pause;
                 std::cin>>pause;*/
@@ -96,29 +96,29 @@ namespace odfaeg {
                 attributeDescriptions[3].binding = 0;
                 attributeDescriptions[3].location = 3;
                 attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
-                attributeDescriptions[3].offset = offsetof(VkVertex, normal);
+                attributeDescriptions[3].offset = offsetof(entity::Vertex, normal);
 
              
 
                 attributeDescriptions[4].binding = 0;
                 attributeDescriptions[4].location = 4;
                 attributeDescriptions[4].format = VK_FORMAT_R32G32B32_SFLOAT;
-                attributeDescriptions[4].offset = offsetof(VkVertex, T);
+                attributeDescriptions[4].offset = offsetof(entity::Vertex, T);
 
                 attributeDescriptions[5].binding = 0;
                 attributeDescriptions[5].location = 5;
                 attributeDescriptions[5].format = VK_FORMAT_R32G32B32_SFLOAT;
-                attributeDescriptions[5].offset = offsetof(VkVertex, B);
+                attributeDescriptions[5].offset = offsetof(entity::Vertex, B);
 
                 attributeDescriptions[6].binding = 0;
                 attributeDescriptions[6].location = 6;
                 attributeDescriptions[6].format = VK_FORMAT_R32G32B32_SFLOAT;
-                attributeDescriptions[6].offset = offsetof(VkVertex, N);
+                attributeDescriptions[6].offset = offsetof(entity::Vertex, N);
                 
                 attributeDescriptions[7].binding = 0;
                 attributeDescriptions[7].location = 7;
                 attributeDescriptions[7].format = VK_FORMAT_R32_UINT;
-                attributeDescriptions[7].offset = offsetof(VkVertex, drawableDataId);    
+                attributeDescriptions[7].offset = offsetof(entity::Vertex, drawableDataId);    
                 return attributeDescriptions;
             }
             std::vector<std::uint32_t> getIndexes();

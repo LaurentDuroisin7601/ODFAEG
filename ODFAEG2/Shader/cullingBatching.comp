@@ -197,7 +197,7 @@ void main() {
 	memoryBarrier();
 	for (uint t = 0; t < ubo[pc.currentFrame].nbObjectTypes; t++) {
 	    //debugPrintfEXT("type : %i,%i", t, object.type );
-		if (object.type == objectTypes[pc.currentFrame].types[t] /*&& intersects(object.globalBounds, ubo[pc.currentFrame].frustrum)*/) {
+		if (object.type == objectTypes[pc.currentFrame].types[t] && intersects(object.globalBounds, ubo[pc.currentFrame].frustrum)) {
 		    //debugPrintfEXT("Object in frustrum : %v3f %v3f", ubo[pc.currentFrame].frustrum.center, ubo[pc.currentFrame].frustrum.size);
             //debugPrintfEXT("nb sub meshes : %i", object.nbSubMeshes);			
             //Regroupement des données par matériaux et par type de primitive. (Batching)
@@ -207,7 +207,7 @@ void main() {
                 //debugPrintfEXT("opaque mask : %i %i", rasterPipeline, material.pipelineType);
                 if ((pc.opaqueMask & material.opaque) != 0
                     && (rasterPipeline & material.pipelineType) != 0 && subMesh.materialId == materialId && subMesh.primitiveType == primitiveType 
-                    /*&& intersects(subMesh.globalBounds, ubo[pc.currentFrame].frustrum)*/) {
+                    && intersects(subMesh.globalBounds, ubo[pc.currentFrame].frustrum)) {
                     //debugPrintfEXT("submesh in frustrum %i", subMesh.primitiveType);
                     float dist = distance(ubo[pc.currentFrame].frustrum.center, subMesh.globalBounds.center);
                     float lodStep = 20.0;
@@ -261,7 +261,8 @@ void main() {
                         indirectElementsDrawCommand.instance_base = instanceBase;
                         indirectElementsDrawCommand.vertex_base = subMesh.vertexOffset;
                         indirectElementsDrawCommand.instance_count = 1;
-                        //debugPrintfEXT("offsets : %i, %i, %i, %i, %i", subMesh.nbIndexes, subMesh.nbVertices, subMesh.vertexOffset, subMesh.indexOffset, subMesh.lodOffset);
+                        /*if (subMesh.id == 2)
+                        debugPrintfEXT("offsets : %i, %i, %i, %i, %i", subMesh.nbIndexes, subMesh.nbVertices, subMesh.vertexOffset, subMesh.indexOffset, subMesh.lodOffset);*/
                         //debugPrintfEXT("lod infos : %i, %i, %i",lod, lodLevelData.lodLevel[subMesh.lodOffset+lod].index_offset, lodLevelData.lodLevel[subMesh.lodOffset+lod].index_count);
                         //debugPrintfEXT("instance base %i", instanceBase);
 

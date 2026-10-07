@@ -355,6 +355,7 @@ namespace odfaeg {
                 VkPhysicalDeviceFeatures deviceFeatures{};
                 deviceFeatures.drawIndirectFirstInstance = VK_TRUE;
                 deviceFeatures.imageCubeArray = VK_TRUE;
+                deviceFeatures.fillModeNonSolid = VK_TRUE;
 
                 features12.bufferDeviceAddress = VK_TRUE;
                 features12.descriptorBindingPartiallyBound = VK_TRUE;

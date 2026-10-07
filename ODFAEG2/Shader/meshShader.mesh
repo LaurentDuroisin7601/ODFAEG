@@ -224,8 +224,8 @@ void main() {
         uint maxPrims = 256u;
         uint vertexCount   = meshlet.nbVertices;
         uint primitiveCount = meshlet.nbIndexes / 3u;
-        /*if (primitiveCount > maxPrims)*/
-            //debugPrintfEXT("vertex count : %i, primitive count : %i", vertexCount, primitiveCount);
+        if (primitiveCount > 85)
+            debugPrintfEXT("vertex count : %i, primitive count : %i", vertexCount, primitiveCount);
         if (pc.primitiveType == 3) {
             SetMeshOutputsEXT(vertexCount, primitiveCount);
             for (uint i = 0; i < vertexCount; i++) {

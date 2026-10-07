@@ -282,13 +282,13 @@ namespace odfaeg {
         void VertexBuffer::update(VkCommandBuffer& commandBuffer, unsigned int currentFrame) {
             //commandPool.beginRecordCommandBuffer(currentFrame);
             //std::cout<<"primitive type : "<<m_primitiveType<<std::endl;
-            std::vector<VkVertex> vkVertices(m_vertices.size());
+            /*std::vector<VkVertex> vkVertices(m_vertices.size());
             for (unsigned int i = 0; i < m_vertices.size(); i++) {
                 VkVertex vkVertex;
                 toVkVertex(vkVertex, m_vertices[i]);
                 vkVertices[i] = vkVertex;
-            }
-            VkDeviceSize bufferSize = (vkVertices .size() == 0) ? sizeof(VkVertex) : sizeof(VkVertex) * m_vertices.size();
+            }*/
+            VkDeviceSize bufferSize = (m_vertices.size() == 0) ? sizeof(entity::Vertex) : sizeof(entity::Vertex) * m_vertices.size();
            
             if (needToUpdateVertexBuffer[currentFrame]) {
                 //std::cout<<"nb vertices: "<<m_vertices.size()<<std::endl;
@@ -322,7 +322,7 @@ namespace odfaeg {
             }
             //std::cout<<"update vertex buffer!"<<std::endl;
             if (m_vertices.size() > 0) {
-                vertexStaggingBuffer[currentFrame].update(vkVertices.data(), (size_t)bufferSize);
+                vertexStaggingBuffer[currentFrame].update(m_vertices.data(), (size_t)bufferSize);
                 Buffer::copyBuffer(vertexStaggingBuffer[currentFrame], vertexBuffer[currentFrame], bufferSize, commandBuffer);
             }
             bufferSize = (indices.size() == 0) ? sizeof(std::uint32_t) : sizeof(std::uint32_t) * indices.size();

@@ -113,7 +113,7 @@ namespace odfaeg {
 			rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 			rasterizer.depthClampEnable = VK_FALSE;
 			rasterizer.rasterizerDiscardEnable = VK_FALSE;
-			rasterizer.polygonMode = polygonMode;
+			rasterizer.polygonMode = /*VK_POLYGON_MODE_LINE*/polygonMode;
 			rasterizer.lineWidth = 1.0f;
 			rasterizer.cullMode = VK_CULL_MODE_NONE/*cullMode*/;
 			rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
@@ -131,7 +131,7 @@ namespace odfaeg {
 				std::cout<<"color attachment"<<std::endl;*/
 			VkPipelineColorBlendAttachmentState colorBlendAttachment{};			
 			colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-			colorBlendAttachment.blendEnable = VK_TRUE;
+			colorBlendAttachment.blendEnable = VK_FALSE;
 
 
 			colorBlendAttachment.srcColorBlendFactor = factorToVkConstant(blendMode.colorSrcFactor);
@@ -414,7 +414,7 @@ namespace odfaeg {
 			rasterizer.rasterizerDiscardEnable = VK_FALSE;
 			rasterizer.polygonMode = polygonMode;
 			rasterizer.lineWidth = 1.0f;
-			rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+			rasterizer.cullMode = VK_CULL_MODE_NONE;
 			rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
 			VkPipelineMultisampleStateCreateInfo multisampling{};

@@ -467,7 +467,7 @@ namespace odfaeg {
 					object.type = gameObjects[i]->getGameObject()->getTypeInt();
 					object.subMeshesOffset = currentSubmeshesOffset;
 					object.modelDataOffset = currentModelDataOffset;
-					unsigned int nbSubMeshesToDisplay = /*(10 <  gameObjects[i]->getGameObject()->getSubMeshesCount()) ? 10 :*/ gameObjects[i]->getGameObject()->getSubMeshesCount();
+					unsigned int nbSubMeshesToDisplay = /*(3 <  gameObjects[i]->getGameObject()->getSubMeshesCount()) ? 3 :*/ gameObjects[i]->getGameObject()->getSubMeshesCount();
 					object.nbSubMeshes = nbSubMeshesToDisplay /*gameObjects[i]->getGameObject()->getSubMeshesCount()*/;
 					object.renderingType = gameObjects[i]->getGameObject()->renderingType;
 					//std::cout<<"nb submeshes : "<<object.nbSubMeshes<<std::endl;
@@ -531,8 +531,9 @@ namespace odfaeg {
 						if (subMesh.getVertexArray().getIndexCount() == 0) {
 							std::cout<<"empty mesh"<<std::endl;
 							//system("PAUSE");
-						}	
-						//std::cout<<"offsets : "<<subMeshData.nbVertices<<","<<subMeshData.nbIndexes<<","<<subMeshData.vertexOffset<<","<<subMeshData.indexOffset<<std::endl;					
+						}
+						/*if (subMeshData.id == 2) 	
+							std::cout<<"offsets : "<<subMeshData.nbVertices<<","<<subMeshData.nbIndexes<<","<<subMeshData.vertexOffset<<","<<subMeshData.indexOffset<<std::endl;*/					
 						/*if (subMeshData.id == 1590) {
 							std::cout<<"id : vertex offset : nbVertices : "<<subMeshData.id<<","<<subMeshData.vertexOffset<<","<<subMeshData.nbVertices<<std::endl;
 							system("PAUSE");
@@ -560,12 +561,15 @@ namespace odfaeg {
 
 								vertices[primitiveType].append(subMesh.getVertexArray()[v]);
 								vertices[primitiveType][baseVertex+v].drawableDataId = currentSubmeshesOffset;
-								//std::cout<<"drawable data id : "<<vertices[primitiveType][v].drawableDataId<<std::endl;
+								/*if (subMeshData.id == 2)
+									std::cout<<"id : "<<baseVertex + v<<"position : "<<vertices[primitiveType][baseVertex + v].position<<std::endl;*/
 								currentVertexOffset[primitiveType]++;
 							}
 							
 							for (unsigned int v = 0; v < subMesh.getVertexArray().getIndexCount(); v++) {
 								uint32_t idx = subMesh.getVertexArray().getIndex(v);
+								/*if (subMeshData.id == 2) 
+									std::cout<<"prim type : "<<primitiveType<<" index : "<<idx<<std::endl;*/
 								vertices[primitiveType].addIndex(idx);
 								/*if (subMeshData.id == 2) {
 									std::cout<<"index : "<<subMesh.getVertexArray().getIndex(v)<<std::endl;
@@ -579,6 +583,10 @@ namespace odfaeg {
 							/*if (subMeshData.id == 2)
 								system("PAUSE");*/
 						}
+						/*if (subMeshData.id == 2) {
+							std::cout<<"vertices count : "<<vertices[primitiveType].getVertexCount()<<std::endl;
+							system("PAUSE");
+						}*/
 						/*std::cout<<"new total vertex count : "<<vertices[primitiveType].getVertexCount()<<std::endl;
 						std::cout<<"new total index count : "<<vertices[primitiveType].getIndexCount()<<std::endl;*/
 						subMeshData.meshletOffset =  meshletDatas.size();
@@ -788,6 +796,8 @@ namespace odfaeg {
 								//std::cout<<"index offset : "<<m.indexOffset<<std::endl;
 								ms.nbIndexes = meshlet.triangle_count*3;
 								ms.nbVertices = meshlet.vertex_count;
+								//std::cout<<"nb index : "<<ms.nbIndexes<<std::endl;
+								
 								/*if (meshlet.vertex_count == 0) {
 									std::cout<<"nb vertices : "<<m.nbVertices<<std::endl;
 									system("PAUSE");
@@ -1063,6 +1073,7 @@ namespace odfaeg {
 					}
 				}
 				//system("PAUSE");
+				//system("PAUSE");
 				/*std::cout<<"size : "<<vertices[entity::Triangles].getIndexCount()<<std::endl;
 				system("PAUSE");*/
 				cullingInfo.gridCellCount = cellDatas.size();
@@ -1237,7 +1248,7 @@ namespace odfaeg {
 						//std::cout<<"output model data : "<<outputModelDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 						outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].create(sizeof(MaterialData) * currentSubmeshesOffset * Material::getAllMaterials().size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 						outputMeshes[j * NB_PRIMITIVE_TYPES + k].create(sizeof(entity::SubMesh) * currentSubmeshesOffset * Material::getAllMaterials().size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-						outputMeshlets[j * NB_PRIMITIVE_TYPES + k].create(sizeof(unsigned int) * currentMeshletsOffset, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);						
+						outputMeshlets[j * NB_PRIMITIVE_TYPES + k].create(sizeof(unsigned int) * currentMeshletsOffset * Material::getAllMaterials().size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);						
 						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 						//std::cout<<"output material datas : "<<registeredRenderTargets[i]->outputMaterialDatas[j * NB_PRIMITIVE_TYPES + k].getRange()<<std::endl;
 					}

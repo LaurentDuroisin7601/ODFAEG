@@ -257,7 +257,7 @@ int main() {
 	ResourceManager<Texture, TextureNames> textureManager;
 	ResourceManager<Texture, std::string> modelTextureManager;
 	ModelLoader modelLoader(GPUContext::instance().getDevice(), modelTextureManager);
-	Mesh* bistroExterior = modelLoader.loadModel("Bistro_v5_2/BistroExterior.fbx");
+	Mesh* bistroExterior = modelLoader.loadModel("Bistro_v5_2/BistroExterior.fbx", false);
 	//bistroExterior->getGameObject()->setRotation(180, Vec3f(0, 0, 1));
 	/*Mesh* bistroInterior = modelLoader.loadModel("Bistro_v5_2/BistroInterior.fbx");*/
 	//bistroExterior->getGameObject()->setScale(Vec3f(1, 1, -1));
@@ -350,7 +350,7 @@ int main() {
 	}*/
 	//window.addGameObject(car);
 	window.addGameObject(bistroExterior);	
-	/*window.addGameObject(bistroInterior);*/
+	//window.addGameObject(bistroInterior);
 	
 		//std::cout<<"i : "<<i<<std::endl;*/
 	
