@@ -346,9 +346,9 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                                 debugPrintfEXT("Error %i, %i", sm.id, inputMeshlet.meshlets[n.meshletOffset+m].submeshId);
                             }*/
                             inputMeshlet.meshlets[n.meshletOffset+m].rendered = 0;
-                            uint meshletOffset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset, 1);
-                            outputMeshlets[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlets[meshletOffset] = inputMeshlet.meshlets[n.meshletOffset+m].id;   
-                            taskData.meshletCount++;
+                            
+                            outputMeshlets[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlets[taskData.meshletCount+taskData.meshDrawCommand.groupYCount] = inputMeshlet.meshlets[n.meshletOffset+m].id;   
+                            taskData.meshDrawCommand.groupYCount++;
                             
                         }
                         
@@ -507,13 +507,13 @@ void main() {
                             //debugPrintfEXT("index offset : %i", subMesh.indexOffset);
                             MeshDrawCommand meshDrawCommand;                        
                             meshDrawCommand.groupXCount = 1;
-                            meshDrawCommand.groupYCount = 1;
+                            meshDrawCommand.groupYCount = 0;
                             meshDrawCommand.groupZCount = 1;
                             TaskData taskData;
                             taskData.baseInstance = instanceId;
                             taskData.vertexCount = 0;                            
                             taskData.meshDrawCommand = meshDrawCommand; 
-                            taskData.meshletCount = 0; 
+                            taskData.meshletCount = offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset; 
                                                      
                             //debugPrintfEXT("lod infos : %i, %i",subMesh.lodLevel[lod].index_offset,subMesh.lodLevel[lod].index_count);
                             //debugPrintfEXT("instance base %i", instanceBase); 
@@ -540,7 +540,8 @@ void main() {
                             //debugPrintfEXT("Output Model Matrix : %i\n%v4f\n%v4f\n%v4f\n%v4f",objectDataOffset,outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[0], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[1], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[2], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[3]);
                             
                             setVisibleMeshletsFromBox(ubo[pc.currentFrame].frustrum, lod, object, subMesh, s, taskData);  
-                      
+                            atomicAdd(offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset, taskData.meshDrawCommand.groupYCount);
+                            //atomicAdd(offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset, 1); 
                             outputTaskData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[offsetTaskData] = taskData;
                             
 
