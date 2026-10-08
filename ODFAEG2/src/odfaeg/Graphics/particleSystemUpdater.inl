@@ -140,7 +140,7 @@ namespace odfaeg {
             if (needToUpdateBuffers) {
                 std::unique_lock<std::mutex> lock(mtx3);
                 cv3.wait(lock, [this]{return buffersReady.load();});
-                
+                //std::cout<<"buffers ready"<<std::endl;
                 std::unique_lock<std::mutex> lock2(mtx2);
                 buffersReady.store(false);
                 maxParticles = 0;
@@ -241,6 +241,9 @@ namespace odfaeg {
             cv.wait(lock, [this]() {
                 return (ready.load() || !isRunning());
             });
+            /*if (!isRunning()) {
+                std::cout<<"stop!"<<std::endl;
+            }*/
             
             std::unique_lock<std::mutex> lock2(mtx2);
             

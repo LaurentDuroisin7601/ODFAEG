@@ -381,7 +381,7 @@ int main() {
 				for (unsigned int i = 0; i < components.size(); i++) {
 					components[i]->stopThread();
 				}*/
-				//std::cout<<"thread stopped"<<std::endl;
+				//std::cout<<"close"<<std::endl;
 				window.close();
 			}		
 			

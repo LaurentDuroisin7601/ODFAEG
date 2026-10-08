@@ -31,10 +31,10 @@ namespace odfaeg {
             colorImage.createImageView(VK_IMAGE_VIEW_TYPE_2D, swapchain.getSwapchainImageFormat(), VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1, 1);
         }
 	    void RenderWindow::onClose() {
-            /*ParticleSystemUpdater::instance().stop();
-            MorphAnimUpdater::instance().stop();
-            BoneAnimUpdater::instance().stop();
-            waitDeviceIdle();*/
+            ParticleSystemUpdater::instance(cv, mtx).stop();
+            MorphAnimUpdater::instance(cv, mtx).stop();
+            BoneAnimUpdater::instance(cv, mtx).stop();
+            //waitDeviceIdle();
         }
         void RenderWindow::cleanup() {
             vkDeviceWaitIdle(device.getDevice());
