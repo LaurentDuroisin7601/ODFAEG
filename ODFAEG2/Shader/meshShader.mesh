@@ -109,6 +109,7 @@ struct LodLevel {
 };
 struct TaskPayload {
     int taskId;
+    uint meshletOffset;
 };
 taskPayloadSharedEXT TaskPayload payload;
 layout (push_constant) uniform PushConstant {
@@ -178,7 +179,7 @@ void main() {
         debugPrintfEXT("Error : %i", taskData.vertexCount);*/
     //Modèles 3D.
     if (taskData.vertexCount == 0) {  
-        MeshLet meshlet = meshletDatas.meshlet[visibleMeshletDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlet[gl_WorkGroupID.y]];
+        MeshLet meshlet = meshletDatas.meshlet[visibleMeshletDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlet[payload.meshletOffset+gl_WorkGroupID.y]];
         //Cluster cluster = clusterDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[meshlet.clusterId];         
         //if (cluster.meshletCount > 8) {
             //debugPrintfEXT("meshlet count : %i %i", cluster.submeshId, cluster.meshletOffset);
@@ -211,7 +212,7 @@ void main() {
         //Avoid to render it twice if the meshlet is between two clusters. (Deduplication)
         
         //debugPrintfEXT("mesh shader"); 
-        meshletDatas.meshlet[gl_WorkGroupID.y].rendered = 1;
+        meshletDatas.meshlet[payload.meshletOffset+gl_WorkGroupID.y].rendered = 1;
         
         uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+meshlet.lod].index_offset + meshlet.indexOffset;
         //debugPrintfEXT("First index : %i,", firstIndex);
@@ -224,10 +225,11 @@ void main() {
             SetMeshOutputsEXT(vertexCount, primitiveCount);
             for (uint i = 0; i < vertexCount; i++) {
                 
-                uint globalIndex = meshlet.vertices[i];
+                
                 
                 //debugPrintfEXT("global index : %i %i", i, globalIndex);
                 //uint v = subMesh.vertexOffset + meshlet.vertexOffset + i;                
+                uint globalIndex = meshlet.vertices[i];
                 uint v = subMesh.vertexOffset + globalIndex;
                 //if (subMesh.id == 0)
                     //debugPrintfEXT("offset %i", subMesh.vertexOffset);

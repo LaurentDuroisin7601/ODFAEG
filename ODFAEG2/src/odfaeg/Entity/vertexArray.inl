@@ -163,6 +163,7 @@ namespace odfaeg {
                 target * r,
                 1e-2f);
                 lod.resize(count);*/
+                
                 LODLevel lodLevel;
                 lodLevel.indexOffset = indices.size();
                 lodLevel.indexCount = current.size();

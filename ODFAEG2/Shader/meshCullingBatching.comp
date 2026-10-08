@@ -94,7 +94,7 @@ struct TaskData {
     uint baseInstance;    
     uint vertexCount;
     uint primitiveCount;
-    uint vertexOffset; 
+    uint vertexOffset;     
     uint meshletCount;    
 };
 struct Vertex {

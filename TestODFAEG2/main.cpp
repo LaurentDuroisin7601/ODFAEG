@@ -328,12 +328,13 @@ int main() {
 	cube3Mesh.buildMaterialsFromTextureManager(textureManager);
 	cube4Mesh.buildMaterialsFromTextureManager(textureManager);
 	cube5Mesh.buildMaterialsFromTextureManager(textureManager);
-	/*window.addGameObject(&planeMesh);
+	window.addGameObject(&planeMesh);
 	window.addGameObject(&cube1Mesh);
 	window.addGameObject(&cube2Mesh);
 	window.addGameObject(&cube3Mesh);
 	window.addGameObject(&cube4Mesh);
-	window.addGameObject(&cube5Mesh);*/
+	window.addGameObject(&cube5Mesh);
+
 	//window.addGameObject(&cube6Mesh);
 	/*RenderTexture sceneColorTexture(ctx.getDevice(), true);
 	sceneColorTexture.create(window.getSize().x(), window.getSize().y());
@@ -348,7 +349,7 @@ int main() {
 	for (unsigned int i = 0; i < components.size(); i++) {
 		componentManager.addComponent(components[i]);
 	}*/
-	window.addGameObject(car);
+	//window.addGameObject(car);
 	//window.addGameObject(bistroExterior);	
 	//window.addGameObject(bistroInterior);
 	
@@ -434,7 +435,7 @@ int main() {
 		window.setCamera(camera);
 		window.setDepthStencil(true, false);
 		window.clear();
-		window.draw(Triangles);
+		window.drawMesh(Triangles);
 		
 		/*window.setTypesToRender("*", window.getCurrentFrame());	
 		window.drawMesh(Triangles);*/

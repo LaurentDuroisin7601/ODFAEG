@@ -46,7 +46,8 @@ layout(push_constant) uniform PushConstant {
     //uint totalSubMeshesCount;
 } pc;
 struct TaskPayload {
-    uint taskId;    
+    uint taskId; 
+    uint meshletOffset;   
 };
 taskPayloadSharedEXT TaskPayload payload;
 layout(std430, set = 0, binding = 0) buffer TaskDataSSBO {
@@ -69,5 +70,6 @@ void main() {
     TaskData t = TaskDatas[pc.primitiveType * MAX_FRAMES_IN_FLIGHT + pc.currentFrame].taskData[id];
     payload.taskId = id;
     t.meshDrawCommand.groupYCount = t.meshletCount;
-    EmitMeshTasksEXT(t.meshDrawCommand.groupXCount, t.meshDrawCommand.groupYCount, t.meshDrawCommand.groupZCount);    
+    EmitMeshTasksEXT(t.meshDrawCommand.groupXCount, t.meshDrawCommand.groupYCount, t.meshDrawCommand.groupZCount);
+    payload.meshletOffset += t.meshletCount;    
 } 

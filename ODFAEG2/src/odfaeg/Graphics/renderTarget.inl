@@ -762,8 +762,7 @@ namespace odfaeg {
 								
 								for (uint32_t v = 0; v < meshlet.vertex_count; ++v) {
 									localVertexIndices[v] = meshletVertices[meshlet.vertex_offset + v];
-									/*vertices[primitiveType][baseVertex+meshlet.vertex_offset + v] = verts[meshlet.vertex_offset + v];
-									currentVertexOffset[primitiveType]++;*/
+									
 									//std::cout<<"v index : "<<localVertexIndices[v]<<std::end;
 								}
 								//std::cout<<"local vertices ok"<<std::endl;
@@ -774,22 +773,8 @@ namespace odfaeg {
 									uint32_t g0 = meshletTriangles[meshlet.triangle_offset + t * 3 + 0];
 									uint32_t g1 = meshletTriangles[meshlet.triangle_offset + t * 3 + 1];
 									uint32_t g2 = meshletTriangles[meshlet.triangle_offset + t * 3 + 2];
-									/*vertices[primitiveType].setIndex(firstIndex+meshlet.triangle_offset+t*3+0, localVertexIndices[g0]);
-									vertices[primitiveType].setIndex(firstIndex+meshlet.triangle_offset+t*3+1, localVertexIndices[g1]);
-									vertices[primitiveType].setIndex(firstIndex+meshlet.triangle_offset+t*3+2, localVertexIndices[g2]);
-									currentIndexOffset[primitiveType] += 3;*/
-									/*bool findg0 = false, findg1  = false, findg2  = false;
-									for (unsigned int g = 0; g < localVertexIndices.size(); g++) {
-										if (g0 == localVertexIndices[g]) {
-											findg0 = true;
-										}
-										if (g1 == localVertexIndices[g]) {
-											findg1 = true;
-										}
-										if (g2 == localVertexIndices[g]) {
-											findg2 = true;
-										}
-									}*/						
+									
+													
 									localTriangles[t] = math::Vector4u(localVertexIndices[g0], localVertexIndices[g1], localVertexIndices[g2], 0); // indices locaux.
 									//std::cout<<"indexes : "<<localTriangles[t]<<std::endl;	
 								}								
@@ -810,14 +795,12 @@ namespace odfaeg {
 								for (unsigned int v = 0; v < localVertexIndices.size(); v++) {
 									ms.localVertices[v] = localVertexIndices[v];
 									
-									/*if (subMeshData.id == 0)*/
-									//std::cout<<"position : "<<verts[ms.localVertices[v]].position<<std::endl;
+									
 								}
 								for (unsigned int t = 0; t < localTriangles.size(); t++) {
 									unsigned int tri[4];
 									localTriangles[t].toVkVec(tri);
-									/*if (subMeshData.id == 0)
-									std::cout<<"tri : "<<localTriangles[t]<<std::endl;*/
+									
 									core::arrayCopy(tri, ms.localTriangles[t], 3);
 								}
 								meshopt_Bounds bounds = meshopt_computeMeshletBounds(
