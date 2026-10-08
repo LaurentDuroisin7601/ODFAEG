@@ -6,13 +6,14 @@ layout(push_constant) uniform PushConstant {
     uint currentFrame;
 } pc;
 struct Offset {
-    int previousOffsetVertex;
-    int offsetVertex;    
-    int instanceOffset;
-    int clusterOffset;
-    int submeshOffset;
-    int offsetTaskData;
-    int previousOffsetTaskData;
+    uint previousOffsetVertex;
+    uint offsetVertex;    
+    uint instanceOffset;
+    uint clusterOffset;
+    uint submeshOffset;
+    uint offsetTaskData;
+    uint previousOffsetTaskData;
+    uint currentMeshletOffset;
 }; 
 struct MaterialData {       
     uint diffuseTextureIndex;
@@ -82,6 +83,7 @@ void main() {
     offsetsData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.submeshOffset = 0;
     offsetsData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.offsetTaskData  = 0;
     offsetsData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.previousOffsetTaskData  = 0;
+    offsetsData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.currentMeshletOffset  = 0;
     //debugPrintfEXT("reset  : %i, current frame : %i", firstIndexData[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].firstIndex, pc.currentFrame);
 	inputMaterialBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet = 0;
 }

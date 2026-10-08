@@ -59,10 +59,11 @@ struct Offset {
     uint previousOffsetVertex;
     uint offsetVertex;    
     uint instanceOffset;
-    uint meshletOffset;
+    uint meshletOffset;    
     uint submeshOffset;
     uint offsetTaskData;
     uint previousOffsetTaskData;
+    uint currentMeshletOffset;
 };      
 /*Matériaux*/
 struct MaterialData {   
@@ -346,8 +347,8 @@ void setVisibleMeshletsFromBox(AABB frustrum, int lod, Object object, SubMesh sm
                                 debugPrintfEXT("Error %i, %i", sm.id, inputMeshlet.meshlets[n.meshletOffset+m].submeshId);
                             }*/
                             inputMeshlet.meshlets[n.meshletOffset+m].rendered = 0;
-                            
-                            outputMeshlets[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlets[taskData.meshletCount+taskData.meshDrawCommand.groupYCount] = inputMeshlet.meshlets[n.meshletOffset+m].id;   
+                            uint meshletOffset = atomicAdd(offsetsData[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.currentMeshletOffset, 1);
+                            outputMeshlets[sm.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlets[meshletOffset] = inputMeshlet.meshlets[n.meshletOffset+m].id;   
                             taskData.meshDrawCommand.groupYCount++;
                             
                         }
@@ -542,9 +543,9 @@ void main() {
                             memoryBarrier();
                             memoryBarrierBuffer();
                             groupMemoryBarrier();
-                            taskData.meshletCount = offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset;
+                            
                             setVisibleMeshletsFromBox(ubo[pc.currentFrame].frustrum, lod, object, subMesh, s, taskData);  
-                            atomicAdd(offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset, taskData.meshDrawCommand.groupYCount);
+                            taskData.meshletCount = atomicAdd(offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset, taskData.meshDrawCommand.groupYCount);
                             
                             
                             //atomicAdd(offsetsData[subMesh.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].offsets.meshletOffset, 1); 

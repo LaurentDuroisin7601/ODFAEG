@@ -61,6 +61,7 @@ namespace odfaeg {
 				unsigned int submeshOffset;
 				unsigned int offsetTaskData;
 				unsigned int previousOffsetTaskData;
+				unsigned int currentMeshletOffset;
 			};
 			struct AABB {
 				float center[4]; //float _pad0; // vec3 + padding
