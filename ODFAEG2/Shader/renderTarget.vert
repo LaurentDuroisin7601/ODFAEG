@@ -72,6 +72,10 @@ void main() {
     meshId = subMesh.id;
     mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[gl_InstanceIndex].modelMatrix;
     gl_Position =  pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(inPosition, 1);
+    debugPrintfEXT("positions : %i, %v4f, %v3f\nModel matrix : %v4f,%v4f,%v4f,%v4f\n", subMesh.id, gl_Position, inPosition, modelMatrix[0], modelMatrix[1], modelMatrix[2], modelMatrix[3]);
+    //debugPrintfEXT("Proj matrix : %v4f,%v4f,%v4f,%v4f", pc.projMatrix[0], pc.projMatrix[1], pc.projMatrix[2], pc.projMatrix[3]);
+    //debugPrintfEXT("View matrix : %v4f,%v4f,%v4f,%v4f", pc.viewMatrix[0], pc.viewMatrix[1], pc.projMatrix[2], pc.viewMatrix[3]);
+    //debugPrintfEXT("Model matrix : %v4f,%v4f,%v4f,%v4f", modelMatrix[0], modelMatrix[1], modelMatrix[2], modelMatrix[3]);
     /*if(subMesh.id == 2) {
         if (gl_Position.x < -gl_Position.w || 
             gl_Position.x > gl_Position.w ||

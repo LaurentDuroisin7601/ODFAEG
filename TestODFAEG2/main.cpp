@@ -262,7 +262,7 @@ int main() {
 	/*Mesh* bistroInterior = modelLoader.loadModel("Bistro_v5_2/BistroInterior.fbx");*/
 	//bistroExterior->getGameObject()->setScale(Vec3f(1, 1, -1));
 	//std::cout<<"test"<<std::endl;
-	//Mesh* car = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
+	Mesh* car = modelLoader.loadModel("car/source/FINAL_MODEL_S4_13/FINAL_MODEL_S4.fbx");
 	//car->getGameObject()->setRotation(90, Vec3f(0, 1, 0));
 	//bistroExterior->getGameObject()->setScale(Vec3f(1, 1, -1));
 	//std::cout<<"test"<<std::endl;
@@ -328,13 +328,13 @@ int main() {
 	cube3Mesh.buildMaterialsFromTextureManager(textureManager);
 	cube4Mesh.buildMaterialsFromTextureManager(textureManager);
 	cube5Mesh.buildMaterialsFromTextureManager(textureManager);
-	window.addGameObject(&planeMesh);
+	/*window.addGameObject(&planeMesh);
 	window.addGameObject(&cube1Mesh);
 	window.addGameObject(&cube2Mesh);
 	window.addGameObject(&cube3Mesh);
 	window.addGameObject(&cube4Mesh);
-	window.addGameObject(&cube5Mesh);
-	window.addGameObject(&cube6Mesh);
+	window.addGameObject(&cube5Mesh);*/
+	//window.addGameObject(&cube6Mesh);
 	/*RenderTexture sceneColorTexture(ctx.getDevice(), true);
 	sceneColorTexture.create(window.getSize().x(), window.getSize().y());
 	sceneColorTexture.setCamera(camera);
@@ -348,7 +348,7 @@ int main() {
 	for (unsigned int i = 0; i < components.size(); i++) {
 		componentManager.addComponent(components[i]);
 	}*/
-	//window.addGameObject(car);
+	window.addGameObject(car);
 	//window.addGameObject(bistroExterior);	
 	//window.addGameObject(bistroInterior);
 	
@@ -434,7 +434,7 @@ int main() {
 		window.setCamera(camera);
 		window.setDepthStencil(true, false);
 		window.clear();
-		window.drawMesh(Triangles);
+		window.draw(Triangles);
 		
 		/*window.setTypesToRender("*", window.getCurrentFrame());	
 		window.drawMesh(Triangles);*/

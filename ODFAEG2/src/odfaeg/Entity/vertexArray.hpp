@@ -14,6 +14,8 @@ namespace odfaeg {
             struct LODLevel {
                 uint32_t indexOffset = 0;
                 uint32_t indexCount = 0;
+                uint32_t vertexBase = 0;
+                uint32_t vertexCount = 0;
             };
             VertexArray();
             VertexArray(PrimitiveType PrimitiveType);

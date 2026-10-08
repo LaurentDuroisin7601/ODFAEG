@@ -532,16 +532,10 @@ namespace odfaeg {
 							std::cout<<"empty mesh"<<std::endl;
 							//system("PAUSE");
 						}
-						/*if (subMeshData.id == 2) 	
-							std::cout<<"offsets : "<<subMeshData.nbVertices<<","<<subMeshData.nbIndexes<<","<<subMeshData.vertexOffset<<","<<subMeshData.indexOffset<<std::endl;*/					
-						/*if (subMeshData.id == 1590) {
-							std::cout<<"id : vertex offset : nbVertices : "<<subMeshData.id<<","<<subMeshData.vertexOffset<<","<<subMeshData.nbVertices<<std::endl;
-							system("PAUSE");
-						}*/
+						
 
 						//std::cout<<"vertices count : "<<subMesh.getVertexBuffer().getVertexCount()<<std::endl;
-						/*int pause;
-						std::cin>>pause;*/
+						
 						//std::cout<<"index count : "<<subMesh.getVertexBuffer().getIndexCount()<<std::endl;
 
 						/*std::cout<<"total vertex count : "<<vertices[primitiveType].getVertexCount()<<std::endl;
@@ -556,32 +550,21 @@ namespace odfaeg {
 							gameObjects[i]->getMaterials()[j]->materialSet = true;
 							for (unsigned int v = 0; v < subMesh.getVertexArray().getVertexCount(); v++) {
 								//std::cout<<"add vertex : "<<subMesh.getVertexBuffer()[v].position<<std::endl;
-								/*if (subMeshData.id == 2)
-									std::cout<<"position : "<<subMesh.getVertexArray()[v].position<<std::endl;*/
-
+								
 								vertices[primitiveType].append(subMesh.getVertexArray()[v]);
 								vertices[primitiveType][baseVertex+v].drawableDataId = currentSubmeshesOffset;
-								/*if (subMeshData.id == 2)
-									std::cout<<"id : "<<baseVertex + v<<"position : "<<vertices[primitiveType][baseVertex + v].position<<std::endl;*/
+								
 								currentVertexOffset[primitiveType]++;
 							}
 							
 							for (unsigned int v = 0; v < subMesh.getVertexArray().getIndexCount(); v++) {
 								uint32_t idx = subMesh.getVertexArray().getIndex(v);
-								/*if (subMeshData.id == 2) 
-									std::cout<<"prim type : "<<primitiveType<<" index : "<<idx<<std::endl;*/
+								
 								vertices[primitiveType].addIndex(idx);
-								/*if (subMeshData.id == 2) {
-									std::cout<<"index : "<<subMesh.getVertexArray().getIndex(v)<<std::endl;
-									system("PAUSE");
-								}*/
-									/*if (v == 0)
-									std::cout<<"add index : "<<baseVertex<<","<<idx<<std::endl;*/
+								
 								
 								currentIndexOffset[primitiveType]++;
-							}
-							/*if (subMeshData.id == 2)
-								system("PAUSE");*/
+							}							
 						}
 						/*if (subMeshData.id == 2) {
 							std::cout<<"vertices count : "<<vertices[primitiveType].getVertexCount()<<std::endl;
@@ -772,10 +755,15 @@ namespace odfaeg {
 								const meshopt_Meshlet& meshlet = meshlets[m];
 								assert(meshlet.vertex_count <= 256);
 								assert(meshlet.triangle_count <= 256);
+								unsigned int baseVertex = vertices[primitiveType].getVertexCount();
+								unsigned int firstIndex = vertices[primitiveType].getIndexCount();
 								std::vector<uint32_t> localVertexIndices(meshlet.vertex_count);
+								//vertices[primitiveType].resize(vertices[primitiveType].getVertexCount()+meshlet.vertex_count, vertices[primitiveType].getIndexCount()+meshlet.triangle_count*3);
 								
 								for (uint32_t v = 0; v < meshlet.vertex_count; ++v) {
 									localVertexIndices[v] = meshletVertices[meshlet.vertex_offset + v];
+									/*vertices[primitiveType][baseVertex+meshlet.vertex_offset + v] = verts[meshlet.vertex_offset + v];
+									currentVertexOffset[primitiveType]++;*/
 									//std::cout<<"v index : "<<localVertexIndices[v]<<std::end;
 								}
 								//std::cout<<"local vertices ok"<<std::endl;
@@ -783,9 +771,13 @@ namespace odfaeg {
 								
 								
 								for (uint32_t t = 0; t < meshlet.triangle_count; ++t) {
-									uint32_t g0 = localVertexIndices[meshletTriangles[meshlet.triangle_offset + t * 3 + 0]];
-									uint32_t g1 = localVertexIndices[meshletTriangles[meshlet.triangle_offset + t * 3 + 1]];
-									uint32_t g2 = localVertexIndices[meshletTriangles[meshlet.triangle_offset + t * 3 + 2]];
+									uint32_t g0 = meshletTriangles[meshlet.triangle_offset + t * 3 + 0];
+									uint32_t g1 = meshletTriangles[meshlet.triangle_offset + t * 3 + 1];
+									uint32_t g2 = meshletTriangles[meshlet.triangle_offset + t * 3 + 2];
+									/*vertices[primitiveType].setIndex(firstIndex+meshlet.triangle_offset+t*3+0, localVertexIndices[g0]);
+									vertices[primitiveType].setIndex(firstIndex+meshlet.triangle_offset+t*3+1, localVertexIndices[g1]);
+									vertices[primitiveType].setIndex(firstIndex+meshlet.triangle_offset+t*3+2, localVertexIndices[g2]);
+									currentIndexOffset[primitiveType] += 3;*/
 									/*bool findg0 = false, findg1  = false, findg2  = false;
 									for (unsigned int g = 0; g < localVertexIndices.size(); g++) {
 										if (g0 == localVertexIndices[g]) {
@@ -797,9 +789,9 @@ namespace odfaeg {
 										if (g2 == localVertexIndices[g]) {
 											findg2 = true;
 										}
-									}*/	
-																
-									localTriangles[t] = math::Vector4u(g0, g1, g2, 0); // indices locaux.
+									}*/						
+									localTriangles[t] = math::Vector4u(localVertexIndices[g0], localVertexIndices[g1], localVertexIndices[g2], 0); // indices locaux.
+									//std::cout<<"indexes : "<<localTriangles[t]<<std::endl;	
 								}								
 								Meshlet ms;	
 								ms.id = meshletDatas.size();
@@ -817,8 +809,9 @@ namespace odfaeg {
 								
 								for (unsigned int v = 0; v < localVertexIndices.size(); v++) {
 									ms.localVertices[v] = localVertexIndices[v];
-									/*if (subMeshData.id == 0)
-									std::cout<<"position : "<<verts[ms.localVertices[v]].position<<std::endl;*/
+									
+									/*if (subMeshData.id == 0)*/
+									//std::cout<<"position : "<<verts[ms.localVertices[v]].position<<std::endl;
 								}
 								for (unsigned int t = 0; t < localTriangles.size(); t++) {
 									unsigned int tri[4];
@@ -1328,7 +1321,7 @@ namespace odfaeg {
 				pushConstants.clear();
 				pushConstant.offset = 0;
 				pushConstant.size = sizeof(ViewProjMatPC);
-				pushConstant.stageFlags = VK_SHADER_STAGE_TASK_BIT_EXT |VK_SHADER_STAGE_MESH_BIT_EXT;
+				pushConstant.stageFlags = VK_SHADER_STAGE_TASK_BIT_EXT | VK_SHADER_STAGE_MESH_BIT_EXT;
 				pushConstants.push_back(pushConstant);
 				VkPushConstantRange frag_push_constant;
 				frag_push_constant.offset = sizeof(ViewProjMatPC);

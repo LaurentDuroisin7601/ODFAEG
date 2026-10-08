@@ -33,7 +33,7 @@ struct TaskData {
     uint vertexCount;
     uint primitiveCount;
     uint vertexOffset; 
-    uint meshletOffset;     
+    uint meshletCount;     
 };
 struct AABB {
 	vec4 center;
@@ -161,19 +161,16 @@ uint globalIndices[256];
 uint findLocalIndex(uint globalIndex, uint vertexCount) {
     for (uint i = 0; i < vertexCount; i++) {
         
-        if (globalIndices[i] == globalIndex) {
-            //debugPrintfEXT("i = %i %i", i, globalIndices[i]);
+        if (globalIndices[i] == globalIndex) {            
             return i;
         }
-    }
-    /*if (globalIndex
-     == 1037)*/
-        debugPrintfEXT("Erreur %i ", globalIndex);
+    }   
     return 0; // ne devrait jamais arriver
 }
 void main() {      
     
     TaskData taskData = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId];
+    //debugPrintfEXT("base instance %i", taskData.baseInstance);
     if (pc.currentFrame >= MAX_FRAMES_IN_FLIGHT || pc.primitiveType > 3) {
         debugPrintfEXT("Current frame : %i %i", pc.currentFrame, pc.primitiveType);
     }
@@ -181,8 +178,8 @@ void main() {
         debugPrintfEXT("Error : %i", taskData.vertexCount);*/
     //Modèles 3D.
     if (taskData.vertexCount == 0) {  
-        MeshLet meshlet = meshletDatas.meshlet[visibleMeshletDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlet[taskData.meshletOffset+gl_WorkGroupID.y]];
-        //Cluster cluster = clusterDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[taskData.clusterOffset+gl_WorkGroupID.y];         
+        MeshLet meshlet = meshletDatas.meshlet[visibleMeshletDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].meshlet[gl_WorkGroupID.y]];
+        //Cluster cluster = clusterDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].clusters[meshlet.clusterId];         
         //if (cluster.meshletCount > 8) {
             //debugPrintfEXT("meshlet count : %i %i", cluster.submeshId, cluster.meshletOffset);
         //}
@@ -214,7 +211,7 @@ void main() {
         //Avoid to render it twice if the meshlet is between two clusters. (Deduplication)
         
         //debugPrintfEXT("mesh shader"); 
-        meshletDatas.meshlet[taskData.meshletOffset+gl_WorkGroupID.y].rendered = 1;
+        meshletDatas.meshlet[gl_WorkGroupID.y].rendered = 1;
         
         uint firstIndex = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+meshlet.lod].index_offset + meshlet.indexOffset;
         //debugPrintfEXT("First index : %i,", firstIndex);
@@ -228,13 +225,12 @@ void main() {
             for (uint i = 0; i < vertexCount; i++) {
                 
                 uint globalIndex = meshlet.vertices[i];
-                /*if (globalIndex == 1037)
-                    debugPrintfEXT("%i : 1037", i);*/
-                //debugPrintfEXT("global index : %i %i", i, globalIndex+1);
+                
+                //debugPrintfEXT("global index : %i %i", i, globalIndex);
                 //uint v = subMesh.vertexOffset + meshlet.vertexOffset + i;                
                 uint v = subMesh.vertexOffset + globalIndex;
-                /*if (subMesh.id == 0)
-                    debugPrintfEXT("offset %i", globalIndex);*/
+                //if (subMesh.id == 0)
+                    //debugPrintfEXT("offset %i", subMesh.vertexOffset);
                 globalIndices[i] = globalIndex;
                 groupMemoryBarrier();
                 memoryBarrierBuffer();
@@ -246,8 +242,12 @@ void main() {
 
             
                 gl_MeshVerticesEXT[i].gl_Position = pc.projMatrix * pc.viewMatrix * modelMatrix * vec4(vertexData[pc.primitiveType].vertices[v].position.xyz, 1);
+                //debugPrintfEXT("positions : %i, %v4f, %v3f\nModel matrix : %v4f,%v4f,%v4f,%v4f", subMesh.id, gl_MeshVerticesEXT[i].gl_Position, vertexData[pc.primitiveType].vertices[v].position.xyz, modelMatrix[0], modelMatrix[1], modelMatrix[2], modelMatrix[3]);
+                //debugPrintfEXT("Proj matrix : %v4f,%v4f,%v4f,%v4f", pc.projMatrix[0], pc.projMatrix[1], pc.projMatrix[2], pc.projMatrix[3]);
+                //debugPrintfEXT("View matrix : %v4f,%v4f,%v4f,%v4f", pc.viewMatrix[0], pc.viewMatrix[1], pc.viewMatrix[2], pc.viewMatrix[3]);
+                //debugPrintfEXT("Model matrix : %v4f,%v4f,%v4f,%v4f", modelMatrix[0], modelMatrix[1], modelMatrix[2], modelMatrix[3]);
                 /*if (subMesh.id == 0)
-                debugPrintfEXT("position : %v3f", vertexData[pc.primitiveType].vertices[v].position);*/
+                debugPrintfEXT("offset : %i, position : %v3f", subMesh.vertexOffset, vertexData[pc.primitiveType].vertices[v].position);*/
                 //debugPrintfEXT("vertex position %v3f : ",gl_MeshVerticesEXT[i].gl_Position);
                 fragColor[i] = color;
                 //debugPrintfEXT("color : %v4f", fragColor[i]);
@@ -272,8 +272,8 @@ void main() {
                 uint i0 = findLocalIndex(g0, vertexCount);
                 uint i1 = findLocalIndex(g1, vertexCount);
                 uint i2 = findLocalIndex(g2, vertexCount);
-                /*if (subMesh.id == 0)
-                    debugPrintfEXT("offset %i, %i, %i", i0, i1, i2);*/
+                /*if (subMesh.id == 0)*/
+                    //debugPrintfEXT("submesh id : %i triangle : %i, %i, %i %i %i %i", subMesh.id, g0, g1, g2, i0, i1, i2);
                 /*uint g0 = indexData[pc.primitiveType].indexes[firstIndex+tri*3+0];
                 uint g1 = indexData[pc.primitiveType].indexes[firstIndex+tri*3+1];
                 uint g2 = indexData[pc.primitiveType].indexes[firstIndex+tri*3+2];
