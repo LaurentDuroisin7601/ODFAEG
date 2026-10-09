@@ -318,6 +318,8 @@ namespace odfaeg {
                 submitReady.store(true);
                 cv2.notify_all();
             }
+            if (!isRunning())
+                std::cout<<"stop bone anim updater thread"<<std::endl;
         }
     } // graphic
 } // odfaeg

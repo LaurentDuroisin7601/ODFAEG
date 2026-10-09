@@ -400,6 +400,8 @@ namespace odfaeg {
                 cv2.notify_all();
                 //GPUContext::instance().getSharedFence(0)[0].waitForFences(VK_TRUE, UINT64_MAX);
             }
+            if (!isRunning())
+                std::cout<<"stop particle system updater thread"<<std::endl;
             //std::cout<<"update : "<<isRunning()<<std::endl;
         }
         void ParticleSystemUpdater::setCamera(Camera camera) {

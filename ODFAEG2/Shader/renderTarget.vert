@@ -25,6 +25,7 @@ struct SubMesh {
     int objectId;
     int meshletOffset;
     int meshletCount;
+    int modelDataOffset;
 };
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec4 inColor;

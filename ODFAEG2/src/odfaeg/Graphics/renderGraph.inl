@@ -2,8 +2,18 @@ namespace odfaeg {
     namespace graphic {
         RenderGraph::RenderGraph(RenderTexture& output, unsigned int layer) : layer(layer), output(output),
         csmShadowMap(GPUContext::instance().getDevice(), true), pointShadowMap(GPUContext::instance().getDevice(), true),
-        environmentMap(GPUContext::instance().getDevice()) {
-            
+        environmentMap(GPUContext::instance().getDevice()),
+        irradianceTexture(GPUContext::instance().getDevice()),
+        prefilterTexture(GPUContext::instance().getDevice()),
+        brdfLut(GPUContext::instance().getDevice()) {
+            environmentMap.createCubeMap(1024);
+            ImageLoader imageLoader;
+            imageLoader.create(1024, 1024, entity::Color::White);
+            //std::cout<<"size : "<<imageLoader.getSize().x()<<std::endl;
+            for (unsigned int i = 0; i < 6; i++) {
+                environmentMap.loadCubeMapFromImage(imageLoader, i);
+            }
+            environmentMap.generateMipmaps();
         }
         void RenderGraph::addOpaquePass(unsigned int order, std::string typesToRender, unsigned int windowId) {
             OpaqueRenderer* opaqueRenderer = new OpaqueRenderer(output, layer, typesToRender, windowId);
@@ -19,7 +29,7 @@ namespace odfaeg {
             renderers.insert(std::make_pair(order, sr));
         }
         void RenderGraph::addLightningPass(unsigned int order, std::string typesToRender, unsigned int windowId) {
-             LightningRenderer* lightningRenderer = new LightningRenderer(output, layer, typesToRender, windowId);
+             LightningRenderer* lightningRenderer = new LightningRenderer(output, environmentMap, irradianceTexture, prefilterTexture, brdfLut, layer, typesToRender, windowId);
              renderers.insert(std::make_pair(order, lightningRenderer));
         }
         void RenderGraph::addRTPass(unsigned int order, std::string typesToRender, unsigned int windowId) {
@@ -50,6 +60,9 @@ namespace odfaeg {
                 components.push_back(it2->second);
             }
             return components;
+        }
+        void RenderGraph::setEnvironmentMap(Texture& envMap) {
+            environmentMap.copyFrom(envMap);
         }
         void RenderGraph::drawAllPasses() {
             std::map<unsigned int, IRenderer*>::iterator it;

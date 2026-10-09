@@ -96,7 +96,9 @@ namespace odfaeg {
 				int lodLevel;
 				int objectId;
 				int meshletOffset;
-				int meshletCount;								
+				int meshletCount;
+				int modelDataOffset;
+				int pad[3];								
 			};
 			struct Cluster {
 				AABB volume;

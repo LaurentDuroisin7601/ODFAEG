@@ -166,6 +166,7 @@ namespace odfaeg {
                 needToUpdateDescriptorSets = true;
                 needToUpdateBuffers = false;
             }
+            
         }
         void MorphAnimUpdater::setBuffersReady(bool r) {
             buffersReady.store(r);
@@ -319,7 +320,8 @@ namespace odfaeg {
                 cv2.notify_all();
                 //GPUContext::instance().getSharedFence(0)[0].waitForFences(VK_TRUE, UINT64_MAX);
             }
-
+            if (!isRunning())
+                std::cout<<"stop morph anim updater thread"<<std::endl;
         }
     }
 }

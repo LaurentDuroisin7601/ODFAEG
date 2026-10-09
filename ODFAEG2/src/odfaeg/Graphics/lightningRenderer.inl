@@ -1,6 +1,6 @@
 namespace odfaeg {
     namespace graphic {
-        LightningRenderer::LightningRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId, bool useThread) :
+        LightningRenderer::LightningRenderer(RenderTarget& parentRenderer, Texture& environmentMap, RenderTexture& irradianceRT, RenderTexture& prefilterRT, RenderTexture& brdfLut, unsigned int layer, std::string typesToRenderExpression, int windowId, bool useThread) :
         IRenderer(windowId),
         parentRenderer(parentRenderer),
         pbrShader(GPUContext::instance().getDevice()),
@@ -8,10 +8,10 @@ namespace odfaeg {
         prefilterShader(GPUContext::instance().getDevice()),
         brdfShader(GPUContext::instance().getDevice()),
         backgroundShader(GPUContext::instance().getDevice()),
-        environmentMap(GPUContext::instance().getDevice()),
-        irradianceTexture(GPUContext::instance().getDevice()),
-        prefilterTexture(GPUContext::instance().getDevice()),
-        brdfLUT(GPUContext::instance().getDevice()),
+        environmentMap(environmentMap),
+        irradianceTexture(irradianceRT),
+        prefilterTexture(prefilterRT),
+        brdfLUT(brdfLut),
         lightStaggingBuffer(GPUContext::instance().getDevice()),
         commandPool(GPUContext::instance().getDevice()),
         pbrCommandPool(GPUContext::instance().getDevice()),
@@ -24,13 +24,7 @@ namespace odfaeg {
             Camera camera = parentRenderer.getCamera();
             camera.setPerspective(90.0f, 1.0f, 0.1f, 10.0f);
             camera.setViewport(physic::BoundingBox(0, 0, 0.1f, 32, 32, 10.f));            
-            ImageLoader imageLoader;
-            imageLoader.create(1024, 1024, entity::Color::White);
-            //std::cout<<"size : "<<imageLoader.getSize().x()<<std::endl;
-            for (unsigned int i = 0; i < 6; i++) {
-                environmentMap.loadCubeMapFromImage(imageLoader, i);
-            }
-            environmentMap.generateMipmaps();
+            
             irradianceTexture.createCubeMap(32);
             irradianceTexture.setCamera(camera);
             camera.setViewport(physic::BoundingBox(0, 0, 0.1f, 128, 128, 10.f));

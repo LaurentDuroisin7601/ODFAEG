@@ -44,7 +44,7 @@ namespace odfaeg {
                    alignas(16) math::Vec3f lightPos;
                    alignas(16) math::Vec3f lightColor; 
                };
-               LightningRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
+               LightningRenderer(RenderTarget& parentRenderer, Texture& environmentMap, RenderTexture& irradianceRT, RenderTexture& prefilterRT, RenderTexture& brdfLut, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
                void createCommandPools();
                void createDescriptorsAndPipelines();
                void updateDescriptorSets();
@@ -64,8 +64,8 @@ namespace odfaeg {
                Buffer lightStaggingBuffer;    
                std::string typesToRenderExpression;            
                Shader pbrShader, irradianceShader, prefilterShader, brdfShader, backgroundShader;
-               Texture environmentMap;           
-               RenderTexture irradianceTexture, prefilterTexture, brdfLUT;
+               Texture& environmentMap;           
+               RenderTexture &irradianceTexture, &prefilterTexture, &brdfLUT;
                 
                core::ThreadPool threadPool;
                std::array<core::JobFence, MAX_FRAMES_IN_FLIGHT> jobFence={};

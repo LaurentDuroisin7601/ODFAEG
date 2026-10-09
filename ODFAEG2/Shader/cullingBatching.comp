@@ -45,6 +45,7 @@ struct SubMesh {
     int objectId;
     int meshletOffset;
     int meshletCount;
+    int modelDataOffset;
 };
 /*Matrices*/
 struct ModelData {

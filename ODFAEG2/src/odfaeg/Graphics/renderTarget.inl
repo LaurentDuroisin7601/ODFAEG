@@ -479,7 +479,7 @@ namespace odfaeg {
 					//std::cout<<"model matrix : "<<gameObjects[i]->getTransform().getMatrix()<<std::endl;
 					
 					modelDatas.push_back(modelData);
-					currentModelDataOffset++;
+					
 					
 					for (unsigned int j = 0; j < nbSubMeshesToDisplay /*gameObjects[i]->getGameObject()->getSubMeshesCount()*/; j++) {
 						//std::cout<<"add subMesh : "<<j<<std::endl;
@@ -493,6 +493,7 @@ namespace odfaeg {
 						}*/
 						AABB subMeshAABB;
 						subMeshData.id = currentSubmeshesOffset;
+						subMeshData.modelDataOffset = currentModelDataOffset;
 						float center[4], size[4];
 						subMeshGlobalBounds.getCenter().toVkVec(center);
 						subMeshGlobalBounds.getSize().toVkVec(size);
@@ -1065,6 +1066,7 @@ namespace odfaeg {
 						subMeshesDatas.push_back(subMeshData);	
 						currentSubmeshesOffset++;					
 					}
+					currentModelDataOffset++;
 				}
 				//system("PAUSE");				
 				/*std::cout<<"size : "<<vertices[entity::Triangles].getIndexCount()<<std::endl;
@@ -1314,10 +1316,9 @@ namespace odfaeg {
 				DescriptorSetLayout& defaultRenderingLayout = GPUContext::instance().getDescriptorSetLayout(meshDefaultRenderingShader, 12, true);				
 				for (unsigned int i = 0; i < 2; i++) {
 					defaultRenderingLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_TASK_BIT_EXT | VK_SHADER_STAGE_MESH_BIT_EXT);
-				}				
-				for (unsigned int i = 2; i < 4; i++) {
-					defaultRenderingLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_MESH_BIT_EXT);
 				}
+				defaultRenderingLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_MESH_BIT_EXT);				
+				defaultRenderingLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_MESH_BIT_EXT);				
 				for (unsigned int i = 4; i < 6; i++) {
 					defaultRenderingLayout.updateLayout(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_MESH_BIT_EXT);
 				}
@@ -1378,9 +1379,11 @@ namespace odfaeg {
 				cullingBatchingPool.updatePoolSize(17, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT);
 				cullingBatchingPool.update();
 				DescriptorPool& defaultRenderingPool = GPUContext::instance().getDescriptorPool(meshDefaultRenderingShader, 12);
-				for (unsigned int i = 0; i < 4; i++) {
+				for (unsigned int i = 0; i < 2; i++) {
 					defaultRenderingPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT);
 				}
+				defaultRenderingPool.updatePoolSize(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
+				defaultRenderingPool.updatePoolSize(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT);
 				for (unsigned int i = 4; i < 6; i++) {
 					defaultRenderingPool.updatePoolSize(i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES);
 				}
@@ -1634,7 +1637,7 @@ namespace odfaeg {
 				DescriptorSet& defaultRenderingSet = GPUContext::instance().getDescriptorSets(meshDefaultRenderingShader, (hasDiffuseTextures) ? 12 : 11, 1)[0];
 				defaultRenderingSet.updateBufferInfos(0, outputTaskDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(1, taskCount, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);				
-				defaultRenderingSet.updateBufferInfos(2, outputModelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+				defaultRenderingSet.updateBufferInfos(2, modelDatas, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(3, outputMeshlets, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				defaultRenderingSet.updateBufferInfos(4, true, vertices, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 				/*std::cout<<"nb buffers : "<<vertices[entity::Triangles].getNbBuffers()<<std::endl;

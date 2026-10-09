@@ -93,7 +93,8 @@ struct SubMesh {
     int lodLevel;
     int objectId; 
     int meshletOffset;
-	int meshletCount;	  
+	int meshletCount;	
+    int modelDataOffset;  
 };
 
 struct ModelData {
@@ -125,7 +126,7 @@ layout(std430, set = 0, binding = 1) buffer TaskCountSSBO {
 } TaskCounts[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
 layout (std430, set = 0, binding = 2) buffer ModelDataSSBO {
     ModelData modelData[];
-} modelDataBuffer[NB_PRIMITIVE_TYPES * MAX_FRAMES_IN_FLIGHT];
+} modelDataBuffer;
 layout (std430, set = 0, binding = 3) buffer VisibleMeshletSSBO {
     uint meshlet[];
 } visibleMeshletDatas[MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES];
@@ -201,9 +202,10 @@ void main() {
         
         //debugPrintfEXT("mesh shader"); 
         //Instance id = taskId (base instance) + workGroupId.x (instance id).
-        uint instanceId = taskDatas[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].taskData[payload.taskId].baseInstance + gl_WorkGroupID.x;
+       
         //debugPrintfEXT("Instance id : %i", gl_WorkGroupID.x); 
-        mat4 modelMatrix = modelDataBuffer[pc.primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceId].modelMatrix;
+        mat4 modelMatrix = modelDataBuffer.modelData[subMesh.modelDataOffset].modelMatrix;
+        debugPrintfEXT("model data offset : %i", subMesh.modelDataOffset);
         //debugPrintfEXT("model matrix : %v4f \n%v4f \n%v4f \n%v4f\n", modelMatrix[0], modelMatrix[1], modelMatrix[2], modelMatrix[3]);
             
         

@@ -32,14 +32,15 @@ namespace odfaeg {
             void addPonctualLight(entity::PointLight& pointLight);
                 
             void drawAllPasses();
-            std::vector<IComponent*> getComponents();            
+            std::vector<IComponent*> getComponents();
+            void setEnvironmentMap(Texture& environmentMap);            
             private : 
             unsigned int layer;           
             std::map<unsigned int, IRenderer*> renderers;
             std::map<unsigned int, IRenderer*> rayRenderers; 
             std::map<unsigned int, Widget*> widgets;
             RenderTexture& output;
-            RenderTexture csmShadowMap, pointShadowMap;
+            RenderTexture csmShadowMap, pointShadowMap, irradianceTexture, prefilterTexture, brdfLut;
             Texture environmentMap;
         };
     }
