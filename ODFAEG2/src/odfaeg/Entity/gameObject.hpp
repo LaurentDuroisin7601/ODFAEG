@@ -11,18 +11,24 @@
 #include <glm/glm.hpp>
 namespace odfaeg {
 	namespace entity {
-        class SubMesh {
-            public:
+        struct Asset {            
             enum Type {
-				AIR, WATER, ICE, GLASS, DIAMOND
-			};
-		    enum TexType {
-		        DIFFUSE, NORMAL, METALNESS, ROUGHNESS, AO, EMISSIVE, SPECULAR, NBTEXTYPES, UNKNOWN
-		    };            
+                TEXTURE_DIFFUSE, TEXTURE_METALNESS,TEXTURE_NORMAL, TEXTURE_ROUGHNESS, TEXTURE_AO, TEXTURE_EMISSIVE, TEXTURE_SPECULAR, MODEL, NB_ASSETS_TYPES, UNKNOWN
+            };
+            Type type;
+            std::string name;
+        };        
+        class SubMesh {                     
+            public:   
+            enum Type {
+                AIR, WATER, ICE, GLASS, DIAMOND
+            };                     
             VertexArray& getVertexArray();
             void setVertexArray(VertexArray va);
-            void setTextureId(TexType type, std::string id, unsigned int texUnit=0);
-            std::string getTextureId(TexType type, unsigned int texUnit=0);
+            void setAsset(Asset::Type type, std::string name, unsigned int assetUnit=0);
+            std::deque<Asset> getAssets(Asset::Type type);
+            void setType(Type type);
+            Type getType();
             /**
             * \fn void serialize (Archive & ar)
             * \brief serialize the face into the archive.
@@ -54,7 +60,15 @@ namespace odfaeg {
         	unsigned int id;
             unsigned int materialId; 
             unsigned int instanceId;
-            unsigned int lodOffset;           
+            unsigned int lodOffset; 
+            unsigned int materialFlags;
+            inline static const unsigned int opaqueMask = 1 << 0;
+            inline static const unsigned int transparentMask = 1 << 1;
+            inline static const unsigned int rtPipeline = 2 << 1;
+            inline static const unsigned int rasterPipeline = 3 << 1;
+            inline static const unsigned int reflectMask = 4 << 1;
+            inline static const unsigned int refractMask = 5 << 1; 
+            inline static const unsigned int selectedMask = 6 << 1;
         protected :
             void onResize(math::Vec3f& s);
             /**
@@ -71,13 +85,11 @@ namespace odfaeg {
             * \fn virtual void onMove(Vec3f t)
             * \brief this function can be redefined in the sub-class if we need to do something when the object is moving.
             */
-            void onMove(math::Vec3f& t);
-            void setType(Type type);
-            Type getType();
-        private:        	
-            VertexArray m_vertices; /**> the vertices.*/
-            std::array<std::vector<std::string>, NBTEXTYPES> texturesIds;
-            Type type;                                   
+            void onMove(math::Vec3f& t);                       
+        private:
+            Type type;
+            std::array<std::deque<Asset>, Asset::Type::NB_ASSETS_TYPES> assets = {};         	
+            VertexArray m_vertices; /**> the vertices.*/                      
         };		
 		class GameObject : public Entity, public Transformable {
 		public:
@@ -222,8 +234,7 @@ namespace odfaeg {
             bool external, selected;
             std::string name, externalObjectName;
 			std::map<std::string, BoneInfo> m_BoneInfoMap; //
-			int m_BoneCounter = 0;
-            
+			int m_BoneCounter = 0;                      
 		};
 	}
 }

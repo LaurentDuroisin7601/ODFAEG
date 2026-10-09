@@ -150,7 +150,7 @@ namespace odfaeg {
         }
         void Cube::setTexture(std::string textureId) {
             for (unsigned int i = 0; i < getSubMeshesCount(); i++) {
-                getSubMeshes()[i].setTextureId(SubMesh::DIFFUSE, textureId);
+                getSubMeshes()[i].setAsset(Asset::TEXTURE_DIFFUSE, textureId);
             }    
             m_textureId = textureId;        
         }

@@ -346,55 +346,7 @@ namespace odfaeg {
                 }
             }
             return removed;
-        }
-        template<typename Object>
-        bool GridMap<Object>::deleteEntity (Object entity, physic::BoundingBox volume) {
-            int x = volume.getPosition().x();
-            int y = volume.getPosition().y();
-            int z = volume.getPosition().z();
-            int endX = (x + volume.getWidth());
-            int endY = (y + volume.getHeight());
-            int endZ = (z + volume.getDepth());
-
-            bool removed = false;
-            for (int i = x; i <= endX; i+= cellWidth) {
-                for (int j = y; j <= endY; j+= cellHeight) {
-                    for (int k = z; k <= endZ; k+= cellDepth) {
-                        math::Vec3f pos (i, j, k);
-                        /*if (entity->getType() == "E_BIGTILE")
-                              ////////std::cout<<"remove entity at : "<<pos<<std::endl;*/
-                        GridCell<Object> *cm = getGridCellAt(pos);
-                        if (cm != nullptr) {
-
-                          if(!removed && cm->deleteEntity(entity))
-                            removed = true;
-                          else
-                            cm->removeEntity(entity);
-                          if (!cm->isEntityInside()) {
-                                removeCellMap(cm);
-                          }
-                        }
-                    }
-                }
-            }
-            return removed;
-        }
-        template<typename Object>
-        bool GridMap<Object>::deleteEntity(int id) {
-            typename vector<Object>::iterator it;
-            vector<Object> entities = getEntities();
-            for (it = entities.begin(); it != entities.end();) {
-
-                if ((*it)->getId() == id) {
-                    if (!deleteEntity(*it))
-                        return false;
-                    it = entities.erase(it);
-                    return true;
-                } else
-                    it++;
-            }
-            return false;
-        }
+        }   
         template<typename Object>
         void GridMap<Object>::removeCellMap (GridCell<Object> *cell) {
 

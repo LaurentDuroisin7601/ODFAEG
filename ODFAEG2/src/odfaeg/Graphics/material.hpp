@@ -15,12 +15,16 @@
 #include "../Math/vec.hpp"
 #include "../Entity/gameObject.hpp"
 namespace odfaeg {
-	namespace graphic {
+	namespace graphic {       
+        
 		class Material {
+            
             class TextureInfo {
             private:
                 const Texture* texture; /**> A texture used by the material.*/                 
+                std::string assetName;
             public:
+                  
                 /**
                 * \fn TextureInfo()
                 * \brief constructor
@@ -30,7 +34,7 @@ namespace odfaeg {
                 * \fn TextureInfo(const Texture* texture, IntRect rect, std::string texId="")
                 * \brief constructor
                 */
-                TextureInfo(const Texture* texture);               
+                TextureInfo(const Texture* texture, std::string assetName);               
                 /**
                 * \fn bool operator== (TextureInfo& info)
                 * \brief compare a texture info with another one.
@@ -59,14 +63,10 @@ namespace odfaeg {
 
                 }
             };
-        public:	
-            inline static const unsigned int opaqueMask = 1 << 0;
-            inline static const unsigned int transparentMask = 1 << 1;
-            inline static const unsigned int rtPipeline = 2 << 1;
-            inline static const unsigned int rasterPipeline = 3 << 1;
-            inline static const unsigned int reflectMask = 4 << 1;
-            inline static const unsigned int refractMask = 5 << 1; 
-            inline static const unsigned int selectedMask = 6 << 1; 		
+        public:
+            enum TexType {
+                DIFFUSE, NORMAL, METALNESS, ROUGHNESS, AO, EMISSIVE, SPECULAR, NBTEXTYPES, UNKNOWN
+            };	           
             Material();
             unsigned int getId();
             static unsigned int getNbMaterials();
@@ -83,7 +83,7 @@ namespace odfaeg {
             * \param texture : the texture.
             * \param text : the texture coordinates.
             */
-            void setTexture(const Texture* texture,entity::SubMesh::TexType texType, unsigned int texUnit=0, std::string texId="");
+            void setTexture(const Texture* texture,TexType texType, unsigned int texUnit=0, std::string texId="");
             void setAlbedo(entity::Color aldebo);
             void setCenter(math::Vec4f center);
             math::Vec4f getCenter();
@@ -97,7 +97,7 @@ namespace odfaeg {
             * \param texUnit : the unit of the texture.
             * \return a pointer to the texture.
             */
-            const Texture* getTexture(entity::SubMesh::TexType texType, int texUnit = 0);            
+            const Texture* getTexture(TexType texType, int texUnit = 0);            
             /* \fn bool useSameTextures (const Material& material)
             * \brief check if two material are using the same textures.
             * \param material : the other material.
@@ -173,7 +173,7 @@ namespace odfaeg {
             Material& operator=(const Material&) = delete;
             Material(const Material&&) = delete;
             Material& operator=(const Material&&) = delete;
-            std::array<std::deque<TextureInfo>, entity::SubMesh::NBTEXTYPES> texInfos={}; /**> The informations about the textures. */
+            std::array<std::deque<TextureInfo>, NBTEXTYPES> texInfos={}; /**> The informations about the textures. */
             entity::SubMesh::Type type;
             float specularIntensity, specularPower, refractionFactor;
             inline static unsigned int nbMaterials = 0;

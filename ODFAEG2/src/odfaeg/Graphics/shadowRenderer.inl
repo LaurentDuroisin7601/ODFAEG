@@ -622,7 +622,7 @@ namespace odfaeg {
         }
         void ShadowRenderer::updateDescriptorSets() {
             //std::cout<<"update descriptor sets"<<std::endl;
-            bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
+            bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(Material::DIFFUSE).size() != 0;
             DescriptorSet& shadowPassDescriptorSet = GPUContext::instance().getDescriptorSets(shadowPassCSMShader, (hasDiffuseTexture) ? 4 : 3, 1)[0];
             //std::cout<<"size : "<<shadowPassCSMSets.size()<<","<<shadowPassCSMSets[0].size()<<std::endl;
             //std::cout<<"output model range : "<<GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+shadowMap.getId()*RenderTarget::NB_BUFFERS)[3].getRange()<<std::endl;
@@ -633,7 +633,7 @@ namespace odfaeg {
             shadowPassDescriptorSet.updateBufferInfos(4, nodeCounterDirBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowPassDescriptorSet.updateBufferInfos(5, linkedListDirBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);*/
             if (hasDiffuseTexture) {
-                shadowPassDescriptorSet.updateImageInfos(3, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                shadowPassDescriptorSet.updateImageInfos(3, GPUContext::instance().getSharedTextures(Material::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             }
             shadowPassDescriptorSet.updateDescriptorSet();   
             DescriptorSet& shadowPassPLDescriptorSet = GPUContext::instance().getDescriptorSets(shadowPassPLShader, (hasDiffuseTexture) ? 4 : 3, 1)[0];
@@ -644,7 +644,7 @@ namespace odfaeg {
             shadowPassPLDescriptorSet.updateBufferInfos(4, nodeCounterPointBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             shadowPassPLDescriptorSet.updateBufferInfos(5, linkedListPointBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);*/
             if (hasDiffuseTexture) {
-                shadowPassPLDescriptorSet.updateImageInfos(3, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                shadowPassPLDescriptorSet.updateImageInfos(3, GPUContext::instance().getSharedTextures(Material::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             }
             shadowPassPLDescriptorSet.updateDescriptorSet();
             

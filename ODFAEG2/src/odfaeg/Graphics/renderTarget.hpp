@@ -251,7 +251,7 @@ namespace odfaeg {
 			void resetVertexBufferDatas();
 			void createDescriptorAndPipelines();
 			void setTypesToRender(std::string expression, unsigned int currentFrame);
-			void applyCullingAndBatching(unsigned int materialMast = Material::opaqueMask, bool useMeshShader=false);			
+			void applyCullingAndBatching(unsigned int materialMast = entity::SubMesh::opaqueMask, bool useMeshShader=false);			
 			template <typename D>
 			void draw(D& drawable, RenderStates states=RenderStates::Default);
 			void draw(VertexBuffer& vb, RenderStates states=RenderStates::Default);

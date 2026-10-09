@@ -315,7 +315,7 @@ int main() {
 	Mesh cube5Mesh(&cube5);
 	Mesh cube6Mesh(&cube6);
 	Material* material = new Material();
-	material->opaque = Material::reflectMask | Material::refractMask;
+	material->opaque = SubMesh::reflectMask | SubMesh::refractMask;
 	material->setType(SubMesh::GLASS);
 	for (unsigned int i = 0; i < 6; i++) {	
 		cube6Mesh.addMaterial(material);
@@ -328,12 +328,12 @@ int main() {
 	cube3Mesh.buildMaterialsFromTextureManager(textureManager);
 	cube4Mesh.buildMaterialsFromTextureManager(textureManager);
 	cube5Mesh.buildMaterialsFromTextureManager(textureManager);
-	window.addGameObject(&planeMesh);
+	/*window.addGameObject(&planeMesh);
 	window.addGameObject(&cube1Mesh);
 	window.addGameObject(&cube2Mesh);
 	window.addGameObject(&cube3Mesh);
 	window.addGameObject(&cube4Mesh);
-	window.addGameObject(&cube5Mesh);
+	window.addGameObject(&cube5Mesh);*/
 
 	//window.addGameObject(&cube6Mesh);
 	/*RenderTexture sceneColorTexture(ctx.getDevice(), true);
@@ -349,7 +349,7 @@ int main() {
 	for (unsigned int i = 0; i < components.size(); i++) {
 		componentManager.addComponent(components[i]);
 	}*/
-	//window.addGameObject(car);
+	window.addGameObject(car);
 	//window.addGameObject(bistroExterior);	
 	//window.addGameObject(bistroInterior);
 	
@@ -435,7 +435,7 @@ int main() {
 		window.setCamera(camera);
 		window.setDepthStencil(true, false);
 		window.clear();
-		window.drawMesh(Triangles);
+		window.draw(Triangles);
 		
 		/*window.setTypesToRender("*", window.getCurrentFrame());	
 		window.drawMesh(Triangles);*/

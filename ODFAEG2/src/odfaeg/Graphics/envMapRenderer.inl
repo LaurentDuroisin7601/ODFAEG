@@ -266,7 +266,7 @@ namespace odfaeg {
             vkDeviceWaitIdle(GPUContext::instance().getDevice().getDevice());     
         }  
         void EnvMapRenderer::updateDescriptorSets() {
-            bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
+            bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(Material::DIFFUSE).size() != 0;
             DescriptorSet& envMapSet = GPUContext::instance().getDescriptorSets(envMapShader, (hasDiffuseTexture) ? 7 : 6, 1)[0];
             envMapSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+envMap.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             envMapSet.updateBufferInfos(1, viewMatricesBuffer,VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC);
@@ -275,7 +275,7 @@ namespace odfaeg {
             envMapSet.updateBufferInfos(4, linkedListBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             envMapSet.updateBufferInfos(5, nodeCounterBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             if (hasDiffuseTexture) {
-                envMapSet.updateImageInfos(6, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                envMapSet.updateImageInfos(6, GPUContext::instance().getSharedTextures(Material::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             }
             envMapSet.updateDescriptorSet();
             //std::cout<<"update ds env map set"<<std::endl;

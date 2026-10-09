@@ -40,8 +40,6 @@ namespace odfaeg {
             void replaceEntity (Object entity);
             //Supprime une tile dans la cellule. (Sans la supprimer de la mmoire.)
             bool removeEntity (Object entity, physic::BoundingBox volume);
-            bool deleteEntity (Object object, physic::BoundingBox volume);
-            bool deleteEntity(int id);
             void removeCellMap (GridCell<Object> *cell);
             vector<GridCell<Object>*> getCasesInBox (physic::BoundingBox bx);
             vector<Object> getEntitiesInBox(physic::BoundingBox box);

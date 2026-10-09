@@ -1,21 +1,23 @@
 namespace odfaeg {
-	namespace entity {         
-        std::string SubMesh::getTextureId(TexType texType, unsigned int texUnit) {
-            return (texturesIds[texType].size() > 0) ? texturesIds[texType][texUnit] : "";
-        }
-        void SubMesh::setTextureId(TexType texType, std::string texId, unsigned int texUnit) {
-            for (unsigned int i = 0; i < NBTEXTYPES; i++) {
-                if (texUnit >= texturesIds[i].size())
-                    texturesIds[i].resize(texUnit+1);
+	namespace entity { 
+        void SubMesh::setAsset(Asset::Type type, std::string name, unsigned int assetUnit) {            
+            if (assetUnit >= assets[type].size()) {
+                assets[type].resize(assetUnit+1);
             }            
-            texturesIds[texType][texUnit] = texId;            
+            Asset asset;
+            asset.type = type;
+            asset.name = name;         
+            assets[type][assetUnit] = asset;            
         }
-        void SubMesh::setType(Type type) {            
+        std::deque<Asset> SubMesh::getAssets(Asset::Type assetType) {
+            return assets[assetType];
+        }
+        void SubMesh::setType(Type type) {
             this->type = type;
         }
         SubMesh::Type SubMesh::getType() {
             return type;
-        }      
+        } 
         VertexArray& SubMesh::getVertexArray() {
             /*if (m_vertices.getEntity() != nullptr && m_vertices.getEntity()->getRootType() == "E_MONSTER")
                 //////std::cout<<"face tex coords : "<<m_vertices[0].texCoords.x<<","<<m_vertices[0].texCoords.y<<std::endl;*/

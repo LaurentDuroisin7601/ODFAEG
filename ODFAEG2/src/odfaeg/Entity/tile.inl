@@ -40,7 +40,7 @@ namespace odfaeg {
 
             SubMesh subMesh;
             subMesh.setVertexArray(va);
-            subMesh.setTextureId(SubMesh::DIFFUSE, textureId);
+            subMesh.setAsset(Asset::TEXTURE_DIFFUSE, textureId);
             addSubMesh(subMesh);
             //std::cout<<getSubMeshes().back().getVertexBuffer().getVertexCount()<<std::endl;
             /*if (texture != nullptr)

@@ -45,7 +45,7 @@ namespace odfaeg {
             ModelLoader(Device& device, core::ResourceManager<Texture, std::string>& textureManager);
             Mesh* loadModel(std::string path, bool loadTextures=true);
         private :
-            entity::SubMesh::TexType convertAssimpType(aiTextureType type);
+            Material::TexType convertAssimpType(aiTextureType type);
             void setVertexBoneDataToDefault(entity::Vertex& vertex);
             void setVertexBoneData(entity::Vertex& vertex, int boneID, float weight);
             void extractBoneWeightForVertices(std::vector<entity::Vertex>& vertices, aiMesh* mesh, const aiScene* scene, entity::Model* mnode);

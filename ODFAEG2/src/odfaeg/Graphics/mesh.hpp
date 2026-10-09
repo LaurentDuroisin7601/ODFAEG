@@ -26,7 +26,7 @@ namespace odfaeg {
             void buildMaterialsFromTextureManager(core::TextureManager<I>& textureManager) {
                 for(unsigned int i = 0; i < gameObject->getSubMeshes().size(); i++) {
                     materials.push_back(std::make_unique<Material>());
-                    materials.back()->setTexture(textureManager.getResourceByAlias(static_cast<I>(core::conversionStringInt(gameObject->getSubMeshes()[i].getTextureId(entity::SubMesh::DIFFUSE)))), entity::SubMesh::DIFFUSE);
+                    materials.back()->setTexture(textureManager.getResourceByAlias(static_cast<I>(core::conversionStringInt(gameObject->getSubMeshes()[i].getAssets(entity::Asset::TEXTURE_DIFFUSE)[0].name))), Material::DIFFUSE);
                 }
                 for (unsigned int i = 0; i < children.size(); i++) {
                     children[i]->buildMaterialsFromTextureManager(textureManager);
@@ -35,7 +35,7 @@ namespace odfaeg {
             void buildMaterialsFromTextureManager(core::TextureManager<std::string>& textureManager) {
                 for(unsigned int i = 0; i < gameObject->getSubMeshes().size(); i++) {
                     materials.push_back(std::make_unique<Material>());
-                    materials.back()->setTexture(textureManager.getResourceByAlias(gameObject->getSubMeshes()[i].getTextureId(entity::SubMesh::DIFFUSE)), entity::SubMesh::DIFFUSE);
+                    materials.back()->setTexture(textureManager.getResourceByAlias(gameObject->getSubMeshes()[i].getAssets(entity::Asset::TEXTURE_DIFFUSE)[0].name), Material::DIFFUSE);
                 }
                 for (unsigned int i = 0; i < children.size(); i++) {
                     children[i]->buildMaterialsFromTextureManager(textureManager);

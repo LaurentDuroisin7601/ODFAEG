@@ -7,8 +7,8 @@ namespace odfaeg {
             this->particlesSize = particlesSize;
         }
         void ParticleSystem::setTexture(std::string textureId) {
-            this->textureId = textureId;
-            getSubMeshes()[0].setTextureId(SubMesh::DIFFUSE, textureId);
+            this->textureId = textureId;            
+            getSubMeshes()[0].setAsset(Asset::TEXTURE_DIFFUSE, textureId);
         }
         unsigned int ParticleSystem::addTextureRect(const FloatRect& textureRect) {
             textureRects.push_back(textureRect);

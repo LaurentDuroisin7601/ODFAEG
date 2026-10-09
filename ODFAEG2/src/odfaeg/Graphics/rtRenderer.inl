@@ -87,7 +87,7 @@ namespace odfaeg {
             createShaderBindingTable();
             
             needToUpdateBLAS = needToUpdateTLAS = needToUpdateDescriptorSets = true; 
-            rayGenPC.pipelineMask = Material::rtPipeline;
+            rayGenPC.pipelineMask = entity::SubMesh::rtPipeline;
             /*updateBLAS();
             updateTLAS();*/
         } 
@@ -174,19 +174,19 @@ namespace odfaeg {
                
                 MaterialData material;
                 //std::cout<<"material : "<<materials[i]<<std::endl;
-                material.diffuseTextureIndex = (materials[i]->getTexture(entity::SubMesh::DIFFUSE) != nullptr) ? materials[i]->getTexture(entity::SubMesh::DIFFUSE)->getId() : 0;
+                material.diffuseTextureIndex = (materials[i]->getTexture(Material::DIFFUSE) != nullptr) ? materials[i]->getTexture(Material::DIFFUSE)->getId() : 0;
                 //std::cout<<"diffuse texture index : "<<material.diffuseTextureIndex<<std::endl;
                 //system("PAUSE");
-                material.specularTextureIndex = (materials[i]->getTexture(entity::SubMesh::SPECULAR) != nullptr) ? materials[i]->getTexture(entity::SubMesh::SPECULAR)->getId() : 0;
-                material.normalTextureIndex = (materials[i]->getTexture(entity::SubMesh::NORMAL) != nullptr) ? materials[i]->getTexture(entity::SubMesh::NORMAL)->getId() : 0;
-                material.metalnessTextureIndex = (materials[i]->getTexture(entity::SubMesh::METALNESS) != nullptr) ? materials[i]->getTexture(entity::SubMesh::METALNESS)->getId() : 0;
-                material.roughnessTextureIndex = (materials[i]->getTexture(entity::SubMesh::ROUGHNESS) != nullptr) ? materials[i]->getTexture(entity::SubMesh::ROUGHNESS)->getId() : 0;
-                material.aoTextureIndex = (materials[i]->getTexture(entity::SubMesh::AO) != nullptr) ? materials[i]->getTexture(entity::SubMesh::AO)->getId() : 0;
-                material.emissiveTextureIndex = (materials[i]->getTexture(entity::SubMesh::EMISSIVE) != nullptr) ? materials[i]->getTexture(entity::SubMesh::EMISSIVE)->getId() : 0;
+                material.specularTextureIndex = (materials[i]->getTexture(Material::SPECULAR) != nullptr) ? materials[i]->getTexture(Material::SPECULAR)->getId() : 0;
+                material.normalTextureIndex = (materials[i]->getTexture(Material::NORMAL) != nullptr) ? materials[i]->getTexture(Material::NORMAL)->getId() : 0;
+                material.metalnessTextureIndex = (materials[i]->getTexture(Material::METALNESS) != nullptr) ? materials[i]->getTexture(Material::METALNESS)->getId() : 0;
+                material.roughnessTextureIndex = (materials[i]->getTexture(Material::ROUGHNESS) != nullptr) ? materials[i]->getTexture(Material::ROUGHNESS)->getId() : 0;
+                material.aoTextureIndex = (materials[i]->getTexture(Material::AO) != nullptr) ? materials[i]->getTexture(Material::AO)->getId() : 0;
+                material.emissiveTextureIndex = (materials[i]->getTexture(Material::EMISSIVE) != nullptr) ? materials[i]->getTexture(Material::EMISSIVE)->getId() : 0;
                 /*material.uvScale = /*(materials[i]->getTexture(Material::DIFFUSE) != nullptr) ? math::Vec2f(1.f / materials[i]->getTexture(Material::DIFFUSE)->getSize().x(), 1.f / materials[i]->getTexture(Material::DIFFUSE)->getSize().y()) :*/ /*math::Vec2f(1.f, 1.f);
                 material.uvOffset = math::Vec2f(0.f, 0.f);*/
                 material.materialType = materials[i]->getType();
-                material.nbBuffers = (materials[i]->getTexture(entity::SubMesh::DIFFUSE) != nullptr) ? materials[i]->getTexture(entity::SubMesh::DIFFUSE)->getNbBuffers() : 0;
+                material.nbBuffers = (materials[i]->getTexture(Material::DIFFUSE) != nullptr) ? materials[i]->getTexture(Material::DIFFUSE)->getNbBuffers() : 0;
                 material.vertsInstanceSet  = 0;
                 material.nbVertices = 0;
                 material.nbIndexes = 0;
@@ -414,7 +414,7 @@ namespace odfaeg {
             std::vector<Mesh*> nonOpaqueObjects; 
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
                 for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
-                    if ((gameObjects[i]->getMaterials()[j]->opaque & Material::transparentMask) != 0) {                  
+                    if ((gameObjects[i]->getMaterials()[j]->opaque & entity::SubMesh::transparentMask) != 0) {                  
                         nonOpaqueObjects.push_back(gameObjects[i]);
                     }
                     unsigned int instanceID = gameObjects[i]->getGameObject()->getSubMeshes()[j].instanceId;
@@ -737,7 +737,7 @@ namespace odfaeg {
         }
         void RTRenderer::updateDescriptorSets() {
             rayGenPC.hasGeometry = topLevelAS.size();
-            bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
+            bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(Material::DIFFUSE).size() != 0;
             unsigned int updateCount;
             if (topLevelAS.size() != 0) {
                 if (topLocalAS.size() != 0) {
@@ -772,43 +772,43 @@ namespace odfaeg {
             rtRayhitSet.updateImageInfos(7, plShadowMaps.getDepthStencilTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             rtRayhitSet.updateBufferInfos(8,GPUContext::instance().getSharedBuffers(RenderTarget::LOD_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             if (hasDiffuseTexture) {
-                rtRayhitSet.updateImageInfos(9, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                rtRayhitSet.updateImageInfos(9, GPUContext::instance().getSharedTextures(Material::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             }
             rtRayhitSet.updateDescriptorSet();            
-            bool hasSpecTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR).size() != 0;
+            bool hasSpecTexture = GPUContext::instance().getSharedTextures(Material::SPECULAR).size() != 0;
             if (hasSpecTexture) {
                 DescriptorSet& rtRayhitSpecSet = GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 2)[0];
-                rtRayhitSpecSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                rtRayhitSpecSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::SPECULAR), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
                 rtRayhitSpecSet.updateDescriptorSet();
             }     
-            bool hasNormalTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::NORMAL).size() != 0;
+            bool hasNormalTexture = GPUContext::instance().getSharedTextures(Material::NORMAL).size() != 0;
             if (hasNormalTexture) {
                 DescriptorSet& rtRayhitNormalSet = GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 3)[0];
-                rtRayhitNormalSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::NORMAL), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                rtRayhitNormalSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::NORMAL), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
                 rtRayhitNormalSet.updateDescriptorSet();
             }            
-            bool hasMetTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::METALNESS).size() != 0;
+            bool hasMetTexture = GPUContext::instance().getSharedTextures(Material::METALNESS).size() != 0;
             if (hasMetTexture) {
                 DescriptorSet& rtRayhitMetSet = GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 4)[0];
-                rtRayhitMetSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::METALNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                rtRayhitMetSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::METALNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
                 rtRayhitMetSet.updateDescriptorSet();
             }            
-            bool hasRoughTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::ROUGHNESS).size() != 0;
+            bool hasRoughTexture = GPUContext::instance().getSharedTextures(Material::ROUGHNESS).size() != 0;
             if (hasRoughTexture) {
                 DescriptorSet& rtRayhitRoughSet = GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 6)[0];
-                rtRayhitRoughSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::ROUGHNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                rtRayhitRoughSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::ROUGHNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
                 rtRayhitRoughSet.updateDescriptorSet();
             }            
-            bool hasAOTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::AO).size() != 0;
+            bool hasAOTexture = GPUContext::instance().getSharedTextures(Material::AO).size() != 0;
             if (hasAOTexture) {
                 DescriptorSet& rtRayhitAOSet = GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 6)[0];
-                rtRayhitAOSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::AO), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                rtRayhitAOSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::AO), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
                 rtRayhitAOSet.updateDescriptorSet();
             }            
-            bool hasEmissTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::EMISSIVE).size() != 0;
+            bool hasEmissTexture = GPUContext::instance().getSharedTextures(Material::EMISSIVE).size() != 0;
             if (hasEmissTexture) {
                 DescriptorSet& rtRayhitEmissSet = GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 2)[0];
-                rtRayhitEmissSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::EMISSIVE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                rtRayhitEmissSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::EMISSIVE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
                 rtRayhitEmissSet.updateDescriptorSet();
             }                        
         }

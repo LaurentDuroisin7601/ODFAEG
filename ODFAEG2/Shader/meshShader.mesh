@@ -205,7 +205,7 @@ void main() {
        
         //debugPrintfEXT("Instance id : %i", gl_WorkGroupID.x); 
         mat4 modelMatrix = modelDataBuffer.modelData[subMesh.modelDataOffset].modelMatrix;
-        debugPrintfEXT("model data offset : %i", subMesh.modelDataOffset);
+        //debugPrintfEXT("model data offset : %i", subMesh.modelDataOffset);
         //debugPrintfEXT("model matrix : %v4f \n%v4f \n%v4f \n%v4f\n", modelMatrix[0], modelMatrix[1], modelMatrix[2], modelMatrix[3]);
             
         

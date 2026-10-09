@@ -99,53 +99,53 @@ namespace odfaeg {
 			DescriptorSet::allocate(emissiveDefaultRenderingPool, emissiveDefaultRenderingLayout, GPUContext::instance().getDescriptorSets(hzShader, 1, 1, 6), MAX_TEXTURES);
         }
         void OpaqueRenderer::updateDescriptorSets() {            
-            bool hasDiffuseTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
+            bool hasDiffuseTextures = GPUContext::instance().getSharedTextures(Material::DIFFUSE).size() != 0;
             DescriptorSet& defaultRenderingSet = GPUContext::instance().getDescriptorSets(hzShader, (hasDiffuseTextures) ? 4 : 3, 1)[0];
             defaultRenderingSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             defaultRenderingSet.updateBufferInfos(1, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MESHES+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             defaultRenderingSet.updateBufferInfos(2, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MATERIALS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             if (hasDiffuseTextures ) {
                 //std::cout<<"textures : "<<Texture::getAllTextures().size()<<std::endl;
-                /*std::cout<<"layout : "<<GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE)[0].getImage(0).getLayout()<<std::endl;
+                /*std::cout<<"layout : "<<GPUContext::instance().getSharedTextures(Material::DIFFUSE)[0].getImage(0).getLayout()<<std::endl;
                 system("PAUSE");*/
-                defaultRenderingSet.updateImageInfos(3, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                defaultRenderingSet.updateImageInfos(3, GPUContext::instance().getSharedTextures(Material::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             }
             defaultRenderingSet.updateDescriptorSet();
-            bool hasSpecularTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR).size() != 0;
+            bool hasSpecularTextures = GPUContext::instance().getSharedTextures(Material::SPECULAR).size() != 0;
             if (hasSpecularTextures) {
                 DescriptorSet& specularDefaultRenderingSet = GPUContext::instance().getDescriptorSets(hzShader, 1, 1, 1)[0];
-                specularDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::SPECULAR), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                specularDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::SPECULAR), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
                 specularDefaultRenderingSet.updateDescriptorSet();
             }
-            bool hasNormalTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::NORMAL).size() != 0;
+            bool hasNormalTextures = GPUContext::instance().getSharedTextures(Material::NORMAL).size() != 0;
             if (hasNormalTextures) {
                 DescriptorSet& normalDefaultRenderingSet = GPUContext::instance().getDescriptorSets(hzShader,  1, 1, 2)[0];
-                normalDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::NORMAL), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                normalDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::NORMAL), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
                 normalDefaultRenderingSet.updateDescriptorSet();
             }
 
-            bool hasMetalnessTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::METALNESS).size() != 0;
+            bool hasMetalnessTextures = GPUContext::instance().getSharedTextures(Material::METALNESS).size() != 0;
             if (hasMetalnessTextures) {
                 DescriptorSet& metalnessDefaultRenderingSet = GPUContext::instance().getDescriptorSets(hzShader,  1, 1, 3)[0];
-                metalnessDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::METALNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                metalnessDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::METALNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
                 metalnessDefaultRenderingSet.updateDescriptorSet();
             }
-            bool hasRoughnessTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::ROUGHNESS).size() != 0;
+            bool hasRoughnessTextures = GPUContext::instance().getSharedTextures(Material::ROUGHNESS).size() != 0;
             if (hasRoughnessTextures) {
                 DescriptorSet& roughnessDefaultRenderingSet = GPUContext::instance().getDescriptorSets(hzShader,  1, 1, 4)[0];
-                roughnessDefaultRenderingSet .updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::ROUGHNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                roughnessDefaultRenderingSet .updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::ROUGHNESS), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
                 roughnessDefaultRenderingSet .updateDescriptorSet();
             }
-            bool hasAOTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::AO).size() != 0;
+            bool hasAOTextures = GPUContext::instance().getSharedTextures(Material::AO).size() != 0;
             if (hasAOTextures) {
                 DescriptorSet& aoDefaultRenderingSet = GPUContext::instance().getDescriptorSets(hzShader, 1, 1, 5)[0];
-                aoDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::AO), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                aoDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::AO), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
                 aoDefaultRenderingSet.updateDescriptorSet();
             }
-            bool hasEmissiveTextures = GPUContext::instance().getSharedTextures(entity::SubMesh::EMISSIVE).size() != 0;
+            bool hasEmissiveTextures = GPUContext::instance().getSharedTextures(Material::EMISSIVE).size() != 0;
             if (hasEmissiveTextures) {
                 DescriptorSet& emissiveDefaultRenderingSet = GPUContext::instance().getDescriptorSets(hzShader, 1, 1, 6)[0];
-                emissiveDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(entity::SubMesh::EMISSIVE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                emissiveDefaultRenderingSet.updateImageInfos(0, GPUContext::instance().getSharedTextures(Material::EMISSIVE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
                 emissiveDefaultRenderingSet.updateDescriptorSet();
             }			
         }

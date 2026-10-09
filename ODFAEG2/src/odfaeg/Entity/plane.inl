@@ -33,7 +33,7 @@ namespace odfaeg {
         void Plane::setTexture(std::string textureId) {
             this->textureId = textureId;
             for (unsigned int i = 0; i < getSubMeshesCount(); i++) {
-                getSubMeshes()[i].setTextureId(SubMesh::DIFFUSE, textureId);
+                getSubMeshes()[i].setAsset(entity::Asset::TEXTURE_DIFFUSE, textureId);
             }
         }
         GameObject* Plane::clone() {

@@ -5,7 +5,7 @@ namespace odfaeg {
         tileSize(squareSize) {
             nbQuadsPerRow = zone.getSize().x() / squareSize;
        }
-       void HeightMap::addSquare(std;;string materialId, Tile* square) {
+       void HeightMap::addSquare(Tile* square) {
            addChild(square);
        } 
        bool HeightMap::getHeight(math::Vec2f point, float& height) {

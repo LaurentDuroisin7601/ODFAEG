@@ -156,7 +156,7 @@ namespace odfaeg {
         }
         void LinkedListRenderer::updateDescriptorSets() {
             //std::cout<<"update ds"<<std::endl;
-            bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE).size() != 0;
+            bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(Material::DIFFUSE).size() != 0;
             DescriptorSet& linkedListSet = GPUContext::instance().getDescriptorSets(linkedListShader, (hasDiffuseTexture) ? 8 : 7, 1)[0];
             linkedListSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MODELS+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             linkedListSet.updateBufferInfos(1, GPUContext::instance().getSharedBuffers(RenderTarget::OUTPUT_MESHES+parentRenderer.getId()*RenderTarget::NB_BUFFERS), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -167,7 +167,7 @@ namespace odfaeg {
             linkedListSet.updateBufferInfos(6, nodeCounterBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);            
             if (hasDiffuseTexture) {
                 //std::cout<<"diffuse texture"<<std::endl;
-                linkedListSet.updateImageInfos(7, GPUContext::instance().getSharedTextures(entity::SubMesh::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                linkedListSet.updateImageInfos(7, GPUContext::instance().getSharedTextures(Material::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             }
             linkedListSet.updateDescriptorSet();
             DescriptorSet& linkedListQuadSet = GPUContext::instance().getDescriptorSets(quadLinkedListShader, 3, 1)[0];
@@ -193,7 +193,7 @@ namespace odfaeg {
             memoryBarrier0.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
             vkCmdPipelineBarrier(parentRenderer.getCommandPool().getHandle(parentRenderer.getCurrentFrame()), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier0, 0, nullptr, 0, nullptr);
             parentRenderer.setTypesToRender(typesToRenderExpression, parentRenderer.getCurrentFrame());
-            parentRenderer.applyCullingAndBatching(Material::transparentMask);
+            parentRenderer.applyCullingAndBatching(entity::SubMesh::transparentMask);
             parentRenderer.getDepthStencilTexture().generateDepthMipmaps(parentRenderer.getCurrentFrame()); 
             registerFramesJob[parentRenderer.getCurrentFrame()].store(true);
             //std::cout<<"cleared"<<std::endl;
