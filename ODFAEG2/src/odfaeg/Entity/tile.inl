@@ -49,7 +49,7 @@ namespace odfaeg {
             texRect = subRect;
             //std::cout<<"submesh added"<<std::endl;
         }
-        void Tile::changeVerticesHeights(unsigned int i, float h) {
+        void Tile::setVertexHeight(unsigned int i, float h) {
             getSubMeshes()[0].getVertexArray()[i].position[1] = h;
           
             float min, max;
@@ -76,7 +76,7 @@ namespace odfaeg {
             setPosition(math::Vec3f(getPosition().x(), min, getPosition().z()));
             setSize(math::Vec3f(getSize().x(), max-min, getSize().z()));
         }
-        float Tile::getHeight(unsigned int i) {
+        float Tile::getVertexHeight(unsigned int i) {
             return getSubMeshes()[0].getVertexArray()[i].position[1];
         }
         bool Tile::operator== (GameObject &other) {

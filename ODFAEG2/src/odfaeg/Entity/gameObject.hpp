@@ -197,13 +197,12 @@ namespace odfaeg {
             unsigned int getSubMeshesCount();
 			int& getBoneCount();
 			std::map<std::string, BoneInfo>& getBoneInfoMap();
-			unsigned int subMeshOffset;
-            virtual void change
+			unsigned int subMeshOffset;            
             virtual ~GameObject();
             virtual void changeVertexHeight (unsigned int i, float h) {
 
             }
-            float getVertexHeight (unsigned int i) {
+            virtual float getVertexHeight (unsigned int i) {
                 return 0;
             }
             int renderingType = 0;

@@ -154,24 +154,24 @@ namespace odfaeg {
             struct swap_if<I, J, T, false> {
                 using type = T;
             };
-            template <class Comp, typename T, std::size_t IH1, std::size_t IH2, std::size_t N>
+            template <class Comp, typename T, std::size_t IH1, std::size_t IH2, bool B>
             struct swap_elements {
-                using f = typename swap_elements<Comp, typename swap_if<IH1, IH2, T, !Comp::template f<std::tuple_element_t<IH1, T>, std::tuple_element_t<IH2, T>>::value>::type, IH1, IH2 + 1, N>::f;
+                using f = typename swap_elements<Comp, typename swap_if<IH1, IH2, T, !Comp::template f<std::tuple_element_t<IH1, T>, std::tuple_element_t<IH2, T>>::value>::type, IH1, IH2+1, IH2+1 == std::tuple_size<T>::value - 1>::f;
             };
-            template <class Comp, typename T, std::size_t IH1, std::size_t N>
-            struct swap_elements<Comp, T, IH1, N, N> {
-                using f = typename swap_if<IH1, N, T, !Comp::template f<std::tuple_element_t<IH1, T>, std::tuple_element_t<N, T>>::value>::type;
+            template <class Comp, typename T, std::size_t IH1, size_t IH2>
+            struct swap_elements<Comp, T, IH1, IH2, true> {
+                using f = typename swap_if<IH1, IH2, T, !Comp::template f<std::tuple_element_t<IH1, T>, std::tuple_element_t<IH2, T>>::value>::type;
             };
             template <typename Comp, typename T, std::size_t IH, bool B, bool B2>
             struct sort_impl {
             };
             template <typename Comp, typename T, std::size_t IH>
             struct sort_impl<Comp, T, IH, false, true> {
-                using f = typename sort_impl<Comp, typename swap_elements<Comp, T, IH, IH + 1, std::tuple_size<T>::value - 1>::f, IH + 1, IH == std::tuple_size<T>::value - 2, (std::tuple_size<T>::value > 1)>::f;
+                using f = typename sort_impl<Comp, typename swap_elements<Comp, T, IH, IH + 1, IH + 1 == std::tuple_size<T>::value - 1>::f, IH + 1, IH + 1 == std::tuple_size<T>::value - 2, (std::tuple_size<T>::value > 1)>::f;
             };
             template <typename Comp, typename T, std::size_t IH>
             struct sort_impl<Comp, T, IH, true, true> {
-                using f = typename swap_elements<Comp, T, IH, IH+1, std::tuple_size<T>::value - 1>::f;
+                using f = typename swap_elements<Comp, T, IH, IH+1, IH + 1 == std::tuple_size<T>::value - 1>::f;
             };
             template <typename Comp, typename T, std::size_t IH>
             struct sort_impl<Comp, T, IH, false, false> {
@@ -510,6 +510,10 @@ namespace odfaeg {
             V& get() {
                 return std::get<V>(holder);
             }
+            template <size_t I>
+            U& get() {
+                return std::get<I>(holder);
+            }
             private :                                    
             std::tuple<T...> holder;
         };
@@ -573,6 +577,12 @@ namespace odfaeg {
                     b.apply(elems...);
                 }, visits);
             }
+        };
+        struct Appliyer {
+            template <size_t... TypeIndexes, typename Func,typename... VS>
+            void operator()(Func f,VS... vs) {
+                f(vs.template get<TypeIndexes>(vs)...);
+            }	
         };
 	}
 }

@@ -94,6 +94,12 @@ class BoundingCircle : public BoundingArea {
 enum ANIMALS {
 	CHIEN, CHAT	
 };
+enum ARMES {
+	EPEE, ARC	
+};
+enum PROJECTILES {
+	LASER, BALLE	
+};
 struct gameObject 
 	{};
 
@@ -121,56 +127,25 @@ struct balle : projectile {
 };
 
 
+void f(int i1, int i2, int i3){
 
+}
 struct interaction 
 {
-    void chatepeelaser(const chat&, const epee&, const laser&) const { std::cout<<"chat avec épée lazer."<<std::endl; }
-    void chienarcballe(const chien&, const arc&, const balle&) const { std::cout<<"chien avec arc et balles."<<std::endl;}
+    void chateppeelaser(const chat&, const epee&, const laser&) { std::cout<<"chat avec épée lazer."<<std::endl; }
+    void chienarcballe(const chien&, const arc&, const balle&) { std::cout<<"chien avec arc et balles."<<std::endl;}
     // etc.
-};
-struct test {
-	template <size_t AnimType, typename Famille>
-	void f(CVariant<Famille,chat, chien> v) {
-		if (AnimType == CHIEN) {
-			chien chi = v.template get<chien>();
-			std::cout<<"chien behaviour"<<std::endl;
-		} else if (AnimType == CHAT) {
-			chat cha = v.template get<chat>();
-			std::cout<<"chat behaviour"<<std::endl;
-		} else {
-			std::cout<<"invalide type "<<std::endl;
-		}	
-	}	
 };
 int main() {
 	chat cha;
 	epee ep;
 	laser la;
-	CVariant<chat, chat, chien> cv1(cha);
-	CVariant<epee, epee, arc> cv2(ep);
-	CVariant<laser, laser, balle> cv3(la);
-	interaction inter;
-	FastDelegate<void> visitor(&interaction::chatepeelaser, inter, cv1, cv2, cv3);	
-	visitor();
-	system("PAUSE");
-	
-	/*chien chi;
-	chat cha;	
-	test t;
-	CVariant<chien, chat, chien> cv1(chi);
-	CVariant<chat, chat, chien> cv2(cha);
-	FastDelegate<void> varCallBack1(&test::f<CHIEN, chien>, std::ref(object1), ph<0, CVariant<chien, chat, chien>>());
-	varCallBack1.bind(cv1);
-	FastDelegate<void> varCallBack2(&test::f<CHAT, chat>, std::ref(object2), ph<0, CVariant<chat, chat, chien>>());
-	varCallBack2.bind(cv2);
-	std::vector<FastDelegate<void>> behavioursSlots;
-	behavioursSlots.push_back(varCallBack1);
-	behavioursSlots.push_back(varCallBack2);
-	for (unsigned int i = 0; i < behavioursSlots.size(); i++) {
-		behavioursSlots[i]();
-	}*/
-	/*varCallBack.setParam<1, CVariant<chien, chat, chien>, test, CVariant<chien, chat, chien>>(cv2);
-	varCallBack();*/
+	CVariant<chat, chat, chien> cvar1(cha);
+	CVariant<epee, epee, arc> cvar2(ep);
+	CVariant<laser, laser, balle> cvar3(la);
+		
+	FastDelegate<void> visitor(&interaction::chateppeelaser, interaction(), cvar1, cvar2, cvar3);
+	//visitor.bind(cvar1, cvar2, cvar3);
 	//system("PAUSE");
 	/*EXPORT_CLASS_GUID(BABC, BoundingArea, BoundingCircle, ITextArchive)
 	EXPORT_CLASS_GUID(BABC, BoundingArea, BoundingCircle, OTextArchive)		
