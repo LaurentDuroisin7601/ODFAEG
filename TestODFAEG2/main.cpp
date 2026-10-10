@@ -122,19 +122,19 @@ struct balle : projectile {
 
 
 
-struct interaction : dispatchable_multi<interaction, animal, arme, projectile>
+struct interaction 
 {
-    void operator()(const chat&, const epee&, const laser&) const { std::cout<<"chat avec épée lazer."<<std::endl; }
-    void operator()(const chien&, const arc&, const balle&) const { std::cout<<"chien avec arc et balles."<<std::endl;}
+    void chatepeelaser(const chat&, const epee&, const laser&) const { std::cout<<"chat avec épée lazer."<<std::endl; }
+    void chienarcballe(const chien&, const arc&, const balle&) const { std::cout<<"chien avec arc et balles."<<std::endl;}
     // etc.
 };
 struct test {
-	template <size_t I, typename T>
-	void f(gameObject& g, CVariant<T,chat, chien> v) {
-		if (I == CHIEN) {
+	template <size_t AnimType, typename Famille>
+	void f(CVariant<Famille,chat, chien> v) {
+		if (AnimType == CHIEN) {
 			chien chi = v.template get<chien>();
 			std::cout<<"chien behaviour"<<std::endl;
-		} else if (I == CHAT) {
+		} else if (AnimType == CHAT) {
 			chat cha = v.template get<chat>();
 			std::cout<<"chat behaviour"<<std::endl;
 		} else {
@@ -143,20 +143,25 @@ struct test {
 	}	
 };
 int main() {
+	chat cha;
+	epee ep;
+	laser la;
+	CVariant<chat, chat, chien> cv1(cha);
+	CVariant<epee, epee, arc> cv2(ep);
+	CVariant<laser, laser, balle> cv3(la);
+	interaction inter;
+	FastDelegate<void> visitor(&interaction::chatepeelaser, inter, cv1, cv2, cv3);	
+	visitor();
+	system("PAUSE");
 	
-	
-	//concretes.apply(inter);
-	//inter.apply(c, e, l);
 	/*chien chi;
 	chat cha;	
 	test t;
 	CVariant<chien, chat, chien> cv1(chi);
-	CVariant<chat, chat, chien> cv2(cha);		
-	gameObject& object1 = chi;  
-	gameObject& object2 = cha;
-	FastDelegate<void> varCallBack1(&test::f<CHIEN, chien>, t, std::ref(object1), ph<0, CVariant<chien, chat, chien>>());
+	CVariant<chat, chat, chien> cv2(cha);
+	FastDelegate<void> varCallBack1(&test::f<CHIEN, chien>, std::ref(object1), ph<0, CVariant<chien, chat, chien>>());
 	varCallBack1.bind(cv1);
-	FastDelegate<void> varCallBack2(&test::f<CHAT, chat>, t, std::ref(object2), ph<0, CVariant<chat, chat, chien>>());
+	FastDelegate<void> varCallBack2(&test::f<CHAT, chat>, std::ref(object2), ph<0, CVariant<chat, chat, chien>>());
 	varCallBack2.bind(cv2);
 	std::vector<FastDelegate<void>> behavioursSlots;
 	behavioursSlots.push_back(varCallBack1);
