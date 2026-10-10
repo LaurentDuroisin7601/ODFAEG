@@ -578,10 +578,10 @@ namespace odfaeg {
                 }, visits);
             }
         };
-        struct Appliyer {
-            template <size_t... TypeIndexes, typename Func,typename... VS>
-            void operator()(Func f,VS... vs) {
-                f(vs.template get<TypeIndexes>(vs)...);
+        template <typename Func, typename... Vs>
+        struct Appliyer {            
+            static void apply(Func f, Vs&... vs) {
+                f(vs.get()...);
             }	
         };
 	}

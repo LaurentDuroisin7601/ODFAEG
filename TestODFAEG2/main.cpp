@@ -145,6 +145,7 @@ int main() {
 	CVariant<laser, laser, balle> cvar3(la);
 		
 	FastDelegate<void> visitor(&interaction::chateppeelaser, interaction(), cvar1, cvar2, cvar3);
+	
 	//visitor.bind(cvar1, cvar2, cvar3);
 	//system("PAUSE");
 	/*EXPORT_CLASS_GUID(BABC, BoundingArea, BoundingCircle, ITextArchive)
