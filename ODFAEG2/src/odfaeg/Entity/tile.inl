@@ -49,12 +49,14 @@ namespace odfaeg {
             texRect = subRect;
             //std::cout<<"submesh added"<<std::endl;
         }
-        void Tile::changeVerticesHeights(float h1, float h2, float h3, float h4) {
-            getSubMeshes()[0].getVertexArray()[0].position[1] = h1;
-            getSubMeshes()[0].getVertexArray()[1].position[1] = h2;
-            getSubMeshes()[0].getVertexArray()[2].position[1] = h3;
-            getSubMeshes()[0].getVertexArray()[3].position[1] = h4;
+        void Tile::changeVerticesHeights(unsigned int i, float h) {
+            getSubMeshes()[0].getVertexArray()[i].position[1] = h;
+          
             float min, max;
+            float h1 = getSubMeshes()[0].getVertexArray()[0].position[1];
+            float h2 = getSubMeshes()[0].getVertexArray()[1].position[1];
+            float h3 = getSubMeshes()[0].getVertexArray()[2].position[1];
+            float h4 = getSubMeshes()[0].getVertexArray()[3].position[1];
             if (h1 < h2 && h1 < h3 && h1 < h4)
                 min = h1;
             else if (h2 < h1 && h2 < h3 && h2 < h4)
@@ -71,8 +73,11 @@ namespace odfaeg {
                 max = h3;
             else
                 max = h4;
-            setPosition(math::Vec3f(getPosition().x(), 0.f, getPosition().z()));
+            setPosition(math::Vec3f(getPosition().x(), min, getPosition().z()));
             setSize(math::Vec3f(getSize().x(), max-min, getSize().z()));
+        }
+        float Tile::getHeight(unsigned int i) {
+            return getSubMeshes()[0].getVertexArray()[i].position[1];
         }
         bool Tile::operator== (GameObject &other) {
             return GameObject::operator==(other);

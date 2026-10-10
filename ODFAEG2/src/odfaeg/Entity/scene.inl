@@ -17,8 +17,7 @@ namespace odfaeg {
             int startY = rect.getPosition().z() / tileSize.y() * tileSize.y();
             int endX = (rect.getPosition().x() + rect.getWidth()) / tileSize.x() * tileSize.x();
             int endY = (rect.getPosition().z() + rect.getHeight()) / tileSize.y() * tileSize.y();
-            HeightMap hm = new HeightMap(squareSize, rect);
-            hp->setSize(rect.getSize());
+            TileSet ts = new TileSet(squareSize, rect);            
             unsigned int i, j;
             //Génération du sol et de tout les murs.
             for (int y = startY, j = 0; y < endY; y+= tileSize.y(), j++) {
@@ -26,97 +25,97 @@ namespace odfaeg {
                     math::Vec3f projPos = baseChangmentMatrix.changeOfBase(math::Vec3f (x - startX, y - startY, 0));
                     math::Vec2f pos (projPos.x() + startX, projPos.y() + startY);
                     if (x == startX && y == startY) {
-                        Entity *w = walls[Wall::TOP_LEFT]->clone();
+                        GameObject *w = walls[Wall::TOP_LEFT]->clone();
                         w->setPosition(math::Vec3f(pos.x(), rect.getPosition().z(),pos.y()));
                         w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().y() + w->getSize().y(), w->getSize().z()));
                         addEntity(w);
                         gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), rect.getPosition().y(), w->getPosition().y()))->setPassable(false);
                     } else if (x == endX && y == startY) {
-                        Entity *w = walls[Wall::TOP_RIGHT]->clone();
+                        GameObject *w = walls[Wall::TOP_RIGHT]->clone();
                         w->setPosition(math::Vec3f(pos.x(), rect.getPosition().z(),pos.y()));
                         w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().y() + w->getSize().y(), w->getSize().z()));
                         addEntity(w);
                         gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), rect.getPosition().y(), w->getPosition().y()))->setPassable(false);
                     } else if (y == endY && x == endX) {
-                        Entity *w = walls[Wall::BOTTOM_RIGHT]->clone();
+                        GameObject *w = walls[Wall::BOTTOM_RIGHT]->clone();
                         w->setPosition(math::Vec3f(pos.x(), rect.getPosition().z(),pos.y()));
                         w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().y() + w->getSize().y(), w->getSize().z()));
                         addEntity(w);
                         gridMapgetGridCellAt(math::Vec3f(w->getPosition().x(), rect.getPosition().y(), w->getPosition().y()))->setPassable(false);
                     } else if (x == startX && y == endY) {
-                        Entity *w = walls[Wall::BOTTOM_LEFT]->clone();
+                        GameObject *w = walls[Wall::BOTTOM_LEFT]->clone();
                         w->setPosition(math::Vec3f(pos.x(), rect.getPosition().z(),pos.y()));
                         w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().y() + w->getSize().y(), w->getSize().z()));
                         addEntity(w);
                         gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), rect.getPosition().y(), w->getPosition().y()))->setPassable(false);
                     } else if (y == startY && j % 2 != 0) {
-                        Entity *w = walls[Wall::TOP_BOTTOM]->clone();
+                        GameObject *w = walls[Wall::TOP_BOTTOM]->clone();
                         w->setPosition(math::Vec3f(pos.x(), rect.getPosition().z(),pos.y()));
                         w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().y() + w->getSize().y(), w->getSize().z()));
                         addEntity(w);
                         gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), rect.getPosition().y(), w->getPosition().y()))->setPassable(false);
                     } else if (y == startY && j % 2 == 0) {
-                        Entity *w = walls[Wall::T_TOP]->clone();
+                        GameObject *w = walls[Wall::T_TOP]->clone();
                         w->setPosition(math::Vec3f(pos.x(), rect.getPosition().z(),pos.y()));
                         w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().y() + w->getSize().y(), w->getSize().z()));
                         addEntity(w);
                         gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), rect.getPosition().y(), w->getPosition().y()))->setPassable(false);
                     } else if (x == endX && j % 2 != 0) {
-                        Entity *w = walls[Wall::RIGHT_LEFT]->clone();
+                        GameObject *w = walls[Wall::RIGHT_LEFT]->clone();
                         w->setPosition(math::Vec3f(pos.x(), rect.getPosition().z(),pos.y()));
                         w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().y() + w->getSize().y(), w->getSize().z()));
                         addEntity(w);
                         gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), rect.getPosition().y(), w->getPosition().y()))->setPassable(false);
                     } else if (x == endX && j % 2 == 0) {
-                        Entity *w = walls[Wall::T_RIGHT]->clone();
+                        GameObject *w = walls[Wall::T_RIGHT]->clone();
                         w->setPosition(math::Vec3f(pos.x(), rect.getPosition().z(),pos.y()));
                         w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().y() + w->getSize().y(), w->getSize().z()));
                         addEntity(w);
                         gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), rect.getPosition().y(), w->getPosition().y()))->setPassable(false);
                     } else if(y == endY && i % 2 != 0) {
-                        Entity *w = walls[Wall::TOP_BOTTOM]->clone();
+                        GameObject *w = walls[Wall::TOP_BOTTOM]->clone();
                         w->setPosition(math::Vec3f(pos.x(), rect.getPosition().z(),pos.y()));
                         w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().y() + w->getSize().y(), w->getSize().z()));
                         addEntity(w);
                         gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), rect.getPosition().y(), w->getPosition().y()))->setPassable(false);
                     } else if (y == endY && i % 2 == 0) {
-                        Entity *w = walls[Wall::T_BOTTOM]->clone();
+                        GameObject *w = walls[Wall::T_BOTTOM]->clone();
                         w->setPosition(math::Vec3f(pos.x(), rect.getPosition().z(),pos.y()));
                         w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().y() + w->getSize().y(), w->getSize().z()));
                         addEntity(w);
                         gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), rect.getPosition().y(), w->getPosition().y()))->setPassable(false);
                     } else if (x == startX && j % 2 != 0) {
-                        Entity *w = walls[Wall::RIGHT_LEFT]->clone();
+                        GameObject *w = walls[Wall::RIGHT_LEFT]->clone();
                         w->setPosition(math::Vec3f(pos.x(), rect.getPosition().z(),pos.y()));
                         w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().y() + w->getSize().y(), w->getSize().z()));
                         addEntity(w);
                         gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), rect.getPosition().y(), w->getPosition().y()))->setPassable(false);
                     } else if (x == startX && j % 2 == 0) {
-                        Entity *w = walls[Wall::T_LEFT]->clone();
+                        GameObject *w = walls[Wall::T_LEFT]->clone();
                         w->setPosition(math::Vec3f(pos.x(), rect.getPosition().z(),pos.y()));
                         w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().y() + w->getSize().y(), w->getSize().z()));
                         addEntity(w);
                         gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), rect.getPosition().y(), w->getPosition().y()))->setPassable(false);
                     } else if (j % 2 != 0 && i % 2 == 0) {
-                        Entity *w = walls[Wall::RIGHT_LEFT]->clone();
+                        GameObject *w = walls[Wall::RIGHT_LEFT]->clone();
                         w->setPosition(math::Vec3f(pos.x(), rect.getPosition().z(),pos.y()));
                         w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().y() + w->getSize().y(), w->getSize().z()));
                         addEntity(w);
                         gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), rect.getPosition().y(), w->getPosition().y()))->setPassable(false);
                     } else if (j % 2 == 0 && i % 2 != 0) {
-                        Entity *w = walls[Wall::TOP_BOTTOM]->clone();
+                        GameObject *w = walls[Wall::TOP_BOTTOM]->clone();
                         w->setPosition(math::Vec3f(pos.x(), rect.getPosition().z(),pos.y()));
                         w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().y() + w->getSize().y(), w->getSize().z()));
                         addEntity(w);
                         gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), rect.getPosition().y(), w->getPosition().y()))->setPassable(false);
                     } else if (j % 2 == 0 && i % 2 == 0) {
-                        Entity *w = walls[Wall::X]->clone();
+                        GameObject *w = walls[Wall::X]->clone();
                         w->setPosition(math::Vec3f(pos.x(), rect.getPosition().z(),pos.y()));
                         w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().y() + w->getSize().y(), w->getSize().z()));
                         addEntity(w);
                         gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), rect.getPosition().y(), w->getPosition().y()))->setPassable(false);
                     } else {
-                        Entity* tile;
+                        GameObject* tile;
                         if (tGround.size() > 0)  {
                             int i = math::Math::random(tGround.size());
                             tile = tGround[i]->clone();
@@ -124,16 +123,16 @@ namespace odfaeg {
                             //////////std::cout<<"add tile : "<<tile->getPosition()<<std::endl;
                         } else {
                             tile = factory.make_entity<Tile>(nullptr, math::Vec3f(pos.x(), 0, pos.y()), math::Vec3f(tileSize.x(), 0, tileSize.y()), IntRect(0, 0, tileSize.x(), tileSize.y()), factory);
-                        }
-                        float heights[4];
-                        for (unsigned int j = 0; j < sizeof(heights) / sizeof(float); j++) {
-                            heights[j] = math::Math::random(rect.getPosition().y(), rect.getPosition().y() + rect.getHeight());
-                        }
-                        tile->changeVerticesHeights(heights[0], heights[1], heights[2], heights[3]);
-                        hm->addSquare(tile);
+                        }                        
+                        for (unsigned int j = 0; j < 4; j++) {
+                            float h = math::Math::random(rect.getPosition().y(), rect.getPosition().y() + rect.getHeight());
+                            tile->setHeight(j, h);
+                        }                        
+                        ts->addTile(tile);
                     }
+                }
             }
-            addEntity(hm);
+            addEntity(ts);
             //Génération du labyrinthe.
             std::vector<CellMap*> visited;
             std::vector<math::Vec2f> dirs;
@@ -195,7 +194,42 @@ namespace odfaeg {
                 }
             }
         }       
-        void Scene::generate_arena(std::vector<Tile*> tGround, std::vector<g3d::Wall*> walls, unsigned int squareSize, physic::BoundingBox &rect, EntityFactory& factory) {
+        void Scene::generate_terrain(std::vector<Tile*> tGround, std::vector<g3d::Wall*> walls, unsigned int squareSize, physic::BoundingBox &rect) {
+            int startX = rect.getPosition().x() / tileSize.x() * tileSize.x();
+            int startY = rect.getPosition().z() / tileSize.y() * tileSize.y();
+            int endX = (rect.getPosition().x() + rect.getWidth()) / tileSize.x() * tileSize.x();
+            int endY = (rect.getPosition().z() + rect.getDepth()) / tileSize.y() * tileSize.y();
+            TileSet *ts = factory.make_entity<BigTile>(math::Vec3f(startX, rect.getPosition().y(), startY),factory, tileSize,rect.getWidth() / tileSize.x());            
+            //bt->setCenter(math::Vec3f(rect.getCenter().x, rect.getCenter().y, rect.getPosition().z()));
+            //Positions de d\E9part et d'arriv\E9es en fonction de la taille, de la position et de la taille des cellules de la map.
+            for (int y = startY; y < endY;  y+=tileSize.y()) {
+                for (int x = startX; x < endX; x+=tileSize.x()) {
+                    ////////std::cout<<"start x y : "<<startX<<","<<startY<<std::endl;
+                    ////////std::cout<<"end x y : "<<endX-tileSize.x()<<","<<endY-tileSize.y()<<std::endl;
+                    ////////std::cout<<"x y : "<<x<<","<<y<<std::endl;
+                    //On projete les positions en fonction de la projection du jeux.
+                    math::Vec3f projPos = baseChangementMatrix.changeOfBase(math::Vec3f (x - startX, y - startY, 0));
+                    math::Vec2f pos (projPos.x() + startX, projPos.y() + startY);
+                    //////////std::cout<<"pos : "<<pos<<std::endl;
+                    Tile* tile;
+                    if (tGround.size() > 0)  {
+                        int i = math::Math::random(tGround.size());
+                        tile = tGround[i]->clone();
+                        tile->setPosition(math::Vec3f(pos.x(), 0, pos.y()));
+                    } else {
+                        tile = new Tile(nullptr, math::Vec3f(pos.x(), 0, pos.y()), math::Vec3f(squareSize, 0, squareSize.y()), IntRect(0, 0, 1, 1));
+                    }
+                    for (unsigned int j = 0; j < 4; j++) {
+                        float h = math::Math::random(rect.getPosition().y(), rect.getPosition().y() + rect.getHeight());
+                        tile->setHeight(j, h);
+                    }   
+                    tile->changeVerticesHeights(heights[0], heights[1], heights[2], heights[3]);
+                    ts->addTile(tile);
+                }
+            }
+            addEntity(ts);
+        } 
+        void Scene::generate_rectangular_arena(std::vector<g3d::Wall*> walls, unsigned int squareSize, physic::BoundingBox &rect) {
             int startX = rect.getPosition().x() / tileSize.x() * tileSize.x();
             int startY = rect.getPosition().z() / tileSize.y() * tileSize.y();
             int endX = (rect.getPosition().x() + rect.getWidth()) / tileSize.x() * tileSize.x();
@@ -217,7 +251,7 @@ namespace odfaeg {
                     if (x == startX && y == startY && walls.size() >= 11) {
                         if (walls[Wall::TOP_LEFT] != nullptr) {
                             ////////std::cout<<"top left"<<std::endl;
-                            Entity *w = walls[Wall::TOP_LEFT]->clone();
+                            GameObject *w = walls[Wall::TOP_LEFT]->clone();
                             w->setPosition(math::Vec3f(pos.x(), rect.getPosition().y(), pos.y()));
                             w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().z() + w->getSize().z(), w->getSize().z()));
                             //////////std::cout<<"position top right : "<<w->getPosition()<<std::endl;
@@ -229,7 +263,7 @@ namespace odfaeg {
                     } else if (x == endX - tileSize.x() && y == startY && walls.size() >= 11) {
                         if (walls[Wall::TOP_RIGHT] != nullptr) {
                             ////////std::cout<<"top right"<<std::endl;
-                            Entity *w = walls[Wall::TOP_RIGHT]->clone();
+                            GameObject *w = walls[Wall::TOP_RIGHT]->clone();
                             w->setPosition(math::Vec3f(pos.x(), rect.getPosition().y(), pos.y()));
                             w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().z() + w->getSize().z(), w->getSize().z()));
                             //////////std::cout<<"position top right : "<<w->getPosition()<<std::endl;
@@ -240,7 +274,7 @@ namespace odfaeg {
                     } else if (x == endX - tileSize.x() && y == endY - tileSize.y() && walls.size() >= 11) {
                         if (walls[Wall::BOTTOM_RIGHT] != nullptr) {
                             ////////std::cout<<"bottom right"<<std::endl;
-                            Entity *w = walls[Wall::BOTTOM_RIGHT]->clone();
+                            GameObject *w = walls[Wall::BOTTOM_RIGHT]->clone();
                             w->setPosition(math::Vec3f(pos.x(), rect.getPosition().y(), pos.y()));
                             w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().z() + w->getSize().z(), w->getSize().z()));
                             addEntity(w);
@@ -249,7 +283,7 @@ namespace odfaeg {
                     } else if (x == startX && y == endY - tileSize.y() && walls.size() >= 11) {
                         if (walls[Wall::BOTTOM_LEFT] != nullptr) {
                             ////////std::cout<<"bottom left"<<std::endl;
-                            Entity *w = walls[Wall::BOTTOM_LEFT]->clone();
+                            GameObject *w = walls[Wall::BOTTOM_LEFT]->clone();
                             w->setPosition(math::Vec3f(pos.x(), rect.getPosition().y(), pos.y()));
                             w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().z() + w->getSize().z(), w->getSize().z()));
                             //////////std::cout<<"position bottom left : "<<w->getPosition()<<std::endl;
@@ -259,7 +293,7 @@ namespace odfaeg {
                     } else if ((y == startY || y == endY - tileSize.y()) && walls.size() >= 11) {
                         if (walls[Wall::TOP_BOTTOM] != nullptr) {
                             ////////std::cout<<"top bottom"<<std::endl;
-                            Entity *w = walls[Wall::TOP_BOTTOM]->clone();
+                            GameObject *w = walls[Wall::TOP_BOTTOM]->clone();
                             w->setPosition(math::Vec3f(pos.x(), rect.getPosition().y(), pos.y()));
                             w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().z() + w->getSize().z(), w->getSize().z()));
                             addEntity(w);
@@ -274,7 +308,7 @@ namespace odfaeg {
                     } else if ((x == startX || x == endX - tileSize.x()) && walls.size() >= 11) {
                         if (walls[Wall::RIGHT_LEFT] != nullptr) {
                             ////////std::cout<<"right left"<<std::endl;
-                            Entity *w = walls[Wall::RIGHT_LEFT]->clone();
+                            GameObject *w = walls[Wall::RIGHT_LEFT]->clone();
                             w->setPosition(math::Vec3f(pos.x(), rect.getPosition().y(), pos.y()));
                             w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().z() + w->getSize().z(), w->getSize().z()));
                             addEntity(w);
@@ -284,27 +318,12 @@ namespace odfaeg {
                                 tile->setPosition(math::Vec3f(pos.x(), 0, pos.y()));
                                 bt->addTile(tile);
                             }*/
-                            gridMap->getGridCellAt(math::Vec3f(w->getPosition().x(), w->getPosition().y(), w->getPosition().z()))->setPassable(false);
+                            gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), w->getPosition().y(), w->getPosition().z()))->setPassable(false);
                         }
                     }
-                    Entity* tile;
-                    if (tGround.size() > 0)  {
-                        int i = math::Math::random(tGround.size());
-                        tile = tGround[i]->clone();
-                        tile->setPosition(math::Vec3f(pos.x(), 0, pos.y()));
-                    } else {
-                        tile = new Tile(nullptr, math::Vec3f(pos.x(), 0, pos.y()), math::Vec3f(squareSize, 0, squareSize.y()), IntRect(0, 0, 1, 1));
-                    }
-                    float heights[4];
-                    for (unsigned int j = 0; j < 4; j++) {
-                        heights[j] = math::Math::random(rect.getPosition().y(), rect.getPosition().y() + rect.getHeight());
-                    }
-                    tile->changeVerticesHeights(heights[0], heights[1], heights[2], heights[3]);
-                    hm->addTile(tile);
                 }
             }
-            addEntity(bm);
-        }       
+        }
         void Scene::setName (string name) {
             this->name = name;
         }

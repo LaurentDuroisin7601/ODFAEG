@@ -6,7 +6,8 @@ namespace odfaeg {
         public:
             Scene (std::string name, int cellWidth, int cellHeight, int cellDepth);
             void generate_labyrinthe (std::vector<Tile*> tGround, std::vector<Wall*> walls, unsigned int squareSize, physic::BoundingBox &rect);
-            void generate_arena(std::vector<Tile*> tGround, std::vector<g3d::Wall*> walls, unsigned int squareSize, physic::BoundingBox &rect, EntityFactory& factory);
+            void generate_terrain(std::vector<Tile*> tGround, unsigned int squareSize, physic::BoundingBox &rect);
+            void generate_rectangular_arena(std::vector<g3d::Wall*> walls, unsigned int squareSize, physic::BoundingBox &rect);
             void setName (string name);
             string getName();
             int getCompImage(std::string resource);

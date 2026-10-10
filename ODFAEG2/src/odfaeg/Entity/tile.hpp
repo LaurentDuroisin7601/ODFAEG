@@ -36,7 +36,8 @@ namespace odfaeg {
                 */
                 Tile (std::string textureId, math::Vec3f position, math::Vec3f size, FloatRect subRect,  Color color = Color::White, GameObject* parent = nullptr);
                 GameObject* clone() override;
-                void changeVerticesHeights (float h1, float h2, float h3, float h4);
+                void changeVertexHeight (unsigned int i, float h);
+                float getVertexHeight (unsigned int i);
                 /**
                 * \fn bool operator== (Entity &tile);
                 * \brief check if two tiles are the same.

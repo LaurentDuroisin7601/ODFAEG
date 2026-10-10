@@ -1,14 +1,14 @@
 namespace odfaeg {
     namespace entity {
-       HeightMap::HeightMap (unsigned int squareSize, physic::BoundingBox zone)
-        : GameObject (pos, math::Vec3f (0, 0, 0), math::Vec3f (0, 0, 0), "E_BIGTILE", factory),
-        tileSize(squareSize) {
+       TileSet::TileSet (unsigned int squareSize, physic::BoundingBox zone)
+        : GameObject (zone.getPosition(), zone.getSize(), zone.getSize() * 0.5f, "E_HEIGHTMAP")
+        squareSize(squareSize) {
             nbQuadsPerRow = zone.getSize().x() / squareSize;
        }
-       void HeightMap::addSquare(Tile* square) {
-           addChild(square);
+       void TileSet::addTile(Tile* tile) {
+           addChild(tile);
        } 
-       bool HeightMap::getHeight(math::Vec2f point, float& height) {
+       bool TileSet::getHeight(math::Vec2f point, float& height) {
             ////////std::cout<<"get height"<<std::endl;
             if (point.x() >= getGlobalBounds().getPosition().x() && point.x() < getGlobalBounds().getPosition().x() + getGlobalBounds().getSize().x()
                 && point.y() >= getGlobalBounds().getPosition().z() && point.y() < getGlobalBounds().getPosition().z() + getGlobalBounds().getSize().z()) {
@@ -17,11 +17,12 @@ namespace odfaeg {
                 int yPosition = (point.y() + pos.y()) / squareSize;
                 int position = yPosition * nbQuadsPerRow + xPosition;
                 math::Vec2f d(point.x() - xPosition * squareSize, point.y() - yPosition*squareSize);
+                //Triangle du carré sur lequel le point se trouve.
                 int triIndex = (d.x() < d.y()) ? 0 : 1;
                 Height h1, h2, h3;
-                h1 = squares[position].getHeight(0);
-                h2 = squares[position].getHeight(1+triIndex);                     
-                h3 = squares[position].getHeight(2+triIndex);
+                h1 = getChildren()[position].getHeight(0);
+                h2 = getChildren()[position].getHeight(1+triIndex);                     
+                h3 = getChildren()[position].getHeight(2+triIndex);
                 
                 ////////std::cout<<"point  : "<<point<<"pos : "<<pos<<"tileSize : "<<tileSize<<std::endl;
                 // Vecteurs du triangle
@@ -36,7 +37,7 @@ namespace odfaeg {
                 float d20 = v2.dot(v0);
                 float d21 = v2.dot(v1);
 
-            // Déterminant
+                // Déterminant
                 float denom = d00 * d11 - d01 * d01;
 
                 // Coordonnées barycentriques
@@ -45,15 +46,14 @@ namespace odfaeg {
                 float alpha = 1.0f - beta - gamma;
 
                 // Hauteur interpolée
-                /*height = alpha * hA + beta * hB + gamma * hC;
-                float dx = (point.x() - h2.x()) / squareSize;
-                float dy = (point.y() - h2.y()) / squareSize;
-                
-                ////////std::cout<<"h : "<<h1<<","<<h2<<","<<h3<<","<<h4<<std::endl;
-                height = ((1 - dx) * h1 + dx * h2) * (1 - dy) + ((1 - dx) * h4 + dx * h3) * dy;*/
-                ////////std::cout<<"3D height : "<<height<<std::endl;
+                height = alpha * h1 + beta * h2 + gamma * h3;               
                 return true;
              }
+        }
+        GameObject* TileSet::clone() {
+            TileSet* ts = new TileSet(squareSize, getGlobalBounds());
+            GameObject::copy(*ts);
+            return ts;
         }
     }
 }

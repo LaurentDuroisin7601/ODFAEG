@@ -69,23 +69,7 @@ namespace odfaeg {
             inline static const unsigned int reflectMask = 4 << 1;
             inline static const unsigned int refractMask = 5 << 1; 
             inline static const unsigned int selectedMask = 6 << 1;
-        protected :
-            void onResize(math::Vec3f& s);
-            /**
-            * \fn virtual void onRotate(float angle)
-            * \brief this function can be redefined in the sub-class if we need to do something when the object is rotating.
-            */
-            void onRotate(float angle);
-            /**
-            * \fn virtual void onScale(Vec3f s)
-            * \brief this function can be redefined in the sub-class if we need to do something when the object is rescaling.
-            */
-            void onScale(math::Vec3f& s);
-            /**
-            * \fn virtual void onMove(Vec3f t)
-            * \brief this function can be redefined in the sub-class if we need to do something when the object is moving.
-            */
-            void onMove(math::Vec3f& t);                       
+                              
         private:
             Type type;
             std::array<std::deque<Asset>, Asset::Type::NB_ASSETS_TYPES> assets = {};         	
@@ -214,7 +198,14 @@ namespace odfaeg {
 			int& getBoneCount();
 			std::map<std::string, BoneInfo>& getBoneInfoMap();
 			unsigned int subMeshOffset;
+            virtual void change
             virtual ~GameObject();
+            virtual void changeVertexHeight (unsigned int i, float h) {
+
+            }
+            float getVertexHeight (unsigned int i) {
+                return 0;
+            }
             int renderingType = 0;
 		protected :
             void onResize(math::Vec3f& s);
