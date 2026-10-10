@@ -132,8 +132,8 @@ void f(int i1, int i2, int i3){
 }
 struct interaction 
 {
-    void chateppeelaser(const chat&, const epee&, const laser&) { std::cout<<"chat avec épée lazer."<<std::endl; }
-    void chienarcballe(const chien&, const arc&, const balle&) { std::cout<<"chien avec arc et balles."<<std::endl;}
+    void operator()(const chat&, const epee&, const laser&) { std::cout<<"chat avec épée lazer."<<std::endl; }
+    void operator()(const chien&, const arc&, const balle&) { std::cout<<"chien avec arc et balles."<<std::endl;}
     // etc.
 };
 int main() {
@@ -143,9 +143,11 @@ int main() {
 	CVariant<chat, chat, chien> cvar1(cha);
 	CVariant<epee, epee, arc> cvar2(ep);
 	CVariant<laser, laser, balle> cvar3(la);
-		
-	FastDelegate<void> visitor(&interaction::chateppeelaser, interaction(), cvar1, cvar2, cvar3);
-	
+	interaction inter;	
+	FastDelegate<void> visitor(&DispatchVisitor<interaction, CVariant<chat, chat, chien>, CVariant<epee, epee, arc>, CVariant<laser, laser, balle>>::visit, inter, ph<0, CVariant<chat, chat, chien>>(), ph<1,CVariant<epee, epee, arc>>(), ph<2, CVariant<laser, laser, balle>>());
+	visitor.bind(cvar1, cvar2, cvar3);
+	visitor();
+	system("PAUSE");
 	//visitor.bind(cvar1, cvar2, cvar3);
 	//system("PAUSE");
 	/*EXPORT_CLASS_GUID(BABC, BoundingArea, BoundingCircle, ITextArchive)

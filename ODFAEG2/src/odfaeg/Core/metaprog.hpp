@@ -495,28 +495,16 @@ namespace odfaeg {
             {
             }
         }; 
-              
-        template <typename U, typename... T>
-        class CVariant {
-            public :    
-            CVariant() { }        
-            CVariant(U value) {
-                std::get<U>(holder) = value; 
-            }            
-            U& get() {
-                return std::get<U>(holder);
-            }   
-            template <typename V>
+        template <typename V, typename... T>
+        struct CVariant { 
+            CVariant(V v) {
+                value = v;
+            }
             V& get() {
-                return std::get<V>(holder);
+                return value;
             }
-            template <size_t I>
-            U& get() {
-                return std::get<I>(holder);
-            }
-            private :                                    
-            std::tuple<T...> holder;
-        };
+            V value;
+        };       
         // Test "appartient à une famille" : dérivation
         template<class T, class Family>
         struct is_family : std::is_base_of<Family, std::remove_reference_t<T>> {};
@@ -577,10 +565,10 @@ namespace odfaeg {
                     b.apply(elems...);
                 }, visits);
             }
-        };
-        template <typename Func, typename... Vs>
-        struct Appliyer {            
-            static void apply(Func f, Vs&... vs) {
+        }; 
+        template <typename Func, typename... Vs>       
+        struct DispatchVisitor {
+            static void visit(Func f, Vs... vs) {
                 f(vs.get()...);
             }	
         };
