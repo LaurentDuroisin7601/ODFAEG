@@ -509,16 +509,9 @@ namespace odfaeg {
         }; */
         
         template <typename V, typename... T>
-        struct CVariant { 
-            CVariant() {}
-            template <typename Type>
-            requires ((std::is_same_v<
-                std::remove_cvref_t<Type>,
-                T> || ...))
-            CVariant(Type t) {
-                std::get<Type>(holder) = t;
-            }
-            CVariant(V v) {
+        struct TypeList { 
+            TypeList() {}
+            TypeList(V v) {
                 value = v;
             }
             template <size_t TypeID>
@@ -528,8 +521,7 @@ namespace odfaeg {
             V& get() {
                 return value;
             }
-            V value;
-            std::tuple<T...> holder;
+            V value;            
         };       
         // Test "appartient à une famille" : dérivation
         template<class T, class Family>

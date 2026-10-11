@@ -128,9 +128,9 @@ namespace odfaeg {
         } 
         
         template<class T, class LateParamsT, class... Args>
-        IVariant<T, LateParamsT, true, Args...>::IVariant(const CVariant<T, Args...>& var) : var(var) {}
+        IVariant<T, LateParamsT, true, Args...>::IVariant(const TypeList<T, Args...>& var) : var(var) {}
         template<class T, class LateParamsT, class... Args>
-        IVariant<T, LateParamsT, true, Args...>& IVariant<T, LateParamsT, true, Args...>::operator=(CVariant<T, Args...>& var) {
+        IVariant<T, LateParamsT, true, Args...>& IVariant<T, LateParamsT, true, Args...>::operator=(TypeList<T, Args...>& var) {
             this->var = var;
             return *this;
         }
@@ -150,9 +150,9 @@ namespace odfaeg {
         }
         
         template<class T, class LateParamsT, class... Args>
-        IVariant<T, LateParamsT, false, Args...>::IVariant(const CVariant<T, Args...>&& var) : var(std::move(var)) {}
+        IVariant<T, LateParamsT, false, Args...>::IVariant(const TypeList<T, Args...>&& var) : var(std::move(var)) {}
         template<class T, class LateParamsT, class... Args>
-        IVariant<T, LateParamsT, false, Args...>&& IVariant<T, LateParamsT, false, Args...>::operator=(CVariant<T, Args...>&& var) {
+        IVariant<T, LateParamsT, false, Args...>&& IVariant<T, LateParamsT, false, Args...>::operator=(TypeList<T, Args...>&& var) {
             this->var = std::move(var);
             return std::move(*this);
         }
@@ -188,7 +188,7 @@ namespace odfaeg {
         }
         template<class T, class LateParamsT>
         template<typename... Args>
-        RefVal<T, LateParamsT, true>::RefVal(const CVariant<T, Args...>& var) //we need to use a different placeholder class here to pass the palceholders's holder type for the static_cast.
+        RefVal<T, LateParamsT, true>::RefVal(const TypeList<T, Args...>& var) //we need to use a different placeholder class here to pass the palceholders's holder type for the static_cast.
             : rv(new IVariant<T, LateParamsT, true, Args...>(var))
         {
         }
@@ -224,7 +224,7 @@ namespace odfaeg {
         }
         template<class T, class LateParamsT>
         template<typename... Args>
-        RefVal<T, LateParamsT, false>::RefVal(const CVariant<T, Args...>&& var) //we need to use a different placeholder class here to pass the palceholders's holder type for the static_cast.
+        RefVal<T, LateParamsT, false>::RefVal(const TypeList<T, Args...>&& var) //we need to use a different placeholder class here to pass the palceholders's holder type for the static_cast.
             : rv(new IVariant<T, LateParamsT, true, Args...>(std::move(var)))
         {
         }
