@@ -31,7 +31,7 @@ namespace odfaeg {
             void decreaseComptImg (std::string resource);  
             GridMap<GameObject*> gridMap;
             math::BaseChangementMatrix baseChangmentMatrix;
-            std::string name;
+            std::string name;                                   
         };
     }
 }

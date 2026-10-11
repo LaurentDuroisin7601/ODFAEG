@@ -681,7 +681,7 @@ namespace odfaeg {
             std::string key;
             ((key += typeid(T).name(), key += ";"), ...);
             return key;
-        }
+        }        
     }    
 }
 #include "delegate.inl"

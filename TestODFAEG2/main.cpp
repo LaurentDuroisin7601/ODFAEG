@@ -139,9 +139,12 @@ int main() {
 	chat cha;
 	epee ep;
 	laser la;
-	CVariant<animal, chat, chien> cvar1(cha);
-	CVariant<arme, epee, arc> cvar2(ep);
-	CVariant<projectile, laser, balle> cvar3(la);
+	gameObject& g1 = cha;
+	gameObject& g2 = ep;
+	gameObject& g3 = la;
+	CVariant<gameObject, chat, chien> cvar1(g1);
+	CVariant<gameObject, epee, arc> cvar2(g2);
+	CVariant<gameObject, laser, balle> cvar3(g3);
 	interaction inter;
 	FastDelegate<void> visitor = make_rule_for<interaction, CHAT, EPEE, LASER>(inter, cvar1, cvar2, cvar3);
 	visitor.bind(cvar1, cvar2, cvar3);

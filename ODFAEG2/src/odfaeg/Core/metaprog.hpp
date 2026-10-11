@@ -523,7 +523,7 @@ namespace odfaeg {
             }
             template <size_t TypeID>
             std::tuple_element_t<TypeID, std::tuple<T...>>& get() {
-                return std::get<TypeID>(holder);
+                return static_cast<std::tuple_element_t<TypeID, std::tuple<T...>>&> (value);
             }
             V& get() {
                 return value;
