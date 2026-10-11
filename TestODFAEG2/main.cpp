@@ -92,7 +92,7 @@ class BoundingCircle : public BoundingArea {
 		int d = 7;
 };
 enum ANIMALS {
-	CHIEN, CHAT	
+	CHAT, CHIEN	
 };
 enum ARMES {
 	EPEE, ARC	
@@ -127,9 +127,7 @@ struct balle : projectile {
 };
 
 
-void f(int i1, int i2, int i3){
 
-}
 struct interaction 
 {
     void operator()(const chat&, const epee&, const laser&) { std::cout<<"chat avec épée lazer."<<std::endl; }
@@ -137,15 +135,15 @@ struct interaction
     // etc.
 };
 int main() {
+	//std::cout<<"main start"<<std::endl;
 	chat cha;
 	epee ep;
 	laser la;
-	CVariant<chat, chat, chien> cvar1(cha);
-	CVariant<epee, epee, arc> cvar2(ep);
-	CVariant<laser, laser, balle> cvar3(la);
-	interaction inter;	
-	//FastDelegate<void> visitor(&DispatchVisitor<interaction, CVariant<chat, chat, chien>, CVariant<epee, epee, arc>, CVariant<laser, laser, balle>>::visit, inter, ph<0, CVariant<chat, chat, chien>>(), ph<1,CVariant<epee, epee, arc>>(), ph<2, CVariant<laser, laser, balle>>());
-	FastDelegate<void> visitor = make_rule(inter, cvar1, cvar2, cvar3);
+	CVariant<animal, chat, chien> cvar1(cha);
+	CVariant<arme, epee, arc> cvar2(ep);
+	CVariant<projectile, laser, balle> cvar3(la);
+	interaction inter;
+	FastDelegate<void> visitor = make_rule_for<interaction, CHAT, EPEE, LASER>(inter, cvar1, cvar2, cvar3);
 	visitor.bind(cvar1, cvar2, cvar3);
 	visitor();
 	system("PAUSE");

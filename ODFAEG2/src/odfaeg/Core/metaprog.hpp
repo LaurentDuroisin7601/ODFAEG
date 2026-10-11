@@ -510,13 +510,26 @@ namespace odfaeg {
         
         template <typename V, typename... T>
         struct CVariant { 
+            CVariant() {}
+            template <typename Type>
+            requires ((std::is_same_v<
+                std::remove_cvref_t<Type>,
+                T> || ...))
+            CVariant(Type t) {
+                std::get<Type>(holder) = t;
+            }
             CVariant(V v) {
                 value = v;
+            }
+            template <size_t TypeID>
+            std::tuple_element_t<TypeID, std::tuple<T...>>& get() {
+                return std::get<TypeID>(holder);
             }
             V& get() {
                 return value;
             }
             V value;
+            std::tuple<T...> holder;
         };       
         // Test "appartient à une famille" : dérivation
         template<class T, class Family>
@@ -583,7 +596,28 @@ namespace odfaeg {
         struct DispatchVisitor {
             static void visit(Func f, Vs... vs) {
                 f(vs.get()...);
-            }	
+            }           
+        }; 
+        template <typename Func, typename... Vs>       
+        struct DispatchVisitorFor { 
+            template<size_t... IDs>
+            /*requires std::is_invocable_v<
+                Func,
+                decltype(std::declval<Vs>().template get<IDs>())...
+            >*/
+            static void visit(Func f, Vs... vs)
+            {
+                f(vs.template get<IDs>()...);
+            }    
+            /*template<size_t... IDs>
+            requires (!std::is_invocable_v<
+                Func,
+                decltype(std::declval<Vs>().template get<IDs>())...
+            >)
+            static void visit(Func f, Vs... vs)
+            {
+                
+            }   */     
         };        
 	}
 }
