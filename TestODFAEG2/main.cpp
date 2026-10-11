@@ -148,10 +148,10 @@ int main() {
 	TypeList<gameObject, laser, balle> cvar3(gameObjectsByType.find(get_key(la))->second.get());
 	interaction inter;
 	FastDelegate<void> visitor = make_rule_for<interaction, CHAT, EPEE, LASER>(inter, cvar1, cvar2, cvar3);
-	std::map<std::string, std::reference_wrapper<FastDelegate<void>>> visitors;
+	std::map<std::string, FastDelegate<void>> visitors;
 	visitors.insert(std::make_pair(get_key(cha, ep, la), std::ref(visitor)));
-	visitors.find(get_key(cha, ep, la))->second.get().bind(cvar1, cvar2, cvar3);
-	visitors.find(get_key(cha, ep, la))->second.get()();
+	visitors.find(get_key(cha, ep, la))->second.bind(cvar1, cvar2, cvar3);
+	visitors.find(get_key(cha, ep, la))->second();
 	/*visitor.bind(cvar1, cvar2, cvar3);
 	visitor();*/
 	system("PAUSE");

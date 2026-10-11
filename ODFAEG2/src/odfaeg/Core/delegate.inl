@@ -159,7 +159,11 @@ namespace odfaeg {
         
         template<class T, class LateParamsT, class... Args>
         std::unique_ptr<IRefVal<T, LateParamsT, false>> IVariant<T, LateParamsT, false, Args...>::transfert() {
-            return std::make_unique<IVariant>( new IVariant<T, LateParamsT, false, Args...>(std::move(*this)));
+            return std::make_unique<
+                IVariant<T, LateParamsT, false, Args...>
+            >(
+                std::move(*this)
+            );
         }
         template<class T, class LateParamsT, class... Args>
         T&& IVariant<T, LateParamsT, false, Args...>::bind(void* params) {
