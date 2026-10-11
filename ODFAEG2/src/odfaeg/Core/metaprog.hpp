@@ -494,7 +494,20 @@ namespace odfaeg {
             ~dispatchable()
             {
             }
-        }; 
+        };
+        /*template <typename T, Compteur compteur=Compteur()>
+        struct Instancied {            
+            void set(T v) {
+                compteur.reset();
+                value = v;
+                compteur.next();
+            }
+            bool instancied() {
+                return compteur.value() > 0;
+            }
+            T value;                      
+        }; */
+        
         template <typename V, typename... T>
         struct CVariant { 
             CVariant(V v) {
@@ -571,7 +584,7 @@ namespace odfaeg {
             static void visit(Func f, Vs... vs) {
                 f(vs.get()...);
             }	
-        };
+        };        
 	}
 }
 #endif

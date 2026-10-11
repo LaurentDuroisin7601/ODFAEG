@@ -630,9 +630,18 @@ namespace odfaeg {
             void setParam(P param);
         private:
             std::unique_ptr<Delegate<R>> delegate; /**> holds the pointer to the generic delegate.*/
-        };        
+        };
+        template <typename T, typename Func, size_t... I>
+        FastDelegate<void> make_rule_impl(Func func, std::index_sequence<I...> seq) {
+            FastDelegate<void> visitor(&DispatchVisitor<Func, std::tuple_element_t<I, T>...>::visit, func, ph<I, std::tuple_element_t<I, T>>()...);
+            return visitor;
+        }
+        template <typename Func, typename... Vs>
+        FastDelegate<void> make_rule(Func func, Vs... vs) {
+            return make_rule_impl<std::tuple<Vs...>>(func, std::make_index_sequence<sizeof...(Vs)>());
+        }
         
-    }
+    }    
 }
 #include "delegate.inl"
 #endif

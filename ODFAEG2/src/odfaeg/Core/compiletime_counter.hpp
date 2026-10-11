@@ -19,20 +19,26 @@ namespace odfaeg {
             else 
                 InjectDefinitionForADLFunc<InstanceIdentifier, x>{};
             return x;
-        }
+        }        
         template<auto InstanceIdentifier, auto x = 0, auto = []{}>
         constexpr auto ExtractCurrentState()->decltype(x) {
-            if constexpr (requires { ADLFunc(ADLType<InstanceIdentifier, x>{}); })
-                return ExtractCurrentState<InstanceIdentifier, x>();
-            else 
-                InjectDefinitionForADLFunc<InstanceIdentifier, x>{};
             return x;
+        }
+        template<auto InstanceIdentifier, auto x = 0, auto = []{}>
+        constexpr auto ResetCurrentState()->decltype(x) {
+            return 0;
         }
 
         template <auto InstanceIdentifier = []{}>
         struct Compteur {
             template <auto x = ExtractThenUpdateCurrentState<InstanceIdentifier>()>
-            consteval auto next() const { return x; }            
+            consteval auto next() const { return x; } 
+            template <auto x = ExtractCurrentState<InstanceIdentifier>()>
+            consteval auto value() const { return x; }  
+            template <auto x = ResetCurrentState<InstanceIdentifier>()>
+            void reset() const {
+
+            }
         };
     }
 }

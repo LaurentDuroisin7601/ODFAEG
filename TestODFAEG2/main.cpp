@@ -144,7 +144,8 @@ int main() {
 	CVariant<epee, epee, arc> cvar2(ep);
 	CVariant<laser, laser, balle> cvar3(la);
 	interaction inter;	
-	FastDelegate<void> visitor(&DispatchVisitor<interaction, CVariant<chat, chat, chien>, CVariant<epee, epee, arc>, CVariant<laser, laser, balle>>::visit, inter, ph<0, CVariant<chat, chat, chien>>(), ph<1,CVariant<epee, epee, arc>>(), ph<2, CVariant<laser, laser, balle>>());
+	//FastDelegate<void> visitor(&DispatchVisitor<interaction, CVariant<chat, chat, chien>, CVariant<epee, epee, arc>, CVariant<laser, laser, balle>>::visit, inter, ph<0, CVariant<chat, chat, chien>>(), ph<1,CVariant<epee, epee, arc>>(), ph<2, CVariant<laser, laser, balle>>());
+	FastDelegate<void> visitor = make_rule(inter, cvar1, cvar2, cvar3);
 	visitor.bind(cvar1, cvar2, cvar3);
 	visitor();
 	system("PAUSE");
