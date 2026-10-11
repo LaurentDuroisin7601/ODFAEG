@@ -139,19 +139,47 @@ int main() {
 	chat cha;
 	epee ep;
 	laser la;	
-	std::map<std::string, std::reference_wrapper<gameObject>> gameObjectsByType;
-	gameObjectsByType.insert(std::make_pair(get_key(cha), std::ref(cha)));	
-	gameObjectsByType.insert(std::make_pair(get_key(ep), std::ref(ep)));
-	gameObjectsByType.insert(std::make_pair(get_key(la), std::ref(la)));
-	TypeList<gameObject, chat, chien> cvar1(gameObjectsByType.find(get_key(cha))->second.get());
-	TypeList<gameObject, epee, arc> cvar2(gameObjectsByType.find(get_key(ep))->second.get());
-	TypeList<gameObject, laser, balle> cvar3(gameObjectsByType.find(get_key(la))->second.get());
+	std::map<std::string, std::vector<std::reference_wrapper<gameObject>>> gameObjectsByType;
+	gameObjectsByType.insert(std::make_pair(get_key(cha), std::vector<std::reference_wrapper<gameObject>>()));	
+	gameObjectsByType.insert(std::make_pair(get_key(ep), std::vector<std::reference_wrapper<gameObject>>()));
+	gameObjectsByType.insert(std::make_pair(get_key(la), std::vector<std::reference_wrapper<gameObject>>()));
+	gameObjectsByType.find(get_key(cha))->second.push_back(cha);
+	gameObjectsByType.find(get_key(ep))->second.push_back(ep);
+	gameObjectsByType.find(get_key(la))->second.push_back(la);
+
+	std::map<std::string, std::vector<TypeList<gameObject, chat, chien>>> typeList1;
+	std::map<std::string, std::vector<TypeList<gameObject, epee, arc>>> typeList2;
+	std::map<std::string, std::vector<TypeList<gameObject, laser, balle>>> typeList3;
+	typeList1.insert(std::make_pair(get_key(cha), std::vector<TypeList<gameObject, chat, chien>>()));	
+	typeList2.insert(std::make_pair(get_key(ep), std::vector<TypeList<gameObject, epee, arc>>()));
+	typeList3.insert(std::make_pair(get_key(la), std::vector<TypeList<gameObject, laser, balle>>()));
+	for (unsigned int i = 0; i < gameObjectsByType.find(get_key(cha))->second.size(); i++) {
+		TypeList<gameObject, chat, chien> tl1(gameObjectsByType.find(get_key(cha))->second[i]);
+		typeList1.find(get_key(cha))->second.push_back(tl1);	
+	}
+	for (unsigned int i = 0; i < gameObjectsByType.find(get_key(ep))->second.size(); i++) {
+		TypeList<gameObject, epee, arc> tl2(gameObjectsByType.find(get_key(ep))->second[i]);
+		typeList2.find(get_key(ep))->second.push_back(tl2);	
+	}
+	for (unsigned int i = 0; i < gameObjectsByType.find(get_key(la))->second.size(); i++) {
+		TypeList<gameObject, laser, balle> tl3(gameObjectsByType.find(get_key(la))->second[i]);
+		typeList3.find(get_key(la))->second.push_back(tl3);	
+	}
+	TypeList<gameObject, chat, chien> cvar1;
+	TypeList<gameObject, epee, arc> cvar2;
+	TypeList<gameObject, laser, balle> cvar3;
 	interaction inter;
 	FastDelegate<void> visitor = make_rule_for<interaction, CHAT, EPEE, LASER>(inter, cvar1, cvar2, cvar3);
 	std::map<std::string, FastDelegate<void>> visitors;
 	visitors.insert(std::make_pair(get_key(cha, ep, la), std::ref(visitor)));
-	visitors.find(get_key(cha, ep, la))->second.bind(cvar1, cvar2, cvar3);
-	visitors.find(get_key(cha, ep, la))->second();
+	for (unsigned int i = 0; i < typeList1.find(get_key(cha))->second.size(); i++) {
+		for (unsigned int j = 0; j < typeList2.find(get_key(ep))->second.size(); j++) {
+			for (unsigned int k = 0; k < typeList3.find(get_key(la))->second.size(); k++) {
+				visitors.find(get_key(cha, ep, la))->second.bind(typeList1.find(get_key(cha))->second[i], typeList2.find(get_key(ep))->second[j], typeList3.find(get_key(la))->second[k]);
+				visitors.find(get_key(cha, ep, la))->second();
+			}
+		}
+	}
 	/*visitor.bind(cvar1, cvar2, cvar3);
 	visitor();*/
 	system("PAUSE");
