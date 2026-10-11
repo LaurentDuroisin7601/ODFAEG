@@ -676,7 +676,7 @@ namespace odfaeg {
             };
         }
         template<typename... T>
-        std::string get_key()
+        std::string get_key(T... types)
         {
             std::string key;
             ((key += typeid(T).name(), key += ";"), ...);
