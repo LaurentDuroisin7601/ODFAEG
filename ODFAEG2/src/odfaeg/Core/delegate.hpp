@@ -664,6 +664,17 @@ namespace odfaeg {
         FastDelegate<void> make_rule_for(Func func, Vs... vs) {
             return make_rule_impl_for<Func, Vs...>(func, std::make_index_sequence<sizeof...(Vs)>(), std::index_sequence<TypeIDs...>());
         }        
+        template<typename Func, size_t... Is, typename... Vs>
+        std::vector<FastDelegate<void>>
+        make_rules_for_impl(Func func,
+                            std::index_sequence<Is...>,
+                            Vs&&... vs)
+        {
+            return {
+                make_rule_for<Func, Is>(func,
+                                        std::forward<Vs>(vs)...)...
+            };
+        }
     }    
 }
 #include "delegate.inl"
