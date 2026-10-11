@@ -675,6 +675,13 @@ namespace odfaeg {
                                         std::forward<Vs>(vs)...)...
             };
         }
+        template<typename... T>
+        std::string get_key()
+        {
+            std::string key;
+            ((key += typeid(T).name(), key += ";"), ...);
+            return key;
+        }
     }    
 }
 #include "delegate.inl"
