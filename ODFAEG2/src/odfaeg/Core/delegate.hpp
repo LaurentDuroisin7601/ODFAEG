@@ -179,32 +179,7 @@ namespace odfaeg {
             
             T&& bind(void* params);
             T&& get();
-        };
-        template<class T, class LateParamsT, bool isCopiable, class... Args>
-        struct IVariant : public IRefVal<T, LateParamsT, isCopiable> {
-        };
-        template<class T, class LateParamsT, class... Args>
-        class IVariant<T, LateParamsT, true, Args...>  : public IRefVal<T, LateParamsT, true> {
-            public :
-            IVariant(const TypeList<T, Args...>& var);            
-            std::unique_ptr<IRefVal<T, LateParamsT, true>> clone();
-            T& bind(void* params);
-            T& get();
-            IVariant& operator=(TypeList<T, Args...>& v);
-            private :
-            TypeList<T, Args...> var;
-        };
-        template<class T, class LateParamsT, class... Args>
-        class IVariant<T, LateParamsT, false, Args...> : public IRefVal<T, LateParamsT, false> {
-            public :
-            IVariant(const TypeList<T, Args...>&& var);            
-            std::unique_ptr<IRefVal<T, LateParamsT, false>> transfert();
-            IVariant&& operator=(TypeList<T, Args...>&& v);
-            T&& bind(void* params);
-            T&& get();
-            private :
-            TypeList<T, Args...> var;
-        };
+        };        
         /**
         *  \file  fastDelegate.h
         *  \class RefVal
@@ -225,9 +200,7 @@ namespace odfaeg {
             
             RefVal(const std::reference_wrapper<T>& r);
             template<size_t I>
-            RefVal(ph<I, T>&&);
-            template <typename... Args>
-            RefVal(const TypeList<T, Args...>& var);
+            RefVal(ph<I, T>&&);            
             RefVal(const RefVal& rhs);
             RefVal& operator=(const RefVal& rhs);
             T& bind(void* params);            
@@ -241,9 +214,7 @@ namespace odfaeg {
             
             RefVal(T&& t);
             template<size_t I>
-            RefVal(ph<I, T>&&);
-            template <typename... Args>
-            RefVal(const TypeList<T, Args...>&& var);
+            RefVal(ph<I, T>&&); 
             RefVal(RefVal&& rhs);
             RefVal& operator=(RefVal&& rhs);
             T&& bind(void* params);
@@ -330,12 +301,7 @@ namespace odfaeg {
         struct ToStoreImpl<ph<I, T>>
         {
             using type = T;
-        };
-        template<class T, class...Args>
-        struct ToStoreImpl<TypeList<T, Args...>>
-        {
-            using type = T;
-        };
+        };        
         /**
         *  \file  fastDelegate.h
         *  \class ToStore
@@ -401,11 +367,7 @@ namespace odfaeg {
         template <size_t I, typename T>
         struct extractTypeFromPh<ph<I, T>> {
             using type = T;
-        };
-        template <typename T, typename... Args>
-        struct extractTypeFromPh<TypeList<T, Args...>> {
-            using type = T;
-        };
+        };        
         template<class T>
         using extractTypeFromPh_t = typename
             extractTypeFromPh<T>::type;

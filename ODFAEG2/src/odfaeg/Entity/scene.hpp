@@ -26,7 +26,7 @@ namespace odfaeg {
             bool collide (Entity* entity, math::Ray ray);
             math::Vec3f physicallyBasedComputePos (Entity* entity, math::Vec3f oldCenter, math::Vec3f size, math::Vec3f velocity, float climbCapacity);
             struct RuleBase {  
-                virtual void addGameObject(unsigned int typeID, GameObject& gameObject) = 0;          
+                virtual void addGameObject(GameObject& gameObject) = 0;          
                 virtual void execute() = 0;
                 virtual ~RuleBase() = default;
             };
@@ -38,18 +38,19 @@ namespace odfaeg {
                 Rule(FastDelegate<void> ruleExecutor, std::tuple<std::vector<ActorsLists>...> actors) : ruleExecutor(ruleExecutor), actors(actors) {
                     
                 }
-                void addGameObject(unsigned int typeID, GameObject& gameObject) {
+                void addGameObject(GameObject& gameObject) {
                     integrate<>(typeID, gameObject);
                 }
                 void execute() {
                     iterate<>(std::make_index_sequence<sizeof...(ActorsLists)>());
                 }
                 template <std::size_t I = 0>
-                void integrate(unsigned int typeID, GameObject& gameObject) {                    
+                void integrate(GameObject& gameObject) {                    
                     if constexpr (I < sizeof...(ActorsLists)) {
-                        if (dynamic_cast<std::tuple_element_t<I, std::remove_cv_t<std::tuple<std::vector<ActorsLists>...>::V>&>(gameObject)) {
+                        if (std::tuple_element_t<I, std::remove_cv_t<std::tuple<std::vector<ActorsLists>...>::TagPos == gameObject->tagPos
+                            && dynamic_cast<std::tuple_element_t<I, std::remove_cv_t<std::tuple<std::vector<ActorsLists>...>::V>&>(gameObject)) {
                             std::get<I>(actors).push_back(static_cast<std::tuple_element_t<I, std::tuple<std::vector<ActorsLists>...>&>(gameObject));
-                            std::get<I>(actors).typeKey = typeID;
+                            std::get<I>(actors).typeKey = gameObject.typeID;
                         } else {
                             integrate<I+1>(gameObject);
                         }

@@ -508,7 +508,7 @@ namespace odfaeg {
             T value;                      
         }; */
         
-        template <typename V, typename... T>
+        template <size_t TAG, typename V, typename... T>
         struct TypeList { 
             TypeList() {}
             TypeList(V& v) : value(v) {
@@ -521,6 +521,7 @@ namespace odfaeg {
             V& get() {
                 return value;
             }
+            static constexpr std::size_t TagPos = TAG;  
             V& value; 
             unsigned int typeKey;           
         };       
