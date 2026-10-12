@@ -692,6 +692,9 @@ namespace odfaeg {
             std::vector<std::string> concernedActorsKeys;            
             std::tuple<std::vector<ActorsLists>...> actors;
             FastDelegate<void> ruleExecutor;
+            Rule(FastDelegate<void> ruleExecutor) : ruleExecutor(ruleExecutor) {
+                
+            }
             void execute() {
                 iterate<>();
             }
@@ -709,7 +712,7 @@ namespace odfaeg {
                     for (std::size_t j = 0; j < list.size(); j++)
                     {
                         if (concernedActorsKeys[I] == list[j].typeKey) {
-                            ruleExecutor.setParam<I+1, std::tuple_element_t<I,  std::tuple<std::vector<ActorsLists>...>>, Behaviour, ph<I, ActorsLists>...>(list[j]);                        
+                            ruleExecutor.setParam<I+1, std::tuple_element_t<I,  std::tuple<ActorsLists...>>, Behaviour, ph<I, ActorsLists>...>(list[j]);                        
                             iterate<I + 1>();
                         }
                     }

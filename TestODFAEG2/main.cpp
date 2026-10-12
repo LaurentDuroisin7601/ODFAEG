@@ -171,20 +171,11 @@ int main() {
 	interaction inter;
 
 	FastDelegate<void> visitor = make_rule_for<interaction, CHAT, EPEE, LASER>(inter, cvar1, cvar2, cvar3);
-	std::map<std::string, FastDelegate<void>> visitors;
-	visitors.insert(std::make_pair(get_key(cha, ep, la), std::ref(visitor)));
-	for (unsigned int i = 0; i < typeList1.size(); i++) {		
-		for (unsigned int j = 0; j < typeList2.size(); j++) {
-			for (unsigned int k = 0; k < typeList3.size(); k++) {
-				std::string typeKey = typeList1[i].typeKey + typeList2[j].typeKey + typeList3[k].typeKey; 
-				visitors.find(typeKey)->second.setParam<1, TypeList<gameObject, chat, chien>, interaction, ph<0, TypeList<gameObject, chat, chien>>, ph<1, TypeList<gameObject, epee, arc>>, ph<2, TypeList<gameObject, laser, balle>>>(typeList1[i]);
-				visitors.find(typeKey)->second.setParam<2, TypeList<gameObject, epee, arc>, interaction, ph<0, TypeList<gameObject, chat, chien>>, ph<1, TypeList<gameObject, epee, arc>>, ph<2, TypeList<gameObject, laser, balle>>>(typeList2[i]);
-				visitors.find(typeKey)->second.setParam<3, TypeList<gameObject, laser, balle>, interaction, ph<0, TypeList<gameObject, chat, chien>>, ph<1, TypeList<gameObject, epee, arc>>, ph<2, TypeList<gameObject, laser, balle>>>(typeList3[i]);
-				//visitors.find(typeKey)->second.bind(typeList1[i], typeList2[j], typeList3[k]);
-				visitors.find(typeKey)->second();
-			}
-		}
-	}
+	Rule<interaction, TypeList<gameObject, chat, chien>,TypeList<gameObject, epee, arc>,TypeList<gameObject, laser, balle>> chatEpeeLaser(visitor);
+	chatEpeeLaser.actors = std::make_tuple(typeList1, typeList2, typeList3);	
+	chatEpeeLaser.concernedActorsKeys.push_back(get_key(cha));
+	chatEpeeLaser.concernedActorsKeys.push_back(get_key(ep));
+	chatEpeeLaser.concernedActorsKeys.push_back(get_key(la));
 	/*visitor.bind(cvar1, cvar2, cvar3);
 	visitor();*/
 	system("PAUSE");
