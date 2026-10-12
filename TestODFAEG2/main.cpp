@@ -169,9 +169,11 @@ int main() {
 	TypeList<gameObject, epee, arc> cvar2;
 	TypeList<gameObject, laser, balle> cvar3;
 	interaction inter;
-	RuleBase* chatEpeeLaser = make_rule_for<interaction, CHAT, EPEE, LASER>("chateppeelaser", inter, typeList1, typeList2, typeList3);
+	std::vector<RuleBase*> rules = make_rules_for<interaction, std::index_sequence<CHAT, EPEE, LASER>, std::index_sequence<CHIEN, ARC, BALLE>>(inter, typeList1, typeList2, typeList3);
+	//RuleBase* rule = make_rule_for<interaction, CHAT, EPEE, LASER>(inter, typeList1, typeList2, typeList3);
 	GameMode gameMode;
-	gameMode.addRule(chatEpeeLaser);
+	gameMode.addRule("chateppeelaser", rules[0]);
+	gameMode.addRule("chieneppeelaser", rules[1]);
 	gameMode.applyRule("chateppeelaser");
 	/*visitor.bind(cvar1, cvar2, cvar3);
 	visitor();*/

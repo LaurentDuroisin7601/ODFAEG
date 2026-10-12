@@ -639,8 +639,7 @@ namespace odfaeg {
             ((key += typeid(T).name(), key += ";"), ...);
             return key;
         } 
-        struct RuleBase {
-            std::string name;
+        struct RuleBase {            
             virtual void execute() = 0;
             virtual ~RuleBase() = default;
         };
@@ -678,8 +677,8 @@ namespace odfaeg {
         };   
         struct GameMode {
             std::map<std::string, RuleBase*> rules;
-            void addRule(RuleBase* rule) {
-                rules.insert(std::make_pair(rule->name, rule));
+            void addRule(std::string name, RuleBase* rule) {
+                rules.insert(std::make_pair(name, rule));
             }
             void applyRule(std::string name) {
                 std::map<std::string, RuleBase*>::iterator it = rules.find(name);
@@ -687,12 +686,7 @@ namespace odfaeg {
                     it->second->execute();
                 }    
             }
-        }; 
-        template <typename T, typename Func, size_t... I>
-        FastDelegate<void> make_rule_impl(Func func, std::index_sequence<I...> seq) {
-            FastDelegate<void> visitor(&DispatchVisitor<Func, std::tuple_element_t<I, T>...>::visit, func, ph<I, std::tuple_element_t<I, T>>()...);
-            return visitor;
-        }
+        };         
         template <typename Func, typename... Vs, size_t... TypeIDs, size_t... I>
         requires std::is_invocable_v<
                 Func,
@@ -712,35 +706,44 @@ namespace odfaeg {
             FastDelegate<void> visitor(DispatchVisitorFor<Func, Vs...>::template visit<TypeIDs...>, func, ph<I, Vs>()...);               
             
             return visitor;
-        }
-        template <typename Func, typename... Vs>
-        Rule<Func, Vs...> make_rule(Func func, std::vector<Vs>... vs) {
-            FastDelegate<void> visitor = make_rule_impl<std::tuple<Vs...>>(func, std::make_index_sequence<sizeof...(Vs)>());
-            Rule<Func, Vs...> rule(visitor, std::make_tuple(vs...));
-            
-        }     
+        }   
         template <typename R, std::size_t... TypeIDs> 
         void initKeys(R rule, std::index_sequence<TypeIDs...> seq) {
            
             (rule->concernedActorsKeys.push_back(TypeIDs),...);
         }  
         template <typename Func, size_t... TypeIDs, typename... Vs>        
-        RuleBase* make_rule_for(std::string name, Func func, std::vector<Vs>... vs) {
+        RuleBase* make_rule_for(Func func, std::vector<Vs>... vs) {
             FastDelegate<void> visitor = make_rule_impl_for<Func, Vs...>(func, std::make_index_sequence<sizeof...(Vs)>(), std::index_sequence<TypeIDs...>());
-            Rule<Func, Vs...>* rule = new Rule<Func, Vs...> (visitor, std::make_tuple(vs...));
-            rule->name = name;
+            Rule<Func, Vs...>* rule = new Rule<Func, Vs...> (visitor, std::make_tuple(vs...));            
             initKeys(rule, std::index_sequence<TypeIDs...>());
             return rule;
-        }        
-        template<typename Func, size_t... Is, typename... Vs>
+        }  
+        template<typename Func,
+         size_t... IDs,
+         typename... Vs>
+         RuleBase*
+         make_rule_from_sequence(
+             Func func,
+             std::index_sequence<IDs...>,
+             std::vector<Vs>... vs)
+        {
+            return make_rule_for<
+                Func,
+                IDs...
+            >(func, vs...);
+        }      
+        template<typename Func, typename... Seqs, typename... Vs>
         std::vector<RuleBase*>
-        make_rules_for_impl(Func func,
-                            std::index_sequence<Is...>,
+        make_rules_for(Func func,
                             std::vector<Vs>... vs)
         {
             return {
-                make_rule_for<Func, Is>(func,
-                                        std::forward<Vs>(vs)...)...
+                make_rule_from_sequence(
+                    func,
+                    Seqs{},
+                    vs...
+                )...
             };
         }
     }    
