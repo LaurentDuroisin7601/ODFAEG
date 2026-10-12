@@ -521,7 +521,8 @@ namespace odfaeg {
             V& get() {
                 return value;
             }
-            V value;            
+            V value; 
+            std::string typeKey;           
         };       
         // Test "appartient à une famille" : dérivation
         template<class T, class Family>
