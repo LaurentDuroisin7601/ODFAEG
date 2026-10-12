@@ -155,21 +155,21 @@ int main() {
 	std::vector<TypeList<gameObject, laser, balle>> typeList3;	
 	for (unsigned int i = 0; i < chats.size(); i++) {
 		TypeList<gameObject, chat, chien> tl1(chats[i]);
-		tl1.typeKey = CHAT;
+		tl1.typeKey = get_type_id<chat>::typeID;
 		typeList1.push_back(tl1);	
 	}
 	for (unsigned int i = 0; i < epees.size(); i++) {
 		TypeList<gameObject, epee, arc> tl2(epees[i]);
-		tl2.typeKey = EPEE;
+		tl2.typeKey = get_type_id<epee>::typeID;
 		typeList2.push_back(tl2);	
 	}
 	for (unsigned int i = 0; i < lasers.size(); i++) {
 		TypeList<gameObject, laser, balle> tl3(lasers[i]);
-		tl3.typeKey = LASER;
+		tl3.typeKey = get_type_id<laser>::typeID;
 		typeList3.push_back(tl3);	
 	}	
 	interaction inter;
-	std::vector<RuleBase*> rules = make_rules_for<interaction, std::index_sequence<CHAT, EPEE, LASER>, std::index_sequence<CHIEN, ARC, BALLE>>(inter, typeList1, typeList2, typeList3);
+	std::vector<RuleBase*> rules = make_rules_for<interaction, std::index_sequence<get_type_id<chat>::typeID, get_type_id<epee>::typeID, get_type_id<laser>::typeID>, std::index_sequence<get_type_id<chien>::typeID, get_type_id<arc>::typeID, get_type_id<balle>::typeID>>(inter, typeList1, typeList2, typeList3);
 	//RuleBase* rule = make_rule_for<interaction, CHAT, EPEE, LASER>(inter, typeList1, typeList2, typeList3);
 	GameMode gameMode;
 	gameMode.addRule("chateppeelaser", rules[0]);
