@@ -172,11 +172,14 @@ int main() {
 
 	FastDelegate<void> visitor = make_rule_for<interaction, CHAT, EPEE, LASER>(inter, cvar1, cvar2, cvar3);
 	Rule<interaction, TypeList<gameObject, chat, chien>,TypeList<gameObject, epee, arc>,TypeList<gameObject, laser, balle>> chatEpeeLaser(visitor);
+	chatEpeeLaser.name = "chateppeelaser";
 	chatEpeeLaser.actors = std::make_tuple(typeList1, typeList2, typeList3);	
 	chatEpeeLaser.concernedActorsKeys.push_back(get_key(cha));
 	chatEpeeLaser.concernedActorsKeys.push_back(get_key(ep));
 	chatEpeeLaser.concernedActorsKeys.push_back(get_key(la));
-	chatEpeeLaser.execute();
+	GameMode gameMode;
+	gameMode.addRule(&chatEpeeLaser);
+	gameMode.applyRule("chateppeelaser");
 	/*visitor.bind(cvar1, cvar2, cvar3);
 	visitor();*/
 	system("PAUSE");
