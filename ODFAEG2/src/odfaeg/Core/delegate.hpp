@@ -8,6 +8,7 @@
 #include <string>
 #include "metaprog.hpp"
 #include <iostream>
+#include <map>
 namespace odfaeg {
     namespace core {
         template<std::size_t i, class T>
@@ -617,15 +618,14 @@ namespace odfaeg {
             FastDelegate& operator=(const FastDelegate& rhs);
             
             template <typename... Arg>
-            void bind(Arg&&... arg);
-            
+            void bind(Arg&&... arg);           
             template<std::size_t... Ints, class... Args>
             void* bind_impl(std::index_sequence<Ints...>, Args&&... args);
             
             R operator()();
             
             template<class... Arg>
-            void setParams(Arg... arg);
+            void setParams(Arg... arg);           
             template<size_t I, class P, class... Arg>
             void setParam(P param);
         private:
@@ -681,7 +681,36 @@ namespace odfaeg {
             std::string key;
             ((key += typeid(T).name(), key += ";"), ...);
             return key;
-        }        
+        } 
+        struct RuleBase {
+            std::string ruleName;
+            virtual void applyRuleToActors();
+        };
+        template <typename Behaviour, typename... ActorsLists>
+        struct Rule : RuleBase {            
+            std::string consernedActorsKey;
+            
+            std::tuple<std::vector<ActorsLists>...> actors;
+            FastDelegate<void> ruleExecutor;
+            template <std::size_t I = 0>
+            void iterate()
+            {
+                if constexpr (I == sizeof...(ActorsLists))
+                {
+                    ruleExecutor();
+                }
+                else
+                {
+                    auto& list = std::get<I>(actors);
+
+                    for (std::size_t j = 0; j < list.size(); j++)
+                    {
+                        ruleExecutor.setParam<I+1, std::tuple_element_t<I,  std::tuple<std::vector<ActorsLists>...>>, Behaviour, ph<I, ActorsLists>...>(list[j]);
+                        iterate<I + 1>();
+                    }
+                }
+            }
+        };       
     }    
 }
 #include "delegate.inl"

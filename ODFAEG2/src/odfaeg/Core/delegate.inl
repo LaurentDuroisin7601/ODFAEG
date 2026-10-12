@@ -416,7 +416,7 @@ namespace odfaeg {
             void* params = bind_impl(std::index_sequence_for<Arg...>(), std::forward<Arg>(arg)...);
             delegate->bind(params);
             delete params;
-        }
+        }        
         template<class R>
         template<std::size_t... Ints, class... Args>
         void* FastDelegate<R>::bind_impl(std::index_sequence<Ints...>, Args&&... args)
@@ -442,7 +442,7 @@ namespace odfaeg {
                 dynamic_cast<DynamicType>(delegate.get())->setParams(std::forward<Arg>(arg)...);
             else
                 throw std::runtime_error(std::string("Invalid cast : types + ") + typeid(DynamicType).name() + " et " + typeid(*delegate.get()).name() + " are nor polymorphic!");
-        }   
+        }          
         template<class R>
         template<size_t I, class P, class... Arg>
         void FastDelegate<R>::setParam(P param)
