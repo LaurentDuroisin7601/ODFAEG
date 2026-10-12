@@ -683,15 +683,18 @@ namespace odfaeg {
             return key;
         } 
         struct RuleBase {
-            std::string ruleName;
-            virtual void applyRuleToActors();
+            std::string name;
+            virtual void execute() = 0;
+            virtual ~RuleBase() = default;
         };
         template <typename Behaviour, typename... ActorsLists>
         struct Rule : RuleBase {            
-            std::string consernedActorsKey;
-            
+            std::vector<std::string> concernedActorsKeys;            
             std::tuple<std::vector<ActorsLists>...> actors;
             FastDelegate<void> ruleExecutor;
+            void execute() {
+                iterate<>();
+            }
             template <std::size_t I = 0>
             void iterate()
             {
@@ -705,12 +708,26 @@ namespace odfaeg {
 
                     for (std::size_t j = 0; j < list.size(); j++)
                     {
-                        ruleExecutor.setParam<I+1, std::tuple_element_t<I,  std::tuple<std::vector<ActorsLists>...>>, Behaviour, ph<I, ActorsLists>...>(list[j]);
-                        iterate<I + 1>();
+                        if (concernedActorsKeys[I] == list[j].typeKey) {
+                            ruleExecutor.setParam<I+1, std::tuple_element_t<I,  std::tuple<std::vector<ActorsLists>...>>, Behaviour, ph<I, ActorsLists>...>(list[j]);                        
+                            iterate<I + 1>();
+                        }
                     }
                 }
             }
-        };       
+        };   
+        struct GameMode {
+            std::map<std::string, RuleBase*> rules;
+            void addRule(RuleBase* rule) {
+                rules.insert(std::make_pair(rule->name, rule));
+            }
+            void applyRule(std::string name) {
+                std::map<std::string, RuleBase*>::iterator it = rules.find(name);
+                if (it != rules.end()) {
+                    it->second->execute();
+                }    
+            }
+        }; 
     }    
 }
 #include "delegate.inl"
