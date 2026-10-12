@@ -26,7 +26,7 @@ namespace odfaeg {
             bool collide (Entity* entity, math::Ray ray);
             math::Vec3f physicallyBasedComputePos (Entity* entity, math::Vec3f oldCenter, math::Vec3f size, math::Vec3f velocity, float climbCapacity);
             struct RuleBase {  
-                virtual void addGameObject(GameObject* gameObject) = 0;          
+                virtual void addGameObject(GameObject& gameObject) = 0;          
                 virtual void execute() = 0;
                 virtual ~RuleBase() = default;
             };
