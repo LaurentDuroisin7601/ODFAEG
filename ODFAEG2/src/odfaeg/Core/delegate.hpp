@@ -696,10 +696,10 @@ namespace odfaeg {
                 
             }
             void execute() {
-                iterate<>();
+                iterate<>(std::make_index_sequence<sizeof...(ActorsLists)>());
             }
-            template <std::size_t I = 0>
-            void iterate()
+            template <std::size_t I = 0, size_t... Ints>
+            void iterate(std::index_sequence<Ints...> seq)
             {
                 if constexpr (I == sizeof...(ActorsLists))
                 {
@@ -712,8 +712,8 @@ namespace odfaeg {
                     for (std::size_t j = 0; j < list.size(); j++)
                     {
                         if (concernedActorsKeys[I] == list[j].typeKey) {
-                            ruleExecutor.setParam<I+1, std::tuple_element_t<I,  std::tuple<ActorsLists...>>, Behaviour, ph<I, ActorsLists>...>(list[j]);                        
-                            iterate<I + 1>();
+                            ruleExecutor.setParam<I+1, std::tuple_element_t<I,  std::tuple<ActorsLists...>>, Behaviour, ph<Ints, ActorsLists>...>(list[j]);                        
+                            iterate<I + 1>(seq);
                         }
                     }
                 }

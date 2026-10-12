@@ -176,6 +176,7 @@ int main() {
 	chatEpeeLaser.concernedActorsKeys.push_back(get_key(cha));
 	chatEpeeLaser.concernedActorsKeys.push_back(get_key(ep));
 	chatEpeeLaser.concernedActorsKeys.push_back(get_key(la));
+	chatEpeeLaser.execute();
 	/*visitor.bind(cvar1, cvar2, cvar3);
 	visitor();*/
 	system("PAUSE");
