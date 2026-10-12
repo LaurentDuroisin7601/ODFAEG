@@ -1,27 +1,21 @@
 #include "scene.hpp"
-#include "../../../include/odfaeg/Graphics/rectangleShape.h"
-#include "../../../include/odfaeg/Physics/boundingEllipsoid.h"
 #include <iostream>
 #include <climits>
-#include "../../../include/odfaeg/Core/singleton.h"
-#include "../../../include/odfaeg/Graphics/tGround.h"
-#include "../../../include/odfaeg/Graphics/boneAnimation.hpp"
-//#include "../../../include/odfaeg/Graphics/application.h"
 namespace odfaeg {
     namespace entity {       
         Scene::Scene (std::string name, int cellWidth, int cellHeight, int cellDepth) : gridMap(cellWidth, cellHeight, cellDepth) {
             
         }
         void Scene::generate_labyrinthe (std::vector<Tile*> tGround, std::vector<Wall*> walls, unsigned int squareSize, physic::BoundingBox &rect) {
-            int startX = rect.getPosition().x() / tileSize.x() * tileSize.x();
-            int startY = rect.getPosition().z() / tileSize.y() * tileSize.y();
-            int endX = (rect.getPosition().x() + rect.getWidth()) / tileSize.x() * tileSize.x();
-            int endY = (rect.getPosition().z() + rect.getHeight()) / tileSize.y() * tileSize.y();
-            TileSet ts = new TileSet(squareSize, rect);            
+            int startX = rect.getPosition().x() / squareSize * squareSize;
+            int startY = rect.getPosition().z() / squareSize * squareSize;
+            int endX = (rect.getPosition().x() + rect.getWidth()) / squareSize * squareSize;
+            int endY = (rect.getPosition().z() + rect.getHeight()) / squareSize * squareSize;
+            TileSet* ts = new TileSet(squareSize, rect);            
             unsigned int i, j;
             //Génération du sol et de tout les murs.
-            for (int y = startY, j = 0; y < endY; y+= tileSize.y(), j++) {
-                for (int x = startX, i = 0; x < endX; x+= tileSize.x(), i++) {
+            for (int y = startY, j = 0; y < endY; y+= squareSize, j++) {
+                for (int x = startX, i = 0; x < endX; x+= squareSize, i++) {
                     math::Vec3f projPos = baseChangmentMatrix.changeOfBase(math::Vec3f (x - startX, y - startY, 0));
                     math::Vec2f pos (projPos.x() + startX, projPos.y() + startY);
                     if (x == startX && y == startY) {
@@ -41,7 +35,7 @@ namespace odfaeg {
                         w->setPosition(math::Vec3f(pos.x(), rect.getPosition().z(),pos.y()));
                         w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().y() + w->getSize().y(), w->getSize().z()));
                         addEntity(w);
-                        gridMapgetGridCellAt(math::Vec3f(w->getPosition().x(), rect.getPosition().y(), w->getPosition().y()))->setPassable(false);
+                        gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), rect.getPosition().y(), w->getPosition().y()))->setPassable(false);
                     } else if (x == startX && y == endY) {
                         GameObject *w = walls[Wall::BOTTOM_LEFT]->clone();
                         w->setPosition(math::Vec3f(pos.x(), rect.getPosition().z(),pos.y()));
@@ -117,16 +111,16 @@ namespace odfaeg {
                     } else {
                         GameObject* tile;
                         if (tGround.size() > 0)  {
-                            int i = math::Math::random(tGround.size());
+                            int i = math::Math::random(0, tGround.size());
                             tile = tGround[i]->clone();
                             tile->setPosition(math::Vec3f(pos.x(), 0, pos.y()));
                             //////////std::cout<<"add tile : "<<tile->getPosition()<<std::endl;
                         } else {
-                            tile = factory.make_entity<Tile>(nullptr, math::Vec3f(pos.x(), 0, pos.y()), math::Vec3f(tileSize.x(), 0, tileSize.y()), IntRect(0, 0, tileSize.x(), tileSize.y()), factory);
+                            tile = new Tile(nullptr, math::Vec3f(pos.x(), 0, pos.y()), math::Vec3f(squareSize, 0, squareSize), FloatRect(0, 0, 1, 1));
                         }                        
                         for (unsigned int j = 0; j < 4; j++) {
                             float h = math::Math::random(rect.getPosition().y(), rect.getPosition().y() + rect.getHeight());
-                            tile->setHeight(j, h);
+                            tile->changeVertexHeight(j, h);
                         }                        
                         ts->addTile(tile);
                     }
@@ -134,7 +128,7 @@ namespace odfaeg {
             }
             addEntity(ts);
             //Génération du labyrinthe.
-            std::vector<CellMap*> visited;
+            std::vector<GridCell<GameObject*>*> visited;
             std::vector<math::Vec2f> dirs;
             int n = 0, cx = startX + squareSize * 0.5f, cy = startY + squareSize * 0.5f;
             //boucle tant que toutes les cellules n'ont pas été visitées.
@@ -157,7 +151,7 @@ namespace odfaeg {
                     y += dir.y() * squareSize;
                     math::Vec3f projPos = baseChangmentMatrix.changeOfBase(math::Vec3f (x - startX, y - startY, 0));
                     math::Vec2f pos (projPos.x() + startX, projPos.y() + startY);
-                    CellMap* cell = gridMap->getGridCellAt(math::Vec3f(pos.x(), rect.getPosition().y(), pos.y()));
+                    GridCell<GameObject*>* cell = gridMap.getGridCellAt(math::Vec3f(pos.x(), rect.getPosition().y(), pos.y()));
                     if (cell != nullptr) {
                         dirs.push_back(dir);
                     }
@@ -169,8 +163,8 @@ namespace odfaeg {
                 math::Vec3f projPos = baseChangmentMatrix.changeOfBase(math::Vec3f (x - startX, y - startY, 0));
                 math::Vec2f pos (projPos.x() + startX, projPos.y() + startY);
                 //Suppression du mur entre les deux cellules.
-                CellMap* cell = gridMap->getGridCellAt(math::Vec3f(pos.x(), rect.getPosition().y(), pos.y()));
-                std::vector<Entity*> wall = cell->getEntitiesInside("E_WALL");
+                GridCell<GameObject*>* cell = gridMap.getGridCellAt(math::Vec3f(pos.x(), rect.getPosition().y(), pos.y()));
+                std::vector<GameObject*> wall = cell->getEntitiesInside("E_WALL");
                 for (unsigned int i = 0; i < wall.size(); i++) {
                     deleteEntity(wall[i]);
                 }
@@ -181,7 +175,7 @@ namespace odfaeg {
                 x = cx, y = cy;
                 projPos = baseChangmentMatrix.changeOfBase(math::Vec3f (x - startX, y - startY, 0));
                 pos = math::Vec2f (projPos.x() + startX, projPos.y() + startY);
-                cell = gridMap->getGridCellAt(math::Vec3f(pos.x(), rect.getPosition().y(), pos.y()));
+                cell = gridMap.getGridCellAt(math::Vec3f(pos.x(), rect.getPosition().y(), pos.y()));
                 bool contains = false;
                 //Marque cette cellule comme visitée.
                 for (unsigned int j = 0; j < visited.size() && !contains; j++) {
@@ -194,57 +188,55 @@ namespace odfaeg {
                 }
             }
         }       
-        void Scene::generate_terrain(std::vector<Tile*> tGround, std::vector<g3d::Wall*> walls, unsigned int squareSize, physic::BoundingBox &rect) {
-            int startX = rect.getPosition().x() / tileSize.x() * tileSize.x();
-            int startY = rect.getPosition().z() / tileSize.y() * tileSize.y();
-            int endX = (rect.getPosition().x() + rect.getWidth()) / tileSize.x() * tileSize.x();
-            int endY = (rect.getPosition().z() + rect.getDepth()) / tileSize.y() * tileSize.y();
-            TileSet *ts = factory.make_entity<BigTile>(math::Vec3f(startX, rect.getPosition().y(), startY),factory, tileSize,rect.getWidth() / tileSize.x());            
+        void Scene::generate_terrain(std::vector<Tile*> tGround, unsigned int squareSize, physic::BoundingBox &rect) {
+            int startX = rect.getPosition().x() / squareSize * squareSize;
+            int startY = rect.getPosition().z() / squareSize * squareSize;
+            int endX = (rect.getPosition().x() + rect.getWidth()) / squareSize * squareSize;
+            int endY = (rect.getPosition().z() + rect.getDepth()) / squareSize * squareSize;
+            TileSet *ts = new TileSet(squareSize, rect);            
             //bt->setCenter(math::Vec3f(rect.getCenter().x, rect.getCenter().y, rect.getPosition().z()));
             //Positions de d\E9part et d'arriv\E9es en fonction de la taille, de la position et de la taille des cellules de la map.
-            for (int y = startY; y < endY;  y+=tileSize.y()) {
-                for (int x = startX; x < endX; x+=tileSize.x()) {
+            for (int y = startY; y < endY;  y+=squareSize) {
+                for (int x = startX; x < endX; x+=squareSize) {
                     ////////std::cout<<"start x y : "<<startX<<","<<startY<<std::endl;
                     ////////std::cout<<"end x y : "<<endX-tileSize.x()<<","<<endY-tileSize.y()<<std::endl;
                     ////////std::cout<<"x y : "<<x<<","<<y<<std::endl;
                     //On projete les positions en fonction de la projection du jeux.
-                    math::Vec3f projPos = baseChangementMatrix.changeOfBase(math::Vec3f (x - startX, y - startY, 0));
+                    math::Vec3f projPos = baseChangmentMatrix.changeOfBase(math::Vec3f (x - startX, y - startY, 0));
                     math::Vec2f pos (projPos.x() + startX, projPos.y() + startY);
                     //////////std::cout<<"pos : "<<pos<<std::endl;
-                    Tile* tile;
+                    GameObject* tile;
                     if (tGround.size() > 0)  {
-                        int i = math::Math::random(tGround.size());
+                        int i = math::Math::random(0, tGround.size());
                         tile = tGround[i]->clone();
                         tile->setPosition(math::Vec3f(pos.x(), 0, pos.y()));
                     } else {
-                        tile = new Tile(nullptr, math::Vec3f(pos.x(), 0, pos.y()), math::Vec3f(squareSize, 0, squareSize.y()), IntRect(0, 0, 1, 1));
+                        tile = new Tile(nullptr, math::Vec3f(pos.x(), 0, pos.y()), math::Vec3f(squareSize, 0, squareSize), FloatRect(0, 0, 1, 1));
                     }
                     for (unsigned int j = 0; j < 4; j++) {
                         float h = math::Math::random(rect.getPosition().y(), rect.getPosition().y() + rect.getHeight());
-                        tile->setHeight(j, h);
-                    }   
-                    tile->changeVerticesHeights(heights[0], heights[1], heights[2], heights[3]);
+                        tile->changeVertexHeight(j, h);
+                    }
                     ts->addTile(tile);
                 }
             }
             addEntity(ts);
         } 
-        void Scene::generate_rectangular_arena(std::vector<g3d::Wall*> walls, unsigned int squareSize, physic::BoundingBox &rect) {
-            int startX = rect.getPosition().x() / tileSize.x() * tileSize.x();
-            int startY = rect.getPosition().z() / tileSize.y() * tileSize.y();
-            int endX = (rect.getPosition().x() + rect.getWidth()) / tileSize.x() * tileSize.x();
-            int endY = (rect.getPosition().z() + rect.getDepth()) / tileSize.y() * tileSize.y();
-            HeightMap *hp = factory.make_entity<BigTile>(math::Vec3f(startX, rect.getPosition().y(), startY),factory, tileSize,rect.getWidth() / tileSize.x());
-            hp->setSize(rect.getSize());
+        void Scene::generate_rectangular_arena(std::vector<Wall*> walls, unsigned int squareSize, physic::BoundingBox &rect) {
+            int startX = rect.getPosition().x() / squareSize * squareSize;
+            int startY = rect.getPosition().z() / squareSize * squareSize;
+            int endX = (rect.getPosition().x() + rect.getWidth()) / squareSize * squareSize;
+            int endY = (rect.getPosition().z() + rect.getDepth()) / squareSize * squareSize;
+            TileSet *ts = new TileSet(squareSize, rect);            
             //bt->setCenter(math::Vec3f(rect.getCenter().x, rect.getCenter().y, rect.getPosition().z()));
             //Positions de d\E9part et d'arriv\E9es en fonction de la taille, de la position et de la taille des cellules de la map.
-            for (int y = startY; y < endY;  y+=tileSize.y()) {
-                for (int x = startX; x < endX; x+=tileSize.x()) {
+            for (int y = startY; y < endY;  y+=squareSize) {
+                for (int x = startX; x < endX; x+=squareSize) {
                     ////////std::cout<<"start x y : "<<startX<<","<<startY<<std::endl;
                     ////////std::cout<<"end x y : "<<endX-tileSize.x()<<","<<endY-tileSize.y()<<std::endl;
                     ////////std::cout<<"x y : "<<x<<","<<y<<std::endl;
                     //On projete les positions en fonction de la projection du jeux.
-                    math::Vec3f projPos = baseChangementMatrix.changeOfBase(math::Vec3f (x - startX, y - startY, 0));
+                    math::Vec3f projPos = baseChangmentMatrix.changeOfBase(math::Vec3f (x - startX, y - startY, 0));
                     math::Vec2f pos (projPos.x() + startX, projPos.y() + startY);
                     //////////std::cout<<"pos : "<<pos<<std::endl;
                     //Mur du coin en haut \E0 gauche.
@@ -260,7 +252,7 @@ namespace odfaeg {
                         }
 
                         //Mur du coin en haut \E0 droite.
-                    } else if (x == endX - tileSize.x() && y == startY && walls.size() >= 11) {
+                    } else if (x == endX - squareSize && y == startY && walls.size() >= 11) {
                         if (walls[Wall::TOP_RIGHT] != nullptr) {
                             ////////std::cout<<"top right"<<std::endl;
                             GameObject *w = walls[Wall::TOP_RIGHT]->clone();
@@ -271,7 +263,7 @@ namespace odfaeg {
                             gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), w->getPosition().y(), w->getPosition().z()))->setPassable(false);
                         }
                         //Mur du coin en bas \E0 droite.
-                    } else if (x == endX - tileSize.x() && y == endY - tileSize.y() && walls.size() >= 11) {
+                    } else if (x == endX - squareSize && y == endY - squareSize && walls.size() >= 11) {
                         if (walls[Wall::BOTTOM_RIGHT] != nullptr) {
                             ////////std::cout<<"bottom right"<<std::endl;
                             GameObject *w = walls[Wall::BOTTOM_RIGHT]->clone();
@@ -280,7 +272,7 @@ namespace odfaeg {
                             addEntity(w);
                             gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), w->getPosition().y(), w->getPosition().z()))->setPassable(false);
                         }
-                    } else if (x == startX && y == endY - tileSize.y() && walls.size() >= 11) {
+                    } else if (x == startX && y == endY - squareSize && walls.size() >= 11) {
                         if (walls[Wall::BOTTOM_LEFT] != nullptr) {
                             ////////std::cout<<"bottom left"<<std::endl;
                             GameObject *w = walls[Wall::BOTTOM_LEFT]->clone();
@@ -290,7 +282,7 @@ namespace odfaeg {
                             addEntity(w);
                             gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), w->getPosition().y(), w->getPosition().z()))->setPassable(false);
                         }
-                    } else if ((y == startY || y == endY - tileSize.y()) && walls.size() >= 11) {
+                    } else if ((y == startY || y == endY - squareSize) && walls.size() >= 11) {
                         if (walls[Wall::TOP_BOTTOM] != nullptr) {
                             ////////std::cout<<"top bottom"<<std::endl;
                             GameObject *w = walls[Wall::TOP_BOTTOM]->clone();
@@ -305,7 +297,7 @@ namespace odfaeg {
                             }*/
                             gridMap.getGridCellAt(math::Vec3f(w->getPosition().x(), w->getPosition().y(), w->getPosition().z()))->setPassable(false);
                         }
-                    } else if ((x == startX || x == endX - tileSize.x()) && walls.size() >= 11) {
+                    } else if ((x == startX || x == endX - squareSize) && walls.size() >= 11) {
                         if (walls[Wall::RIGHT_LEFT] != nullptr) {
                             ////////std::cout<<"right left"<<std::endl;
                             GameObject *w = walls[Wall::RIGHT_LEFT]->clone();
@@ -330,11 +322,11 @@ namespace odfaeg {
         string Scene::getName() {
             return name;
         }
-        void Scene::removeComptImg (const void* resource) {
-            map<const void*, int>::iterator it;
-            it = compImages.find(resource);
-            if (it != compImages.end()) {
-                compImages.erase(it);
+        void Scene::removeComptImg (std::string resource) {
+            map<std::string, int>::iterator it;
+            it = compResources.find(resource);
+            if (it != compResources.end()) {
+                compResources.erase(it);
             }
         }
         void Scene::increaseComptImg(std::string resource) {
@@ -360,44 +352,43 @@ namespace odfaeg {
                 return it->second;
             return -1;
         }
-        bool Scene::addGameObject(GameObject *entity) {            
+        bool Scene::addEntity(GameObject *entity) {            
             for (unsigned int j = 0; j < entity->getChildren ().size(); j++) {
-                addGameObject(entity->getChildren()[j]);
+                addEntity(entity->getChildren()[j]);
             }
-            for (unsigned int j = 0; j < entity->getSubMesheses().size(); j++) {
-               for (unsigned int k = 0; k < entity->getSubMesheses(j)->getAssets().size(); k++) {
-                    increaseComptImg(entity->getSubMesheses(j)->getAssets()[k].name);                    
+            for (unsigned int j = 0; j < entity->getSubMeshes().size(); j++) {
+               for (unsigned int k = 0; k < entity->getSubMeshes()[j].getAssets(Asset::TEXTURE_DIFFUSE).size(); k++) {
+                    increaseComptImg(entity->getSubMeshes()[j].getAssets(Asset::TEXTURE_DIFFUSE)[k].name);                    
                 }
             }
             if (entity->getParent() == nullptr) {                
-                std::unique_ptr<Entity> ptr;
+                std::unique_ptr<GameObject> ptr;
                 ptr.reset(entity);
                 entities.push_back(std::move(ptr));
                 ////////std::cout<<"add entity : "<<entity->getType()<<std::endl;
-                return gridMap.addEntity(entity);
+                return gridMap.addEntity(entity, entity->getGlobalBounds());
             }            
         }
-        bool Scene::removeEntity (Entity *entity) {
+        bool Scene::removeEntity (GameObject *entity) {
             bool removed = true;
             if (entity != nullptr) {
-                std::vector<Entity*> children = entity->getChildren();
+                std::vector<GameObject*> children = entity->getChildren();
                 for (unsigned int i = 0; i < children.size(); i++) {
                     removeEntity(children[i]);                    
                 }
                               
-                for (unsigned int j = 0; j < entity->getSubMesheses().size(); j++) {
-                    for (unsigned int k = 0; k < entity->getSubMesheses(j)->getAssets().size(); k++) {
-                            decreaseComptImg(entity->getSubMesheses(j)->getAssets()[k].name);                    
-                        }
+                for (unsigned int j = 0; j < entity->getSubMeshes().size(); j++) {
+                    for (unsigned int k = 0; k < entity->getSubMeshes()[j].getAssets(Asset::TEXTURE_DIFFUSE).size(); k++) {
+                        decreaseComptImg(entity->getSubMeshes()[j].getAssets(Asset::TEXTURE_DIFFUSE)[k].name);                    
                     }
                 }
             }
             if (entity->getParent() == nullptr) {
                 ////////std::cout<<"remove entity : "<<entity->getType()<<std::endl;
-                if(!gridMap->removeEntity(entity)) {
+                if(!gridMap.removeEntity(entity, entity->getGlobalBounds())) {
                    removed = false;
                 }  
-                std::vector<std::unique_ptr<Entity>>::iterator it;
+                std::vector<std::unique_ptr<GameObject>>::iterator it;
                 for (it = entities.begin(); it != entities.end(); it++) {
                     if (it->get() == entity) {
                         it->release();
@@ -408,30 +399,29 @@ namespace odfaeg {
             }
             return removed;
         }
-        bool Scene::deleteEntity (Entity *entity) {
+        bool Scene::deleteEntity (GameObject *entity) {
             bool removed = true;
             if (entity != nullptr) {
-                std::vector<Entity*> children = entity->getChildren();
+                std::vector<GameObject*> children = entity->getChildren();
                 for (unsigned int i = 0; i < children.size(); i++) {
                     removeEntity(children[i]);                    
                 }
                 ////////std::cout<<"remove entity : "<<entity->getType()<<std::endl;
-                if(!gridMap->removeEntity(entity)) {
+                if(!gridMap.removeEntity(entity, entity->getGlobalBounds())) {
                    removed = false;
                 }                
-                for (unsigned int j = 0; j < entity->getSubMesheses().size(); j++) {
-                    for (unsigned int k = 0; k < entity->getSubMesheses(j)->getAssets().size(); k++) {
-                            decreaseComptImg(entity->getSubMesheses(j)->getAssets()[k].name);                    
-                        }
+                for (unsigned int j = 0; j < entity->getSubMeshes().size(); j++) {
+                    for (unsigned int k = 0; k < entity->getSubMeshes()[j].getAssets(Asset::TEXTURE_DIFFUSE).size(); k++) {
+                        decreaseComptImg(entity->getSubMeshes()[j].getAssets(Asset::TEXTURE_DIFFUSE)[k].name);                    
                     }
                 }
             }
             if (entity->getParent() == nullptr) {
                 ////////std::cout<<"remove entity : "<<entity->getType()<<std::endl;
-                if(!gridMap->removeEntity(entity)) {
+                if(!gridMap.removeEntity(entity, entity->getGlobalBounds())) {
                    removed = false;
                 }  
-                std::vector<std::unique_ptr<Entity>>::iterator it;
+                std::vector<std::unique_ptr<GameObject>>::iterator it;
                 for (it = entities.begin(); it != entities.end(); it++) {
                     if (it->get() == entity) {                        
                         entities.erase(it);
@@ -456,49 +446,42 @@ namespace odfaeg {
             entity->move(math::Vec3f(dx, dy, dz));
             addEntity(entity);
         }
-        void Scene::setBaseChangementMatrix (BaseChangementMatrix bm) {
+        void Scene::setBaseChangementMatrix (math::BaseChangementMatrix bm) {
             baseChangmentMatrix = bm;
         }
         Entity* Scene::getEntity(std::string name) {
             std::vector<GameObject*> allEntities = gridMap.getEntities();
             for (unsigned int i = 0; i < allEntities.size(); i++) {
-                Entity* frame;
-                if (allEntities[i]->isAnimated()) {
-                    frame = checkFrameEntity(allEntities[i], name);
-                    if (frame != nullptr) {
-                        return frame;
-                    }
-                } else {
-                    if (allEntities[i]->getName() == name)
-                        return allEntities[i];
+                if (allEntities[i]->getName() == name) {
+                   return allEntities[i];
                 }
             }
             return nullptr;            
         }        
-        vector<Entity*> Scene::getEntities(string expression) {
-            vector<Entity*> entities;
-            vector<Entity*> allEntities = gridMap->getEntities();
+        vector<GameObject*> Scene::getEntities(string expression) {
+            vector<GameObject*> entities;
+            vector<GameObject*> allEntities = gridMap.getEntities();
             if (expression.size() > 0 && expression.at(0) == '*') {
                 if (expression.find("-") != string::npos)
                     expression = expression.substr(2, expression.size() - 3);
                 vector<string> excl = core::split(expression, "-");
                 for (unsigned int i = 0; i < allEntities.size(); i++) {
-                    Entity* entity = allEntities[i]->getRootEntity();
+                    GameObject* entity = allEntities[i];
                     bool exclude = false;
                     for (unsigned int j = 0; j < excl.size(); j++) {
-                        if (entity->getRootType() == excl[j])
+                        if (entity->getType() == excl[j])
                             exclude = true;
                     }
                     if (!exclude) {
                         bool contains = false;
                         for (unsigned int n = 0; n < entities.size() && !contains; n++) {
-                            if (entities[n]->getRootEntity() == entity->getRootEntity()) {
+                            if (entities[n] == entity) {
                                 contains = true;
                             }
                         }
                         if (!contains) {
-                            entity->getRootEntity()->updateTransform();
-                            entities.push_back(entity->getRootEntity());
+                            //entity->updateTransform();
+                            entities.push_back(entity);
                         }
                     }
                 }
@@ -507,26 +490,26 @@ namespace odfaeg {
             vector<string> types = core::split(expression, "+");
             for (unsigned int i = 0; i < types.size(); i++) {
                 for (unsigned int j = 0; j < allEntities.size(); j++) {
-                    Entity* entity = allEntities[j]->getRootEntity();
-                    if (entity->getRootType() == types[i]) {
+                    GameObject* entity = allEntities[j];
+                    if (entity->getType() == types[i]) {
                         bool contains = false;
                         for (unsigned int n = 0; n < entities.size() && !contains; n++) {
-                            if (entities[n]->getRootEntity() == entity->getRootEntity()) {
+                            if (entities[n] == entity) {
                                 contains = true;
                             }
                         }
                         if (!contains) {
-                            entity->getRootEntity()->updateTransform();
-                            entities.push_back(entity->getRootEntity());
+                            //entity->updateTransform();
+                            entities.push_back(entity);
                         }
                     }
                 }
             }
             return entities;
         }
-        vector<Entity*> Scene::getEntitiesInBox (physic::BoundingBox bx, std::string type) {
-             vector<Entity*> entities;
-             vector<Entity*> allEntitiesInRect = gridMap->getEntitiesInBox(bx);
+        vector<GameObject*> Scene::getEntitiesInBox (physic::BoundingBox bx, std::string type) {
+             vector<GameObject*> entities;
+             vector<GameObject*> allEntitiesInRect = gridMap.getEntitiesInBox(bx);
              ////////std::cout<<"entities in rect :"<<allEntitiesInRect.size()<<std::endl;
 
              if (type.at(0) == '*') {
@@ -534,18 +517,15 @@ namespace odfaeg {
                     type = type.substr(2, type.size() - 3);
                 vector<string> excl = core::split(type, "-");
                 for (unsigned int i = 0; i < allEntitiesInRect.size(); i++) {
-                    Entity* entity = allEntitiesInRect[i];
+                    GameObject* entity = allEntitiesInRect[i];
                     if (entity != nullptr) {
                         bool exclude = false;
                         for (unsigned int i = 0; i < excl.size(); i++) {
-                            if (entity->getRootType() == excl[i])
+                            if (entity->getType() == excl[i])
                                 exclude = true;
                         }
                         if (!exclude) {
-                            Entity* ba = entity->getRootEntity();
-                            if (ba->getBoneAnimationIndex() == entity->getBoneIndex()) {
-                                entities.push_back(entity);
-                            }
+                           entities.push_back(entity);                           
                         }
                     }
                 }
@@ -554,13 +534,10 @@ namespace odfaeg {
             vector<string> types = core::split(type, "+");
             for (unsigned int i = 0; i < types.size(); i++) {
                 for (unsigned int j = 0; j < allEntitiesInRect.size(); j++) {
-                    Entity* entity = allEntitiesInRect[j];
+                    GameObject* entity = allEntitiesInRect[j];
                     if (entity != nullptr) {
-                        if (entity->getRootType() == types[i]) {
-                            Entity* ba = entity->getRootEntity();
-                            if (ba->getBoneAnimationIndex() == entity->getBoneIndex()) {
-                                entities.push_back(entity);
-                            }
+                        if (entity->getType() == types[i]) {
+                            entities.push_back(entity);                            
                         }
                     }
                 }
@@ -574,7 +551,7 @@ namespace odfaeg {
              
         }
         bool Scene::collide (Entity* entity, math::Ray ray) {
-             math::Vec3f point = ray.getOrig() + ray.getDir().normalize() * diagSize * 0.001f;
+             /*math::Vec3f point = ray.getOrig() + ray.getDir().normalize() * diagSize * 0.001f;
              math::Vec3f v1 = ray.getExt() - ray.getOrig();
              math::Vec3f v2 = point - ray.getOrig();
              while (v2.magnSquared() / v1.magnSquared() < 1) {
@@ -584,7 +561,7 @@ namespace odfaeg {
                     v2 = point - ray.getOrig();
              }
              point = ray.getExt();
-             return collide(entity, point, cinfos);
+             return collide(entity, point, cinfos);*/
         }
         math::Vec3f Scene::physicallyBasedComputePos (Entity* entity, math::Vec3f oldCenter, math::Vec3f size, math::Vec3f velocity, float climbCapacity) {
             /*float newFootHeight, newHeadHeight;
@@ -778,7 +755,7 @@ namespace odfaeg {
                     }
                 }
                 return newCenter;
-            }
-        }*/
+            }*/
+        }
     }
 }

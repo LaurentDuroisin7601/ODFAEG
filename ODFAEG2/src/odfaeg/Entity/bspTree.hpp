@@ -19,6 +19,9 @@ namespace odfaeg {
                 unsigned int rightChild;
                 std::vector<unsigned int> children;
                 bool leaf;
+                bool operator==(Node& node) {
+                    return plane == node.plane;
+                }
             };           
             BSPTree(physic::BoundingBox volume, unsigned int maxObjectsPerNodes);
             void addObject(Object object, physic::BoundingBox objectVolume);

@@ -1,11 +1,11 @@
 namespace odfaeg {
     namespace entity {
        TileSet::TileSet (unsigned int squareSize, physic::BoundingBox zone)
-        : GameObject (zone.getPosition(), zone.getSize(), zone.getSize() * 0.5f, "E_HEIGHTMAP")
+        : GameObject (zone.getPosition(), zone.getSize(), zone.getSize() * 0.5f, "E_HEIGHTMAP"),
         squareSize(squareSize) {
             nbQuadsPerRow = zone.getSize().x() / squareSize;
        }
-       void TileSet::addTile(Tile* tile) {
+       void TileSet::addTile(GameObject* tile) {
            addChild(tile);
        } 
        bool TileSet::getHeight(math::Vec2f point, float& height) {
@@ -19,19 +19,20 @@ namespace odfaeg {
                 math::Vec2f d(point.x() - xPosition * squareSize, point.y() - yPosition*squareSize);
                 //Triangle du carré sur lequel le point se trouve.
                 int triIndex = (d.x() < d.y()) ? 0 : 1;
-                Height h1, h2, h3;
-                h1 = getChildren()[position].getHeight(0);
-                h2 = getChildren()[position].getHeight(1+triIndex);                     
-                h3 = getChildren()[position].getHeight(2+triIndex);
+                float h1, h2, h3;
+                h1 = getChildren()[position]->getVertexHeight(0);
+                h2 = getChildren()[position]->getVertexHeight(1+triIndex);                     
+                h3 = getChildren()[position]->getVertexHeight(2+triIndex);
                 
                 ////////std::cout<<"point  : "<<point<<"pos : "<<pos<<"tileSize : "<<tileSize<<std::endl;
                 // Vecteurs du triangle
-                math::Vec2f v0 = h2 - h1;
-                math::Vec2f v1 = h3 - h1;
-                math::Vec2f v2 = point - h1;
+                VertexArray va = getChildren()[position]->getSubMeshes()[0].getVertexArray();
+                math::Vec3f v0 = va[0].position;
+                math::Vec3f v1 = va[2+triIndex].position - va[0].position;
+                math::Vec3f v2 = point - va[0].position;
 
                 // Dot products
-                float d00 = v0.dor(v1);
+                float d00 = v0.dot(v1);
                 float d01 = v0.dot(v1);
                 float d11 = v1.dot(v1);
                 float d20 = v2.dot(v0);
@@ -52,7 +53,7 @@ namespace odfaeg {
         }
         GameObject* TileSet::clone() {
             TileSet* ts = new TileSet(squareSize, getGlobalBounds());
-            GameObject::copy(*ts);
+            GameObject::copy(ts);
             return ts;
         }
     }

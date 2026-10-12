@@ -1,9 +1,12 @@
+#include "gameObject.hpp"
+#include "../Physics/boundingBox.hpp"
+#include "tile.hpp"
 namespace odfaeg {
     namespace entity {
        class TileSet : public GameObject {
         public :
             TileSet(unsigned int squareSize, physic::BoundingBox rect);
-            void addTile(Tile* tile);
+            void addTile(GameObject* tile);
             bool getHeight(math::Vec2f point, float& height);            
             GameObject* clone();
             template <typename Archive>

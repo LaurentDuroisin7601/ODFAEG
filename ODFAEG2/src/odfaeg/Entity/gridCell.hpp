@@ -14,14 +14,14 @@ namespace odfaeg {
                 bool isEntityInside ();
                 std::vector<Object> getEntitiesInside ();                
                 std::vector<Object> getEntitiesInside (std::string type);
-                void removeEntity (Object object);                
-                void deleteEntity (Object entity); 
+                bool removeEntity (Object object, physic::BoundingBox objectVolume);                
+                //bool deleteEntity (Object entity); 
                 math::Vec3f getCenter ();
                 bool empty();
                 std::deque<typename BSPTree<Object>::Node>& getTreeNodes();
                 bool isTraveled ();
                 void setTraveled (bool traveled);
-                Object getEntityInside (unsigned int index, physic::BoundingBox& bx);
+                Object getEntityInside (unsigned int index);
                 unsigned int getNbEntitiesInside();                
                 bool containsEntity (Object entity);
                 bool isPassable ();

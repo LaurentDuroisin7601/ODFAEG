@@ -60,18 +60,19 @@ namespace odfaeg {
             return entitiesInside;
         }
         template <typename Object>
-        void GridCell<Object>::removeEntity (Object object) {
-           tree.removeObject(object);
+        bool GridCell<Object>::removeEntity (Object object, physic::BoundingBox objectVolume) {
+           tree.removeObject(object, objectVolume);
+           return true;
         }
-        template <typename Object>
-        void GridCell<Object>::deleteEntity (Object entity) {
+        /*template <typename Object>
+        bool GridCell<Object>::deleteEntity (Object entity) {
             for (unsigned int i = 0; i < tree.getObjects(volume).size(); i++) {
                 if (tree.getObjects(volume)[i] == entity) {
                     removeEntity(entity);
                     delete entity;
                 }
             }
-        }
+        }*/
         template <typename Object>
         math::Vec3f GridCell<Object>::getCenter () {
             return volume.getCenter();
@@ -85,10 +86,10 @@ namespace odfaeg {
             this->traveled = traveled;
         }
         template<typename Object>
-        Object GridCell<Object>::getEntityInside (unsigned int index, physic::BoundingBox& bx) {
+        Object GridCell<Object>::getEntityInside (unsigned int index) {
             if (index >= 0 && index < tree.getObjects(volume).size()) {
                 Object entity = tree.getObjects(volume)[index];
-                bx = tree.getObjectVolumes(volume)[index];
+                
                 return entity;
             }
             return nullptr;

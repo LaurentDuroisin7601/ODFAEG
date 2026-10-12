@@ -16,6 +16,9 @@ namespace odfaeg {
             Vec3f project(Vec3f point);
             bool isParallelConf(Plane& plane);
             bool isParallel(Plane& plane);
+            bool operator==(Plane& plane) {
+                return n == plane.n && p == plane.p;
+            }
         private:
             float a, b, c, d;
             Vec3f n;

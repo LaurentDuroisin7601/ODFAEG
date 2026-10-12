@@ -1,5 +1,5 @@
 namespace odfaeg {
-    namespace graphic {
+    namespace math {
         BaseChangementMatrix::BaseChangementMatrix() {
             matrix4f.identity();
             invMatrix4f = matrix4f.inverse();

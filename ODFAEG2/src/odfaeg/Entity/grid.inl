@@ -336,7 +336,7 @@ namespace odfaeg {
                               int indice = (math::Math::abs(minX) + cm->getCoords().x)
                                     + (math::Math::abs(minY) + cm->getCoords().y) * nbCasesPerRow + (math::Math::abs(minZ) + cm->getCoords().z) * nbCasesPerCol;
                           }*/
-                          if(cm->removeEntity(entity)) {
+                          if(cm->removeEntity(entity, volume)) {
                             removed = true;
                           }
                           if (!cm->isEntityInside())
@@ -440,8 +440,8 @@ namespace odfaeg {
                         GridCell<Object>* cell = getGridCellAt(point);
                         if (cell != nullptr) {
                             for (unsigned int n = 0; n < cell->getEntitiesInside().size(); n++) {
-                               physic::BoundingBox bx2;
-                               Object entity = cell->getEntityInside(n, bx2);                               
+                               
+                               Object entity = cell->getEntityInside(n);                               
                                bool contains = false;
                                for (unsigned int k = 0; k < entities.size() && !contains; k++) {
                                     if (entities[k] == entity)
@@ -461,8 +461,9 @@ namespace odfaeg {
         template<typename Object>
         vector<Object> GridMap<Object>::getEntities () {
             vector<Object> allEntities;
-            for (unsigned int i = 0; i < casesMap.size(); i++) {
-                GridCell<Object> cell = casesMap[i];
+            typename std::unordered_map<CellKey, std::unique_ptr<GridCell<Object>>, CellKeyHash>::iterator it;
+            for (it = casesMap.begin(); it != casesMap.end(); it++) {
+                GridCell<Object>* cell = it->second.get();
                 //if (cell != nullptr) {
                      for (unsigned int n = 0; n < cell->getNbEntitiesInside(); n++) {
                         bool contains = false;

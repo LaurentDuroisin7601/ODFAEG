@@ -6,7 +6,7 @@
   * the namespace of the Opensource Development Framework Adapted for Every Games.
   */
 namespace odfaeg {
-    namespace graphic {
+    namespace math {
         /**
           * \file baseChangementMatrix.h
           * \class BaseChangementMatrix

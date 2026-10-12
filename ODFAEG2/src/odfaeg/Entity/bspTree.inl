@@ -101,12 +101,12 @@ namespace odfaeg {
         template <typename Object>      
         void BSPTree<Object>::removeObject(Object object, physic::BoundingBox objectVolume) {
             for (unsigned int i = 0; i < nodes.size(); i++) {
-                if (nodes[i].leaf && nodes[i].contains(object)) {
+                if (nodes[i].leaf && contains(nodes[i], object)) {
                     {
                         typename std::vector<Object>::iterator it;
                         std::vector<physic::BoundingBox>::iterator it2;
                         for (it = nodes[i].objects.begin(), it2 = nodes[i].objectVolumes.begin(); it != nodes[i].objects.end();) {
-                            if (*it == &object) {
+                            if (*it == object) {
                                 it = nodes[i].objects.erase(it);
                                 it2 = nodes[i].objectVolumes.erase(it2); 
                                 freeNodes(nodes[i]);   
@@ -156,17 +156,17 @@ namespace odfaeg {
         template <typename Object>
         void BSPTree<Object>::freeNodes(Node& parent) {
             bool empty = true;
-            if (!nodes[parent.leftChild].objets.size() == 0
-                || !nodes[parent.rightChild].objets.size() == 0) {
+            if (!nodes[parent.leftChild].objects.size() == 0
+                || !nodes[parent.rightChild].objects.size() == 0) {
                 empty = false;
                 return;
             }            
             if (empty) {  
                 freeNodes(nodes[parent.parent]);              
-                typename std::vector<Node>::iterator it; 
+                typename std::deque<Node>::iterator it; 
                 for (unsigned int i = 0; i < parent.children.size(); i++) {               
                     for (it = nodes.begin(); it != nodes.end();) {                    
-                        if (*it == &nodes[parent.children[i]]) {
+                        if (*it == nodes[parent.children[i]]) {
                             it = nodes.erase(it);
                         } else {
                             it++;
@@ -174,8 +174,8 @@ namespace odfaeg {
                     }   
                 }           
                               
-                for (it = nodes.begin(); it != nodes.end;) {
-                    if (*it == &parent) {
+                for (it = nodes.begin(); it != nodes.end();) {
+                    if (*it == parent) {
                         it = nodes.erase(it);
                     } else {
                         it++;
