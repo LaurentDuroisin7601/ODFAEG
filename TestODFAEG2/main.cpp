@@ -136,7 +136,7 @@ struct interaction
 };
 int main() {
 	//std::cout<<"main start"<<std::endl;
-	chat cha;
+	/*chat cha;
 	epee ep;
 	laser la;	
 	std::map<unsigned int, std::vector<std::reference_wrapper<gameObject>>> gameObjectsByType;
@@ -174,7 +174,7 @@ int main() {
 	GameMode gameMode;
 	gameMode.addRule("chateppeelaser", rules[0]);
 	gameMode.addRule("chieneppeelaser", rules[1]);
-	gameMode.applyRule("chateppeelaser");
+	gameMode.applyRule("chateppeelaser");*/
 	/*visitor.bind(cvar1, cvar2, cvar3);
 	visitor();*/
 	system("PAUSE");

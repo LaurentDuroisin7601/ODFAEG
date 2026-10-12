@@ -511,8 +511,8 @@ namespace odfaeg {
         template <typename V, typename... T>
         struct TypeList { 
             TypeList() {}
-            TypeList(V v) {
-                value = v;
+            TypeList(V& v) : value(v) {
+                
             }
             template <size_t TypeID>
             std::tuple_element_t<TypeID, std::tuple<T...>>& get() {
@@ -521,7 +521,7 @@ namespace odfaeg {
             V& get() {
                 return value;
             }
-            V value; 
+            V& value; 
             unsigned int typeKey;           
         };       
         // Test "appartient à une famille" : dérivation
