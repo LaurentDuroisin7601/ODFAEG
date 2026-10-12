@@ -39,7 +39,7 @@ namespace odfaeg {
                     
                 }
                 void addGameObject(GameObject& gameObject) {
-                    integrate<>(typeID, gameObject);
+                    integrate<>(gameObject);
                 }
                 void execute() {
                     iterate<>(std::make_index_sequence<sizeof...(ActorsLists)>());
