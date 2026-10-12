@@ -632,13 +632,12 @@ namespace odfaeg {
             std::unique_ptr<Delegate<R>> delegate; /**> holds the pointer to the generic delegate.*/
         };
         
-        template<typename... T>
-        std::string get_key(T... types)
+        template<typename T>
+        struct get_type_id
         {
-            std::string key;
-            ((key += typeid(T).name(), key += ";"), ...);
-            return key;
-        } 
+           static constexpr Compteur compteur = Compteur();     
+           static constexpr size_t typeID = compteur.next();
+        }; 
         struct RuleBase {            
             virtual void execute() = 0;
             virtual ~RuleBase() = default;
