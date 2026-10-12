@@ -139,35 +139,35 @@ int main() {
 	chat cha;
 	epee ep;
 	laser la;	
-	std::map<std::string, std::vector<std::reference_wrapper<gameObject>>> gameObjectsByType;
-	gameObjectsByType.insert(std::make_pair(get_key(cha), std::vector<std::reference_wrapper<gameObject>>()));	
-	gameObjectsByType.insert(std::make_pair(get_key(ep), std::vector<std::reference_wrapper<gameObject>>()));
-	gameObjectsByType.insert(std::make_pair(get_key(la), std::vector<std::reference_wrapper<gameObject>>()));
-	gameObjectsByType.find(get_key(cha))->second.push_back(cha);
-	gameObjectsByType.find(get_key(ep))->second.push_back(ep);
-	gameObjectsByType.find(get_key(la))->second.push_back(la);
+	std::map<unsigned int, std::vector<std::reference_wrapper<gameObject>>> gameObjectsByType;
+	gameObjectsByType.insert(std::make_pair(CHAT, std::vector<std::reference_wrapper<gameObject>>()));	
+	gameObjectsByType.insert(std::make_pair(EPEE, std::vector<std::reference_wrapper<gameObject>>()));
+	gameObjectsByType.insert(std::make_pair(LASER, std::vector<std::reference_wrapper<gameObject>>()));
+	auto chats = gameObjectsByType.find(CHAT)->second;
+	auto epees = gameObjectsByType.find(EPEE)->second;
+	auto lasers = gameObjectsByType.find(LASER)->second;
+	chats.push_back(cha);
+	epees.push_back(ep);
+	lasers.push_back(la);
 
 	std::vector<TypeList<gameObject, chat, chien>> typeList1;
 	std::vector<TypeList<gameObject, epee, arc>> typeList2;
 	std::vector<TypeList<gameObject, laser, balle>> typeList3;	
-	for (unsigned int i = 0; i < gameObjectsByType.find(get_key(cha))->second.size(); i++) {
-		TypeList<gameObject, chat, chien> tl1(gameObjectsByType.find(get_key(cha))->second[i]);
+	for (unsigned int i = 0; i < chats.size(); i++) {
+		TypeList<gameObject, chat, chien> tl1(chats[i]);
 		tl1.typeKey = CHAT;
 		typeList1.push_back(tl1);	
 	}
-	for (unsigned int i = 0; i < gameObjectsByType.find(get_key(ep))->second.size(); i++) {
-		TypeList<gameObject, epee, arc> tl2(gameObjectsByType.find(get_key(ep))->second[i]);
+	for (unsigned int i = 0; i < epees.size(); i++) {
+		TypeList<gameObject, epee, arc> tl2(epees[i]);
 		tl2.typeKey = EPEE;
 		typeList2.push_back(tl2);	
 	}
-	for (unsigned int i = 0; i < gameObjectsByType.find(get_key(la))->second.size(); i++) {
-		TypeList<gameObject, laser, balle> tl3(gameObjectsByType.find(get_key(la))->second[i]);
+	for (unsigned int i = 0; i < lasers.size(); i++) {
+		TypeList<gameObject, laser, balle> tl3(lasers[i]);
 		tl3.typeKey = LASER;
 		typeList3.push_back(tl3);	
-	}
-	TypeList<gameObject, chat, chien> cvar1;
-	TypeList<gameObject, epee, arc> cvar2;
-	TypeList<gameObject, laser, balle> cvar3;
+	}	
 	interaction inter;
 	std::vector<RuleBase*> rules = make_rules_for<interaction, std::index_sequence<CHAT, EPEE, LASER>, std::index_sequence<CHIEN, ARC, BALLE>>(inter, typeList1, typeList2, typeList3);
 	//RuleBase* rule = make_rule_for<interaction, CHAT, EPEE, LASER>(inter, typeList1, typeList2, typeList3);
