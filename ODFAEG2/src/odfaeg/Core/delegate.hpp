@@ -631,50 +631,7 @@ namespace odfaeg {
         private:
             std::unique_ptr<Delegate<R>> delegate; /**> holds the pointer to the generic delegate.*/
         };
-        template <typename T, typename Func, size_t... I>
-        FastDelegate<void> make_rule_impl(Func func, std::index_sequence<I...> seq) {
-            FastDelegate<void> visitor(&DispatchVisitor<Func, std::tuple_element_t<I, T>...>::visit, func, ph<I, std::tuple_element_t<I, T>>()...);
-            return visitor;
-        }
-        template <typename Func, typename... Vs, size_t... TypeIDs, size_t... I>
-        requires std::is_invocable_v<
-                Func,
-                decltype(std::declval<Vs>().template get<TypeIDs>())...
-            >
-        FastDelegate<void> make_rule_impl_for(Func func, std::index_sequence<I...> seq, std::index_sequence<TypeIDs...> seq2) {
-                                
-            FastDelegate<void> visitor(DispatchVisitorFor<Func, Vs...>::template visit<TypeIDs...>, func, ph<I, Vs>()...);
-            return visitor;
-        }
-        template <typename Func, typename... Vs, size_t... I, size_t... TypeIDs>
-        requires (!std::is_invocable_v<
-                Func,
-                decltype(std::declval<Vs>().template get<TypeIDs>())...
-            >)
-        FastDelegate<void> make_rule_impl_for(Func func, std::index_sequence<I...> seq, std::index_sequence<TypeIDs...> seq2) {
-            FastDelegate<void> visitor(DispatchVisitorFor<Func, Vs...>::template visit<TypeIDs...>, func, ph<I, Vs>()...);               
-            
-            return visitor;
-        }
-        template <typename Func, typename... Vs>
-        FastDelegate<void> make_rule(Func func, Vs... vs) {
-            return make_rule_impl<std::tuple<Vs...>>(func, std::make_index_sequence<sizeof...(Vs)>());
-        }        
-        template <typename Func, size_t... TypeIDs, typename... Vs>        
-        FastDelegate<void> make_rule_for(Func func, Vs... vs) {
-            return make_rule_impl_for<Func, Vs...>(func, std::make_index_sequence<sizeof...(Vs)>(), std::index_sequence<TypeIDs...>());
-        }        
-        template<typename Func, size_t... Is, typename... Vs>
-        std::vector<FastDelegate<void>>
-        make_rules_for_impl(Func func,
-                            std::index_sequence<Is...>,
-                            Vs&&... vs)
-        {
-            return {
-                make_rule_for<Func, Is>(func,
-                                        std::forward<Vs>(vs)...)...
-            };
-        }
+        
         template<typename... T>
         std::string get_key(T... types)
         {
@@ -689,10 +646,10 @@ namespace odfaeg {
         };
         template <typename Behaviour, typename... ActorsLists>
         struct Rule : RuleBase {            
-            std::vector<std::string> concernedActorsKeys;            
+            std::vector<unsigned int> concernedActorsKeys;            
             std::tuple<std::vector<ActorsLists>...> actors;
             FastDelegate<void> ruleExecutor;
-            Rule(FastDelegate<void> ruleExecutor) : ruleExecutor(ruleExecutor) {
+            Rule(FastDelegate<void> ruleExecutor, std::tuple<std::vector<ActorsLists>...> actors) : ruleExecutor(ruleExecutor), actors(actors) {
                 
             }
             void execute() {
@@ -731,6 +688,61 @@ namespace odfaeg {
                 }    
             }
         }; 
+        template <typename T, typename Func, size_t... I>
+        FastDelegate<void> make_rule_impl(Func func, std::index_sequence<I...> seq) {
+            FastDelegate<void> visitor(&DispatchVisitor<Func, std::tuple_element_t<I, T>...>::visit, func, ph<I, std::tuple_element_t<I, T>>()...);
+            return visitor;
+        }
+        template <typename Func, typename... Vs, size_t... TypeIDs, size_t... I>
+        requires std::is_invocable_v<
+                Func,
+                decltype(std::declval<Vs>().template get<TypeIDs>())...
+            >
+        FastDelegate<void> make_rule_impl_for(Func func, std::index_sequence<I...> seq, std::index_sequence<TypeIDs...> seq2) {
+                                
+            FastDelegate<void> visitor(DispatchVisitorFor<Func, Vs...>::template visit<TypeIDs...>, func, ph<I, Vs>()...);
+            return visitor;
+        }
+        template <typename Func, typename... Vs, size_t... I, size_t... TypeIDs>
+        requires (!std::is_invocable_v<
+                Func,
+                decltype(std::declval<Vs>().template get<TypeIDs>())...
+            >)
+        FastDelegate<void> make_rule_impl_for(Func func, std::index_sequence<I...> seq, std::index_sequence<TypeIDs...> seq2) {
+            FastDelegate<void> visitor(DispatchVisitorFor<Func, Vs...>::template visit<TypeIDs...>, func, ph<I, Vs>()...);               
+            
+            return visitor;
+        }
+        template <typename Func, typename... Vs>
+        Rule<Func, Vs...> make_rule(Func func, std::vector<Vs>... vs) {
+            FastDelegate<void> visitor = make_rule_impl<std::tuple<Vs...>>(func, std::make_index_sequence<sizeof...(Vs)>());
+            Rule<Func, Vs...> rule(visitor, std::make_tuple(vs...));
+            
+        }     
+        template <typename R, std::size_t... TypeIDs> 
+        void initKeys(R rule, std::index_sequence<TypeIDs...> seq) {
+           
+            (rule->concernedActorsKeys.push_back(TypeIDs),...);
+        }  
+        template <typename Func, size_t... TypeIDs, typename... Vs>        
+        RuleBase* make_rule_for(std::string name, Func func, std::vector<Vs>... vs) {
+            FastDelegate<void> visitor = make_rule_impl_for<Func, Vs...>(func, std::make_index_sequence<sizeof...(Vs)>(), std::index_sequence<TypeIDs...>());
+            Rule<Func, Vs...>* rule = new Rule<Func, Vs...> (visitor, std::make_tuple(vs...));
+            rule->name = name;
+            initKeys(rule, std::index_sequence<TypeIDs...>());
+            return rule;
+        }        
+        template<typename Func, size_t... Is, typename... Vs>
+        std::vector<RuleBase*>
+        make_rules_for_impl(Func func,
+                            std::index_sequence<Is...>,
+                            std::vector<Vs>... vs)
+        {
+            return {
+                make_rule_for<Func, Is>(func,
+                                        std::forward<Vs>(vs)...)...
+            };
+        }
     }    
 }
 #include "delegate.inl"

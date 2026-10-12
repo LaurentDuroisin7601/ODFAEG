@@ -152,33 +152,33 @@ int main() {
 	std::vector<TypeList<gameObject, laser, balle>> typeList3;	
 	for (unsigned int i = 0; i < gameObjectsByType.find(get_key(cha))->second.size(); i++) {
 		TypeList<gameObject, chat, chien> tl1(gameObjectsByType.find(get_key(cha))->second[i]);
-		tl1.typeKey = get_key(cha);
+		tl1.typeKey = CHAT;
 		typeList1.push_back(tl1);	
 	}
 	for (unsigned int i = 0; i < gameObjectsByType.find(get_key(ep))->second.size(); i++) {
 		TypeList<gameObject, epee, arc> tl2(gameObjectsByType.find(get_key(ep))->second[i]);
-		tl2.typeKey = get_key(ep);
+		tl2.typeKey = EPEE;
 		typeList2.push_back(tl2);	
 	}
 	for (unsigned int i = 0; i < gameObjectsByType.find(get_key(la))->second.size(); i++) {
 		TypeList<gameObject, laser, balle> tl3(gameObjectsByType.find(get_key(la))->second[i]);
-		tl3.typeKey = get_key(la);
+		tl3.typeKey = LASER;
 		typeList3.push_back(tl3);	
 	}
 	TypeList<gameObject, chat, chien> cvar1;
 	TypeList<gameObject, epee, arc> cvar2;
 	TypeList<gameObject, laser, balle> cvar3;
 	interaction inter;
-
-	FastDelegate<void> visitor = make_rule_for<interaction, CHAT, EPEE, LASER>(inter, cvar1, cvar2, cvar3);
-	Rule<interaction, TypeList<gameObject, chat, chien>,TypeList<gameObject, epee, arc>,TypeList<gameObject, laser, balle>> chatEpeeLaser(visitor);
+	RuleBase* chatEpeeLaser = make_rule_for<interaction, CHAT, EPEE, LASER>("chateppeelaser", inter, typeList1, typeList2, typeList3);  
+	//FastDelegate<void> visitor = make_rule_for<interaction, CHAT, EPEE, LASER>(inter, cvar1, cvar2, cvar3);
+	/*Rule<interaction, TypeList<gameObject, chat, chien>,TypeList<gameObject, epee, arc>,TypeList<gameObject, laser, balle>> chatEpeeLaser(visitor);
 	chatEpeeLaser.name = "chateppeelaser";
 	chatEpeeLaser.actors = std::make_tuple(typeList1, typeList2, typeList3);	
 	chatEpeeLaser.concernedActorsKeys.push_back(get_key(cha));
 	chatEpeeLaser.concernedActorsKeys.push_back(get_key(ep));
-	chatEpeeLaser.concernedActorsKeys.push_back(get_key(la));
+	chatEpeeLaser.concernedActorsKeys.push_back(get_key(la));*/
 	GameMode gameMode;
-	gameMode.addRule(&chatEpeeLaser);
+	gameMode.addRule(chatEpeeLaser);
 	gameMode.applyRule("chateppeelaser");
 	/*visitor.bind(cvar1, cvar2, cvar3);
 	visitor();*/
