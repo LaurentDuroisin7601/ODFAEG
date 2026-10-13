@@ -8,7 +8,7 @@
 #include "entity.hpp"
 namespace odfaeg {
 	namespace entity {
-		 class  EntityFactory {
+		class  EntityFactory {
         public:
 
             EntityFactory() {
@@ -410,13 +410,17 @@ namespace odfaeg {
         };
 		class EnttEntity {
 		public:
-			static ComponentMapping& getComponentMapping() {
-				static ComponentMapping componentMapping;
-				return componentMapping;
-			}
+			static ComponentMapping& getComponentMapping();
 			
 			static void initEntity(Entity& entity);
-		};
+            template<typename T>
+            static void addComponent(Entity& entity, T component);
+            template<typename T>
+            static std::optional<std::reference_wrapper<T>> getComponent(Entity& entity);
+            template<typename T>
+            static void removeComponent(Entity& entity);
+            static void addChild(Entity& parent, Entity& child);
+        };
 	}
 }
 #endif

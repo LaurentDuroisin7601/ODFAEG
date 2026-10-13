@@ -135,6 +135,7 @@ namespace odfaeg {
             std::unique_ptr<GameObject> ptr;
             ptr.reset(child);
             children.push_back(std::move(ptr));
+            EnttEntity::addChild(*this, *child);
 
             /*for (unsigned int i = 0; i < children.size(); i++) {
                 vecs.push_back(children[i]->getPosition());

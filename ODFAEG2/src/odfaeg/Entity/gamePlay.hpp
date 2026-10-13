@@ -1,5 +1,7 @@
  #ifndef ODFAEG_GAMEPLAY_HPP
  #define ODFAEG_GAMEPLAY_HPP
+ #include "gameObject.hpp"
+ #include "../Core/delegate.hpp"
 namespace odfaeg {
     namespace entity { 
         struct RuleBase {  

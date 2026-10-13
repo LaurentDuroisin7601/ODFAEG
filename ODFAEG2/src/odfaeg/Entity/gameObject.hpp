@@ -213,6 +213,18 @@ namespace odfaeg {
                 return name;
             }
             int renderingType = 0;
+            template<typename T>
+            void addComponent(T component) {
+                EnttEntity::addComponent(*this, component);
+            }
+            template<typename T>
+            std::optional<std::reference_wrapper<T>> getComponent() {
+                return EnttEntity::getComponent<T>(*this);
+            }
+            template<typename T>
+            void removeComponent() {
+                EnttEntity::removeComponent<T>(*this);
+            }            
 		protected :
             void onResize(math::Vec3f& s);
             void onMove(math::Vec3f& t);
