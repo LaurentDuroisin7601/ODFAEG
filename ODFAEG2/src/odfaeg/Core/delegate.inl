@@ -392,11 +392,8 @@ namespace odfaeg {
         void FastDelegate<R>::setParam(P param)
         {
             using DynamicType =
-                FastDelegateImpl<R, std::remove_cv_t<Arg>...>*;
-            if (dynamic_cast<DynamicType>(delegate.get()))
-                dynamic_cast<DynamicType>(delegate.get())->template setParam<I>(std::forward<P>(param));
-            else
-                throw std::runtime_error(std::string("Invalid cast : types + ") + typeid(DynamicType).name() + " et " + typeid(*delegate.get()).name() + " are nor polymorphic!");
+            FastDelegateImpl<R, std::remove_cv_t<Arg>...>*;            
+            static_cast<DynamicType>(delegate.get())->template setParam<I>(std::forward<P>(param));            
         }          
     }
 }
