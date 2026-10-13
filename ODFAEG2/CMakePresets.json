@@ -25,6 +25,18 @@
 			}
 		},
 		{
+			"name": "gcc-clang",
+			"generator": "Ninja",
+			"binaryDir": "out/build/release",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release",
+				"CMAKE_C_COMPILER": "gcc",
+				"CMAKE_CXX_COMPILER": "g++",
+				"CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS": "C:/msys64/mingw64/bin/clang-scan-deps.exe",
+				"CMAKE_TOOLCHAIN_FILE": "cmake/toolchains/msys2-clang.cmake"
+			}
+		},
+		{
 			"name": "msys2-gcc",
 			"generator": "Ninja",
 			"binaryDir": "out/build/release",

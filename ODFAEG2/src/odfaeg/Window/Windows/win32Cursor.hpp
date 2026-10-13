@@ -4,6 +4,7 @@
 #include <cstdint>
 #include "../iCursorType.hpp"
 #include "../../Math/vec.hpp"
+#include <cstring>
 namespace odfaeg {
 	namespace window {
 		class Win32Cursor {

@@ -370,6 +370,11 @@ int main() {
 		//std::cout<<"i : "<<i<<std::endl;*/
 	
 	//std::cout<<"ok"<<std::endl;
+	//Ne marche pas avec clang. (Mais fonctionnait avec gcc)
+	/*constexpr Compteur compteur;
+	static_assert(compteur.next() == 1);
+	static_assert(compteur.next() == 2);
+	static_assert(compteur.next() == 3);*/
 	Clock clock;
 	unsigned int fps = 0;
 	/*renderGraph.addOITPass(0, 0, "*", window.getId());

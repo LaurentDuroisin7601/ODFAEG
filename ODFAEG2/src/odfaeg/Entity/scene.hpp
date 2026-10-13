@@ -129,7 +129,7 @@ namespace odfaeg {
                 decltype(std::declval<Vs>().template get<TypeIDs>())...
             >)
         core::FastDelegate<void> make_rule_impl_for(Func func, std::index_sequence<I...> seq, std::index_sequence<TypeIDs...> seq2) {
-            core::FastDelegate<void> visitor(core::DispatchVisitorFor<Func, Vs...>::template visit<TypeIDs...>, func, ph<I, Vs>()...);               
+            core::FastDelegate<void> visitor(core::DispatchVisitorFor<Func, Vs...>::template visit<TypeIDs...>, func, core::ph<I, Vs>()...);               
             
             return visitor;
         }   

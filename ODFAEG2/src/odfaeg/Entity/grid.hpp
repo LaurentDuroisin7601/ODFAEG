@@ -3,6 +3,8 @@
 #include "../Math/vec.hpp"
 #include "../Physics/boundingBox.hpp"
 #include "gridCell.hpp"
+#include <unordered_map>
+#include <memory>
 namespace odfaeg {
     namespace entity {
         template <typename Object>
