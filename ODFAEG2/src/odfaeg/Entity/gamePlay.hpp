@@ -74,7 +74,7 @@ namespace odfaeg {
                 } else if constexpr (is_component_v<std::tuple_element_t<I,  std::tuple<ActorsLists...>>>) {
                     std::tuple_element_t<I,  std::tuple<ActorsLists...>> component = EnttEntity::getComponent<std::tuple_element_t<I,  std::tuple<ActorsLists...>>>(*currentGameObject);
                     if (component.has_value()) {
-                        ruleExecutor.setParam<I+1, std::tuple_element_t<I,  std::tuple<ActorsLists...>>, Behaviour, core::ph<Ints, ActorsLists>...>(component.get());     
+                        ruleExecutor.setParam<I+1, std::tuple_element_t<I,  std::tuple<ActorsLists...>>, Behaviour, core::ph<Ints, ActorsLists>...>(component.value());     
                     }   
                     iterate<I + 1>(currentGameObject, seq);           
                 }
