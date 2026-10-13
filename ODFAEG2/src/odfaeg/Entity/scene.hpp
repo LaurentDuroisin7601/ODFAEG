@@ -7,6 +7,7 @@
 #include "grid.hpp"
 #include "tileSet.hpp"
 #include "../Math/baseChangmementMatrix.hpp"
+#include <iostream>
 namespace odfaeg {
     namespace entity {
         class Scene {
@@ -135,7 +136,9 @@ namespace odfaeg {
         template <typename Func, size_t... TypeIDs, typename... Vs>        
         RuleBase* make_rule_for(Func func, std::vector<Vs>... vs) {
             core::FastDelegate<void> visitor = make_rule_impl_for<Func, Vs...>(func, std::make_index_sequence<sizeof...(Vs)>(), std::index_sequence<TypeIDs...>());
-            Rule<Func, Vs...>* rule = new Rule<Func, Vs...> (visitor, std::make_tuple(vs...));            
+            
+            Rule<Func, Vs...>* rule = new Rule<Func, Vs...> (visitor, std::make_tuple(vs...));
+            //std::cout<<"create rule"<<std::endl;            
             initKeys(rule, std::index_sequence<TypeIDs...>());
             return rule;
         }  

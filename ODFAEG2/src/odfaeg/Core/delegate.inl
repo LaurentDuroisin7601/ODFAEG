@@ -125,7 +125,8 @@ namespace odfaeg {
         template<size_t I, class T, class LateParamsT>
         T&& Placeholder<I, T, LateParamsT, false>::get()
         {
-
+            std::cout<<"get"<<std::endl;
+            
         }
         
         template<class T, class LateParamsT>
@@ -254,7 +255,8 @@ namespace odfaeg {
                 d = s; // copie normale
             }
             else {
-                d = RefVal<Stored, LateParamsT, false>(s.get()); // move-out
+                
+                d = std::move(s); // move-out                
             }
         }
         template<class Tuple, std::size_t ...I>

@@ -159,14 +159,17 @@ int main() {
 	std::vector<TypeList<0, projectile, laser, balle>> typeList3;	
 	
 	interaction inter;
-	std::vector<RuleBase*> rules = make_rules_for<interaction, std::index_sequence<get_type_id<chat>::typeID, get_type_id<epee>::typeID, get_type_id<laser>::typeID>, std::index_sequence<get_type_id<chien>::typeID, get_type_id<arc>::typeID, get_type_id<balle>::typeID>>(inter, typeList1, typeList2, typeList3);
-	//RuleBase* rule = make_rule_for<interaction, CHAT, EPEE, LASER>(inter, typeList1, typeList2, typeList3);
-	rules[0]->addGameObject(cha);
-	rules[0]->addGameObject(ep);
-	rules[0]->addGameObject(la);
+	std::cout<<"add rules"<<std::endl;
+	//std::vector<RuleBase*> rules = make_rules_for<interaction, std::index_sequence<CHAT, EPEE, LASER>, std::index_sequence<CHIEN, ARC, BALLE>>(inter, typeList1, typeList2, typeList3);
+	RuleBase* rule = make_rule_for<interaction, CHAT, EPEE, LASER>(inter, typeList1, typeList2, typeList3);
+	std::cout<<"add"<<std::endl;
+	rule->addGameObject(cha);
+	rule->addGameObject(ep);
+	rule->addGameObject(la);
+	std::cout<<"added"<<std::endl;
 	GameMode gameMode;
-	gameMode.addRule("chateppeelaser", rules[0]);
-	gameMode.addRule("chieneppeelaser", rules[1]);
+	gameMode.addRule("chateppeelaser", rule);
+	//gameMode.addRule("chieneppeelaser", rules[1]);
 	gameMode.applyRule("chateppeelaser");
 	/*visitor.bind(cvar1, cvar2, cvar3);
 	visitor();*/
