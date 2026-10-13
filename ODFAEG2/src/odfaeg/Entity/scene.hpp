@@ -51,7 +51,8 @@ namespace odfaeg {
         };
         template <typename Behaviour, typename... ActorsLists>
         struct Rule : RuleBase { 
-            unsigned int behaviourID;           
+            unsigned int behaviourID;        
+            std::vector<unsigned int> concernedFamiliesKeys;     
             std::vector<unsigned int> concernedActorsKeys;            
             std::tuple<std::vector<ActorsLists>...> actors;
             core::FastDelegate<void> ruleExecutor;
@@ -73,7 +74,7 @@ namespace odfaeg {
                 if constexpr (I < sizeof...(ActorsLists)) {
                     if (concernedActorsKeys[I] == gameObject.typeKey 
                         && std::tuple_element_t<I, std::tuple<ActorsLists...>>::TagPos == gameObject.tagPos
-                        && dynamic_cast<std::tuple_element_t<I, std::tuple<ActorsLists...>>::VALUE_TYPE*>(&gameObject) != nullptr) {
+                        && concernedFamiliesKeys[I] == gameObject.familyID) {
                         std::get<I>(actors).push_back(static_cast<std::tuple_element_t<I, std::tuple<ActorsLists...>>::VALUE_TYPE&>(gameObject));
                         std::get<I>(actors).back().typeKey = gameObject.typeKey;
                     } else {
@@ -144,6 +145,7 @@ namespace odfaeg {
             Rule<Func, Vs...>* rule = new Rule<Func, Vs...> (visitor, std::make_tuple(vs...));
             //std::cout<<"create rule"<<std::endl;            
             initKeys(rule, std::index_sequence<TypeIDs...>());
+            (rule->concernedFamiliesKeys.push_back(Vs::FamilyID),...);
             rule->behaviourID = BHID;
             return rule;
         }  

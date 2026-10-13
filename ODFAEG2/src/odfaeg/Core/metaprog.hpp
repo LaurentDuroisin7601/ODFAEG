@@ -507,8 +507,13 @@ namespace odfaeg {
             }
             T value;                      
         }; */
-        
-        template <size_t TAG, typename V, typename... T>
+        template<typename T>
+        struct get_type_id
+        {
+           static constexpr Compteur compteur = Compteur();     
+           static constexpr size_t typeID = compteur.next();
+        };
+        template <size_t FAMILYID, size_t TAG, typename V, typename... T>
         struct TypeList { 
             TypeList() {}
             TypeList(V& v) : value(v) {
@@ -522,6 +527,7 @@ namespace odfaeg {
                 return value;
             }
             static constexpr std::size_t TagPos = TAG; 
+            static constexpr size_t FamilyID = FAMILYID;
             using VALUE_TYPE = V;  
             V& value; 
             unsigned int typeKey;           

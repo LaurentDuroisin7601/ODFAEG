@@ -153,13 +153,16 @@ int main() {
 	cha.tagPos = 0;
 	ep.tagPos = 0;
 	la.tagPos = 0;
+	cha.familyID = 0;
+	ep.familyID = 1;
+	la.familyID = 2;
 	cha.behaviourIDs.push_back(0);
 	ep.behaviourIDs.push_back(0);
 	la.behaviourIDs.push_back(0);
-	std::vector<TypeList<0, animal, chat, chien>> typeList1;
-	std::vector<TypeList<0, arme, epee, arc>> typeList2;
-	std::vector<TypeList<0, projectile, laser, balle>> typeList3;	
-	
+	std::vector<TypeList<0 ,0, animal, chat, chien>> typeList1;
+	std::vector<TypeList<1, 0, arme, epee, arc>> typeList2;
+	std::vector<TypeList<2, 0, projectile, laser, balle>> typeList3;	
+	//std::cout<<"familly id : "<<TypeList<2, 0, projectile, laser, balle>::FamilyID<<std::endl;
 	interaction inter;
 	//std::cout<<"add rules"<<std::endl;
 	//std::vector<RuleBase*> rules = make_rules_for<interaction, std::index_sequence<CHAT, EPEE, LASER>, std::index_sequence<CHIEN, ARC, BALLE>>(inter, typeList1, typeList2, typeList3);

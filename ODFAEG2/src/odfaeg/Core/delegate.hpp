@@ -594,13 +594,6 @@ namespace odfaeg {
         private:
             std::unique_ptr<Delegate<R>> delegate; /**> holds the pointer to the generic delegate.*/
         };
-        
-        template<typename T>
-        struct get_type_id
-        {
-           static constexpr Compteur compteur = Compteur();     
-           static constexpr size_t typeID = compteur.next();
-        };
     }
         
 }

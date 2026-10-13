@@ -199,7 +199,8 @@ namespace odfaeg {
 			std::map<std::string, BoneInfo>& getBoneInfoMap();
 			unsigned int subMeshOffset;
             unsigned int tagPos;
-            unsigned int typeKey;  
+            unsigned int typeKey;
+            unsigned int familyID;  
             std::vector<unsigned int> behaviourIDs;          
             virtual ~GameObject();
             virtual void changeVertexHeight (unsigned int i, float h) {
