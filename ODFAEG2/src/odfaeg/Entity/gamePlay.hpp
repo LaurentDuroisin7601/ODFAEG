@@ -4,6 +4,26 @@
  #include "../Core/delegate.hpp"
 namespace odfaeg {
     namespace entity { 
+        template<class T>
+        struct is_component
+            : std::true_type
+        {
+        };
+        /**
+        *  \file  fastDelegate.h
+        *  \class is_placeholder
+        *  \brief trait class specialization if the type is a placeholder the compiler choose this class's version.
+        *  \param T the type.
+        *  \author Duroisin.L
+        *  \version 1.0
+        *  \date 1/02/2014
+        */
+        template<size_t I, size_t J, class V, class... T>
+        struct is_component<core::TypeList<I, J, V, T...>>
+            : std::false_type
+        {
+        };
+        template<typename X> inline constexpr bool is_component_v = is_component<X>::value;
         struct RuleBase {  
             virtual void addGameObject(GameObject& gameObject) = 0;          
             virtual void execute() = 0;
@@ -27,27 +47,36 @@ namespace odfaeg {
                 }
             }
             void execute() {
-                iterate<>(std::make_index_sequence<sizeof...(ActorsLists)>());
+                iterate<>(nullptr, std::make_index_sequence<sizeof...(ActorsLists)>());
             }
             template <std::size_t I = 0>
             void integrate(GameObject& gameObject) {                    
                 if constexpr (I < sizeof...(ActorsLists)) {
-                    if (concernedActorsKeys[I] == gameObject.typeKey 
-                        && std::tuple_element_t<I, std::tuple<ActorsLists...>>::TagPos == gameObject.tagPos
-                        && concernedFamiliesKeys[I] == gameObject.familyID) {
-                        std::get<I>(actors).push_back(static_cast<std::tuple_element_t<I, std::tuple<ActorsLists...>>::VALUE_TYPE&>(gameObject));
-                        std::get<I>(actors).back().typeKey = gameObject.typeKey;
-                    } else {
-                        integrate<I+1>(gameObject);
+                    if constexpr(!is_component_v<std::tuple_element_t<I,  std::tuple<ActorsLists...>>>) {
+                        if (concernedActorsKeys[I] == gameObject.typeKey 
+                            && std::tuple_element_t<I, std::tuple<ActorsLists...>>::TagPos == gameObject.tagPos
+                            && concernedFamiliesKeys[I] == gameObject.familyID) {
+                            std::get<I>(actors).push_back(static_cast<std::tuple_element_t<I, std::tuple<ActorsLists...>>::VALUE_TYPE&>(gameObject));
+                            std::get<I>(actors).back().typeKey = gameObject.typeKey;
+                        } else {
+                            integrate<I+1>(gameObject);
+                        }
                     }
                 }
             }
             template <std::size_t I = 0, size_t... Ints>
-            void iterate(std::index_sequence<Ints...> seq)
+            void iterate(GameObject* currentGameObject, std::index_sequence<Ints...> seq)
             {
+                
                 if constexpr (I == sizeof...(ActorsLists))
                 {
                     ruleExecutor();
+                } else if constexpr (is_component_v<std::tuple_element_t<I,  std::tuple<ActorsLists...>>>) {
+                    std::tuple_element_t<I,  std::tuple<ActorsLists...>> component = EnttEntity::getComponent<std::tuple_element_t<I,  std::tuple<ActorsLists...>>>(*currentGameObject);
+                    if (component.has_value()) {
+                        ruleExecutor.setParam<I+1, std::tuple_element_t<I,  std::tuple<ActorsLists...>>, Behaviour, core::ph<Ints, ActorsLists>...>(component.get());     
+                    }   
+                    iterate<I + 1>(currentGameObject, seq);           
                 }
                 else
                 {
@@ -56,7 +85,7 @@ namespace odfaeg {
                     for (std::size_t j = 0; j < list.size(); j++)
                     {                        
                         ruleExecutor.setParam<I+1, std::tuple_element_t<I,  std::tuple<ActorsLists...>>, Behaviour, core::ph<Ints, ActorsLists>...>(list[j]);                        
-                        iterate<I + 1>(seq);                        
+                        iterate<I + 1>(&list[j].get(), seq);                        
                     }
                 }
             }
