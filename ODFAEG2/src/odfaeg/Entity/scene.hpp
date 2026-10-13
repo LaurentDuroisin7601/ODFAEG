@@ -50,7 +50,8 @@ namespace odfaeg {
             virtual ~RuleBase() = default;
         };
         template <typename Behaviour, typename... ActorsLists>
-        struct Rule : RuleBase {            
+        struct Rule : RuleBase { 
+            unsigned int behaviourID;           
             std::vector<unsigned int> concernedActorsKeys;            
             std::tuple<std::vector<ActorsLists>...> actors;
             core::FastDelegate<void> ruleExecutor;
@@ -58,7 +59,11 @@ namespace odfaeg {
                 
             }
             void addGameObject(GameObject& gameObject) {
-                integrate<>(gameObject);
+                for (unsigned int i = 0; i < gameObject.behaviourIDs.size(); i++) {
+                    if (gameObject.behaviourIDs[i] == behaviourID) {
+                        integrate<>(gameObject);
+                    }
+                }
             }
             void execute() {
                 iterate<>(std::make_index_sequence<sizeof...(ActorsLists)>());
@@ -66,7 +71,8 @@ namespace odfaeg {
             template <std::size_t I = 0>
             void integrate(GameObject& gameObject) {                    
                 if constexpr (I < sizeof...(ActorsLists)) {
-                    if (std::tuple_element_t<I, std::tuple<ActorsLists...>>::TagPos == gameObject.tagPos
+                    if (concernedActorsKeys[I] == gameObject.typeKey 
+                        && std::tuple_element_t<I, std::tuple<ActorsLists...>>::TagPos == gameObject.tagPos
                         && dynamic_cast<std::tuple_element_t<I, std::tuple<ActorsLists...>>::VALUE_TYPE*>(&gameObject) != nullptr) {
                         std::get<I>(actors).push_back(static_cast<std::tuple_element_t<I, std::tuple<ActorsLists...>>::VALUE_TYPE&>(gameObject));
                         std::get<I>(actors).back().typeKey = gameObject.typeKey;
@@ -87,11 +93,9 @@ namespace odfaeg {
                     auto& list = std::get<I>(actors);
 
                     for (std::size_t j = 0; j < list.size(); j++)
-                    {
-                        if (concernedActorsKeys[I] == list[j].typeKey) {
-                            ruleExecutor.setParam<I+1, std::tuple_element_t<I,  std::tuple<ActorsLists...>>, Behaviour, core::ph<Ints, ActorsLists>...>(list[j]);                        
-                            iterate<I + 1>(seq);
-                        }
+                    {                        
+                        ruleExecutor.setParam<I+1, std::tuple_element_t<I,  std::tuple<ActorsLists...>>, Behaviour, core::ph<Ints, ActorsLists>...>(list[j]);                        
+                        iterate<I + 1>(seq);                        
                     }
                 }
             }
@@ -133,16 +137,18 @@ namespace odfaeg {
         
             (rule->concernedActorsKeys.push_back(TypeIDs),...);
         }  
-        template <typename Func, size_t... TypeIDs, typename... Vs>        
+        template <size_t BHID, typename Func, size_t... TypeIDs, typename... Vs>        
         RuleBase* make_rule_for(Func func, std::vector<Vs>... vs) {
             core::FastDelegate<void> visitor = make_rule_impl_for<Func, Vs...>(func, std::make_index_sequence<sizeof...(Vs)>(), std::index_sequence<TypeIDs...>());
             
             Rule<Func, Vs...>* rule = new Rule<Func, Vs...> (visitor, std::make_tuple(vs...));
             //std::cout<<"create rule"<<std::endl;            
             initKeys(rule, std::index_sequence<TypeIDs...>());
+            rule->behaviourID = BHID;
             return rule;
         }  
-        template<typename Func,
+        template<size_t BHID,
+        typename Func,
         size_t... IDs,
         typename... Vs>
         RuleBase*
@@ -151,18 +157,18 @@ namespace odfaeg {
             std::index_sequence<IDs...>,
             std::vector<Vs>... vs)
         {
-            return make_rule_for<
+            return make_rule_for<BHID,
                 Func,
                 IDs...
             >(func, vs...);
         }      
-        template<typename Func, typename... Seqs, typename... Vs>
+        template<size_t BHID, typename Func, typename... Seqs, typename... Vs>
         std::vector<RuleBase*>
         make_rules_for(Func func,
                             std::vector<Vs>... vs)
         {
             return {
-                make_rule_from_sequence(
+                make_rule_from_sequence<BHID>(
                     func,
                     Seqs{},
                     vs...

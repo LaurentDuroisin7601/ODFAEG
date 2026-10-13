@@ -153,7 +153,9 @@ int main() {
 	cha.tagPos = 0;
 	ep.tagPos = 0;
 	la.tagPos = 0;
-	
+	cha.behaviourIDs.push_back(0);
+	ep.behaviourIDs.push_back(0);
+	la.behaviourIDs.push_back(0);
 	std::vector<TypeList<0, animal, chat, chien>> typeList1;
 	std::vector<TypeList<0, arme, epee, arc>> typeList2;
 	std::vector<TypeList<0, projectile, laser, balle>> typeList3;	
@@ -161,7 +163,7 @@ int main() {
 	interaction inter;
 	//std::cout<<"add rules"<<std::endl;
 	//std::vector<RuleBase*> rules = make_rules_for<interaction, std::index_sequence<CHAT, EPEE, LASER>, std::index_sequence<CHIEN, ARC, BALLE>>(inter, typeList1, typeList2, typeList3);
-	RuleBase* rule = make_rule_for<interaction, CHAT, EPEE, LASER>(inter, typeList1, typeList2, typeList3);
+	RuleBase* rule = make_rule_for<0, interaction, CHAT, EPEE, LASER>(inter, typeList1, typeList2, typeList3);
 	//std::cout<<"add"<<std::endl;
 	rule->addGameObject(cha);
 	rule->addGameObject(ep);
