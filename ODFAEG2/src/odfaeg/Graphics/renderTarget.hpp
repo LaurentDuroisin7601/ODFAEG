@@ -260,6 +260,7 @@ namespace odfaeg {
 			void drawMesh(entity::PrimitiveType primitiveType, RenderStates states = RenderStates::Default);
 			void draw(CommandPool& commandPool, entity::PrimitiveType primitiveType, RenderStates states);
 			void setCamera(Camera camera);
+			void update(Mesh* object);
 			virtual Image& getRenderingImage() = 0;
 			Camera& getCamera();
 			Camera& getDefaultCamera();
@@ -400,7 +401,7 @@ namespace odfaeg {
 			bool needToUpdateCullBatchIndCmds;
 			IndexesPC indexesPC;
 			PFN_vkCmdDrawMeshTasksEXT vkCmdDrawMeshTasksEXT;
-			entity::GridMap<Meshlet> meshletsGrid;	
+			std::array<entity::GridMap<Meshlet>, 5> meshletsGrid = {entity::GridMap<Meshlet>(50, 50, 50), entity::GridMap<Meshlet>(50, 50, 50), entity::GridMap<Meshlet>(50, 50, 50), entity::GridMap<Meshlet>(50, 50, 50), entity::GridMap<Meshlet>(50, 50, 50)};			
 			Fence computeFence;				
 		};
 		class Drawable {

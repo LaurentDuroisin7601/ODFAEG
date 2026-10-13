@@ -13,10 +13,9 @@ namespace odfaeg {
 		outputMeshes(GPUContext::instance().getSharedBuffers(OUTPUT_MESHES+registeredRenderTargets.size()*NB_BUFFERS)),
 		outputModelDatas(GPUContext::instance().getSharedBuffers(OUTPUT_MODELS+registeredRenderTargets.size()*NB_BUFFERS)),
 		outputMaterialDatas(GPUContext::instance().getSharedBuffers(OUTPUT_MATERIALS+registeredRenderTargets.size()*NB_BUFFERS)),		
-		meshletsGrid(50, 50, 50),
 		computeFence(device)		
 		{
-			
+					
 			id = registeredRenderTargets.size();
 			//std::cout<<"id : "<<id<<",output model id : "<<OUTPUT_MODELS+registeredRenderTargets.size()*NB_BUFFERS<<std::endl;			
 			registeredRenderTargets.push_back(this);			
@@ -855,7 +854,7 @@ namespace odfaeg {
 									}
 								}
 							}	*/			
-							meshletsGrid.clear();
+							meshletsGrid[l].clear();
 							bool oneAdded = false;
 							//std::cout<<"add"<<std::endl;
 							for (unsigned int m = 0; m < meshletDatas.size(); m++) {							
@@ -878,9 +877,9 @@ namespace odfaeg {
 									//std::cout<<"volume : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
 									oneAdded = true;
 									//std::cout<<"add meshlet : "<<volume.getPosition()<<","<<volume.getSize()<<std::endl;
-									bool added = meshletsGrid.addEntity(meshletDatas[m], volume);
+									bool added = meshletsGrid[l].addEntity(meshletDatas[m], volume);
 									
-									if (!meshletsGrid.containsEntity(meshletDatas[m])) {
+									if (!meshletsGrid[l].containsEntity(meshletDatas[m])) {
 										std::cout<<"meshlet not added : "<<meshletDatas[m].mins<<","<<meshletDatas[m].maxs<<std::endl;
 										//system("PAUSE");
 									}
@@ -892,15 +891,15 @@ namespace odfaeg {
 							}
 							
 							
-							math::Vec3f gridPos = meshletsGrid.getMins();
-							math::Vec3f gridSize = meshletsGrid.getSize();
+							math::Vec3f gridPos = meshletsGrid[l].getMins();
+							math::Vec3f gridSize = meshletsGrid[l].getSize();
 							
 							
-							cullingInfo.nbCellsPerRow[l][0] = meshletsGrid.getNbCasesPerRow();
-							cullingInfo.nbCellsPerRow[l][1] = meshletsGrid.getNbCasesPerCol(); 
-							cullingInfo.gridCellSize[l][0] = meshletsGrid.getCellWidth();
-							cullingInfo.gridCellSize[l][1] = meshletsGrid.getCellHeight();
-							cullingInfo.gridCellSize[l][2] = meshletsGrid.getCellDepth();
+							cullingInfo.nbCellsPerRow[l][0] = meshletsGrid[l].getNbCasesPerRow();
+							cullingInfo.nbCellsPerRow[l][1] = meshletsGrid[l].getNbCasesPerCol(); 
+							cullingInfo.gridCellSize[l][0] = meshletsGrid[l].getCellWidth();
+							cullingInfo.gridCellSize[l][1] = meshletsGrid[l].getCellHeight();
+							cullingInfo.gridCellSize[l][2] = meshletsGrid[l].getCellDepth();
 							cullingInfo.gridPos[l][0] = gridPos.x();
 							cullingInfo.gridPos[l][1] = gridPos.y();
 							cullingInfo.gridPos[l][2] = gridPos.z();
@@ -911,7 +910,7 @@ namespace odfaeg {
 							system("PAUSE");*/
 									
 							//Ballayage de la grille.
-							std::vector<entity::GridCell<Meshlet>> casesMap = meshletsGrid.getCasesMap();				
+							std::vector<entity::GridCell<Meshlet>> casesMap = meshletsGrid[l].getCasesMap();				
 							for (unsigned int cm = 0; cm < casesMap.size(); cm++) {
 								//std::cout<<"grid cell : "<<x<<","<<y<<","<<z<<std::endl;
 								
