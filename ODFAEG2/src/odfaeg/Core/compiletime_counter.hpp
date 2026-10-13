@@ -1,5 +1,6 @@
 #ifndef ODFAEG_COMPILETIME_COUNTER
 #define ODFAEG_COMPILETIME_COUNTER
+#include <iostream>
 namespace odfaeg {
     namespace core {
         template <auto, auto>
@@ -14,10 +15,21 @@ namespace odfaeg {
 
         template<auto InstanceIdentifier, auto x = 0, auto = []{}>
         constexpr auto ExtractThenUpdateCurrentState()->decltype(x) {
-            if constexpr (requires { ADLFunc(ADLType<InstanceIdentifier, x>{}); })
+            if constexpr (requires { ADLFunc(ADLType<InstanceIdentifier, x>{}); }) {
+                //std::cout<<"requires true"<<std::endl;
                 return ExtractThenUpdateCurrentState<InstanceIdentifier, x + 1>();
-            else 
+            } else {
+                
+                //std::cout<<"requires false"<<std::endl;
                 InjectDefinitionForADLFunc<InstanceIdentifier, x>{};
+                //Fonctionne pas.
+                /*constexpr auto ID = InstanceIdentifier{};
+                static_assert(
+                    requires {
+                        ADLFunc(ADLType<ID, 0>{});
+                    }
+                );*/
+            }
             return x;
         }        
         template<auto InstanceIdentifier, auto x = 0, auto = []{}>

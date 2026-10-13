@@ -594,6 +594,26 @@ namespace odfaeg {
         private:
             std::unique_ptr<Delegate<R>> delegate; /**> holds the pointer to the generic delegate.*/
         };
+        template <typename Func, typename... Vs, size_t... TypeIDs, size_t... I>
+        requires std::is_invocable_v<
+                Func,
+                decltype(std::declval<Vs>().template get<TypeIDs>())...
+            >
+        FastDelegate<void> make_visitor(Func func, std::index_sequence<I...> seq, std::index_sequence<TypeIDs...> seq2) {
+                                
+            FastDelegate<void> visitor(DispatchVisitorFor<Func, Vs...>::template visit<TypeIDs...>, func, core::ph<I, Vs>()...);
+            return visitor;
+        }
+        template <typename Func, typename... Vs, size_t... I, size_t... TypeIDs>
+        requires (!std::is_invocable_v<
+                Func,
+                decltype(std::declval<Vs>().template get<TypeIDs>())...
+            >)
+        FastDelegate<void> make_visitor(Func func, std::index_sequence<I...> seq, std::index_sequence<TypeIDs...> seq2) {
+            FastDelegate<void> visitor(DispatchVisitorFor<Func, Vs...>::template visit<TypeIDs...>, func, core::ph<I, Vs>()...);               
+            
+            return visitor;
+        }   
     }
         
 }

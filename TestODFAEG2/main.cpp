@@ -166,7 +166,7 @@ int main() {
 	interaction inter;
 	//std::cout<<"add rules"<<std::endl;
 	//std::vector<RuleBase*> rules = make_rules_for<interaction, std::index_sequence<CHAT, EPEE, LASER>, std::index_sequence<CHIEN, ARC, BALLE>>(inter, typeList1, typeList2, typeList3);
-	RuleBase* rule = make_rule_for<0, interaction, CHAT, EPEE, LASER>(inter, typeList1, typeList2, typeList3);
+	RuleBase* rule = make_rule<0, interaction, CHAT, EPEE, LASER>(inter, typeList1, typeList2, typeList3);
 	//std::cout<<"add"<<std::endl;
 	rule->addGameObject(cha);
 	rule->addGameObject(ep);
@@ -371,10 +371,12 @@ int main() {
 	
 	//std::cout<<"ok"<<std::endl;
 	//Ne marche pas avec clang. (Mais fonctionnait avec gcc)
-	/*constexpr Compteur compteur;
+	constexpr Compteur compteur;
+	/*compteur.next();
+	compteur.next();*/
+	/*static_assert(compteur.next() == 0);
 	static_assert(compteur.next() == 1);
-	static_assert(compteur.next() == 2);
-	static_assert(compteur.next() == 3);*/
+	static_assert(compteur.next() == 2);*/
 	Clock clock;
 	unsigned int fps = 0;
 	/*renderGraph.addOITPass(0, 0, "*", window.getId());

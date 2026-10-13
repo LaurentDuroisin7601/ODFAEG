@@ -10,6 +10,7 @@
 #include "entity.hpp"
 #include "enttImpl.hpp"
 #include "gameObject.hpp"
+#include "gamePlay.hpp"
 #include "model.hpp"
 #include "morphAnim.hpp"
 #include "particleSystem.hpp"
