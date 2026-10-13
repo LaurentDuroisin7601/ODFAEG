@@ -521,7 +521,8 @@ namespace odfaeg {
             V& get() {
                 return value;
             }
-            static constexpr std::size_t TagPos = TAG;  
+            static constexpr std::size_t TagPos = TAG; 
+            using VALUE_TYPE = V;  
             V& value; 
             unsigned int typeKey;           
         };       

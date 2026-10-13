@@ -100,15 +100,23 @@ enum ARMES {
 enum PROJECTILES {
 	LASER, BALLE	
 };
-struct gameObject 
-	{};
 
-struct animal : gameObject
-    {};
-struct arme : gameObject
-    {};
-struct projectile : gameObject
-    {};
+
+struct animal : GameObject
+    {
+		animal() : GameObject("E_ANIMAL") {}
+		GameObject* clone() {}
+	};
+struct arme : GameObject
+    {
+		arme() : GameObject("E_ARME") {}
+		GameObject* clone() {}
+	};
+struct projectile : GameObject
+    {
+		projectile() : GameObject("E_PROJECTILE") {}
+		GameObject* clone() {}
+	};
 
 	  
 struct chat  : animal {
@@ -136,45 +144,30 @@ struct interaction
 };
 int main() {
 	//std::cout<<"main start"<<std::endl;
-	/*chat cha;
+	chat cha;
 	epee ep;
 	laser la;	
-	std::map<unsigned int, std::vector<std::reference_wrapper<gameObject>>> gameObjectsByType;
-	gameObjectsByType.insert(std::make_pair(CHAT, std::vector<std::reference_wrapper<gameObject>>()));	
-	gameObjectsByType.insert(std::make_pair(EPEE, std::vector<std::reference_wrapper<gameObject>>()));
-	gameObjectsByType.insert(std::make_pair(LASER, std::vector<std::reference_wrapper<gameObject>>()));
-	auto chats = gameObjectsByType.find(CHAT)->second;
-	auto epees = gameObjectsByType.find(EPEE)->second;
-	auto lasers = gameObjectsByType.find(LASER)->second;
-	chats.push_back(cha);
-	epees.push_back(ep);
-	lasers.push_back(la);
-
-	std::vector<TypeList<gameObject, chat, chien>> typeList1;
-	std::vector<TypeList<gameObject, epee, arc>> typeList2;
-	std::vector<TypeList<gameObject, laser, balle>> typeList3;	
-	for (unsigned int i = 0; i < chats.size(); i++) {
-		TypeList<gameObject, chat, chien> tl1(chats[i]);
-		tl1.typeKey = get_type_id<chat>::typeID;
-		typeList1.push_back(tl1);	
-	}
-	for (unsigned int i = 0; i < epees.size(); i++) {
-		TypeList<gameObject, epee, arc> tl2(epees[i]);
-		tl2.typeKey = get_type_id<epee>::typeID;
-		typeList2.push_back(tl2);	
-	}
-	for (unsigned int i = 0; i < lasers.size(); i++) {
-		TypeList<gameObject, laser, balle> tl3(lasers[i]);
-		tl3.typeKey = get_type_id<laser>::typeID;
-		typeList3.push_back(tl3);	
-	}	
+	cha.typeKey = CHAT;
+	ep.typeKey = EPEE;
+	la.typeKey = LASER;
+	cha.tagPos = 0;
+	ep.tagPos = 0;
+	la.tagPos = 0;
+	
+	std::vector<TypeList<0, animal, chat, chien>> typeList1;
+	std::vector<TypeList<0, arme, epee, arc>> typeList2;
+	std::vector<TypeList<0, projectile, laser, balle>> typeList3;	
+	
 	interaction inter;
 	std::vector<RuleBase*> rules = make_rules_for<interaction, std::index_sequence<get_type_id<chat>::typeID, get_type_id<epee>::typeID, get_type_id<laser>::typeID>, std::index_sequence<get_type_id<chien>::typeID, get_type_id<arc>::typeID, get_type_id<balle>::typeID>>(inter, typeList1, typeList2, typeList3);
 	//RuleBase* rule = make_rule_for<interaction, CHAT, EPEE, LASER>(inter, typeList1, typeList2, typeList3);
+	rules[0]->addGameObject(cha);
+	rules[0]->addGameObject(ep);
+	rules[0]->addGameObject(la);
 	GameMode gameMode;
 	gameMode.addRule("chateppeelaser", rules[0]);
 	gameMode.addRule("chieneppeelaser", rules[1]);
-	gameMode.applyRule("chateppeelaser");*/
+	gameMode.applyRule("chateppeelaser");
 	/*visitor.bind(cvar1, cvar2, cvar3);
 	visitor();*/
 	system("PAUSE");

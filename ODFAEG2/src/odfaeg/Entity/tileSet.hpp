@@ -1,3 +1,5 @@
+#ifndef ODFAEG_TILESET_HPP
+#define ODFAEG_TILESET_HPP
 #include "gameObject.hpp"
 #include "../Physics/boundingBox.hpp"
 #include "tile.hpp"
@@ -19,3 +21,4 @@ namespace odfaeg {
        };
     }
 }
+#endif

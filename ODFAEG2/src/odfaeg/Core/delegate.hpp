@@ -171,7 +171,8 @@ namespace odfaeg {
         };
         template<size_t I, class T, class LateParamsT>
         struct Placeholder<I, T, LateParamsT, false> : IRefVal<T, LateParamsT, false>
-        {            
+        {   
+            Placeholder();         
             Placeholder(Placeholder&& ph);
             
             Placeholder& operator=(Placeholder&& ph);

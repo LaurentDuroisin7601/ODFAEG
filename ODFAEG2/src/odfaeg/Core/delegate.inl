@@ -104,6 +104,7 @@ namespace odfaeg {
 
         }        
         template<size_t I, class T, class LateParamsT>
+        Placeholder<I, T, LateParamsT, false>::Placeholder() {}       template<size_t I, class T, class LateParamsT>
         Placeholder<I, T, LateParamsT, false>::Placeholder(Placeholder&& ph) {}
         template<size_t I, class T, class LateParamsT>
         Placeholder<I, T, LateParamsT, false>& Placeholder<I, T, LateParamsT, false>::operator=(Placeholder&& ph) {

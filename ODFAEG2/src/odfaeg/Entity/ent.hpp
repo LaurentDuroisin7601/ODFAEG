@@ -16,8 +16,11 @@
 #include "plane.hpp"
 #include "primitiveType.hpp"
 #include "rect.hpp"
+#include "scene.hpp"
 #include "tile.hpp"
+#include "tileSet.hpp"
 #include "transformable.hpp"
 #include "vertex.hpp"
 #include "vertexArray.hpp"
+#include "wall.hpp"
 #endif
