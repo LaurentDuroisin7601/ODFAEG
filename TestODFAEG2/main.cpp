@@ -159,14 +159,14 @@ int main() {
 	std::vector<TypeList<0, projectile, laser, balle>> typeList3;	
 	
 	interaction inter;
-	std::cout<<"add rules"<<std::endl;
+	//std::cout<<"add rules"<<std::endl;
 	//std::vector<RuleBase*> rules = make_rules_for<interaction, std::index_sequence<CHAT, EPEE, LASER>, std::index_sequence<CHIEN, ARC, BALLE>>(inter, typeList1, typeList2, typeList3);
 	RuleBase* rule = make_rule_for<interaction, CHAT, EPEE, LASER>(inter, typeList1, typeList2, typeList3);
-	std::cout<<"add"<<std::endl;
+	//std::cout<<"add"<<std::endl;
 	rule->addGameObject(cha);
 	rule->addGameObject(ep);
 	rule->addGameObject(la);
-	std::cout<<"added"<<std::endl;
+	//std::cout<<"added"<<std::endl;
 	GameMode gameMode;
 	gameMode.addRule("chateppeelaser", rule);
 	//gameMode.addRule("chieneppeelaser", rules[1]);
