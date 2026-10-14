@@ -96,6 +96,11 @@ namespace odfaeg {
             void addRule(unsigned int ruleId, RuleBase* rule) {
                 rules.insert(std::make_pair(ruleId, rule));
             }
+            void addRules(std::vector<RuleBase*> rules) {
+                for (unsigned int i = 0; i < rules.size(); i++) {
+                    addRule(rules[i]->ruleId, rules[i]);
+                }
+            }
             void applyRule(unsigned int ruleId) {
                 std::map<unsigned int, RuleBase*>::iterator it = rules.find(ruleId);
                 if (it != rules.end()) {
@@ -143,22 +148,29 @@ namespace odfaeg {
             >(func, vs...);
         }      
         template<size_t BHID, typename Func, typename... Seqs, typename... Vs>
-        GameMode
-        make_game_mode(Func func,
+        std::vector<RuleBase*>
+        make_rules_impl(Func func,
                             std::vector<Vs>... vs, typeList<Seqs...> tl);
         {
-            std::vector<RuleBase*> rules = {
+            return {
                 make_rule_from_sequence<BHID>(
                     func,
                     Seqs{},
                     vs...
                 )...
-            };
-            GameMode gameMode;
-            for (unsigned int i = 0; i < rules.size(); i++) {
-                gameMode.addRule(rules[i]->ruleID, rules[i]);
-            }
-            return gameMode;
+            };            
+        }
+        template<size_t BHID, typename Func, typename... Vs>
+        std::vector<RuleBase*>
+        make_rules(Func func,
+                            std::vector<Vs>... vs);
+        {
+            auto Rules = core::cartesian_product<std::make_index_sequence<Vs::N>...>::type;  
+            return make_rule_impl<BHID>(
+                func,                    
+                vs...,
+                Rules()
+            );                      
         }
     }
 }

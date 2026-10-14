@@ -727,8 +727,7 @@ namespace odfaeg {
                     typename merge<
                         expand<Values>...
                     >::type;
-        };
-            
+        };            
     }
 }
 #endif
