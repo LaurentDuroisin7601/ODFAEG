@@ -105,9 +105,11 @@ namespace odfaeg {
 			std::swap(range, b.range);
 			std::swap(offset, b.offset);
 		}
-		void Buffer::copyBuffer(Buffer& srcBuffer, Buffer& dstBuffer, VkDeviceSize size, VkCommandBuffer& cmd) {
+		void Buffer::copyBuffer(Buffer& srcBuffer, Buffer& dstBuffer, VkDeviceSize size, VkCommandBuffer& cmd, VkDeviceSize srcOffset, VkDeviceSize dstOffset) {
 			if (srcBuffer.getHandle() != VK_NULL_HANDLE && dstBuffer.getHandle() != VK_NULL_HANDLE && size > 0 && cmd != VK_NULL_HANDLE) {
 				VkBufferCopy copyRegion{};
+				copyRegion.srcOffset = srcOffset;
+				copyRegion.dstOffset = dstOffset;
 				copyRegion.size = size;
 				vkCmdCopyBuffer(cmd, srcBuffer.getHandle(), dstBuffer.getHandle(), 1, &copyRegion);
 			}

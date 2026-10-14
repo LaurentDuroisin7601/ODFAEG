@@ -397,6 +397,9 @@ namespace odfaeg {
 		void RenderTarget::updateBuffers() {
 			if (needToUpdateBuffers && gameObjects.size() > 0) {
 				//std::cout<<"update buffers"<<std::endl;
+				for (unsigned int l = 0; l < 5; l++) {
+					meshletsGrid[l].clear();
+				}
 				currentSubmeshesOffset = 0;
 				currentModelDataOffset = 0;	
 				currentMeshletsOffset = 0;
@@ -854,7 +857,7 @@ namespace odfaeg {
 									}
 								}
 							}	*/			
-							meshletsGrid[l].clear();
+							
 							bool oneAdded = false;
 							//std::cout<<"add"<<std::endl;
 							for (unsigned int m = 0; m < meshletDatas.size(); m++) {							
@@ -910,7 +913,7 @@ namespace odfaeg {
 							system("PAUSE");*/
 									
 							//Ballayage de la grille.
-							std::vector<entity::GridCell<Meshlet>> casesMap = meshletsGrid[l].getCasesMap();				
+							/*std::vector<entity::GridCell<Meshlet>> casesMap = meshletsGrid[l].getCasesMap();				
 							for (unsigned int cm = 0; cm < casesMap.size(); cm++) {
 								//std::cout<<"grid cell : "<<x<<","<<y<<","<<z<<std::endl;
 								
@@ -952,23 +955,7 @@ namespace odfaeg {
 										stack.pop_back();
 										//std::cout<<"leaf ? "<<node.leaf<<"size = "<<stack.size()<<std::endl;
 										entity::BSPTree<Meshlet>::Node& node = nodes[id];
-										/*Cluster clusterData;												
-										clusterData.submeshId = currentSubmeshesOffset;
-										clusterData.volume.center = node.volume.getCenter();
-										clusterData.volume.size = node.volume.getSize();
-										//std::cout<<"cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
-
 										
-										
-										clusterData.leaf = 0;
-										clusterData.id = clusterDatas.size();
-										clusterData.lodLevel = l;
-										clusterData.meshletCount = 10;
-										clusterData.meshletOffset = 0;
-										
-																							
-										clusterDatas.push_back(clusterData);
-										node.id = clusterDatas.size()-1;*/
 										//currentClustersOffset++;	
 										if (!node.leaf) {
 											//std::cout<<"children : "<<node.children.size()<<std::endl;
@@ -977,8 +964,7 @@ namespace odfaeg {
 												//system("PAUSE");
 											}								
 											
-											/*std::cout<<"not leaf : "<<node.objects.size()<<"c : "<<
-											c<<","<<nodes[node.children[c]].objects.size()<<std::endl;*/													
+											
 											for (unsigned int i = 0; i < node.children.size(); i++) {
 												stack.push_back(node.children[i]);
 											}
@@ -995,11 +981,7 @@ namespace odfaeg {
 											
 											//std::cout<<"size : "<<parent.children.size()<<std::endl;
 											
-												/*std::cout<<"id : "<<id<<" "<<parent.children[c]<<std::endl;
-												if (nodes[parent.children[c]].objects.size() == 0) {
-													//std::cout<<"empty cluster"<<std::endl;
-													//std::cout<<"nb Objects : "<<nodes[parent.children[c]].objects.size()<<std::endl;
-												}*/
+												
 											
 												//std::cout<<"leaf : "<<node.objects.size()<<std::endl;
 											
@@ -1021,8 +1003,7 @@ namespace odfaeg {
 													
 											for (unsigned int o = 0; o < node.objects.size(); o++) {												
 												
-												/*std::cout<<"id, size : "<<node.id<<", "<<node.objects.size()<<std::endl;
-												system("PAUSE");*/
+												
 																							
 												//clusterData.children[c] = clusterDatas.size();
 												if (node.objects.size() > 8) {
@@ -1032,13 +1013,8 @@ namespace odfaeg {
 												//std::cout<<"id : "<<node.objects.size()<<std::endl;
 												meshletDatas[node.objects[o].id].clusterId = childClusterData.id;												
 												//std::cout<<"meshlet : "<<meshletDatas[node.objects[o].id].id<<","<<meshletDatas[node.objects[o].id].submeshId<<","<<meshletDatas[node.objects[o].id].lod<<","<<meshletDatas[node.objects[o].id].clusterId<<std::endl;
-												/*if (childClusterData.meshletCount > 0) {
-
-													std::cout<<"meshlet count : "<<childClusterData.meshletCount<<std::endl;
-													system("PAUSE");
-												}*/
-												/*std::cout<<"meshlet count : "<<childClusterData.meshletCount<<std::endl;
-												system("PAUSE");*/
+												
+												
 												//std::cout<<"nb objects : "<<nodes[parent.children[c]].objects.size()<<"AABB : cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
 												
 												//std::cout<<"size : "<<stack.size()<<std::endl;
@@ -1054,7 +1030,7 @@ namespace odfaeg {
 									
 									cellDatas.push_back(cellData);
 								}
-							}														
+							}	*/													
 							
 						}
 						
@@ -1078,7 +1054,7 @@ namespace odfaeg {
 				/*for (unsigned int m = 0; m < meshletDatas.size(); m++) {
 					std::cout<<"meshlet : "<<meshletDatas[m].clusterId<<","<<meshletDatas[m].submeshId<<","<<meshletDatas[m].lod<<std::endl;
 				}*/
-				std::sort(meshletDatas.begin(), meshletDatas.end(), [](Meshlet m1, Meshlet m2){ return  m1.clusterId < m2.clusterId;});
+				/*std::sort(meshletDatas.begin(), meshletDatas.end(), [](Meshlet m1, Meshlet m2){ return  m1.clusterId < m2.clusterId;});
 				
 				unsigned int lastMeshletId = 0, lastClusterId = 0;				
 				for (unsigned int m = 0; m < meshletDatas.size(); m++) {
@@ -1097,7 +1073,8 @@ namespace odfaeg {
 						std::cout<<"meshlet : "<<meshletDatas[m].clusterId<<","<<meshletDatas[m].submeshId<<","<<meshletDatas[m].lod<<std::endl;
 						//system("PAUSE");
 					}
-				}
+				}*/
+
 				//system("PAUSE");
 					
 				//Tri des meshlets par cluster ids et placement des offsets.
@@ -1107,6 +1084,7 @@ namespace odfaeg {
 				system("PAUSE");*/
 				vkDeviceWaitIdle(device.getDevice());
 				computeCommandPool.beginRecordCommandBuffer(getCurrentFrame());
+				updateClusters();
 				for (unsigned int i = 0; i < 1; i++) {
 					for (unsigned int j = 0; j < NB_PRIMITIVE_TYPES; j++) {
 						//std::cout<<"update vertices"<<std::endl;
@@ -1133,7 +1111,7 @@ namespace odfaeg {
 					//std::cout<<"stagging submeshes buffer : "<<staggingObjects[i].getHandle()<<std::endl;
 					//std::cout<<"submeshes buffer : "<<staggingObjects[i].getHandle()<<std::endl;
 				}
-				for (unsigned int i = 0; i < 1; i++) {
+				/*for (unsigned int i = 0; i < 1; i++) {
 					staggingGridCells[i].create(cellDatas.size() * sizeof(CellData), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 					staggingGridCells[i].update(cellDatas.data(), cellDatas.size() * sizeof(CellData));
 					inputCellDatas[i].create(cellDatas.size() * sizeof(CellData), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
@@ -1150,7 +1128,7 @@ namespace odfaeg {
 					staggingMeshlets[i].update(meshletDatas.data(), meshletDatas.size() * sizeof(Meshlet));
 					inputMeshlets[i].create(meshletDatas.size() * sizeof(Meshlet), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 					Buffer::copyBuffer(staggingMeshlets[i], inputMeshlets[i], meshletDatas.size() * sizeof(Meshlet), computeCommandPool.getHandle(getCurrentFrame()));
-				}
+				}*/
 				for (unsigned int i = 0; i < 1; i++) {
 					//std::cout<<"copy submeshes"<<std::endl;
 					staggingLODLevel[i].create(lodLevelDatas.size() * sizeof(LODLevelData), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
@@ -1249,6 +1227,263 @@ namespace odfaeg {
 				}
 				totalSubMeshes = currentSubmeshesOffset;
 			}	
+		}
+		void RenderTarget::updateClusters() {
+			std::vector<Meshlet> meshletDatas;
+			std::vector<Cluster> clusterDatas;
+			std::vector<CellData> cellDatas;
+			for(unsigned int l = 0; l < 5; l++) {
+				meshletDatas.insert(meshletDatas.end(), meshletsGrid[l].getEntities().begin(), meshletsGrid[l].getEntities().end());			
+				
+					
+				std::vector<entity::GridCell<Meshlet>> casesMap = meshletsGrid[l].getCasesMap();				
+				for (unsigned int cm = 0; cm < casesMap.size(); cm++) {
+					//std::cout<<"grid cell : "<<x<<","<<y<<","<<z<<std::endl;
+					
+					entity::GridCell<Meshlet> gridCell = casesMap[cm];
+					//Trou. (Il faut les gérer pour le ballayage GPU)
+					//std::cout<<"volume : "<<gridCell->getCellVolume().getPosition()<<","<<gridCell->getCellVolume().getSize()<<std::endl;
+					if (gridCell.empty()) {
+						if (gridCell.empty()) {
+							std::cout<<"empty : "<<gridCell.getCellVolume().getPosition()<<","<<gridCell.getCellVolume().getSize()<<std::endl;//std::cout<<"grid cell is null"<<std::endl;
+							//system("PAUSE");
+						}
+						//std::cout<<"empty : "<<gridCell<<std::endl;
+						CellData emptyCell;
+						emptyCell.clusterId = -1;
+						emptyCell.clusterOffset = 0;
+						emptyCell.clusterCount = 0;									
+						cellDatas.push_back(emptyCell);
+					//Cluster rempli. 
+					} else {
+						//std::cout<<"not empty"<<std::endl;
+						//Ajout du root node et des enfants + création des clusters et assignation des ids.
+						std::deque<entity::BSPTree<Meshlet>::Node>& nodes = gridCell.getTreeNodes();
+						//std::cout<<"size : "<<nodes.size()<<std::endl;
+						std::deque<unsigned int> stack;
+						stack.push_back(0);	
+						CellData cellData;							
+						cellData.clusterId = currentClustersOffset;
+						cellData.clusterOffset = currentClustersOffset;
+						float center[4], size[4], coords[4];
+						gridCell.getCellVolume().getCenter().toVkVec(center);
+						gridCell.getCellVolume().getCenter().toVkVec(size);
+						core::arrayCopy(center, cellData.volume.center, 3);
+						core::arrayCopy(size, cellData.volume.size, 3);
+						gridCell.getCoords().toVkVec(coords);
+						core::arrayCopy(coords, cellData.coords, 3);
+						unsigned int currentClusterOffset = 0;
+						while (!stack.empty()) {										
+							size_t id = stack.back();
+							stack.pop_back();
+							//std::cout<<"leaf ? "<<node.leaf<<"size = "<<stack.size()<<std::endl;
+							entity::BSPTree<Meshlet>::Node& node = nodes[id];
+							/*Cluster clusterData;												
+							clusterData.submeshId = currentSubmeshesOffset;
+							clusterData.volume.center = node.volume.getCenter();
+							clusterData.volume.size = node.volume.getSize();
+							//std::cout<<"cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
+
+							
+							
+							clusterData.leaf = 0;
+							clusterData.id = clusterDatas.size();
+							clusterData.lodLevel = l;
+							clusterData.meshletCount = 10;
+							clusterData.meshletOffset = 0;
+							
+																				
+							clusterDatas.push_back(clusterData);
+							node.id = clusterDatas.size()-1;*/
+							//currentClustersOffset++;	
+							if (!node.leaf) {
+								//std::cout<<"children : "<<node.children.size()<<std::endl;
+								if (node.objects.size() > 0) {
+									std::cout<<"not leaf"<<std::endl;
+									//system("PAUSE");
+								}								
+								
+								/*std::cout<<"not leaf : "<<node.objects.size()<<"c : "<<
+								c<<","<<nodes[node.children[c]].objects.size()<<std::endl;*/													
+								for (unsigned int i = 0; i < node.children.size(); i++) {
+									stack.push_back(node.children[i]);
+								}
+								//node.id = clusterDatas.size()-1;
+								
+								//std::cout<<"size : "<<nodes.size()<<"id : "<<id<<" "<<node.children[c]<<std::endl;										clusterDatas[clusterDatas.size()-1].children.push_back(clusterDatas.size());
+									
+								
+							} else if (node.objects.size() > 0) {
+								
+								//system("PAUSE");
+								//entity::Octree<Meshlet>::Node& parent = nodes[node.parent];
+								//std::cout<<"id : "<<id<<" "<<std::endl;
+								
+								//std::cout<<"size : "<<parent.children.size()<<std::endl;
+								
+									/*std::cout<<"id : "<<id<<" "<<parent.children[c]<<std::endl;
+									if (nodes[parent.children[c]].objects.size() == 0) {
+										//std::cout<<"empty cluster"<<std::endl;
+										//std::cout<<"nb Objects : "<<nodes[parent.children[c]].objects.size()<<std::endl;
+									}*/
+								
+									//std::cout<<"leaf : "<<node.objects.size()<<std::endl;
+								
+								Cluster childClusterData;												
+								
+								float center[4], size[4];
+								node.volume.getCenter().toVkVec(center);
+								node.volume.getSize().toVkVec(size);
+								core::arrayCopy(center, childClusterData.volume.center, 3);
+								core::arrayCopy(size, childClusterData.volume.size, 3);
+								//std::cout<<"cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
+								childClusterData.id = clusterDatas.size();
+								childClusterData.lodLevel = l;														
+								childClusterData.meshletOffset = 0;	
+								childClusterData.meshletCount = node.objects.size();
+								childClusterData.leaf = 1;
+								clusterDatas.push_back(childClusterData);
+								currentClustersOffset++;
+										
+								for (unsigned int o = 0; o < node.objects.size(); o++) {												
+									
+									/*std::cout<<"id, size : "<<node.id<<", "<<node.objects.size()<<std::endl;
+									system("PAUSE");*/
+																				
+									//clusterData.children[c] = clusterDatas.size();
+									if (node.objects.size() > 8) {
+										std::cout<<"error : max object exceeds 8 : "<<node.objects.size()<<std::endl;
+										//system("PAUSE");
+									}
+									childClusterData.submeshId = node.objects[o].submeshId;
+									//std::cout<<"id : "<<node.objects.size()<<std::endl;
+									meshletDatas[node.objects[o].id].clusterId = childClusterData.id;												
+									//std::cout<<"meshlet : "<<meshletDatas[node.objects[o].id].id<<","<<meshletDatas[node.objects[o].id].submeshId<<","<<meshletDatas[node.objects[o].id].lod<<","<<meshletDatas[node.objects[o].id].clusterId<<std::endl;
+									/*if (childClusterData.meshletCount > 0) {
+
+										std::cout<<"meshlet count : "<<childClusterData.meshletCount<<std::endl;
+										system("PAUSE");
+									}*/
+									/*std::cout<<"meshlet count : "<<childClusterData.meshletCount<<std::endl;
+									system("PAUSE");*/
+									//std::cout<<"nb objects : "<<nodes[parent.children[c]].objects.size()<<"AABB : cluster AABB center, size : "<<childClusterData.volume.center<<","<<childClusterData.volume.size<<std::endl;
+									
+									//std::cout<<"size : "<<stack.size()<<std::endl;
+																				
+								}																										
+								
+							}
+							
+						}
+						
+						cellData.clusterCount = currentClustersOffset - cellData.clusterOffset;
+						//std::cout<<"cluster count : "<<cellData.clusterCount<<std::endl;
+						
+						cellDatas.push_back(cellData);
+					}
+				}
+			}	
+						
+			std::sort(meshletDatas.begin(), meshletDatas.end(), [](Meshlet m1, Meshlet m2){ return  m1.clusterId < m2.clusterId;});
+				
+			unsigned int lastMeshletId = 0, lastClusterId = 0;				
+			for (unsigned int m = 0; m < meshletDatas.size(); m++) {
+				if (meshletDatas[m].clusterId != -1) {
+					//std::cout<<"id : "<<meshletDatas[m].clusterId<<","<<clusterDatas.size()<<std::endl;
+								
+					if (meshletDatas[m].clusterId > lastClusterId) {	
+						lastMeshletId = m;
+						lastClusterId = meshletDatas[m].clusterId;				
+					}
+					
+					//std::cout<<"meshlet : "<<meshletDatas[m].clusterId<<","<<lastMeshletId<<","<<clusterDatas[meshletDatas[m].clusterId].submeshId<<std::endl;
+					clusterDatas[meshletDatas[m].clusterId].meshletOffset = lastMeshletId;
+					
+				} else {
+					std::cout<<"meshlet : "<<meshletDatas[m].clusterId<<","<<meshletDatas[m].submeshId<<","<<meshletDatas[m].lod<<std::endl;
+					//system("PAUSE");
+				}
+			}
+			for (unsigned int i = 0; i < 1; i++) {
+				staggingGridCells[i].create(cellDatas.size() * sizeof(CellData), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+				staggingGridCells[i].update(cellDatas.data(), cellDatas.size() * sizeof(CellData));
+				inputCellDatas[i].create(cellDatas.size() * sizeof(CellData), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+				Buffer::copyBuffer(staggingGridCells[i], inputCellDatas[i], cellDatas.size() * sizeof(CellData), computeCommandPool.getHandle(getCurrentFrame()));
+			}
+			for (unsigned int i = 0; i < 1; i++) {
+				staggingClusters[i].create(clusterDatas.size() * sizeof(Cluster), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+				staggingClusters[i].update(clusterDatas.data(), clusterDatas.size() * sizeof(Cluster));
+				inputClusters[i].create(clusterDatas.size() * sizeof(Cluster), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+				Buffer::copyBuffer(staggingClusters[i], inputClusters[i], clusterDatas.size() * sizeof(Cluster), computeCommandPool.getHandle(getCurrentFrame()));
+			}
+			for (unsigned int i = 0; i < 1; i++) {
+				staggingMeshlets[i].create(meshletDatas.size() * sizeof(Meshlet), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+				staggingMeshlets[i].update(meshletDatas.data(), meshletDatas.size() * sizeof(Meshlet));
+				inputMeshlets[i].create(meshletDatas.size() * sizeof(Meshlet), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+				Buffer::copyBuffer(staggingMeshlets[i], inputMeshlets[i], meshletDatas.size() * sizeof(Meshlet), computeCommandPool.getHandle(getCurrentFrame()));
+			}	
+		}
+		void RenderTarget::update(entity::GameObject* gameObject) {
+			math::Matrix4f transformMatrix = gameObject->getTransform().getMatrix().transpose();
+			unsigned int offset = gameObject->modelDataOffset;
+			commandPool.beginRecordCommandBuffer(getCurrentFrame());
+			for (unsigned int i = 0; i < staggingModelDatas.size(); i++) {
+				staggingModelDatas[i].update(&transformMatrix, sizeof(math::Matrix4f), offset*sizeof(math::Matrix4f));							
+				
+				Buffer::copyBuffer(staggingModelDatas[i], modelDatas[i], sizeof(math::Matrix4f), commandPool.getHandle(getCurrentFrame()), offset*sizeof(math::Matrix4f), offset*sizeof(math::Matrix4f));
+				
+			}	
+			for (unsigned int i = 0; i < gameObject->getSubMeshes().size(); i++) {
+				offset =  gameObject->getSubMeshes()[i].submeshOffset;
+				for(unsigned int l = 0; l < 5; l++) {
+					std::vector<Meshlet> meshlets = meshletsGrid[l].getEntities();
+					for (unsigned int m = 0; m < meshlets.size(); m++) {
+						if (meshlets[m].lod == l && meshlets[m].submeshId == gameObject->getSubMeshes()[i].id) {
+							Meshlet meshlet = meshlets[m];
+							physic::BoundingBox meshletAABB (meshlet.mins[0], meshlet.mins[1], meshlet.mins[2], meshlet.maxs[0] - meshlet.mins[0], meshlet.maxs[1] - meshlet.mins[1], meshlet.maxs[2] - meshlet.mins[2]);
+							meshletsGrid[l].removeEntity(meshlet, meshletAABB);							
+							physic::BoundingBox transformed = meshletAABB.transform(gameObject->getTransform());
+							meshlet.mins[0] = transformed.getPosition().x();
+							meshlet.mins[1] = transformed.getPosition().y();
+							meshlet.mins[2] = transformed.getPosition().z();
+							meshlet.maxs[0] = transformed.getSize().x();
+							meshlet.maxs[1] = transformed.getSize().y();
+							meshlet.maxs[2] = transformed.getSize().z();
+							meshletsGrid[l].addEntity(meshlet, transformed);
+						}	
+					}
+				}
+			}	
+			updateClusters();	
+			commandPool.endRecordCommandBuffer(getCurrentFrame());
+			
+			VkSubmitInfo submitInfo{};
+			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			submitInfo.commandBufferCount = 1;
+			submitInfo.pCommandBuffers = &computeCommandPool.getHandle(getCurrentFrame());
+			Device::QueueFamilyIndices indices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice());
+			
+			std::unique_lock lock(mtx);	
+				//std::cout<<"wait!"<<std::endl;				
+			cv.wait(lock, [this]{return ParticleSystemUpdater::instance(cv, mtx).isSubmitReady() && MorphAnimUpdater::instance(cv, mtx).isSubmitReady() && BoneAnimUpdater::instance(cv, mtx).isSubmitReady();});
+			
+			//std::lock_guard<std::recursive_mutex> lock(getGlobalMutex());
+			/*std::cout << "update buffers main thread " << std::this_thread::get_id()
+			<< " calling vkQueueSubmit" << std::endl;*/
+			
+			if (vkQueueSubmit(GPUContext::instance().getDevice().getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, computeFence.getHandle(getCurrentFrame())) != VK_SUCCESS) {
+				throw std::runtime_error("Echec de l'envoi d'un command buffer!");
+			}
+			vkWaitForFences(device.getDevice(), 1, &computeFence.getHandle(getCurrentFrame()), VK_TRUE, UINT64_MAX);
+			vkResetFences(device.getDevice(), 1, &computeFence.getHandle(getCurrentFrame()));				
+			ParticleSystemUpdater::instance(cv, mtx).setBuffersReady(true);
+			ParticleSystemUpdater::instance(cv, mtx).cv3.notify_all();
+
+			MorphAnimUpdater::instance(cv, mtx).setBuffersReady(true);
+			MorphAnimUpdater::instance(cv, mtx).cv3.notify_all();
+			
+			BoneAnimUpdater::instance(cv, mtx).setBuffersReady(true);
+			BoneAnimUpdater::instance(cv, mtx).cv3.notify_all();	
 		}
 		void RenderTarget::setTypesToRender(std::string expression, unsigned int currentFrame) {
 			std::vector<int> objectTypes;

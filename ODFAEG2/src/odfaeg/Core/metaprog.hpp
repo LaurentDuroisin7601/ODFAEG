@@ -507,12 +507,12 @@ namespace odfaeg {
             }
             T value;                      
         }; */
-        template<typename T>
+        /*template<typename T>
         struct get_type_id
         {
            static constexpr Compteur compteur = Compteur();     
            static constexpr size_t typeID = compteur.next();
-        };
+        };*/
         template <size_t FAMILYID, size_t TAG, typename V, typename... T>
         struct TypeList { 
             TypeList() {}
@@ -526,6 +526,7 @@ namespace odfaeg {
             V& get() {
                 return value;
             }
+            static constexpr size_t N = sizeof...(T);
             static constexpr std::size_t TagPos = TAG; 
             static constexpr size_t FamilyID = FAMILYID;
             using VALUE_TYPE = V;  
@@ -619,7 +620,115 @@ namespace odfaeg {
             {
                 
             }   */     
-        };        
-	}
+        };  
+        template <size_t... TypeIDs>
+        constexpr size_t hash()
+        {
+            size_t h = 0;
+
+            ((h = h * 31 + TypeIDs), ...);
+
+            return h;
+        }
+        template<typename... Ts>
+        struct type_list {
+        };  
+        template<size_t V, typename Seq>
+        struct prepend;
+
+        template<size_t V, size_t... Is>
+        struct prepend<V, std::index_sequence<Is...>>
+        {
+            using type = std::index_sequence<V, Is...>;
+        };
+        template<size_t V, typename List>
+        struct prepend_all;
+
+        template<size_t V, typename... Seqs>
+        struct prepend_all<V, type_list<Seqs...>>
+        {
+            using type =
+                type_list<
+                    typename prepend<V, Seqs>::type...
+                >;
+        };
+        template<typename A, typename B>
+        struct concat;
+
+        template<typename... A, typename... B>
+        struct concat<
+            type_list<A...>,
+            type_list<B...>>
+        {
+            using type = type_list<A..., B...>;
+        };
+        template<typename... Families>
+        struct cartesian_product;
+
+        template<>
+        struct cartesian_product<>
+        {
+            using type =
+                type_list<
+                    std::index_sequence<>
+                >;
+        };
+        template<size_t... Values, typename... Rest>
+        struct cartesian_product<
+            std::index_sequence<Values...>,
+            Rest...>
+        {
+        private:
+
+            using tails =
+                typename cartesian_product<
+                    Rest...
+                >::type;
+
+            template<size_t V>
+            using expand =
+                typename prepend_all<
+                    V,
+                    tails
+                >::type;
+                template<typename... Lists>
+                struct merge;
+
+                template<>
+                struct merge<>
+                {
+                    using type = type_list<>;
+                };
+
+                template<typename First>
+                struct merge<First>
+                {
+                    using type = First;
+                };
+
+                template<typename First,
+                        typename Second,
+                        typename... Others>
+                struct merge<First,Second,Others...>
+                {
+                    using type =
+                        typename merge<
+                            typename concat<
+                                First,
+                                Second
+                            >::type,
+                            Others...
+                        >::type;
+                };
+
+            public:
+
+                using type =
+                    typename merge<
+                        expand<Values>...
+                    >::type;
+        };
+            
+    }
 }
 #endif

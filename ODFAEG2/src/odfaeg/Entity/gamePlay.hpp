@@ -31,7 +31,8 @@ namespace odfaeg {
         };
         template <typename Behaviour, typename... ActorsLists>
         struct Rule : RuleBase { 
-            unsigned int behaviourID;        
+            unsigned int behaviourID; 
+            unsigned int ruleID;       
             std::vector<unsigned int> concernedFamiliesKeys;     
             std::vector<unsigned int> concernedActorsKeys;            
             std::tuple<std::vector<ActorsLists>...> actors;
@@ -91,15 +92,21 @@ namespace odfaeg {
             }
         };   
         struct GameMode {
-            std::map<std::string, RuleBase*> rules;
-            void addRule(std::string name, RuleBase* rule) {
-                rules.insert(std::make_pair(name, rule));
+            std::map<unsigned int, RuleBase*> rules;
+            void addRule(unsigned int ruleId, RuleBase* rule) {
+                rules.insert(std::make_pair(ruleId, rule));
             }
-            void applyRule(std::string name) {
-                std::map<std::string, RuleBase*>::iterator it = rules.find(name);
+            void applyRule(unsigned int ruleId) {
+                std::map<unsigned int, RuleBase*>::iterator it = rules.find(ruleId);
                 if (it != rules.end()) {
                     it->second->execute();
                 }    
+            }
+            void applyAllRules() {
+                std::map<unsigned int, RuleBase*>::iterator it;
+                for (it = rules.begin(); it != rules.end(); it++) {
+                    it->second->execute();
+                }
             }
         };         
         
@@ -113,6 +120,7 @@ namespace odfaeg {
             core::FastDelegate<void> visitor = core::make_visitor<Func, Vs...>(func, std::make_index_sequence<sizeof...(Vs)>(), std::index_sequence<TypeIDs...>());
             
             Rule<Func, Vs...>* rule = new Rule<Func, Vs...> (visitor, std::make_tuple(vs...));
+            rule->ruleID = hash<TypeIDs...>();
             //std::cout<<"create rule"<<std::endl;            
             initKeys(rule, std::index_sequence<TypeIDs...>());
             (rule->concernedFamiliesKeys.push_back(Vs::FamilyID),...);
@@ -128,24 +136,29 @@ namespace odfaeg {
             Func func,
             std::index_sequence<IDs...>,
             std::vector<Vs>... vs)
-        {
-            return make_rule_for<BHID,
+        {            
+            return make_rule<BHID,
                 Func,
                 IDs...
             >(func, vs...);
         }      
         template<size_t BHID, typename Func, typename... Seqs, typename... Vs>
-        std::vector<RuleBase*>
-        make_rules(Func func,
-                            std::vector<Vs>... vs)
+        GameMode
+        make_game_mode(Func func,
+                            std::vector<Vs>... vs, typeList<Seqs...> tl);
         {
-            return {
+            std::vector<RuleBase*> rules = {
                 make_rule_from_sequence<BHID>(
                     func,
                     Seqs{},
                     vs...
                 )...
             };
+            GameMode gameMode;
+            for (unsigned int i = 0; i < rules.size(); i++) {
+                gameMode.addRule(rules[i]->ruleID, rules[i]);
+            }
+            return gameMode;
         }
     }
 }

@@ -242,8 +242,7 @@ namespace odfaeg {
 			struct CullingBatchingPC {
 			    unsigned int currentFrame;
 				unsigned int materialMask;				
-			};
-			
+			};			
 			inline static std::mutex mtx = std::mutex();
 			inline static std::condition_variable cv = std::condition_variable();	
 			void addGameObject(Mesh* objet);
@@ -260,7 +259,8 @@ namespace odfaeg {
 			void drawMesh(entity::PrimitiveType primitiveType, RenderStates states = RenderStates::Default);
 			void draw(CommandPool& commandPool, entity::PrimitiveType primitiveType, RenderStates states);
 			void setCamera(Camera camera);
-			void update(Mesh* object);
+			void updateClusters();
+			void update(entity::GameObject* gameObject);
 			virtual Image& getRenderingImage() = 0;
 			Camera& getCamera();
 			Camera& getDefaultCamera();

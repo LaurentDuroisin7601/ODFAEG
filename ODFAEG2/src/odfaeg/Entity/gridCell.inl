@@ -87,12 +87,9 @@ namespace odfaeg {
         }
         template<typename Object>
         Object GridCell<Object>::getEntityInside (unsigned int index) {
-            if (index >= 0 && index < tree.getObjects(volume).size()) {
-                Object entity = tree.getObjects(volume)[index];
-                
-                return entity;
-            }
-            return nullptr;
+           
+            Object entity = tree.getObjects(volume)[index];
+            return entity;                   
         }
         template <typename Object>
         unsigned int GridCell<Object>::getNbEntitiesInside() {

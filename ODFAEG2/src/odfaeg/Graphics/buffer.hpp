@@ -22,7 +22,7 @@ namespace odfaeg {
 			VkBuffer getHandle();
 			uint64_t getDeviceAddress();
 			~Buffer();
-			static void copyBuffer(Buffer& srcBuffer, Buffer& dstBuffer, VkDeviceSize size, VkCommandBuffer& cmd);
+			static void copyBuffer(Buffer& srcBuffer, Buffer& dstBuffer, VkDeviceSize size, VkCommandBuffer& cmd, VkDeviceSize srcOffset=0, VkDeviceSize dstOffset=0);
 		private :
 			uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);			
 			VmaAllocator allocator;
