@@ -8,6 +8,7 @@ namespace odfaeg {
         struct is_component
             : std::true_type
         {
+            //using Type = T;
         };
         /**
         *  \file  fastDelegate.h
@@ -22,6 +23,7 @@ namespace odfaeg {
         struct is_component<core::TypeList<I, J, V, T...>>
             : std::false_type
         {
+            //using Type = V;
         };
         template<typename X> inline constexpr bool is_component_v = is_component<X>::value;
         struct RuleBase {  
@@ -36,7 +38,9 @@ namespace odfaeg {
             std::vector<unsigned int> concernedFamiliesKeys;     
             std::vector<unsigned int> concernedActorsKeys;            
             std::tuple<std::vector<ActorsLists>...> actors;
+            //std::tuple<is_component<ActorsLists>::Type...> currentValues;
             core::FastDelegate<void> ruleExecutor;
+            //std::map<unsigned int, core::FastDelegate<void>> ruleExecutors;
             Rule(core::FastDelegate<void> ruleExecutor, std::tuple<std::vector<ActorsLists>...> actors) : ruleExecutor(ruleExecutor), actors(actors) {
                 
             }
@@ -71,12 +75,17 @@ namespace odfaeg {
                 
                 if constexpr (I == sizeof...(ActorsLists))
                 {
+                    /*unsigned int key = (core::hash(std::get<Ints>(currentValues).typeKey), ...);
+                    std::map<unsigned int, FastDelegate<void>>::iterator it = ruleExecutors.find(key);
+                    if (it != ruleExecutors.end()) {
+                        it->second.bind(std::get<Ints>(currentValues)...);
+                        it->second();
+                    }*/
                     ruleExecutor();
                 } else if constexpr (is_component_v<std::tuple_element_t<I,  std::tuple<ActorsLists...>>>) {
                     std::tuple_element_t<I,  std::tuple<ActorsLists...>> component = EnttEntity::getComponent<std::tuple_element_t<I,  std::tuple<ActorsLists...>>>(*currentGameObject);
-                    if (component.has_value()) {
-                        ruleExecutor.setParam<I+1, std::tuple_element_t<I,  std::tuple<ActorsLists...>>, Behaviour, core::ph<Ints, ActorsLists>...>(component.value());     
-                    }   
+                    ruleExecutor.setParam<I+1, std::tuple_element_t<I,  std::tuple<ActorsLists...>>, Behaviour, core::ph<Ints, ActorsLists>...>(component);     
+                    //std::get<I>(currentValues) = component.value();   
                     iterate<I + 1>(currentGameObject, seq);           
                 }
                 else
@@ -86,6 +95,7 @@ namespace odfaeg {
                     for (std::size_t j = 0; j < list.size(); j++)
                     {                        
                         ruleExecutor.setParam<I+1, std::tuple_element_t<I,  std::tuple<ActorsLists...>>, Behaviour, core::ph<Ints, ActorsLists>...>(list[j]);                        
+                        //std::get<I>(currentValues) = lists[j];
                         iterate<I + 1>(&list[j].get(), seq);                        
                     }
                 }
