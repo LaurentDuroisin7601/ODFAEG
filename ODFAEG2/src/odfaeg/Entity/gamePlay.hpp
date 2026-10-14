@@ -165,7 +165,7 @@ namespace odfaeg {
         make_rules(Func func,
                             std::vector<Vs>... vs);
         {
-            auto Rules = core::cartesian_product<std::make_index_sequence<Vs::N>...>::type;  
+            using Rules = core::cartesian_product<std::make_index_sequence<Vs::N>...>::type;  
             return make_rule_impl<BHID>(
                 func,                    
                 vs...,
