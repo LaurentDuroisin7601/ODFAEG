@@ -1031,7 +1031,7 @@ namespace odfaeg {
 									cellDatas.push_back(cellData);
 								}
 							}														
-							std::vector<Meshlet> ms = meshletsGrid[l].getEntities();
+							//std::vector<Meshlet> ms = meshletsGrid[l].getEntities();
 						}
 						
 						subMeshData.lodOffset = currentSubmeshesOffset * lods.size();
