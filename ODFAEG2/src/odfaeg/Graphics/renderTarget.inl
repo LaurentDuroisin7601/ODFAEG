@@ -1434,7 +1434,7 @@ namespace odfaeg {
 				
 			}	
 			for (unsigned int i = 0; i < gameObject->getSubMeshes().size(); i++) {
-				offset =  gameObject->getSubMeshes()[i].submeshOffset;
+				offset =  gameObject->getSubMeshes()[i].id * sizeof(SubMeshData);
 				for(unsigned int l = 0; l < 5; l++) {
 					std::vector<Meshlet> meshlets = meshletsGrid[l].getEntities();
 					for (unsigned int m = 0; m < meshlets.size(); m++) {

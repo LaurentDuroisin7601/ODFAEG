@@ -61,7 +61,7 @@ namespace odfaeg {
             unsigned int materialId; 
             unsigned int instanceId;
             unsigned int lodOffset; 
-            unsigned int materialFlags;
+            unsigned int materialFlags;            
             inline static const unsigned int opaqueMask = 1 << 0;
             inline static const unsigned int transparentMask = 1 << 1;
             inline static const unsigned int rtPipeline = 2 << 1;
@@ -224,7 +224,8 @@ namespace odfaeg {
             template<typename T>
             void removeComponent() {
                 EnttEntity::removeComponent<T>(*this);
-            }            
+            }
+            unsigned int modelDataOffset;            
 		protected :
             void onResize(math::Vec3f& s);
             void onMove(math::Vec3f& t);
