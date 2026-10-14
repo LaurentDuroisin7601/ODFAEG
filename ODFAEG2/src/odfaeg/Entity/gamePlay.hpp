@@ -63,9 +63,8 @@ namespace odfaeg {
                             && concernedFamiliesKeys[I] == gameObject.familyID) {
                             std::get<I>(actors).push_back(static_cast<std::tuple_element_t<I, std::tuple<ActorsLists...>>::VALUE_TYPE&>(gameObject));
                             std::get<I>(actors).back().typeKey = gameObject.typeKey;
-                        } else {
-                            integrate<I+1>(gameObject);
-                        }
+                        } 
+                        integrate<I+1>(gameObject);                        
                     }
                 }
             }
