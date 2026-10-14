@@ -57,7 +57,7 @@ namespace odfaeg {
             template <std::size_t I = 0>
             void integrate(GameObject& gameObject) {                    
                 if constexpr (I < sizeof...(ActorsLists)) {
-                    if constexpr(!is_component_v<std::tuple_element_t<I,  std::tuple<ActorsLists...>>>) {
+                    //if constexpr(!is_component_v<std::tuple_element_t<I,  std::tuple<ActorsLists...>>>) {
                         if (concernedActorsKeys[I] == gameObject.typeKey 
                             && std::tuple_element_t<I, std::tuple<ActorsLists...>>::TagPos == gameObject.tagPos
                             && concernedFamiliesKeys[I] == gameObject.familyID) {
@@ -65,7 +65,7 @@ namespace odfaeg {
                             std::get<I>(actors).back().typeKey = gameObject.typeKey;
                         } 
                         integrate<I+1>(gameObject);                        
-                    }
+                    //}
                 }
             }
             template <std::size_t I = 0, size_t... Ints>
@@ -82,14 +82,14 @@ namespace odfaeg {
                         it->second();
                     }*/
                     ruleExecutor();
-                } else if constexpr (is_component_v<std::tuple_element_t<I,  std::tuple<ActorsLists...>>>) {
+                } /*else if constexpr (is_component_v<std::tuple_element_t<I,  std::tuple<ActorsLists...>>>) {
                     std::tuple_element_t<I,  std::tuple<ActorsLists...>> component = EnttEntity::getComponent<std::tuple_element_t<I,  std::tuple<ActorsLists...>>>(*currentGameObject);
                     if (component.has_value()) {
                         ruleExecutor.setParam<I+1, std::tuple_element_t<I,  std::tuple<ActorsLists...>>, Behaviour, core::ph<Ints, ActorsLists>...>(component.value().get());
                     }     
                     //std::get<I>(currentValues) = component.value();   
                     iterate<I + 1>(currentGameObject, seq);           
-                }
+                }*/
                 else
                 {
                     auto& list = std::get<I>(actors);
