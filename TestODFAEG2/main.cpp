@@ -173,12 +173,12 @@ int main() {
 	rule->addGameObject(la);
 	//std::cout<<"added"<<std::endl;
 	GameMode gameMode;
-	gameMode.addRule("chateppeelaser", rule);
+	gameMode.addRule(rule->ruleID, rule);
 	//gameMode.addRule("chieneppeelaser", rules[1]);
-	gameMode.applyRule("chateppeelaser");
+	gameMode.applyRule(rule->ruleID);
 	/*visitor.bind(cvar1, cvar2, cvar3);
 	visitor();*/
-	system("PAUSE");
+	//system("PAUSE");
 	//visitor.bind(cvar1, cvar2, cvar3);
 	//system("PAUSE");
 	/*EXPORT_CLASS_GUID(BABC, BoundingArea, BoundingCircle, ITextArchive)

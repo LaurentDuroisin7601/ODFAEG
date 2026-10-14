@@ -30,11 +30,11 @@ namespace odfaeg {
             virtual void addGameObject(GameObject& gameObject) = 0;          
             virtual void execute() = 0;
             virtual ~RuleBase() = default;
+            unsigned int ruleID;
         };
         template <typename Behaviour, typename... ActorsLists>
         struct Rule : RuleBase { 
-            unsigned int behaviourID; 
-            unsigned int ruleID;       
+            unsigned int behaviourID;
             std::vector<unsigned int> concernedFamiliesKeys;     
             std::vector<unsigned int> concernedActorsKeys;            
             std::tuple<std::vector<ActorsLists>...> actors;
@@ -110,7 +110,7 @@ namespace odfaeg {
             }
             void addRules(std::vector<RuleBase*> rules) {
                 for (unsigned int i = 0; i < rules.size(); i++) {
-                    addRule(rules[i]->ruleId, rules[i]);
+                    addRule(rules[i]->ruleID, rules[i]);
                 }
             }
             void applyRule(unsigned int ruleId) {
@@ -137,7 +137,7 @@ namespace odfaeg {
             core::FastDelegate<void> visitor = core::make_visitor<Func, Vs...>(func, std::make_index_sequence<sizeof...(Vs)>(), std::index_sequence<TypeIDs...>());
             
             Rule<Func, Vs...>* rule = new Rule<Func, Vs...> (visitor, std::make_tuple(vs...));
-            rule->ruleID = hash<TypeIDs...>();
+            rule->ruleID = core::hash<TypeIDs...>();
             //std::cout<<"create rule"<<std::endl;            
             initKeys(rule, std::index_sequence<TypeIDs...>());
             (rule->concernedFamiliesKeys.push_back(Vs::FamilyID),...);
@@ -162,7 +162,7 @@ namespace odfaeg {
         template<size_t BHID, typename Func, typename... Seqs, typename... Vs>
         std::vector<RuleBase*>
         make_rules_impl(Func func,
-                            std::vector<Vs>... vs, typeList<Seqs...> tl);
+                            std::vector<Vs>... vs, core::type_list<Seqs...> tl)
         {
             return {
                 make_rule_from_sequence<BHID>(
@@ -175,7 +175,7 @@ namespace odfaeg {
         template<size_t BHID, typename Func, typename... Vs>
         std::vector<RuleBase*>
         make_rules(Func func,
-                            std::vector<Vs>... vs);
+                            std::vector<Vs>... vs)
         {
             using Rules = core::cartesian_product<std::make_index_sequence<Vs::N>...>::type;  
             return make_rule_impl<BHID>(
