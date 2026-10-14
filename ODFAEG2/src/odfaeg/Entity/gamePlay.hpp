@@ -75,7 +75,8 @@ namespace odfaeg {
                 
                 if constexpr (I == sizeof...(ActorsLists))
                 {
-                    /*unsigned int key = (core::hash(std::get<Ints>(currentValues).typeKey), ...);
+                    unsigned int key = 0;
+                    /*(core::hash(key, std::get<Ints>(currentValues).typeKey), ...);
                     std::map<unsigned int, FastDelegate<void>>::iterator it = ruleExecutors.find(key);
                     if (it != ruleExecutors.end()) {
                         it->second.bind(std::get<Ints>(currentValues)...);
