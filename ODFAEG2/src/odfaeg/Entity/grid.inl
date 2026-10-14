@@ -465,14 +465,18 @@ namespace odfaeg {
             for (it = casesMap.begin(); it != casesMap.end(); it++) {
                 GridCell<Object>* cell = it->second.get();
                 //if (cell != nullptr) {
-                     for (unsigned int n = 0; n < cell->getNbEntitiesInside(); n++) {
+
+                    std::vector<Object> entities = cell->getEntitiesInside();
+                    //std::cout<<"nb entities : "<<entities.size()<<std::endl;
+                    for (unsigned int n = 0; n < entities.size(); n++) {
                         bool contains = false;
                         for (unsigned int j = 0; j < allEntities.size(); j++) {
-                            if (allEntities[j] == cell->getEntityInside(n))
+                            //std::cout<<"entity : "<<j<<std::endl;
+                            if (allEntities[j] == entities[n])
                                 contains = true;
                         }
                         if (!contains) {
-                            allEntities.push_back(cell->getEntityInside(n));
+                            allEntities.push_back(entities[n]);
                         }
                     }
                 //}
