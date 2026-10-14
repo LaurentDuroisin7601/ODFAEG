@@ -913,7 +913,7 @@ namespace odfaeg {
 							system("PAUSE");*/
 									
 							//Ballayage de la grille.
-							/*std::vector<entity::GridCell<Meshlet>> casesMap = meshletsGrid[l].getCasesMap();				
+							std::vector<entity::GridCell<Meshlet>> casesMap = meshletsGrid[l].getCasesMap();				
 							for (unsigned int cm = 0; cm < casesMap.size(); cm++) {
 								//std::cout<<"grid cell : "<<x<<","<<y<<","<<z<<std::endl;
 								
@@ -1030,7 +1030,7 @@ namespace odfaeg {
 									
 									cellDatas.push_back(cellData);
 								}
-							}	*/													
+							}														
 							
 						}
 						
@@ -1054,7 +1054,7 @@ namespace odfaeg {
 				/*for (unsigned int m = 0; m < meshletDatas.size(); m++) {
 					std::cout<<"meshlet : "<<meshletDatas[m].clusterId<<","<<meshletDatas[m].submeshId<<","<<meshletDatas[m].lod<<std::endl;
 				}*/
-				/*std::sort(meshletDatas.begin(), meshletDatas.end(), [](Meshlet m1, Meshlet m2){ return  m1.clusterId < m2.clusterId;});
+				std::sort(meshletDatas.begin(), meshletDatas.end(), [](Meshlet m1, Meshlet m2){ return  m1.clusterId < m2.clusterId;});
 				
 				unsigned int lastMeshletId = 0, lastClusterId = 0;				
 				for (unsigned int m = 0; m < meshletDatas.size(); m++) {
@@ -1073,7 +1073,7 @@ namespace odfaeg {
 						std::cout<<"meshlet : "<<meshletDatas[m].clusterId<<","<<meshletDatas[m].submeshId<<","<<meshletDatas[m].lod<<std::endl;
 						//system("PAUSE");
 					}
-				}*/
+				}
 
 				//system("PAUSE");
 					
@@ -1084,7 +1084,7 @@ namespace odfaeg {
 				system("PAUSE");*/
 				vkDeviceWaitIdle(device.getDevice());
 				computeCommandPool.beginRecordCommandBuffer(getCurrentFrame());
-				updateClusters();
+				//updateClusters();
 				for (unsigned int i = 0; i < 1; i++) {
 					for (unsigned int j = 0; j < NB_PRIMITIVE_TYPES; j++) {
 						//std::cout<<"update vertices"<<std::endl;
@@ -1111,7 +1111,7 @@ namespace odfaeg {
 					//std::cout<<"stagging submeshes buffer : "<<staggingObjects[i].getHandle()<<std::endl;
 					//std::cout<<"submeshes buffer : "<<staggingObjects[i].getHandle()<<std::endl;
 				}
-				/*for (unsigned int i = 0; i < 1; i++) {
+				for (unsigned int i = 0; i < 1; i++) {
 					staggingGridCells[i].create(cellDatas.size() * sizeof(CellData), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 					staggingGridCells[i].update(cellDatas.data(), cellDatas.size() * sizeof(CellData));
 					inputCellDatas[i].create(cellDatas.size() * sizeof(CellData), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
@@ -1128,7 +1128,7 @@ namespace odfaeg {
 					staggingMeshlets[i].update(meshletDatas.data(), meshletDatas.size() * sizeof(Meshlet));
 					inputMeshlets[i].create(meshletDatas.size() * sizeof(Meshlet), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 					Buffer::copyBuffer(staggingMeshlets[i], inputMeshlets[i], meshletDatas.size() * sizeof(Meshlet), computeCommandPool.getHandle(getCurrentFrame()));
-				}*/
+				}
 				for (unsigned int i = 0; i < 1; i++) {
 					//std::cout<<"copy submeshes"<<std::endl;
 					staggingLODLevel[i].create(lodLevelDatas.size() * sizeof(LODLevelData), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
