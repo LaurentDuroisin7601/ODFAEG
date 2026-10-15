@@ -162,7 +162,7 @@ namespace odfaeg {
         template<size_t BHID, typename Func, typename... Seqs, typename... Vs>
         std::vector<RuleBase*>
         make_rules_impl(Func func,
-                            std::vector<Vs>... vs, core::type_list<Seqs...> tl)
+                            core::type_list<Seqs...> tl, std::vector<Vs>... vs)
         {
             return {
                 make_rule_from_sequence<BHID>(
@@ -177,11 +177,12 @@ namespace odfaeg {
         make_rules(Func func,
                             std::vector<Vs>... vs)
         {
-            using Rules = core::cartesian_product<std::make_index_sequence<Vs::N>...>::type;  
-            return make_rule_impl<BHID>(
-                func,                    
-                vs...,
-                Rules()
+            using Rules = core::cartesian_product<std::make_index_sequence<Vs::N>...>::type; 
+            Rules rules;
+            return make_rules_impl<BHID>(
+                func,
+                rules,                    
+                vs...
             );                      
         }
     }

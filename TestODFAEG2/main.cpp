@@ -166,16 +166,16 @@ int main() {
 	interaction inter;
 	//std::cout<<"add rules"<<std::endl;
 	//std::vector<RuleBase*> rules = make_rules_for<interaction, std::index_sequence<CHAT, EPEE, LASER>, std::index_sequence<CHIEN, ARC, BALLE>>(inter, typeList1, typeList2, typeList3);
-	RuleBase* rule = make_rule<0, interaction, CHAT, EPEE, LASER>(inter, typeList1, typeList2, typeList3);
+	std::vector<RuleBase*> rules = make_rules<0>(inter, typeList1, typeList2, typeList3);
 	//std::cout<<"add"<<std::endl;
-	rule->addGameObject(cha);
-	rule->addGameObject(ep);
-	rule->addGameObject(la);
+	rules[0]->addGameObject(cha);
+	rules[0]->addGameObject(ep);
+	rules[0]->addGameObject(la);
 	//std::cout<<"added"<<std::endl;
 	GameMode gameMode;
-	gameMode.addRule(rule->ruleID, rule);
+	gameMode.addRule(rules[0]->ruleID, rules[0]);
 	//gameMode.addRule("chieneppeelaser", rules[1]);
-	gameMode.applyRule(rule->ruleID);
+	gameMode.applyRule(rules[0]->ruleID);
 	/*visitor.bind(cvar1, cvar2, cvar3);
 	visitor();*/
 	//system("PAUSE");

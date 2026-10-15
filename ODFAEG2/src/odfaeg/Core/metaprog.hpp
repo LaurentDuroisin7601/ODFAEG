@@ -603,15 +603,15 @@ namespace odfaeg {
         template <typename Func, typename... Vs>       
         struct DispatchVisitorFor { 
             template<size_t... IDs>
-            /*requires std::is_invocable_v<
+            requires std::is_invocable_v<
                 Func,
                 decltype(std::declval<Vs>().template get<IDs>())...
-            >*/
+            >
             static void visit(Func f, Vs... vs)
             {
                 f(vs.template get<IDs>()...);
             }    
-            /*template<size_t... IDs>
+            template<size_t... IDs>
             requires (!std::is_invocable_v<
                 Func,
                 decltype(std::declval<Vs>().template get<IDs>())...
@@ -619,7 +619,7 @@ namespace odfaeg {
             static void visit(Func f, Vs... vs)
             {
                 
-            }   */     
+            }       
         };  
         template <size_t... TypeIDs>
         constexpr size_t hash()
