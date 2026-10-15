@@ -104,7 +104,14 @@ namespace odfaeg {
             }
         };   
         struct GameMode {
+           
             std::map<unsigned int, RuleBase*> rules;
+            void addGameObject(GameObject& gameObject) {
+                std::map<unsigned int, RuleBase*>::iterator it;
+                for (it = rules.begin(); it != rules.end(); it++) {
+                    it->second->addGameObject(gameObject);
+                }
+            }
             void addRule(unsigned int ruleId, RuleBase* rule) {
                 rules.insert(std::make_pair(ruleId, rule));
             }
