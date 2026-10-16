@@ -781,7 +781,7 @@ namespace odfaeg {
             rtRayhitSet.updateImageInfos(7, csmShadowMaps.getDepthStencilTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             rtRayhitSet.updateImageInfos(8, plShadowMaps.getDepthStencilTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);           
             if (hasDiffuseTexture) {
-                rtRayhitSet.updateImageInfos(10, GPUContext::instance().getSharedTextures(Material::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                rtRayhitSet.updateImageInfos(9, GPUContext::instance().getSharedTextures(Material::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             }
             rtRayhitSet.updateDescriptorSet();            
             bool hasSpecTexture = GPUContext::instance().getSharedTextures(Material::SPECULAR).size() != 0;

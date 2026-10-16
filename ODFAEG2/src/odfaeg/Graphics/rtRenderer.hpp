@@ -115,6 +115,7 @@ namespace odfaeg {
                 RenderTexture& csmShadowMaps, &plShadowMaps, &frameBuffer;
                 std::string typesToRenderExpression;
                 bool needToUpdateBuffers;
+                inline static const unsigned int MAX_TEXS = 8; 
                 int instancesGroupCount, singleInstancesCount, shaderGroupCount;                     
                 PFN_vkCreateAccelerationStructureKHR vkCreateAccelerationStructureKHR{ nullptr };
                 PFN_vkDestroyAccelerationStructureKHR vkDestroyAccelerationStructureKHR{ nullptr };
