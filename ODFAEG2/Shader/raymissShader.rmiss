@@ -68,6 +68,7 @@ layout (binding = 5, set = 1) uniform samplerCube skybox;
 layout (binding = 6, set = 1) uniform sampler2DArray csmShadowMaps;
 layout (binding = 7, set = 1) uniform samplerCubeArray pointShadowMaps; 
 layout (binding = 8, set = 1) uniform sampler2D framebuffer;
+layout(set = 1, binding = 9) uniform sampler2D diffuseTextures[MAX_TEXTURES];
 layout(set = 2, binding = 0) uniform sampler2D specularTextures[MAX_TEXTURES];
 layout(set = 3, binding = 0) uniform sampler2D normalTextures[MAX_TEXTURES];
 layout(set = 4, binding = 0) uniform sampler2D metalnessTextures[MAX_TEXTURES];

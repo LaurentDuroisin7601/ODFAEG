@@ -659,9 +659,8 @@ namespace odfaeg {
             rtRayhitSetLayout.updateLayout(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
             rtRayhitSetLayout.updateLayout(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
             rtRayhitSetLayout.updateLayout(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
-            rtRayhitSetLayout.updateLayout(8, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
-            rtRayhitSetLayout.updateLayout(9, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
-            rtRayhitSetLayout.updateLayout(10, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+            rtRayhitSetLayout.updateLayout(8, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);            
+            rtRayhitSetLayout.updateLayout(9, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
             rtRayhitSetLayout.update();
             DescriptorSetLayout& rtRayhitSpecSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 1, true, 2);
@@ -711,11 +710,11 @@ namespace odfaeg {
             rtRayhitPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES);
             rtRayhitPool.updatePoolSize(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
             rtRayhitPool.updatePoolSize(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
-            rtRayhitPool.updatePoolSize(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
+            rtRayhitPool.updatePoolSize(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
             rtRayhitPool.updatePoolSize(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             rtRayhitPool.updatePoolSize(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             rtRayhitPool.updatePoolSize(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
-            rtRayhitPool.updatePoolSize(8, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
+            rtRayhitPool.updatePoolSize(8, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             rtRayhitPool.updatePoolSize(9, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             rtRayhitPool.update();
             DescriptorPool& rtRayhitSpecPool = GPUContext::instance().getDescriptorPool(rtShader, 1, 2);
@@ -771,7 +770,7 @@ namespace odfaeg {
                 rtRaygenSet.updateAccelerationStructureInfos(6, topLocalAS);
             }            
             rtRaygenSet.updateDescriptorSet();
-            DescriptorSet& rtRayhitSet = GPUContext::instance().getDescriptorSets(rtShader, (hasDiffuseTexture) ? 10 : 3, 1, 1)[0];
+            DescriptorSet& rtRayhitSet = GPUContext::instance().getDescriptorSets(rtShader, (hasDiffuseTexture) ? 10 : 9, 1, 1)[0];
             rtRayhitSet.updateBufferInfos(0, true, GPUContext::instance().getSharedVertexBuffer(RenderTarget::VERTEX_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             rtRayhitSet.updateBufferInfos(1, false, GPUContext::instance().getSharedVertexBuffer(RenderTarget::VERTEX_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             rtRayhitSet.updateBufferInfos(2, geometryOffsetBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -780,8 +779,7 @@ namespace odfaeg {
             rtRayhitSet.updateImageInfos(5, environmentMap, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             rtRayhitSet.updateImageInfos(6, frameBuffer.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             rtRayhitSet.updateImageInfos(7, csmShadowMaps.getDepthStencilTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-            rtRayhitSet.updateImageInfos(8, plShadowMaps.getDepthStencilTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-            rtRayhitSet.updateBufferInfos(9,GPUContext::instance().getSharedBuffers(RenderTarget::LOD_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            rtRayhitSet.updateImageInfos(8, plShadowMaps.getDepthStencilTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);           
             if (hasDiffuseTexture) {
                 rtRayhitSet.updateImageInfos(10, GPUContext::instance().getSharedTextures(Material::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             }
