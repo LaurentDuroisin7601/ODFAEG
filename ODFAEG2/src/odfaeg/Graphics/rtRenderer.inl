@@ -702,7 +702,7 @@ namespace odfaeg {
             rtRaygenPool.updatePoolSize(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
             rtRaygenPool.updatePoolSize(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
             rtRaygenPool.updatePoolSize(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
-            rtRaygenPool.updatePoolSize(5, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, MAX_TLAS_STRUCTURES);
+            rtRaygenPool.updatePoolSize(5, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1);
             rtRaygenPool.updatePoolSize(6, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, MAX_TLAS_STRUCTURES);
             rtRaygenPool.update();
             DescriptorPool& rtRayhitPool = GPUContext::instance().getDescriptorPool(rtShader, 10, 1);
