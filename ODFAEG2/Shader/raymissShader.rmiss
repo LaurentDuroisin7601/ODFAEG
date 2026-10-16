@@ -64,10 +64,10 @@ layout (push_constant) uniform PushConstant {
     uint pointLightCount;
     uint hasGeometry;
 } pc;
-layout (binding = 4, set = 1) uniform samplerCube skybox;
-layout (binding = 5, set = 1) uniform sampler2DArray csmShadowMaps;
-layout (binding = 6, set = 1) uniform samplerCubeArray pointShadowMaps; 
-layout (binding = 7, set = 1) uniform sampler2D framebuffer;
+layout (binding = 5, set = 1) uniform samplerCube skybox;
+layout (binding = 6, set = 1) uniform sampler2DArray csmShadowMaps;
+layout (binding = 7, set = 1) uniform samplerCubeArray pointShadowMaps; 
+layout (binding = 8, set = 1) uniform sampler2D framebuffer;
 layout(set = 2, binding = 0) uniform sampler2D specularTextures[MAX_TEXTURES];
 layout(set = 3, binding = 0) uniform sampler2D normalTextures[MAX_TEXTURES];
 layout(set = 4, binding = 0) uniform sampler2D metalnessTextures[MAX_TEXTURES];

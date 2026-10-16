@@ -12,12 +12,12 @@ namespace odfaeg {
         commandPool(GPUContext::instance().getDevice()),
         transformMatrixBuffer(GPUContext::instance().getDevice()),
         materialBuffer(GPUContext::instance().getDevice()),
-        geometryOffsetBuffer(GPUContext::instance().getDevice()),
+        geometryOffsetBuffer(GPUContext::instance().getDevice()),        
         instancesBuffer(GPUContext::instance().getDevice()),
         localInstancesBuffer(GPUContext::instance().getDevice()),
         transformMatrixStaggingBuffer(GPUContext::instance().getDevice()),
         materialStaggingBuffer(GPUContext::instance().getDevice()),
-        geometryOffsetStaggingBuffer(GPUContext::instance().getDevice()),
+        geometryOffsetStaggingBuffer(GPUContext::instance().getDevice()),        
         instancesStaggingBuffer(GPUContext::instance().getDevice()),
         raygenShaderBT(GPUContext::instance().getDevice()),
         raymissShaderBT(GPUContext::instance().getDevice()),
@@ -210,6 +210,7 @@ namespace odfaeg {
             Buffer::copyBuffer(materialStaggingBuffer, materialBuffer, sizeof(MaterialData)*materialDatas.size(), commandPool.getHandle(parentRenderer.getCurrentFrame()));
             std::vector<Mesh*>& gameObjects = RenderTarget::getGameObjects();
             geometryOffsets.clear();
+            std::vector<RenderTarget::LODLevelData> lodLevelDatas;
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
                 for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
                     entity::SubMesh& sm = gameObjects[i]->getGameObject()->getSubMeshes()[j];
@@ -300,7 +301,7 @@ namespace odfaeg {
                             geometryOffsets[instanceID] = geometryOffset;
                             instancesGroupCount++;
                             gameObjects[i]->getMaterials()[0]->materialSet++;
-                                                 
+                                                
                         } else {
                             gameObjects[i]->getMaterials()[0]->materialSet++;
                         }
@@ -650,40 +651,41 @@ namespace odfaeg {
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);   
             rtRaygenSetLayout.update();         
             DescriptorSetLayout& rtRayhitSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 10, true, 1); 
-            rtRayhitSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR); 
-            rtRayhitSetLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
-            rtRayhitSetLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
-            rtRayhitSetLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
-            rtRayhitSetLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
+            rtRayhitSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR); 
+            rtRayhitSetLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR);
+            rtRayhitSetLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR);
+            rtRayhitSetLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR);
+            rtRayhitSetLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR);
             rtRayhitSetLayout.updateLayout(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
             rtRayhitSetLayout.updateLayout(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
             rtRayhitSetLayout.updateLayout(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
-            rtRayhitSetLayout.updateLayout(8, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
-            rtRayhitSetLayout.updateLayout(9, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+            rtRayhitSetLayout.updateLayout(8, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
+            rtRayhitSetLayout.updateLayout(9, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
+            rtRayhitSetLayout.updateLayout(10, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
             rtRayhitSetLayout.update();
             DescriptorSetLayout& rtRayhitSpecSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 1, true, 2);
-            rtRayhitSpecSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |            
+            rtRayhitSpecSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |            
                 VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
             rtRayhitSpecSetLayout.update(); 
             DescriptorSetLayout& rtRayhitNormalSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 1, true, 3);
-            rtRayhitNormalSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+            rtRayhitNormalSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);
             rtRayhitNormalSetLayout.update(); 
             DescriptorSetLayout& rtRayhitMetSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 1, true, 4);
-            rtRayhitMetSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+            rtRayhitMetSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT); 
             rtRayhitMetSetLayout.update();
             DescriptorSetLayout& rtRayhitRoughSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 1, true, 5);
-            rtRayhitRoughSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+            rtRayhitRoughSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT); 
             rtRayhitRoughSetLayout.update();
             DescriptorSetLayout& rtRayhitAOSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 1, true, 6);
-            rtRayhitAOSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+            rtRayhitAOSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT); 
             rtRayhitRoughSetLayout.update();
             DescriptorSetLayout& rtRayhitEmissSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 1, true, 7);
-            rtRayhitEmissSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+            rtRayhitEmissSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT); 
             rtRayhitEmissSetLayout.update();            
             std::vector<VkPushConstantRange> pushConstants;
@@ -774,13 +776,14 @@ namespace odfaeg {
             rtRayhitSet.updateBufferInfos(1, false, GPUContext::instance().getSharedVertexBuffer(RenderTarget::VERTEX_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             rtRayhitSet.updateBufferInfos(2, geometryOffsetBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             rtRayhitSet.updateBufferInfos(3, materialBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-            rtRayhitSet.updateImageInfos(4, environmentMap, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-            rtRayhitSet.updateImageInfos(5, frameBuffer.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-            rtRayhitSet.updateImageInfos(6, csmShadowMaps.getDepthStencilTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-            rtRayhitSet.updateImageInfos(7, plShadowMaps.getDepthStencilTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-            rtRayhitSet.updateBufferInfos(8,GPUContext::instance().getSharedBuffers(RenderTarget::LOD_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            rtRayhitSet.updateBufferInfos(4, GPUContext::instance().getSharedBuffers(RenderTarget::LOD_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            rtRayhitSet.updateImageInfos(5, environmentMap, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            rtRayhitSet.updateImageInfos(6, frameBuffer.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            rtRayhitSet.updateImageInfos(7, csmShadowMaps.getDepthStencilTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            rtRayhitSet.updateImageInfos(8, plShadowMaps.getDepthStencilTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            rtRayhitSet.updateBufferInfos(9,GPUContext::instance().getSharedBuffers(RenderTarget::LOD_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             if (hasDiffuseTexture) {
-                rtRayhitSet.updateImageInfos(9, GPUContext::instance().getSharedTextures(Material::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                rtRayhitSet.updateImageInfos(10, GPUContext::instance().getSharedTextures(Material::DIFFUSE), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             }
             rtRayhitSet.updateDescriptorSet();            
             bool hasSpecTexture = GPUContext::instance().getSharedTextures(Material::SPECULAR).size() != 0;

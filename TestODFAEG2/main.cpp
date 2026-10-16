@@ -356,11 +356,11 @@ int main() {
 	sceneColorTexture.create(window.getSize().x(), window.getSize().y());
 	sceneColorTexture.setCamera(camera);
 	RenderGraph renderGraph(sceneColorTexture, 0);
-	/*renderGraph.addOpaquePass(0, "*", window.getId());*/
+	renderGraph.addOpaquePass(0, "*", window.getId());
 	/*renderGraph.addOITPass(1, 0, "*", window.getId());
 	renderGraph.addShadowPass(2, 0, "*", window.getId());
 	//renderGraph.addOITPass(0, 0, "*", window.getId());*/
-	//renderGraph.addRTPass(1, "*", window.getId());
+	renderGraph.addRTPass(1, "*", window.getId());
 	/*ComponentManager componentManager;
 	std::vector<IComponent*> components = renderGraph.getComponents();
 	for (unsigned int i = 0; i < components.size(); i++) {
@@ -469,7 +469,7 @@ int main() {
 		
 		//sceneColorTexture.submit(true);
 		
-		//renderGraph.drawAllPasses();	
+		renderGraph.drawAllPasses();	
 		sceneColorTexture.display();		
 		rect.setTexture(&sceneColorTexture.getTexture());
 		window.draw(rect);	
