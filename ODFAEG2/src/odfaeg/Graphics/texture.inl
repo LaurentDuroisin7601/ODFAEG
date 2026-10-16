@@ -834,10 +834,12 @@ namespace odfaeg {
             m_DataSize = imageLoader.getDataSize();
             if (face == 0) {
                 //std::cout<<"size : "<<imageLoader.getSize().x()<<std::endl;
-                createCubeMap(imageLoader.getSize().x());
                 mipLevels = std::floor(std::log2(std::max(imageLoader.getSize().x(), imageLoader.getSize().y()))) + 1;
+                createCubeMap(imageLoader.getSize().x());
+                
                 //std::cout<<"cm created"<<std::endl;
             }
+            
             
             const std::uint8_t* pixels = imageLoader.getPixelsPtr();
             int texWidth = imageLoader.getSize().x();
@@ -1543,11 +1545,11 @@ namespace odfaeg {
                 blitInfo.regionCount = 1;
                 blitInfo.pRegions = &blitRegion;              
                 commandPool.beginRecordCommandBuffer(i);
-                transitionImageLayout(texture.images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-                texture.transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                transitionImageLayout(texture.images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 1, 6);
+                texture.transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 0, 1, 6);
                 vkCmdBlitImage2(commandPool.getHandle(i), &blitInfo);
-                transitionImageLayout(texture.images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-                texture.transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                transitionImageLayout(texture.images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 0, 1, 6);
+                texture.transitionImageLayout(images[i], commandPool.getHandle(i), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 0, 1, 6);
                 commandPool.endRecordCommandBuffer(i);
             }
             VkSubmitInfo submitInfo{};

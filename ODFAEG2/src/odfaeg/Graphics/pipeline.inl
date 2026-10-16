@@ -631,9 +631,11 @@ namespace odfaeg {
             rayTracingPipelineCI.pGroups = shaderGroups.data();
             rayTracingPipelineCI.maxPipelineRayRecursionDepth = 1;
             rayTracingPipelineCI.layout = pipelineLayout;
-            if (vkCreateRayTracingPipelinesKHR(device.getDevice(), VK_NULL_HANDLE, VK_NULL_HANDLE, 1, &rayTracingPipelineCI, nullptr, &pipeline) != VK_SUCCESS) {
+            
+			if (vkCreateRayTracingPipelinesKHR(device.getDevice(), VK_NULL_HANDLE, VK_NULL_HANDLE, 1, &rayTracingPipelineCI, nullptr, &pipeline) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create raytracing pipeline!");
             }
+			std::cout<<"rt pipeline created"<<std::endl;
             shader.cleanupRaytracingShaderModules();		
 		}
 		void Pipeline::cleanup() {

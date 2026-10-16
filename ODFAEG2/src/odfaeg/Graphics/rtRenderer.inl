@@ -83,7 +83,9 @@ namespace odfaeg {
             }
             shaderGroupCount = 3;
             loadExtensionsFuncPtr();
+            std::cout<<"create descriptors"<<std::endl;
             createDescriptorsAndPipelines();
+            std::cout<<"pipelines and descriptors created"<<std::endl;
             createShaderBindingTable();
             
             needToUpdateBLAS = needToUpdateTLAS = needToUpdateDescriptorSets = true; 
@@ -690,7 +692,9 @@ namespace odfaeg {
             vertexPCRange.size = sizeof(RayGenPC);
             vertexPCRange.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR ;
             pushConstants.push_back(vertexPCRange);
+            
             GPUContext::instance().getRTPipeline(rtShader).createRTPipeline(rtShader, GPUContext::instance().getDescriptorSetLayout(rtShader), pushConstants);
+            //std::cout<<"rt pipeline created"<<std::endl;
             DescriptorPool& rtRaygenPool = GPUContext::instance().getDescriptorPool(rtShader, 7);
             rtRaygenPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT);
             rtRaygenPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT);
