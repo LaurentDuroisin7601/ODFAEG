@@ -682,7 +682,7 @@ namespace odfaeg {
             DescriptorSetLayout& rtRayhitAOSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 1, true, 6);
             rtRayhitAOSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT); 
-            rtRayhitRoughSetLayout.update();
+            rtRayhitAOSetLayout.update();
             DescriptorSetLayout& rtRayhitEmissSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 1, true, 7);
             rtRayhitEmissSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT); 

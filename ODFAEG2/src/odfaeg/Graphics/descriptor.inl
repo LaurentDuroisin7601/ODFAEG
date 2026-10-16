@@ -93,6 +93,7 @@ namespace odfaeg {
 			layoutBindings[binding].descriptorType = descriptorType;
 			layoutBindings[binding].pImmutableSamplers = nullptr;
 			layoutBindings[binding].stageFlags = stageFlags;
+			//std::cout<<"update layout : "<<binding<<std::endl;
 			/*if (bindless) {
 				if (binding == layoutBindings.size() - 1) {*/
 					this->bindlessFlags[binding] = bindlessFlags;
@@ -113,7 +114,7 @@ namespace odfaeg {
 				bindingFlagsInfo.pBindingFlags = bindlessFlags.data();				
 				layoutInfo.pNext = &bindingFlagsInfo;
 			//}
-			layoutInfo.bindingCount = static_cast<uint32_t>(layoutBindings.size());;
+			layoutInfo.bindingCount = static_cast<uint32_t>(layoutBindings.size());
 			layoutInfo.pBindings = layoutBindings.data();
 			layoutInfo.flags = flags;
 			//std::cout<<"bindings : "<<layoutBindings.size()<<std::endl;
