@@ -35,7 +35,7 @@ namespace odfaeg {
         void RenderGraph::addRTPass(unsigned int order, std::string typesToRender, unsigned int windowId) {
              RTRenderer* rtRenderer = new RTRenderer(output, environmentMap, output, csmShadowMap, pointShadowMap, layer, typesToRender, windowId);
              renderers.insert(std::make_pair(order, rtRenderer));           
-        }
+        }        
         void RenderGraph::addDirectionnalLight(entity::DirectionnalLight& dirLight) {
             //std::cout<<"add directionnal light"<<std::endl;
             std::map<unsigned int, IRenderer*>::iterator it;

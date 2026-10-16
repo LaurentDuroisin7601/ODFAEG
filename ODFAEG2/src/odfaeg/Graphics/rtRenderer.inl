@@ -78,7 +78,7 @@ namespace odfaeg {
             }
             
             std::string shaderDir = std::string(ODFAEG_INSTALL_DIR) + "/Shader";
-            if (!rtShader.loadRaytracingFromFileSpv(shaderDir + "/raygenShader.rgen.spv", shaderDir + "/raymissShader.rmiss.spv", shaderDir+"/rayhitShader.rchit.spv", shaderDir+"/rayanyhitShader.rchit.spv")) {
+            if (!rtShader.loadRaytracingFromFileSpv(shaderDir + "/raygenShader.rgen.spv", shaderDir + "/raymissShader.rmiss.spv", shaderDir+"/rayhitShader.rchit.spv", shaderDir+"/rayanyhitShader.rahit.spv")) {
                 throw std::runtime_error("Could not load rt shader");
             }
             shaderGroupCount = 3;
@@ -406,6 +406,7 @@ namespace odfaeg {
             vkDeviceWaitIdle(GPUContext::instance().getDevice().getDevice());                 
         }
         void RTRenderer::updateTLAS() {
+            std::cout<<"update TLAS"<<std::endl; 
             std::vector<VkAccelerationStructureInstanceKHR> instances;
             unsigned int singleInstancesIndex = 0;
             //instances.resize(singleInstancesCount+instancesGroupCount+1);
@@ -507,6 +508,7 @@ namespace odfaeg {
                     1,
                     &accelerationBuildGeometryInfo,
                     accelerationBuildStructureRangeInfos.data());
+            std::cout<<"Global TLAS updated."<<std::endl;
             entity::GridMap<Mesh*> grid(50, 50, 50);
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
                 
@@ -546,6 +548,7 @@ namespace odfaeg {
             localInstancesBuffer.create(sizeof(VkAccelerationStructureInstanceKHR)*instances.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, VMA_MEMORY_USAGE_GPU_ONLY, 0, true);   
             Buffer::copyBuffer(instancesStaggingBuffer, localInstancesBuffer, sizeof(VkAccelerationStructureInstanceKHR)*instances.size(), commandPool.getHandle(parentRenderer.getCurrentFrame())); 
             instanceDataDeviceAddress.deviceAddress = localInstancesBuffer.getDeviceAddress();
+            
             for (unsigned int i = 0; i < localTlasInfos.size(); i++) {
                 VkAccelerationStructureGeometryKHR accelerationStructureGeometry{};
                 accelerationStructureGeometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
@@ -630,7 +633,8 @@ namespace odfaeg {
             if (vkQueueSubmit(GPUContext::instance().getDevice().getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
                 throw std::runtime_error("Echec de l'envoi d'un command buffer!");
             }
-            vkDeviceWaitIdle(GPUContext::instance().getDevice().getDevice());                 
+            vkDeviceWaitIdle(GPUContext::instance().getDevice().getDevice());   
+                         
         }
         void RTRenderer::createDescriptorsAndPipelines() {            
             DescriptorSetLayout& rtRaygenSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 7, true); 

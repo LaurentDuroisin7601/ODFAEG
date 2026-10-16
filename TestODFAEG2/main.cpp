@@ -177,7 +177,7 @@ int main() {
 	gameMode.addGameObject(la);
 	
 	gameMode.applyAllRules();
-	system("PAUSE");
+	//system("PAUSE");
 	/*visitor.bind(cvar1, cvar2, cvar3);
 	visitor();*/
 	//system("PAUSE");
@@ -352,14 +352,15 @@ int main() {
 	window.addGameObject(&cube5Mesh);*/
 
 	//window.addGameObject(&cube6Mesh);
-	/*RenderTexture sceneColorTexture(ctx.getDevice(), true);
+	RenderTexture sceneColorTexture(ctx.getDevice(), true);
 	sceneColorTexture.create(window.getSize().x(), window.getSize().y());
 	sceneColorTexture.setCamera(camera);
-	RenderGraph renderGraph(sceneColorTexture);
-	renderGraph.addOpaquePass(0, 0, "*", window.getId());
-	renderGraph.addOITPass(1, 0, "*", window.getId());
+	RenderGraph renderGraph(sceneColorTexture, 0);
+	renderGraph.addOpaquePass(0, "*", window.getId());
+	/*renderGraph.addOITPass(1, 0, "*", window.getId());
 	renderGraph.addShadowPass(2, 0, "*", window.getId());
 	//renderGraph.addOITPass(0, 0, "*", window.getId());*/
+	renderGraph.addRTPass(1, "*", window.getId());
 	/*ComponentManager componentManager;
 	std::vector<IComponent*> components = renderGraph.getComponents();
 	for (unsigned int i = 0; i < components.size(); i++) {
@@ -387,8 +388,8 @@ int main() {
 
 	renderGraph.addDirectionnalLight(dirLight);
 	PointLight pointLight(Vec3f(10, 10, 10));	
-	renderGraph.addPonctualLight(pointLight);	
-	RectangleShape rect(GPUContext::instance().getDevice(), Vec3f(800, 600, 0));**/		
+	renderGraph.addPonctualLight(pointLight);*/	
+	RectangleShape rect(GPUContext::instance().getDevice(), Vec3f(800, 600, 0));		
 	std::string s;	
 	camera.setConstrains(10, 0);
 	float speed = 100.f;
@@ -458,11 +459,11 @@ int main() {
 		window.setCamera(camera);
 		window.setDepthStencil(true, false);
 		window.clear();
-		window.draw(Triangles);
+		//window.draw(Triangles);
 		
 		/*window.setTypesToRender("*", window.getCurrentFrame());	
 		window.drawMesh(Triangles);*/
-		/*window.setCamera(rtRenderTextureCamera);
+		window.setCamera(rtRenderTextureCamera);
 		
 		//sceneColorTexture.clear();
 		
@@ -471,7 +472,7 @@ int main() {
 		renderGraph.drawAllPasses();	
 		sceneColorTexture.display();		
 		rect.setTexture(&sceneColorTexture.getTexture());
-		window.draw(rect);	*/
+		window.draw(rect);	
 		//window.applyCullingAndBatching();
 		
 		//std::cout<<"draw"<<std::endl;

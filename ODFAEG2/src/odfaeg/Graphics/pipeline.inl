@@ -579,6 +579,8 @@ namespace odfaeg {
 				anyhitshaderStageInfo.stage = VK_SHADER_STAGE_ANY_HIT_BIT_KHR;
 				anyhitshaderStageInfo.module = shader.getRayAnyhitShaderModule();
 				anyhitshaderStageInfo.pName = "main";
+				/*std::cout<<"any hit : "<<shader.getRayAnyhitShaderModule()<<std::endl;
+				system("PAUSE");*/
 				shaderStages.push_back(anyhitshaderStageInfo);
 				VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
 				shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;

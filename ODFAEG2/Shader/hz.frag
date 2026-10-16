@@ -23,9 +23,9 @@ struct MaterialData {
     int instanceGroupId;
     uint vertsInstanceSet;
     uint materialId;
-    uint nbBuffers;    
-    uint opaque;
-    uint pipelineType;          
+    uint nbBuffers;       
+    uint opaque;  
+    uint pipelineType;           
 };
 layout (std430, set = 0, binding = 2) buffer MaterialDataSSBO {
     MaterialData materialData[];
@@ -47,7 +47,8 @@ layout(location = 0) out vec4 outColor;
 void main() {
     //debugPrintfEXT("Ok");
     MaterialData mat = materialDataBuffer[primitiveType * MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[materialID];
-    vec2 uv = fragTexCoord;
+    vec2 uv = vec2(fragTexCoord.x, 1-fragTexCoord.y);
+    //debugPrintfEXT("uv : %v2f", uv);
     // --- Diffuse ---
     vec4 diffuse = fragColor;
     /*if (mat.diffuseTextureIndex < 0 || mat.diffuseTextureIndex > 6)

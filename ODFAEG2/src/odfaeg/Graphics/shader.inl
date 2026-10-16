@@ -137,7 +137,7 @@ namespace odfaeg {
             }
             bool Shader::loadRaytracingFromFileSpv(const std::string& raygenShaderFileName,
                                  const std::string& raymissShaderFileName,
-                                 const std::string& rayhitShaderFileName, const std::string& rayanyhitFileName)
+                                 const std::string& rayhitShaderFileName, const std::string& rayanyhitShaderFileName)
             {
                 // Mesh shader
                 if (!loadSpv(raygenShaderFileName, spvRaygenShaderCode))
@@ -149,7 +149,7 @@ namespace odfaeg {
 
                 if (!loadSpv(rayhitShaderFileName, spvRayhitShaderCode))
                     return false;
-                if (!rayanyhitFileName.empty() && !loadSpv(rayhitShaderFileName, spvRayanyhitShaderCode))
+                if (!rayanyhitShaderFileName.empty() && !loadSpv(rayanyhitShaderFileName, spvRayanyhitShaderCode))
                     return false;
                 return true;
             }

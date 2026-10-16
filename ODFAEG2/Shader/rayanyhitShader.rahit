@@ -100,6 +100,7 @@ struct TransportRayPayload {
     vec4 shadowColor; 
     mat4 dirLightSpace[NB_CASCADES+1];
     mat4 pointLightSpace[6];
+    int desiredLod;
 };
 layout(location = 0) rayPayloadInEXT TransportRayPayload transport;
 hitAttributeEXT vec2 baryCoords;
@@ -124,7 +125,7 @@ void main() {
     && geomOffs.indexOffset + primID * 3 < lodLevels[geomOffs.lodOffset+lod].index_count) {
         transport.desiredLod = lod;
     } else {
-        ignoreIntersectionEXT();
+        //ignoreIntersectionEXT();
         return;
     }
 }

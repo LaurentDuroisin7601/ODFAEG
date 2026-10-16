@@ -8,8 +8,8 @@ struct ModelData {
     mat4 borderMatrices;
 };
 struct AABB {
-	vec3 center;
-	vec3 size;
+	vec4 center;
+	vec4 size;
 };
 struct SubMesh {
 	AABB globalBounds;
@@ -23,8 +23,9 @@ struct SubMesh {
 	int id;
     int lodLevel;
     int objectId;
-    int mesheltOffset;
+    int meshletOffset;
     int meshletCount;
+    int modelDataOffset;
 };
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec4 inColor;
