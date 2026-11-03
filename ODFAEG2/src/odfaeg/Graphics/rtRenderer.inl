@@ -409,7 +409,7 @@ namespace odfaeg {
             vkDeviceWaitIdle(GPUContext::instance().getDevice().getDevice());                 
         }
         void RTRenderer::updateTLAS() {
-            std::cout<<"update TLAS"<<std::endl; 
+            //std::cout<<"update TLAS"<<std::endl; 
             std::vector<VkAccelerationStructureInstanceKHR> instances;
             unsigned int singleInstancesIndex = 0;
             //instances.resize(singleInstancesCount+instancesGroupCount+1);
@@ -435,7 +435,10 @@ namespace odfaeg {
                     totalInstancesCount++;                    
                 }
             }
-            commandPool.beginRecordCommandBuffer(parentRenderer.getCurrentFrame());
+            if (instances.size() == 0) {
+                instances.push_back(VkAccelerationStructureInstanceKHR{});
+            }           
+            commandPool.beginRecordCommandBuffer(parentRenderer.getCurrentFrame());            
             instancesStaggingBuffer.create(sizeof(VkAccelerationStructureInstanceKHR)*instances.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
             instancesStaggingBuffer.update(instances.data(), sizeof(VkAccelerationStructureInstanceKHR)*instances.size());
             instancesBuffer.create(sizeof(VkAccelerationStructureInstanceKHR)*instances.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, VMA_MEMORY_USAGE_GPU_ONLY, 0, true);
@@ -511,7 +514,19 @@ namespace odfaeg {
                     1,
                     &accelerationBuildGeometryInfo,
                     accelerationBuildStructureRangeInfos.data());
-            std::cout<<"Global TLAS updated."<<std::endl;
+            commandPool.endRecordCommandBuffer(parentRenderer.getCurrentFrame());
+            VkSubmitInfo submitInfo{};
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = 1;
+            submitInfo.pCommandBuffers = &commandPool.getHandle(parentRenderer.getCurrentFrame());
+            
+            Device::QueueFamilyIndices indices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice(), VK_NULL_HANDLE);
+            if (vkQueueSubmit(GPUContext::instance().getDevice().getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+                throw std::runtime_error("Echec de l'envoi d'un command buffer!");
+            }
+            vkDeviceWaitIdle(GPUContext::instance().getDevice().getDevice());   
+            //std::cout<<"Global TLAS updated."<<std::endl;
+            commandPool.beginRecordCommandBuffer(parentRenderer.getCurrentFrame());           
             entity::GridMap<Mesh*> grid(50, 50, 50);
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
                 
@@ -545,6 +560,9 @@ namespace odfaeg {
                     instances.push_back(instance);
                     totalInstancesCount++;
                 }
+            } 
+            if (instances.size() == 0) {
+                instances.push_back(VkAccelerationStructureInstanceKHR{});
             }    
             instancesStaggingBuffer.create(sizeof(VkAccelerationStructureInstanceKHR)*instances.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
             instancesStaggingBuffer.update(instances.data(), sizeof(VkAccelerationStructureInstanceKHR)*instances.size());
@@ -562,9 +580,7 @@ namespace odfaeg {
                 accelerationStructureGeometry.geometry.instances.data = instanceDataDeviceAddress;
 
                 // Get size info
-                /*
-                The pSrcAccelerationStructure, dstAccelerationStructure, and mode members of pBuildInfo are ignored. Any VkDeviceOrHostAddressKHR members of pBuildInfo are ignored by this command, except that the hostAddress member of VkAccelerationStructureGeometryTrianglesDataKHR::transformData will be examined to check if it is NULL.*
-                */
+               
                 VkAccelerationStructureBuildGeometryInfoKHR accelerationStructureBuildGeometryInfo{};
                 accelerationStructureBuildGeometryInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
                 accelerationStructureBuildGeometryInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
@@ -621,18 +637,22 @@ namespace odfaeg {
                         accelerationBuildStructureRangeInfos.data()),
                 currentInstancesOffset += localTlasInfos[i].second;   
             } 
-            VkDeviceSize bufferSize = geometryOffsets.size() * sizeof(GeometryOffset);
+            if (geometryOffsets.size() == 0) {
+                geometryOffsets.push_back(GeometryOffset{0, 0, 0, 0});
+            }
+            unsigned int bufferSize = sizeof(GeometryOffset)*geometryOffsets.size();
             geometryOffsetStaggingBuffer.create(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);    
             geometryOffsetStaggingBuffer.update(geometryOffsets.data(), bufferSize);         
             geometryOffsetBuffer.create(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
             
             Buffer::copyBuffer(geometryOffsetStaggingBuffer, geometryOffsetBuffer, bufferSize, commandPool.getHandle(parentRenderer.getCurrentFrame()));           
             commandPool.endRecordCommandBuffer(parentRenderer.getCurrentFrame());
-            VkSubmitInfo submitInfo{};
+           
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
             submitInfo.commandBufferCount = 1;
             submitInfo.pCommandBuffers = &commandPool.getHandle(parentRenderer.getCurrentFrame());
-            Device::QueueFamilyIndices indices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice(), VK_NULL_HANDLE);
+            
+            indices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice(), VK_NULL_HANDLE);
             if (vkQueueSubmit(GPUContext::instance().getDevice().getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
                 throw std::runtime_error("Echec de l'envoi d'un command buffer!");
             }
@@ -650,12 +670,12 @@ namespace odfaeg {
             rtRaygenSetLayout.updateLayout(6, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, MAX_TLAS_STRUCTURES, VK_SHADER_STAGE_RAYGEN_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
             VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);   
             rtRaygenSetLayout.update();         
-            DescriptorSetLayout& rtRayhitSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 10, true, 1); 
-            rtRayhitSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR); 
-            rtRayhitSetLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR);
-            rtRayhitSetLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR);
-            rtRayhitSetLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR);
-            rtRayhitSetLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_ANY_HIT_BIT_KHR);
+            DescriptorSetLayout& rtRayhitSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 9, true, 1); 
+            rtRayhitSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR /*| VK_SHADER_STAGE_ANY_HIT_BIT_KHR*/); 
+            rtRayhitSetLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR /*| VK_SHADER_STAGE_ANY_HIT_BIT_KHR*/);
+            rtRayhitSetLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR /*| VK_SHADER_STAGE_ANY_HIT_BIT_KHR*/);
+            rtRayhitSetLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR /*| VK_SHADER_STAGE_ANY_HIT_BIT_KHR*/);
+            rtRayhitSetLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR /*| VK_SHADER_STAGE_ANY_HIT_BIT_KHR*/);
             rtRayhitSetLayout.updateLayout(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
             rtRayhitSetLayout.updateLayout(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);
             rtRayhitSetLayout.updateLayout(7, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_MISS_BIT_KHR);

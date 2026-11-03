@@ -32,7 +32,7 @@ layout(binding = 3, set = 0) buffer PointLightSSBO {
 }; 
 layout(binding = 4, set = 0) uniform sampler2D rasterImage; 
 layout(binding = 5, set = 0) uniform accelerationStructureEXT globalAS;
-layout(binding = 6, set = 0) uniform accelerationStructureEXT localAS[MAX_TLAS_STRUCTURES];
+layout(binding = 6, set = 0) uniform accelerationStructureEXT localAS[2];
 
 layout (push_constant) uniform PushConstant {
     uint currentFrame;
@@ -41,9 +41,7 @@ layout (push_constant) uniform PushConstant {
     uint hasGeometry;
     uint pipelineMask;
 } pc;
-struct Material {   
-    /*vec2 uvScale;
-    vec2 uvOffset;*/
+struct Material {       
     uint diffuseTextureIndex;
     uint specularTextureIndex;
     uint normalTextureIndex;
@@ -116,17 +114,17 @@ void main() {
             
             if (transport.transmissive) {
                 transport.rayType = 1;
-                traceRayEXT(localAS[transport.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, transport.direction, tmax, 0);            
+                traceRayEXT(localAS[nonuniformEXT(transport.localASID)], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, transport.direction, tmax, 0);            
             } 
             //Objet translucide réflectable touché traçage du rayon de rélfection.
             if (transport.reflectable) {
                 transport.rayType = 2;
-                traceRayEXT(localAS[transport.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, transport.R, tmax, 0);            
+                //traceRayEXT(localAS[transport.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, transport.R, tmax, 0);            
             }      
             //Objet translucide réfractable touché traçage du rayon de réfraction.
             if (transport.refractable) {
                 transport.rayType = 3;
-                traceRayEXT(localAS[transport.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, transport.T, tmax, 0);            
+                //traceRayEXT(localAS[transport.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, transport.T, tmax, 0);            
             }              
             //Calcul et projection du shadow ray (pour rayons déviés ou non)
             for (uint l = 0; l < pc.directionnalLightCount; l++) {
@@ -135,7 +133,7 @@ void main() {
                 transport.lightId = directionnalLights[l].id;
                 transport.lightColor = directionnalLights[l].color;
                 transport.dirLightSpace = directionnalLights[l].lightSpace;                        
-                traceRayEXT(localAS[transport.localASID], gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, invLightDir.xyz, tmax, 0);           
+                //traceRayEXT(localAS[transport.localASID], gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, invLightDir.xyz, tmax, 0);           
             }            
             for (uint l = 0; l < pc.pointLightCount; l++) {
                 vec3 invLightDir = transport.origin - pointLights[l].position;
@@ -144,7 +142,7 @@ void main() {
                 transport.lightPos = pointLights[l].position;
                 transport.lightColor = pointLights[l].color;
                 transport.pointLightSpace = pointLights[l].lightSpace;            
-                traceRayEXT(localAS[transport.localASID], gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, invLightDir.xyz, tmax, 0);                
+                //traceRayEXT(localAS[transport.localASID], gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, invLightDir.xyz, tmax, 0);                
             }
             vec4 finalColor = vec4(0);
             if (transport.reflectable)
@@ -165,17 +163,11 @@ void main() {
                 transport.lastBounce = true;
             } else {
                 transport.rayType = 6;
-                traceRayEXT(localAS[transport.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, transport.direction, tmax, 0);
+                //traceRayEXT(localAS[transport.localASID], gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, transport.direction, tmax, 0);
             }
             i++; 
         }
-        /*if (payload.color.r != 0 || payload.color.g != 0 || payload.color.b != 0 || payload.color.a != 0) {
-            if (payload.color.r > 1 || payload.color.g > 1 || payload.color.b > 1 || payload.color.a > 1) {        
-                //debugPrintfEXT("color : %v4f", payload.color);
-            } else {
-                //debugPrintfEXT("color : %v4f", payload.color);
-            }
-        }*/    
+       
         imageStore(image[pc.currentFrame], ivec2(gl_LaunchIDEXT.xy), transport.secondaryColor);
     }
 }

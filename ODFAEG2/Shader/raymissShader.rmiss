@@ -79,7 +79,7 @@ layout(location = 0) rayPayloadInEXT TransportRayPayload transport;
 void main()
 {        
     //Rayon primaire.
-    if (transport.rayType == 0) {
+    /*if (transport.rayType == 0) {
        vec4 proj = inverse(cam[pc.currentFrame].viewInverse) * inverse(cam[pc.currentFrame].projInverse) * vec4(transport.origin, 1);
        proj.xyz = proj.xyz / proj.w; 
        transport.secondaryColor = texture(framebuffer, vec2(proj.xy)); 
@@ -126,5 +126,5 @@ void main()
        float depth = texture(pointShadowMaps, vec4(vec3(proj.xy, face), float(transport.lightId))).r;
        bool inShadow = (proj.z < depth);
        transport.localLightning = (inShadow) ? vec4(0.5, 0.5, 0.5, 1) * transport.lightColor * vec4(transport.normal, 1) : transport.lightColor * vec4(transport.normal, 1);
-    }
+    }*/
 }

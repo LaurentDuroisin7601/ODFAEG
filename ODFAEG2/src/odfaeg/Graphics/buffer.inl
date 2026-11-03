@@ -123,6 +123,7 @@ namespace odfaeg {
 					//std::cout<<"destroy buffer : "<<buffer<<std::endl;
 					vmaDestroyBuffer(allocator, buffer, memory);
 					buffer = VK_NULL_HANDLE;
+					deviceMemory = VK_NULL_HANDLE;
 				}
 			} else {
 				if (buffer != VK_NULL_HANDLE) {
@@ -130,6 +131,7 @@ namespace odfaeg {
 					vkFreeMemory(device.getDevice(), deviceMemory, nullptr);
 					vkDestroyBuffer(device.getDevice(), buffer, nullptr);
 					buffer = VK_NULL_HANDLE;
+					deviceMemory = VK_NULL_HANDLE;
 				}
 			}		
 		}
