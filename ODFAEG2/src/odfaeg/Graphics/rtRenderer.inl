@@ -711,7 +711,7 @@ namespace odfaeg {
             VkPushConstantRange vertexPCRange;
             vertexPCRange.offset = 0;
             vertexPCRange.size = sizeof(RayGenPC);
-            vertexPCRange.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR ;
+            vertexPCRange.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR;
             pushConstants.push_back(vertexPCRange);
             
             GPUContext::instance().getRTPipeline(rtShader).createRTPipeline(rtShader, GPUContext::instance().getDescriptorSetLayout(rtShader), pushConstants);
