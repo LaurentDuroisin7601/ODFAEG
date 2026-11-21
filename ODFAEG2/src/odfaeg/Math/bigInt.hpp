@@ -52,7 +52,7 @@ namespace odfaeg {
             unsigned int size() const;
             std::string toStr(unsigned int base);
             static bool isPrime(unsigned int nbBits, BigInt& p);
-
+            BigInt nextPrime(unsigned int nbBits, unsigned int base);
             static bool miller (unsigned int nbBits, BigInt& n);
             BigInt operator++(int i);
             BigInt operator--(int i);

@@ -147,6 +147,14 @@ namespace odfaeg
             }
             return p;
         }
+        BigInt BigInt::nextPrime(unsigned int nbBits, unsigned int base) {
+            BigInt q(0, true, base*4);
+            for (unsigned int i = 0; i < chiffres.size(); i++) {
+                BigInt c(chiffres[i], true, base*4);
+                q += c.pow(base);
+            }
+            return q;
+        }
         bool BigInt::isPrime(unsigned int nbBits, BigInt &p)
         {
             // on effectue NB_ITER fois la boucle.
