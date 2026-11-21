@@ -1,4 +1,3 @@
-/*
 #include "bigInt.hpp"
 
 using namespace std;
@@ -132,7 +131,7 @@ namespace odfaeg
             {
                 for (unsigned long long int i = 0; i < n.nbChiffres; ++i)
                 {
-                    unsigned int c = math::Math::random(base);
+                    unsigned int c = math::Math::random(0, base);
                     n.chiffres.push_back(c);
                 }
 
@@ -143,7 +142,7 @@ namespace odfaeg
         BigInt BigInt::genPrime(unsigned int nbBits, unsigned int base)      {
             BigInt p(0, true,  base);                  
             for (unsigned int i = 0; i  < nbBits; i++) {
-                BigInt module(math::Math::random(base), true, 2); 
+                BigInt module(base-1, true, 2); 
                 p += module.pow(i);
             }
             return p;
@@ -992,4 +991,4 @@ namespace odfaeg
             return out;
         }
     }
-}*/
+}
