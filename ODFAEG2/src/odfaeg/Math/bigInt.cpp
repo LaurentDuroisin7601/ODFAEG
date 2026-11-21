@@ -140,9 +140,9 @@ namespace odfaeg
             return n;
         }
         BigInt BigInt::genPrime(unsigned int nbBits, unsigned int base)      {
-            BigInt p(0, true,  base);                  
+            BigInt p(0, true,  base*4);                  
             for (unsigned int i = 0; i  < nbBits; i++) {
-                BigInt module(base-1, true, 2); 
+                BigInt module(2, true, base*4); 
                 p += module.pow(i);
             }
             return p;
