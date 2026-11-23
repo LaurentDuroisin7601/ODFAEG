@@ -429,7 +429,7 @@ namespace odfaeg {
                     instance.instanceCustomIndex = instanceID;
                     if ((gameObjects[i]->getMaterials()[j]->opaque & entity::SubMesh::transparentMask) != 0) {                  
                         //nonOpaqueObjects.push_back(gameObjects[i]);
-                        geometryOffsets[nonOpaqueObjectsCount].tlasOffset = gameObjects[i]->getMaterials()[j]->pipelineType + nonOpaqueObjectsCount + 1;
+                        geometryOffsets[totalInstancesCount].tlasOffset = gameObjects[i]->getMaterials()[j]->pipelineType + nonOpaqueObjectsCount + 1;
                         nonOpaqueObjectsCount++;
                         instance.mask = gameObjects[i]->getMaterials()[j]->pipelineType + nonOpaqueObjectsCount;
                     } else {
