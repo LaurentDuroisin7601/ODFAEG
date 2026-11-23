@@ -668,15 +668,15 @@ namespace odfaeg {
                          
         }
         void RTRenderer::createDescriptorsAndPipelines() {            
-            DescriptorSetLayout& rtRaygenSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 7, true); 
+            DescriptorSetLayout& rtRaygenSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 6); 
             rtRaygenSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR);
             rtRaygenSetLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
             rtRaygenSetLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
             rtRaygenSetLayout.updateLayout(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
             rtRaygenSetLayout.updateLayout(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
             rtRaygenSetLayout.updateLayout(5, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
-            rtRaygenSetLayout.updateLayout(6, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, MAX_TLAS_STRUCTURES, VK_SHADER_STAGE_RAYGEN_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
-            VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);   
+            /*rtRaygenSetLayout.updateLayout(6, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, MAX_TLAS_STRUCTURES, VK_SHADER_STAGE_RAYGEN_BIT_KHR, VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+            VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT);*/   
             rtRaygenSetLayout.update();         
             DescriptorSetLayout& rtRayhitSetLayout = GPUContext::instance().getDescriptorSetLayout(rtShader, 9, true, 1); 
             rtRayhitSetLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR /*| VK_SHADER_STAGE_ANY_HIT_BIT_KHR*/); 
@@ -724,14 +724,14 @@ namespace odfaeg {
             
             GPUContext::instance().getRTPipeline(rtShader).createRTPipeline(rtShader, GPUContext::instance().getDescriptorSetLayout(rtShader), pushConstants);
             //std::cout<<"rt pipeline created"<<std::endl;
-            DescriptorPool& rtRaygenPool = GPUContext::instance().getDescriptorPool(rtShader, 7);
+            DescriptorPool& rtRaygenPool = GPUContext::instance().getDescriptorPool(rtShader, 6);
             rtRaygenPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT);
             rtRaygenPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT);
             rtRaygenPool.updatePoolSize(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
             rtRaygenPool.updatePoolSize(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
             rtRaygenPool.updatePoolSize(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
             rtRaygenPool.updatePoolSize(5, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1);
-            rtRaygenPool.updatePoolSize(6, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, MAX_TLAS_STRUCTURES);
+            //rtRaygenPool.updatePoolSize(6, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, MAX_TLAS_STRUCTURES);
             rtRaygenPool.update();
             DescriptorPool& rtRayhitPool = GPUContext::instance().getDescriptorPool(rtShader, 10, 1);
             rtRayhitPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, NB_PRIMITIVE_TYPES);
@@ -763,7 +763,7 @@ namespace odfaeg {
             DescriptorPool& rtRayhitEmissPool = GPUContext::instance().getDescriptorPool(rtShader, 1, 7);
             rtRayhitEmissPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_TEXTURES);
             rtRayhitEmissPool.update();
-            DescriptorSet::allocate(rtRaygenPool, rtRaygenSetLayout, GPUContext::instance().getDescriptorSets(rtShader, 7, 1), MAX_TLAS_STRUCTURES);
+            DescriptorSet::allocate(rtRaygenPool, rtRaygenSetLayout, GPUContext::instance().getDescriptorSets(rtShader, 6, 1));
             DescriptorSet::allocate(rtRayhitPool, rtRayhitSetLayout, GPUContext::instance().getDescriptorSets(rtShader, 10, 1, 1), MAX_TEXTURES);
             DescriptorSet::allocate(rtRayhitSpecPool, rtRayhitSpecSetLayout, GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 2), MAX_TEXTURES);
             DescriptorSet::allocate(rtRayhitNormalPool, rtRayhitNormalSetLayout, GPUContext::instance().getDescriptorSets(rtShader, 1, 1, 3), MAX_TEXTURES);
@@ -777,11 +777,7 @@ namespace odfaeg {
             bool hasDiffuseTexture = GPUContext::instance().getSharedTextures(Material::DIFFUSE).size() != 0;
             unsigned int updateCount;
             if (topLevelAS.size() != 0) {
-                if (topLocalAS.size() != 0) {
-                    updateCount = 7;
-                } else {
-                    updateCount = 6;
-                }
+                updateCount = 6;                
             } else {
                 updateCount = 5;
             }
@@ -794,9 +790,9 @@ namespace odfaeg {
             if (topLevelAS.size() != 0) {
                 rtRaygenSet.updateAccelerationStructureInfos(5, topLevelAS);
             }
-            if (topLocalAS.size() != 0) {
+            /*if (topLocalAS.size() != 0) {
                 rtRaygenSet.updateAccelerationStructureInfos(6, topLocalAS);
-            }            
+            }    */        
             rtRaygenSet.updateDescriptorSet();
             DescriptorSet& rtRayhitSet = GPUContext::instance().getDescriptorSets(rtShader, (hasDiffuseTexture) ? 10 : 9, 1, 1)[0];
             rtRayhitSet.updateBufferInfos(0, true, GPUContext::instance().getSharedVertexBuffer(RenderTarget::VERTEX_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
