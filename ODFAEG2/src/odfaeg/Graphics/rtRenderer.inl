@@ -415,18 +415,26 @@ namespace odfaeg {
             //instances.resize(singleInstancesCount+instancesGroupCount+1);
             unsigned int totalInstancesCount = 0;
             std::vector<Mesh*> gameObjects = RenderTarget::getGameObjects(); 
-            std::vector<Mesh*> nonOpaqueObjects; 
+            std::vector<Mesh*> nonOpaqueObjects;
+            unsigned int nonOpaqueObjectsCount = 0;             
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
                 for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
-                    if ((gameObjects[i]->getMaterials()[j]->opaque & entity::SubMesh::transparentMask) != 0) {                  
+                    /*if ((gameObjects[i]->getMaterials()[j]->opaque & entity::SubMesh::transparentMask) != 0) {                  
                         nonOpaqueObjects.push_back(gameObjects[i]);
-                    }
+                    }*/
                     unsigned int instanceID = gameObjects[i]->getGameObject()->getSubMeshes()[j].instanceId;
                     VkTransformMatrixKHR transformMatrix = toVulkanMatrix(gameObjects[i]->getGameObject()->getTransform().getMatrix());
                     VkAccelerationStructureInstanceKHR instance{};
                     instance.transform = transformMatrix;
                     instance.instanceCustomIndex = instanceID;
-                    instance.mask = gameObjects[i]->getMaterials()[j]->pipelineType;
+                    if ((gameObjects[i]->getMaterials()[j]->opaque & entity::SubMesh::transparentMask) != 0) {                  
+                        //nonOpaqueObjects.push_back(gameObjects[i]);
+                        geometryOffsets[nonOpaqueObjectsCount].tlasOffset = gameObjects[i]->getMaterials()[j]->pipelineType + nonOpaqueObjectsCount + 1;
+                        nonOpaqueObjectsCount++;
+                        instance.mask = gameObjects[i]->getMaterials()[j]->pipelineType + nonOpaqueObjectsCount;
+                    } else {
+                        instance.mask = gameObjects[i]->getMaterials()[j]->pipelineType;
+                    }
                     instance.instanceShaderBindingTableRecordOffset = 0;
                     instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
                     instance.accelerationStructureReference = bottomLevelASBuffers[instanceID].getDeviceAddress();
@@ -514,7 +522,7 @@ namespace odfaeg {
                     1,
                     &accelerationBuildGeometryInfo,
                     accelerationBuildStructureRangeInfos.data());
-            commandPool.endRecordCommandBuffer(parentRenderer.getCurrentFrame());
+            /*commandPool.endRecordCommandBuffer(parentRenderer.getCurrentFrame());
             VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
             submitInfo.commandBufferCount = 1;
@@ -636,7 +644,7 @@ namespace odfaeg {
                         &accelerationBuildGeometryInfo,
                         accelerationBuildStructureRangeInfos.data()),
                 currentInstancesOffset += localTlasInfos[i].second;   
-            } 
+            }*/ 
             if (geometryOffsets.size() == 0) {
                 geometryOffsets.push_back(GeometryOffset{0, 0, 0, 0});
             }
@@ -647,12 +655,12 @@ namespace odfaeg {
             
             Buffer::copyBuffer(geometryOffsetStaggingBuffer, geometryOffsetBuffer, bufferSize, commandPool.getHandle(parentRenderer.getCurrentFrame()));           
             commandPool.endRecordCommandBuffer(parentRenderer.getCurrentFrame());
-           
+            VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
             submitInfo.commandBufferCount = 1;
             submitInfo.pCommandBuffers = &commandPool.getHandle(parentRenderer.getCurrentFrame());
             
-            indices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice(), VK_NULL_HANDLE);
+            Device::QueueFamilyIndices indices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice(), VK_NULL_HANDLE);
             if (vkQueueSubmit(GPUContext::instance().getDevice().getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
                 throw std::runtime_error("Echec de l'envoi d'un command buffer!");
             }
