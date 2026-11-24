@@ -116,28 +116,28 @@ void main() {
             //Objet translucide touché.
             vec3 hitpoint = transport.origin;            
             
-            /*if (transport.transmissive) {
+            if (transport.transmissive) {
                 transport.rayType = 1;
-                traceRayEXT(globalAS, gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, transport.direction, tmax, 0);                  
+                traceRayEXT(globalAS, gl_RayFlagsNoneEXT, transport.localASID, 0, 0, 0, hitpoint.xyz, tmin, transport.direction, tmax, 0);                  
             } 
             //Objet translucide réflectable touché traçage du rayon de rélfection.
             if (transport.reflectable) {
                 transport.rayType = 2;
-                traceRayEXT(globalAS, gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, transport.R, tmax, 0);            
+                traceRayEXT(globalAS, gl_RayFlagsNoneEXT, transport.localASID, 0, 0, 0, hitpoint.xyz, tmin, transport.R, tmax, 0);            
             }      
             //Objet translucide réfractable touché traçage du rayon de réfraction.
             if (transport.refractable) {
                 transport.rayType = 3;
-                traceRayEXT(globalAS, gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, transport.T, tmax, 0);            
-            } */             
+                traceRayEXT(globalAS, gl_RayFlagsNoneEXT, transport.localASID, 0, 0, 0, hitpoint.xyz, tmin, transport.T, tmax, 0);            
+            }           
             //Calcul et projection du shadow ray (pour rayons déviés ou non)
-            /*for (uint l = 0; l < pc.directionnalLightCount; l++) {
+            for (uint l = 0; l < pc.directionnalLightCount; l++) {
                 vec3 invLightDir = -directionnalLights[l].dir;
                 transport.rayType = 4;
                 transport.lightId = directionnalLights[l].id;
                 transport.lightColor = directionnalLights[l].color;
                 transport.dirLightSpace = directionnalLights[l].lightSpace;                        
-                traceRayEXT(globalAS, gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, invLightDir.xyz, tmax, 0);           
+                traceRayEXT(globalAS, gl_RayFlagsOpaqueEXT, transport.localASID, 0, 0, 0, hitpoint.xyz, tmin, invLightDir.xyz, tmax, 0);           
             }            
             for (uint l = 0; l < pc.pointLightCount; l++) {
                 vec3 invLightDir = transport.origin - pointLights[l].position;
@@ -146,8 +146,8 @@ void main() {
                 transport.lightPos = pointLights[l].position;
                 transport.lightColor = pointLights[l].color;
                 transport.pointLightSpace = pointLights[l].lightSpace;            
-                traceRayEXT(globalAS, gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, invLightDir.xyz, tmax, 0);                
-            }*/
+                traceRayEXT(globalAS, gl_RayFlagsOpaqueEXT, transport.localASID, 0, 0, 0, hitpoint.xyz, tmin, invLightDir.xyz, tmax, 0);                
+            }
             vec4 finalColor = vec4(0);
             if (transport.reflectable)
                 finalColor += transport.reflectColor;
@@ -170,7 +170,7 @@ void main() {
                 transport.transmissive = false;
                 transport.refractable = false;
                 transport.reflectable = false;
-                traceRayEXT(globalAS, gl_RayFlagsNoneEXT, 0xff, 0, 0, 0, hitpoint.xyz, tmin, transport.direction, tmax, 0);
+                traceRayEXT(globalAS, gl_RayFlagsNoneEXT, transport.localASID, 0, 0, 0, hitpoint.xyz, tmin, transport.direction, tmax, 0);
             }
             i++; 
         }       
