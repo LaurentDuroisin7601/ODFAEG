@@ -167,7 +167,7 @@ void main() {
         } else {
             transport.reflectable = false;
         }   
-        if ((material.opaque & reflectable) != 0) {
+        if ((material.opaque & refractable) != 0) {
             float IOR = 1;
             if (material.materialType == 1) {
                 IOR = 1.00 / 1.33;        
@@ -184,7 +184,7 @@ void main() {
         } else {
             transport.refractable = false;
         } 
-        if (material.opaque == 0) {
+        if ((material.opaque & opaqueMask) == 0) {
             transport.transmissive  = true;
         } else {
             transport.transmissive = false;
