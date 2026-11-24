@@ -121,7 +121,10 @@ vec4 unpackColor(uint c)
 
 void main() {  
     GeometryOffset geomOffs = geomOffsets[gl_InstanceCustomIndexEXT];
-    
+    if (transport.localASID != -1 && gl_InstanceCustomIndexEXT != transport.localASID)
+    {
+        return;
+    }
     int primID = gl_PrimitiveID;    
     LodLevel lod = lodLevels[geomOffs.lodOffset+transport.desiredLod];
     
@@ -189,10 +192,7 @@ void main() {
             transport.transmissive  = false;
         } else {            
             transport.transmissive = true;
-            /*if (gl_InstanceCustomIndexEXT != transport.localASID)
-            {
-                return;
-            }*/
+            
         }
     } 
     //Calcul de la couleur du rayon courant.  
