@@ -435,7 +435,7 @@ namespace odfaeg {
                     } else {*/
                         instance.mask = gameObjects[i]->getMaterials()[j]->pipelineType;
                     //}
-                    geometryOffsets[totalInstancesCount].tlasOffset = totalInstancesCount;
+                    geometryOffsets[totalInstancesCount].tlasOffset = instanceID;
                     instance.instanceShaderBindingTableRecordOffset = 0;
                     instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
                     instance.accelerationStructureReference = bottomLevelASBuffers[instanceID].getDeviceAddress();
