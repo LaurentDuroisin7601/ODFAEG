@@ -184,10 +184,10 @@ void main() {
         } else {
             transport.refractable = false;
         } 
-        if ((material.opaque & opaqueMask) == 0) {
-            transport.transmissive  = true;
+        if ((material.opaque & opaqueMask) != 0) {
+            transport.transmissive  = false;
         } else {
-            transport.transmissive = false;
+            transport.transmissive = true;
         }
     } 
     //Calcul de la couleur du rayon courant.  
