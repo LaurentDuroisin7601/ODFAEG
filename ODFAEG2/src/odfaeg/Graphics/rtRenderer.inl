@@ -83,7 +83,7 @@ namespace odfaeg {
             }
             shaderGroupCount = 3;
             loadExtensionsFuncPtr();
-            std::cout<<"create descriptors"<<std::endl;
+            //std::cout<<"create descriptors"<<std::endl;
             createDescriptorsAndPipelines();
             std::cout<<"pipelines and descriptors created"<<std::endl;
             createShaderBindingTable();
@@ -427,7 +427,7 @@ namespace odfaeg {
                     VkAccelerationStructureInstanceKHR instance{};
                     instance.transform = transformMatrix;
                     instance.instanceCustomIndex = instanceID;
-                    if ((gameObjects[i]->getMaterials()[j]->opaque & entity::SubMesh::transparentMask) != 0) {                  
+                    if ((gameObjects[i]->getMaterials()[j]->pipelineType & entity::SubMesh::rtPipeline) != 0) {                  
                         //nonOpaqueObjects.push_back(gameObjects[i]);
                         geometryOffsets[totalInstancesCount].tlasOffset = gameObjects[i]->getMaterials()[j]->pipelineType + nonOpaqueObjectsCount + 1;
                         nonOpaqueObjectsCount++;

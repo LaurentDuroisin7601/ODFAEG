@@ -120,7 +120,7 @@ vec4 unpackColor(uint c)
 }
 
 void main() {  
-    /*GeometryOffset geomOffs = geomOffsets[gl_InstanceCustomIndexEXT];
+    GeometryOffset geomOffs = geomOffsets[gl_InstanceCustomIndexEXT];
     int primID = gl_PrimitiveID;    
     LodLevel lod = lodLevels[geomOffs.lodOffset+transport.desiredLod];
     
@@ -208,5 +208,5 @@ void main() {
     } else if (transport.rayType > 3) {        
         transport.shadowColor = (material.opaque == 0) ? vec4(0.5, 0.5, 0.5, 1) : albedo;
         transport.localLightning = transport.shadowColor * transport.lightColor * vec4(N, 1);//Calcul de la couleur de la lumière locale. (Ombre partielle)
-    } */
+    } 
 }
