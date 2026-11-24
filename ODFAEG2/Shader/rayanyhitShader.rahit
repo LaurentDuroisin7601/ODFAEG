@@ -116,6 +116,7 @@ vec4 unpackColor(uint c)
 
 void main() {  
     GeometryOffset geomOffs = geomOffsets[gl_InstanceCustomIndexEXT];
+    
     int primID = gl_PrimitiveID;
     float dist = gl_HitTEXT;
     float lodStep = 20.0;
