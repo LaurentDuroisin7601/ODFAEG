@@ -122,7 +122,7 @@ void main() {
     int lod = clamp(int(dist / lodStep), 0, 4);
     LodLevel lodLevel = lodLevels[geomOffs.lodOffset];
     if (geomOffs.indexOffset + primID * 3 >= lodLevels[geomOffs.lodOffset+lod].index_offset 
-    && geomOffs.indexOffset + primID * 3 < lodLevels[geomOffs.lodOffset+lod].index_count) {
+    && geomOffs.indexOffset + primID * 3 < geomOffs.lodOffset + lodLevels[geomOffs.lodOffset+lod].index_count) {
         transport.desiredLod = lod;
     } else {
         //ignoreIntersectionEXT();

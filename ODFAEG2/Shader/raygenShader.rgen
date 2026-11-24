@@ -32,7 +32,7 @@ layout(binding = 3, set = 0) buffer PointLightSSBO {
 }; 
 layout(binding = 4, set = 0) uniform sampler2D rasterImage; 
 layout(binding = 5, set = 0) uniform accelerationStructureEXT globalAS;
-layout(binding = 6, set = 0) uniform accelerationStructureEXT localAS[MAX_TLAS_STRUCTURES];
+//layout(binding = 6, set = 0) uniform accelerationStructureEXT localAS[MAX_TLAS_STRUCTURES];
 
 layout (push_constant) uniform PushConstant {
     uint currentFrame;
@@ -174,8 +174,7 @@ void main() {
                 traceRayEXT(globalAS, gl_RayFlagsNoneEXT, transport.localASID, 0, 0, 0, hitpoint.xyz, tmin, transport.direction, tmax, 0);
             }
             i++; 
-        }
-       
+        }       
         imageStore(image[pc.currentFrame], ivec2(gl_LaunchIDEXT.xy), transport.secondaryColor);
     }
 }
