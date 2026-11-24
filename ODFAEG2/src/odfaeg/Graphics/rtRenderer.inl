@@ -427,14 +427,14 @@ namespace odfaeg {
                     VkAccelerationStructureInstanceKHR instance{};
                     instance.transform = transformMatrix;
                     instance.instanceCustomIndex = instanceID;
-                    if ((gameObjects[i]->getMaterials()[j]->pipelineType & entity::SubMesh::rtPipeline) != 0) {                  
+                    /*if ((gameObjects[i]->getMaterials()[j]->pipelineType & entity::SubMesh::rtPipeline) != 0) {                  
                         //nonOpaqueObjects.push_back(gameObjects[i]);
                         geometryOffsets[totalInstancesCount].tlasOffset = gameObjects[i]->getMaterials()[j]->pipelineType & nonOpaqueObjectsCount;                        
                         instance.mask = gameObjects[i]->getMaterials()[j]->pipelineType & nonOpaqueObjectsCount;
                         nonOpaqueObjectsCount++;
-                    } else {
+                    } else {*/
                         instance.mask = gameObjects[i]->getMaterials()[j]->pipelineType;
-                    }
+                    //}
                     instance.instanceShaderBindingTableRecordOffset = 0;
                     instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
                     instance.accelerationStructureReference = bottomLevelASBuffers[instanceID].getDeviceAddress();
