@@ -427,15 +427,11 @@ namespace odfaeg {
                     VkAccelerationStructureInstanceKHR instance{};
                     instance.transform = transformMatrix;
                     instance.instanceCustomIndex = instanceID;
-                    /*if ((gameObjects[i]->getMaterials()[j]->pipelineType & entity::SubMesh::rtPipeline) != 0) {                  
-                        //nonOpaqueObjects.push_back(gameObjects[i]);
-                                                
-                        instance.mask = gameObjects[i]->getMaterials()[j]->pipelineType;
+                    if ((gameObjects[i]->getMaterials()[j]->pipelineType & entity::SubMesh::rtPipeline) != 0) {                  
+                        nonOpaqueObjects.push_back(gameObjects[i]);
                         nonOpaqueObjectsCount++;
-                    } else {*/
-                        instance.mask = gameObjects[i]->getMaterials()[j]->pipelineType;
-                    //}
-                    geometryOffsets[totalInstancesCount].tlasOffset = instanceID;
+                    }
+                    instance.mask = gameObjects[i]->getMaterials()[j]->pipelineType;
                     instance.instanceShaderBindingTableRecordOffset = 0;
                     instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
                     instance.accelerationStructureReference = bottomLevelASBuffers[instanceID].getDeviceAddress();
@@ -522,20 +518,8 @@ namespace odfaeg {
                     commandPool.getHandle(parentRenderer.getCurrentFrame()),
                     1,
                     &accelerationBuildGeometryInfo,
-                    accelerationBuildStructureRangeInfos.data());
-            /*commandPool.endRecordCommandBuffer(parentRenderer.getCurrentFrame());
-            VkSubmitInfo submitInfo{};
-            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-            submitInfo.commandBufferCount = 1;
-            submitInfo.pCommandBuffers = &commandPool.getHandle(parentRenderer.getCurrentFrame());
-            
-            Device::QueueFamilyIndices indices = GPUContext::instance().getDevice().findQueueFamilies(GPUContext::instance().getDevice().getPhysicalDevice(), VK_NULL_HANDLE);
-            if (vkQueueSubmit(GPUContext::instance().getDevice().getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
-                throw std::runtime_error("Echec de l'envoi d'un command buffer!");
-            }
-            vkDeviceWaitIdle(GPUContext::instance().getDevice().getDevice());   
-            //std::cout<<"Global TLAS updated."<<std::endl;
-            commandPool.beginRecordCommandBuffer(parentRenderer.getCurrentFrame());           
+                    accelerationBuildStructureRangeInfos.data());           
+            //std::cout<<"Global TLAS updated."<<std::endl;            
             entity::GridMap<Mesh*> grid(50, 50, 50);
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
                 
@@ -547,8 +531,7 @@ namespace odfaeg {
                 physic::BoundingBox nonOpaqueZoneInfluence = nonOpaqueObjects[i]->getGameObject()->getGlobalBounds();
                 nonOpaqueZoneInfluence.scale(math::Vec3f(2, 2, 2));
                 unsigned int offset = localGameObjects.size();
-                std::vector<Mesh*> bspTreeGameObject = grid.getEntitiesInBox(nonOpaqueZoneInfluence);
-                
+                std::vector<Mesh*> bspTreeGameObject = grid.getEntitiesInBox(nonOpaqueZoneInfluence);                
                 localTlasInfos.push_back(std::make_pair(offset, bspTreeGameObject.size()));
                 localGameObjects.insert(localGameObjects.end(), bspTreeGameObject.begin(), bspTreeGameObject.end());
             }
@@ -645,7 +628,7 @@ namespace odfaeg {
                         &accelerationBuildGeometryInfo,
                         accelerationBuildStructureRangeInfos.data()),
                 currentInstancesOffset += localTlasInfos[i].second;   
-            }*/ 
+            } 
             if (geometryOffsets.size() == 0) {
                 geometryOffsets.push_back(GeometryOffset{0, 0, 0, 0});
             }
