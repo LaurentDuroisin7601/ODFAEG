@@ -76,7 +76,7 @@ struct TransportRayPayload {
     bool transmissive;  
     int localASID; 
     vec3 normal;
-    Material parentMaterial; 
+    int parentMaterial; 
     vec4 localLightning;
     vec3 lightPos;
     int lightId;        
@@ -95,6 +95,7 @@ void main() {
     transport.refractable = false;
     transport.reflectable = false;
     transport.localASID = -1;
+    transport.parentMaterial = -1;
     const vec2 pixelCenter = vec2(gl_LaunchIDEXT.xy) + vec2(0.5);
     const vec2 inUV = pixelCenter/vec2(gl_LaunchSizeEXT.xy);
     vec2 d = inUV * 2.0 - 1.0;
@@ -171,6 +172,7 @@ void main() {
                 transport.refractable = false;
                 transport.reflectable = false;
                 transport.localASID = -1;
+                transport.parentMaterial = -1;
                 traceRayEXT(globalAS, gl_RayFlagsNoneEXT, pc.pipelineMask, 0, 0, 0, hitpoint.xyz, tmin, transport.direction, tmax, 0);
             }
             i++; 

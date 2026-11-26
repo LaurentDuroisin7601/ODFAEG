@@ -3,10 +3,6 @@
 #define NB_CASCADES 4
 #define MAX_FRAMES_IN_FLIGHT 2
 #define MAX_TEXTURES 1024
-struct RayPayload {
-    vec4 color;
-    bool hit;
-};
 layout(binding = 0, set = 0) uniform CameraProperties {
     mat4 viewInverse;
     mat4 projInverse;    
@@ -48,7 +44,7 @@ struct TransportRayPayload {
     bool transmissive;  
     int localADID; 
     vec3 normal;
-    Material parentMaterial; 
+    int parentMaterial; 
     vec4 localLightning;
     vec3 lightPos;
     int lightId;        
@@ -64,6 +60,9 @@ layout (push_constant) uniform PushConstant {
     uint pointLightCount;
     uint hasGeometry;
 } pc;
+layout (binding = 3, set = 1) buffer materialBuffer {
+    Material materials[];
+};
 layout (binding = 5, set = 1) uniform samplerCube skybox;
 layout (binding = 6, set = 1) uniform sampler2DArray csmShadowMaps;
 layout (binding = 7, set = 1) uniform samplerCubeArray pointShadowMaps; 

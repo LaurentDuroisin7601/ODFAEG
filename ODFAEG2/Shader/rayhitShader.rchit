@@ -97,7 +97,7 @@ struct TransportRayPayload {
     bool transmissive;  
     int localASID; 
     vec3 normal;
-    Material parentMaterial; 
+    int parentMaterial; 
     vec4 localLightning;
     vec3 lightPos;
     int lightId;        
@@ -158,7 +158,7 @@ void main() {
     //Seul les rayons primaires et secondaires mettent à jour le transport pour le rayon suivant. 
     if (transport.rayType == 0 || transport.rayType == 6) {
         transport.normal = N;
-        transport.parentMaterial = material;
+        transport.parentMaterial = int(material.materialId);
         transport.localASID = int(geomOffs.tlasID);
         transport.origin = hitPos + N * epsilon;
         transport.direction = rayDir; 
