@@ -1,7 +1,9 @@
 namespace odfaeg {
     namespace graphic {
-        EnvMapRenderer::EnvMapRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, bool useThread) : 
+        EnvMapRenderer::EnvMapRenderer(RenderTarget& parentRenderer, RenderTexture& sceneColorTextures, unsigned int layer, std::string typesToRenderExpression, int windowId,bool useThread) :
+          IRenderer(windowId), 
           parentRenderer(parentRenderer),
+          sceneColorTextures(sceneColorTextures),
           fullScreenQuad(GPUContext::instance().getDevice()),
           envMap(GPUContext::instance().getDevice()),
           envMapShader(GPUContext::instance().getDevice()),
@@ -14,6 +16,8 @@ namespace odfaeg {
           staggingViewMatricesBuffer(GPUContext::instance().getDevice()),
           useThread(useThread)
         {
+            reflRefrFragPC.resolution.x() = parentRenderer.getSize().x();
+            reflRefrFragPC.resolution.y() = parentRenderer.getSize().y();
             rendererReady.store(false);
             envMap.createCubeMap(ENV_MAP_SIZE);
             envMap.setCamera(parentRenderer.getCamera());
@@ -87,11 +91,11 @@ namespace odfaeg {
             ups[5] = math::Vec3f(0, -1, 0);
             createDescriptorsAndPipelines();
             window::Command rendererReadyCmd(core::FastDelegate<bool>(&EnvMapRenderer::isRendererReady, this), core::FastDelegate<void>(&EnvMapRenderer::drawNextFrame, this));
-            eventListener.connect("RendererReady",rendererReadyCmd); 
+            getEventListener().connect("RendererReady",rendererReadyCmd); 
             if (useThread) {
                 //std::cout<<"lanch"<<std::endl;
-                eventListener.launch();
-            } 
+                getEventListener().launch();
+            }     
             needToUpdateDescriptorSets = true;
             needToUpdateBuffers = false;
             stop.store(false);
@@ -179,9 +183,10 @@ namespace odfaeg {
             quadPushConstant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
             pushConstants.push_back(quadPushConstant);
             GPUContext::instance().getGraphicsPipeline(entity::PrimitiveType::Triangles, envMapQuadShader, blendMode, 0).createGraphicPipeline(envMapQuadShader, entity::PrimitiveType::Triangles, GPUContext::instance().getDescriptorSetLayout(envMapQuadShader), renderingCreateInfo,parentRenderer.getDepthStencilInfos()[RenderTarget::NODEPTHNOSTENCIL], blendMode, VK_SAMPLE_COUNT_1_BIT, VK_CULL_MODE_BACK_BIT, VK_POLYGON_MODE_FILL, pushConstants);            
-            DescriptorSetLayout& reflRefrLayout = GPUContext::instance().getDescriptorSetLayout(reflRefrShader, 2);
+            DescriptorSetLayout& reflRefrLayout = GPUContext::instance().getDescriptorSetLayout(reflRefrShader, 3);
             reflRefrLayout.updateLayout(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES, VK_SHADER_STAGE_FRAGMENT_BIT);
             reflRefrLayout.updateLayout(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+            reflRefrLayout.updateLayout(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
             reflRefrLayout.update();
             renderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
             renderingCreateInfo.colorAttachmentCount = 1;
@@ -213,13 +218,14 @@ namespace odfaeg {
             quadLinkedListPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_FRAMES_IN_FLIGHT*6);
             quadLinkedListPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT*6);
             quadLinkedListPool.update();
-            DescriptorPool& reflRefrPool = GPUContext::instance().getDescriptorPool(reflRefrShader, 2);
+            DescriptorPool& reflRefrPool = GPUContext::instance().getDescriptorPool(reflRefrShader, 3);
             reflRefrPool.updatePoolSize(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,  MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES);
-            reflRefrPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);  
+            reflRefrPool.updatePoolSize(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
+            reflRefrPool.updatePoolSize(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);  
             reflRefrPool.update();
             DescriptorSet::allocate(envMapPool, envMapLayout, GPUContext::instance().getDescriptorSets(envMapShader, 7, 1), MAX_TEXTURES);
             DescriptorSet::allocate(quadLinkedListPool, quadLinkedListLayout, GPUContext::instance().getDescriptorSets(envMapQuadShader, 2, 1));
-            DescriptorSet::allocate(reflRefrPool, reflRefrLayout, GPUContext::instance().getDescriptorSets(reflRefrShader, 2, 1));          
+            DescriptorSet::allocate(reflRefrPool, reflRefrLayout, GPUContext::instance().getDescriptorSets(reflRefrShader, 3, 1));          
         }
         void EnvMapRenderer::updateBuffers() { 
             VkPhysicalDeviceProperties props;
@@ -284,10 +290,11 @@ namespace odfaeg {
             linkedListQuadSet.updateBufferInfos(1, linkedListBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
             linkedListQuadSet.updateDescriptorSet();
             // std::cout<<"update quads ds"<<std::endl;
-            DescriptorSet& reflRefrSet = GPUContext::instance().getDescriptorSets(reflRefrShader, 2, 1)[0];
+            DescriptorSet& reflRefrSet = GPUContext::instance().getDescriptorSets(reflRefrShader, 3, 1)[0];
             reflRefrSet.updateBufferInfos(0, GPUContext::instance().getSharedBuffers(RenderTarget::MATERIAL_DATA_BUFFER), VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
            
             reflRefrSet.updateImageInfos(1, envMap.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            reflRefrSet.updateImageInfos(2, sceneColorTextures.getTexture(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
             reflRefrSet.updateDescriptorSet();
             //std::cout<<"update refl ref set"<<std::endl;
         } 

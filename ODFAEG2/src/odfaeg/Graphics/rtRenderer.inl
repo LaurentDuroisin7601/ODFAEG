@@ -85,11 +85,12 @@ namespace odfaeg {
             loadExtensionsFuncPtr();
             //std::cout<<"create descriptors"<<std::endl;
             createDescriptorsAndPipelines();
-            std::cout<<"pipelines and descriptors created"<<std::endl;
+            //std::cout<<"pipelines and descriptors created"<<std::endl;
             createShaderBindingTable();
             
             needToUpdateBLAS = needToUpdateTLAS = needToUpdateDescriptorSets = true; 
             rayGenPC.pipelineMask = entity::SubMesh::rtPipeline;
+          
             /*updateBLAS();
             updateTLAS();*/
         } 
@@ -416,7 +417,8 @@ namespace odfaeg {
             unsigned int totalInstancesCount = 0;
             std::vector<Mesh*> gameObjects = RenderTarget::getGameObjects(); 
             std::vector<Mesh*> nonOpaqueObjects;
-            unsigned int nonOpaqueObjectsCount = 0;             
+            unsigned int nonOpaqueObjectsCount = 0; 
+            
             for (unsigned int i = 0; i < gameObjects.size(); i++) {
                 for (unsigned int j = 0; j < gameObjects[i]->getGameObject()->getSubMeshesCount(); j++) {
                     /*if ((gameObjects[i]->getMaterials()[j]->opaque & entity::SubMesh::transparentMask) != 0) {                  
@@ -440,6 +442,7 @@ namespace odfaeg {
                     totalInstancesCount++;                    
                 }
             }
+            rayGenPC.hasGeometry = totalInstancesCount > 0 ? 1 : 0;            
             if (instances.size() == 0) {
                 instances.push_back(VkAccelerationStructureInstanceKHR{});
             }           

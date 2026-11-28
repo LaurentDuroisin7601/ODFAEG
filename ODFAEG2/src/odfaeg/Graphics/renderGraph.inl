@@ -19,6 +19,10 @@ namespace odfaeg {
             OpaqueRenderer* opaqueRenderer = new OpaqueRenderer(output, layer, typesToRender, windowId);
             renderers.insert(std::make_pair(order, opaqueRenderer));
         }
+        void RenderGraph::addEnvironmentPass(unsigned int order, std::string typesToRender, unsigned int windowId) {        
+            EnvMapRenderer* envMapRenderer = new EnvMapRenderer(output, output, layer, typesToRender, windowId);
+            renderers.insert(std::make_pair(order, envMapRenderer));
+        }
         void RenderGraph::addOITPass(unsigned int order, std::string typesToRender, unsigned int windowId) {
             LinkedListRenderer* llr = new LinkedListRenderer(output, output, layer, typesToRender, windowId);
             renderers.insert(std::make_pair(order, llr));            

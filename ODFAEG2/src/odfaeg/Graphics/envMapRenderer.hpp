@@ -29,7 +29,7 @@
 #include "iRenderer.hpp"
 namespace odfaeg {
     namespace graphic {
-        class EnvMapRenderer {
+        class EnvMapRenderer : public IRenderer {
             public:
                 struct EnvViewMatrix {
                     math::Matrix4f viewMatrices[6];
@@ -62,8 +62,9 @@ namespace odfaeg {
                 struct ReflRefrFragPC {
                     math::Vec4f cameraPos;                    
                     int currentImageIndex;
+                    math::Vec2f resolution;
                 };
-                EnvMapRenderer(RenderTarget& parentRenderer, unsigned int layer, std::string typesToRenderExpression, bool usethread=true);
+                EnvMapRenderer(RenderTarget& parentRenderer, RenderTexture& sceneColorTextures, unsigned int layer, std::string typesToRenderExpression, int windowId = -1, bool usethread=true);
                 void createCommandPools(); 
                 void createDescriptorsAndPipelines();
                 void updateDescriptorSets();
@@ -101,13 +102,13 @@ namespace odfaeg {
                 std::vector<Mesh*> reflRefrGameObjects;
                 std::array<math::Vec3f, 6> dirs, ups;
                 std::condition_variable cv;
-                std::mutex mtx;
-                window::Listener eventListener;
+                std::mutex mtx;               
                 EnvMapVertPC envMapVertPC;
                 EnvMapFragPC envMapFragPC;
                 EnvMapQuadFragPC envMapQuadFragPC;
                 ReflRefrVertPC reflRefrVertPC;
                 ReflRefrFragPC reflRefrFragPC;
+                RenderTexture& sceneColorTextures;
                 // Private members and methods
         };
     }

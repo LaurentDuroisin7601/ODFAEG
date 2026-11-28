@@ -11,6 +11,7 @@
 #include "shadowRenderer.hpp"
 #include "linkedListRenderer.hpp"
 #include "lightningRenderer.hpp"
+#include "envMapRenderer.hpp"
 #include "rtRenderer.hpp"
 #include "widget.hpp"
 #include "../math/vec.hpp"
@@ -25,6 +26,7 @@ namespace odfaeg {
             void addOpaquePass(unsigned int order, std::string typesToRender, unsigned int windowId);        
             void addOITPass(unsigned int order, std::string typesToRender, unsigned int windowId=-1);
             void addShadowPass(unsigned int order, std::string typesToRender, unsigned int windowId=-1);
+            void addEnvironmentPass(unsigned int order, std::string typesToRender, unsigned int windowId);
             void addLightningPass(unsigned int order, std::string typesToRender, unsigned int windowId=-1);
             void addRTPass(unsigned int order, std::string typesToRender, unsigned int windowId=-1);
             

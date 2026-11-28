@@ -14,6 +14,7 @@ layout(location = 0) out vec4 outColor;
 layout (push_constant) uniform PushConsts {
     layout(offset = 224) vec4 cameraPos;        
     layout(offset = 240) uint imageIndex;
+    layout(offset = 248) vec2 resolution;
 } pc;
 struct MaterialData {
     uint diffuseTextureIndex;
@@ -37,7 +38,8 @@ struct MaterialData {
 layout (std430, set = 0, binding = 0) buffer MaterialDataSSBO {
     MaterialData materialData[];
 } materialDataBuffer[MAX_FRAMES_IN_FLIGHT*NB_PRIMITIVE_TYPES];
-layout (set = 0, binding = 1) uniform samplerCube sceneBox;                                                       
+layout (set = 0, binding = 1) uniform samplerCube sceneBox; 
+layout (set = 0, binding = 2) uniform sampler2D sceneColorTextures;                                                      
 void main() {
     MaterialData material = materialDataBuffer[primitiveType*MAX_FRAMES_IN_FLIGHT+currentFrame].materialData[materialId];
     vec4 reflectColor = vec4(1);    
@@ -68,7 +70,7 @@ void main() {
     }
     
     
-    /*if ((reflectColor.r != 0 || reflectColor.g != 0 && reflectColor.b != 0) && (refractColor.r != 0 || refractColor.g != 0 && refractColor.b != 0))
-        debugPrintfEXT("ratio : %f, refract color : %v4f", ratio, refractColor);*/
-    outColor = mix(reflectColor, refractColor, refractColor.a);
+    vec2 uv = gl_FragCoord.xy / pc.resolution;
+    vec4 sceneColor = texture(sceneColorTextures, uv);
+    outColor = sceneColor + mix(reflectColor, refractColor, refractColor.a);
 }  
